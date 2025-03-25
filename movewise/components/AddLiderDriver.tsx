@@ -11,6 +11,7 @@ import {
   Modal,
   useColorScheme as _useColorScheme,
   Appearance,
+  Platform,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 
@@ -77,37 +78,51 @@ const OperatorsScreen = () => {
   );
 
   return (
-    <SafeAreaView style={[styles.container, theme === 'dark' && styles.containerDark]}>
-      <StatusBar barStyle={theme === 'dark' ? "light-content" : "dark-content"} />
-      <View style={[styles.header, theme === 'dark' && styles.headerDark]}>
-        <View style={styles.headerLeft}>
-          <Image 
-            source={require('../assets/images/LOGOPNG.png')} 
-            style={[
-              styles.userIcono, 
-              { tintColor: theme === 'dark' ? '#FFFFFF' : '#112A4A' } //ocuro & claro  
-            ]} 
-          />
-          <Text style={[styles.headerTitle, theme === 'dark' && styles.textDark]}>
-            Operators
-          </Text>
+    <View style={[styles.container, theme === 'dark' && styles.containerDark]}>
+      {/* Use StatusBar component with translucent on Android */}
+      <StatusBar 
+        barStyle={theme === 'dark' ? "light-content" : "dark-content"} 
+        backgroundColor="transparent"
+        translucent={Platform.OS === 'android'}
+      />
+      
+      {/* Add padding to account for status bar height on Android */}
+      <SafeAreaView style={[
+        styles.safeArea, 
+        theme === 'dark' && styles.containerDark,
+        Platform.OS === 'android' && styles.androidSafeArea
+      ]}>
+        <View style={[styles.header, theme === 'dark' && styles.headerDark]}>
+          <View style={styles.headerLeft}>
+            <Image 
+              source={require('../assets/images/LOGOPNG.png')} 
+              style={[
+                styles.userIcono, 
+                { tintColor: theme === 'dark' ? '#FFFFFF' : '#112A4A' } //ocuro & claro  
+              ]} 
+            />
+            <Text style={[styles.headerTitle, theme === 'dark' && styles.textDark]}>
+              Operators
+            </Text>
+          </View>
+          <TouchableOpacity style={[styles.addButton, theme === 'dark' && styles.addButtonDark]}>
+            <Ionicons 
+              name="add-circle-outline" 
+              size={24} 
+              color={theme === 'dark' ? "#FFFFFF" : "#112A4A"} 
+            />
+          </TouchableOpacity>
         </View>
-        <TouchableOpacity style={[styles.addButton, theme === 'dark' && styles.addButtonDark]}>
-          <Ionicons 
-            name="add-circle-outline" 
-            size={24} 
-            color={theme === 'dark' ? "#FFFFFF" : "#112A4A"} 
+        <View style={[styles.listContainer, theme === 'dark' && styles.containerDark]}>
+          <FlatList
+            data={operators}
+            renderItem={renderOperator}
+            keyExtractor={item => item.id}
+            contentContainerStyle={styles.list}
           />
-        </TouchableOpacity>
-      </View>
-      <View style={[styles.listContainer, theme === 'dark' && styles.containerDark]}>
-        <FlatList
-          data={operators}
-          renderItem={renderOperator}
-          keyExtractor={item => item.id}
-          contentContainerStyle={styles.list}
-        />
-      </View>
+        </View>
+      </SafeAreaView>
+      
       <Modal
         animationType="slide"
         transparent={true}
@@ -148,7 +163,7 @@ const OperatorsScreen = () => {
           </View>
         </View>
       </Modal>
-    </SafeAreaView>
+    </View>
   );
 };
 
@@ -159,6 +174,13 @@ const styles = StyleSheet.create({
   },
   containerDark: {
     backgroundColor: '#112A4A',
+  },
+  safeArea: {
+    flex: 1,
+  },
+  androidSafeArea: {
+    // Add padding for Android status bar
+    paddingTop: Platform.OS === 'android' ? StatusBar.currentHeight : 0,
   },
   header: {
     flexDirection: 'row',

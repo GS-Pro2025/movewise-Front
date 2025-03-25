@@ -1,7 +1,7 @@
-import FormOperador from '@/components/AddLiderDriver';
-
+import FormOperador from '@/components/FormOperador';
+import AddLiderDriver from '@/components/AddLiderDriver';
 export default function OrderScreen() {
-  
-  return <FormOperador/>;
+ 
+  return <AddLiderDriver/>;
   
 }

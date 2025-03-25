@@ -1,6 +1,5 @@
 import React from 'react';  
 import { Image } from 'react-native';
-import LinearGradient from 'react-native-linear-gradient';
 
 import { 
   View, 
@@ -12,12 +11,18 @@ import {
   useColorScheme
 } from 'react-native';
 
-interface ActionButtonProps {
-  title: string;
-  iconSource?: any; // Permite recibir una imagen como icono
+interface HomeProps {
+  onOpenModal: () => void; // Prop para abrir el modal
 }
 
-const Home = () => {
+interface ActionButtonProps {
+  title: string;
+  iconSource?: any;
+  isDarkMode: boolean;
+  onPress?: () => void; // Agregar evento onPress
+}
+
+const Home: React.FC<HomeProps> = ({ onOpenModal }) => {
   const theme = useColorScheme();
   const isDarkMode = theme === 'dark';
 
@@ -60,10 +65,10 @@ const Home = () => {
         /> 
       </View>
       
-      {/* Grid of Action Buttons */}
+      {/* Grid de botones */}
       <View style={styles.gridContainer}>
         <View style={styles.row}>
-          <ActionButton title={"Create\nDaily"} isDarkMode={isDarkMode} iconSource={require('../assets/images/paquete.png')} />
+          <ActionButton title={"Create\nDaily"} isDarkMode={isDarkMode} iconSource={require('../assets/images/paquete.png')} onPress={onOpenModal} />
           <ActionButton title={"Add Extra cost"} isDarkMode={isDarkMode} iconSource={require('../assets/images/dolar.png')} />
         </View>
         <View style={styles.row}>
@@ -83,9 +88,9 @@ const Home = () => {
   );
 };
 
-const ActionButton: React.FC<ActionButtonProps & { isDarkMode: boolean }> = ({ title, iconSource, isDarkMode }) => {
+const ActionButton: React.FC<ActionButtonProps> = ({ title, iconSource, isDarkMode, onPress }) => {
   return (
-    <TouchableOpacity style={[styles.actionButton, isDarkMode ? styles.darkButton : styles.lightButton]}>
+    <TouchableOpacity style={[styles.actionButton, isDarkMode ? styles.darkButton : styles.lightButton]} onPress={onPress}>
       {iconSource ? (
         <Image 
           source={iconSource} 
@@ -103,123 +108,32 @@ const ActionButton: React.FC<ActionButtonProps & { isDarkMode: boolean }> = ({ t
 };
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-  },
-  imageContainer: {
-    height: 150, 
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  userLogo: {
-    width: 120,  
-    height: 120, 
-  },
-  userIcono: {
-    width: 38,  
-    height: 38, 
-    borderRadius: 20, 
-  },
-  lightBackground: {
-    backgroundColor: '#fff', //color en modo claro
-  },
-  darkBackground: {
-    backgroundColor: '#112A4A', //color del fondo cuando esta en modo oscuro (cambiado de #0458AB)
-  },
-  header: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-  },
-  userInfo: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  avatarContainer: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    backgroundColor: '#f0f0f0',
-    justifyContent: 'center',
-    alignItems: 'center',
-    borderWidth: 1,
-    borderColor: '#0052A5',
-  },
-  userTextContainer: {
-    marginLeft: 10,
-  },
-  userName: {
-    fontSize: 16,
-    fontWeight: 'bold',
-  },
-  userLevel: {
-    fontSize: 14,
-  },
-  darkText: {
-    color: '#112A4A', // Cambiado de #0458AB
-  },
-  darkUserText: {
-    color: '#FFFFFF', // Texto de usuario en blanco para modo oscuro
-  },
-  lightText: {
-    color: '#ffffff',
-  },
-  darkSubText: {
-    color: '#ffffff',
-  },
-  lightPrimaryText: {
-    color: '#0458AB',
-  },
-  shareButton: {
-    width: 40,
-    height: 40,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  divider: {
-    height: 1,
-    backgroundColor: '#e0e0e0',
-    marginHorizontal: 16,
-  },
-  gridContainer: {
-    paddingHorizontal: 30,
-    paddingVertical: 10,
-    flex: 1,
-    width: 390,
-  },
-  row: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    marginBottom: 16,
-  },
-  actionButton: {
-    borderRadius: 8,
-    width: '45%',
-    height: 120,
-    justifyContent: 'center',
-    alignItems: 'center',
-    padding: 10,
-  },
-  lightButton: {
-    backgroundColor: '#0458AB', //color del bonco azul en modo claro 
-  },
-  darkButton: {
-    backgroundColor: '#FFFFFF',
-  },
-  actionButtonIcon: {
-    width: 45,  
-    height: 40, 
-    resizeMode: 'contain', 
-    marginBottom: 8,
-  },
-  actionButtonText: {
-    marginTop: 8,
-    fontSize: 18,
-    fontWeight: '500',
-    textAlign: 'center',
-  },
+  container: { flex: 1 },
+  imageContainer: { height: 150, justifyContent: 'center', alignItems: 'center' },
+  userLogo: { width: 120, height: 120 },
+  userIcono: { width: 38, height: 38, borderRadius: 20 },
+  lightBackground: { backgroundColor: '#fff' },
+  darkBackground: { backgroundColor: '#112A4A' },
+  header: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingHorizontal: 16, paddingVertical: 12 },
+  userInfo: { flexDirection: 'row', alignItems: 'center' },
+  avatarContainer: { width: 40, height: 40, borderRadius: 20, backgroundColor: '#f0f0f0', justifyContent: 'center', alignItems: 'center', borderWidth: 1, borderColor: '#0052A5' },
+  userTextContainer: { marginLeft: 10 },
+  userName: { fontSize: 16, fontWeight: 'bold' },
+  userLevel: { fontSize: 14 },
+  darkText: { color: '#112A4A' },
+  darkUserText: { color: '#FFFFFF' },
+  lightText: { color: '#ffffff' },
+  darkSubText: { color: '#ffffff' },
+  lightPrimaryText: { color: '#0458AB' },
+  shareButton: { width: 40, height: 40, justifyContent: 'center', alignItems: 'center' },
+  divider: { height: 1, backgroundColor: '#e0e0e0', marginHorizontal: 16 },
+  gridContainer: { paddingHorizontal: 30, paddingVertical: 10, flex: 1, width: 390 },
+  row: { flexDirection: 'row', justifyContent: 'space-between', marginBottom: 16 },
+  actionButton: { borderRadius: 8, width: '45%', height: 120, justifyContent: 'center', alignItems: 'center', padding: 10 },
+  lightButton: { backgroundColor: '#0458AB' },
+  darkButton: { backgroundColor: '#FFFFFF' },
+  actionButtonIcon: { width: 45, height: 40, resizeMode: 'contain', marginBottom: 8 },
+  actionButtonText: { marginTop: 8, fontSize: 18, fontWeight: '500', textAlign: 'center' },
 });
 
 export default Home;
