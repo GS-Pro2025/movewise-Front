@@ -1,6 +1,15 @@
-import FormOperador from '@/components/FormOperador';
+import React, { useState } from "react";
+import { View } from "react-native";
+import Home from "../../components/Home"; // Importa tu componente Home
 
-export default function OrderScreen() {
-  return <FormOperador/>;
-  
-}
+const IndexScreen = () => {
+  const [modalVisible, setModalVisible] = useState(false);
+
+  return (
+    <View style={{ flex: 1 }}>
+      <Home onOpenModal={() => setModalVisible(true)} />
+    </View>
+  );
+};
+
+export default IndexScreen;
