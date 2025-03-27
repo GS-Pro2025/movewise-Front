@@ -2,6 +2,9 @@ import React, { useState } from "react";
 import { View } from "react-native";
 import Home from "../../components/Home"; // Importa tu componente Home
 import OrderModal from "../OrderModal"; // Importa el modal
+import FormOperator from "../../components/FormOperador"; // Importa el modal
+
+
 
 const IndexScreen = () => {
   const [modalVisible, setModalVisible] = useState(false);
