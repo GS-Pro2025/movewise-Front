@@ -1,3 +1,5 @@
+
+
 import React, { useState } from "react";
 import { View } from "react-native";
 import Home from "../(tabs)/Home";
@@ -34,3 +36,4 @@ const IndexScreen = () => {
 };
 
 export default IndexScreen;
+
