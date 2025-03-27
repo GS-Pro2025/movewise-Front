@@ -1,3 +1,5 @@
+
+
 import React, { useState } from "react";
 import { View } from "react-native";
 import Home from "../../components/Home"; // Importa tu componente Home
@@ -15,3 +17,4 @@ const IndexScreen = () => {
 };
 
 export default IndexScreen;
+
