@@ -1,7 +1,7 @@
   import { Modal, SafeAreaView, ScrollView, View, Text, TextInput, TouchableOpacity, StyleSheet, useColorScheme } from 'react-native';
   import { Picker } from '@react-native-picker/picker';
   import { useState } from 'react';
-  import { ThemedView } from './ThemedView';
+  import { ThemedView } from '../../components/ThemedView';
   import { Image } from 'react-native';
 
 
@@ -24,10 +24,10 @@
     
 
       const colorScheme = useColorScheme();
-      const imageSource = colorScheme === 'dark' 
-      ? require('../assets/images/PNG_blanco.png') 
-      : require('../assets/images/PNG_negativo.png');
-      
+      const imageSource = colorScheme === "dark"
+      ? require("../../assets/images/PNG_blanco.png")
+      : require("../../assets/images/PNG_negativo.png");
+    
       const styles = StyleSheet.create({
         container: {
           flex: 1, 
