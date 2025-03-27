@@ -1,4 +1,4 @@
-import type React from "react"
+import React, {  } from "react"; // Importar React y useState correctamente
 import {
   Image,
   View,
@@ -14,6 +14,7 @@ import {
 
 interface HomeProps {
   onOpenModal: () => void
+  onOpenOperatorModal: () => void;  
 }
 
 interface ActionButtonProps {
@@ -23,8 +24,8 @@ interface ActionButtonProps {
   onPress?: () => void
 }
 
-const Home: React.FC<HomeProps> = ({ onOpenModal }) => {
-  const theme = useColorScheme()
+const Home: React.FC<HomeProps> = ({ onOpenModal, onOpenOperatorModal}) => {  
+  const theme = useColorScheme()  
   const isDarkMode = theme === "dark"
 
   return (
@@ -37,7 +38,7 @@ const Home: React.FC<HomeProps> = ({ onOpenModal }) => {
           <View style={styles.userInfo}>
             <View style={styles.avatarContainer}>
               <Image
-                source={require("../assets/images/logo.png")}
+                source={require("../../assets/images/logo.png")}
                 style={[styles.userIcono, { tintColor: isDarkMode ? "#112A4A" : "#0458AB" }]}
               />
             </View>
@@ -50,7 +51,7 @@ const Home: React.FC<HomeProps> = ({ onOpenModal }) => {
           </View>
           <TouchableOpacity style={styles.shareButton}>
             <Image
-              source={require("../assets/images/exit.png")}
+              source={require("../../assets/images/exit.png")}
               style={[styles.userIcono, { tintColor: isDarkMode ? "#FFFFFF" : "#0458AB" }]}
             />
           </TouchableOpacity>
@@ -60,7 +61,7 @@ const Home: React.FC<HomeProps> = ({ onOpenModal }) => {
 
         <View style={styles.imageContainer}>
           <Image
-            source={require("../assets/images/LOGOPNG.png")}
+            source={require("../../assets/images/LOGOPNG.png")}
             style={[styles.userLogo, { tintColor: isDarkMode ? "#FFFFFF" : "#0458AB" }]}
           />
         </View>
@@ -71,49 +72,49 @@ const Home: React.FC<HomeProps> = ({ onOpenModal }) => {
             <ActionButton
               title={"Create\nDaily"}
               isDarkMode={isDarkMode}
-              iconSource={require("../assets/images/paquete.png")}
+              iconSource={require("../../assets/images/paquete.png")}
               onPress={onOpenModal}
             />
             <ActionButton
               title={"Add Extra cost"}
               isDarkMode={isDarkMode}
-              iconSource={require("../assets/images/dolar.png")}
+              iconSource={require("../../assets/images/dolar.png")}
             />
           </View>
           <View style={styles.row}>
             <ActionButton
               title={"Edit\nDaily"}
               isDarkMode={isDarkMode}
-              iconSource={require("../assets/images/paquete.png")}
+              iconSource={require("../../assets/images/paquete.png")}
             />
             <ActionButton
               title={"Resume\nOrder"}
               isDarkMode={isDarkMode}
-              iconSource={require("../assets/images/paper.png")}
+              iconSource={require("../../assets/images/paper.png")}
             />
           </View>
           <View style={styles.row}>
             <ActionButton
               title={"Create\nTruck"}
               isDarkMode={isDarkMode}
-              iconSource={require("../assets/images/truck.png")}
+              iconSource={require("../../assets/images/truck.png")}
             />
             <ActionButton
               title={"Collaborator\nRegistration"}
               isDarkMode={isDarkMode}
-              iconSource={require("../assets/images/logo.png")}
+              iconSource={require("../../assets/images/logo.png")}
             />
           </View>
           <View style={styles.row}>
             <ActionButton
               title={"Collaborator\nUnlink"}
               isDarkMode={isDarkMode}
-              iconSource={require("../assets/images/personx.png")}
+              iconSource={require("../../assets/images/personx.png")}
             />
             <ActionButton
               title={"Collaborator\nEdit"}
               isDarkMode={isDarkMode}
-              iconSource={require("../assets/images/Pencil.png")}
+              iconSource={require("../../assets/images/Pencil.png")}
             />
           </View>
         </View>
