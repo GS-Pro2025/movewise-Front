@@ -1,15 +1,5 @@
-import React, { useState } from "react";
-import { View } from "react-native";
-import Home from "../../components/Home"; // Importa tu componente Home
+import { Redirect } from "expo-router";
 
-const IndexScreen = () => {
-  const [modalVisible, setModalVisible] = useState(false);
-
-  return (
-    <View style={{ flex: 1 }}>
-      <Home onOpenModal={() => setModalVisible(true)} />
-    </View>
-  );
-};
-
-export default IndexScreen;
+export default function Index() {
+  return <Redirect href="/Home" />;
+}
