@@ -1,19 +1,12 @@
-"use client";
-
 import React, { useState } from "react";
-import {
-  View,
-  Text,
-  TouchableOpacity,
-  Modal,
-  FlatList,
-  StyleSheet,
-  useColorScheme,
-  Alert,
-} from "react-native";
+import { View, Text, TouchableOpacity, Modal, StyleSheet, useColorScheme, Alert } from "react-native";
 import { useRouter } from "expo-router";
-import { Ionicons } from "@expo/vector-icons";
-import AddOperatorModal from "./AddOperatorForm";
+import AddOperatorForm from "./AddOperatorForm";
+
+interface Operator {
+  name: string;
+  role?: "Team Leader";
+}
 
 interface OperatorModalProps {
   visible: boolean;
@@ -21,312 +14,165 @@ interface OperatorModalProps {
 }
 
 const OperatorModal: React.FC<OperatorModalProps> = ({ visible, onClose }) => {
-  const [operators, setOperators] = useState<string[]>([]);
   const [addOperatorVisible, setAddOperatorVisible] = useState(false);
-  const [detailModalVisible, setDetailModalVisible] = useState(false);
-  const [selectedOperator, setSelectedOperator] = useState<string | null>(null);
-
+  const [roleSelectorVisible, setRoleSelectorVisible] = useState(false);
+  const [selectedOperatorIndex, setSelectedOperatorIndex] = useState<number | null>(null);
+  const [operators, setOperators] = useState<Operator[]>([]);
   const colorScheme = useColorScheme();
   const isDarkMode = colorScheme === "dark";
-  const theme = isDarkMode ? "dark" : "light";
   const router = useRouter();
 
-  const styles = StyleSheet.create({
-    container: {
-      flex: 1,
-      backgroundColor: isDarkMode ? "#112A4A" : "#ffffff",
-      padding: 20,
-    },
-    header: {
-      backgroundColor: isDarkMode ? "#112A4A" : "#ffffff",
-      flexDirection: "row",
-      alignItems: "center",
-      justifyContent: "space-between",
-      paddingBottom: 20,
-      paddingTop: 30,
-      borderBottomWidth: 2,
-      borderBottomColor: isDarkMode ? "rgba(0, 0, 0, 0.2)" : "rgba(0, 0, 0, 0.1)",
-      width: "100%",
-      paddingHorizontal: 20,
-    },
-    titleContainer: {
-      flex: 1,
-      alignItems: "center",
-    },
-    title: {
-      fontSize: 20,
-      fontWeight: "bold",
-      color: isDarkMode ? "#FFFFFF" : "#0458AB",
-    },
-    addButton: {
-      backgroundColor: isDarkMode ? "#FFF" : "#0458AB",
-      width: 40,
-      height: 40,
-      borderRadius: 20,
-      alignItems: "center",
-      justifyContent: "center",
-    },
-    plus: {
-      fontSize: 24,
-      color: isDarkMode ? "#0458AB" : "#FFF",
-      fontWeight: "bold",
-    },
-    operatorItem: {
-      flexDirection: "row",
-      alignItems: "center",
-      paddingVertical: 10,
-      borderBottomWidth: 1,
-      borderBottomColor: "#ccc",
-    },
-    operatorText: {
-      fontSize: 16,
-      color: "#0458AB",
-      flex: 1,
-    },
-    buttonContainer: {
-      flexDirection: "row",
-      justifyContent: "center",
-      gap: 120,
-      marginTop: 20,
-    },
-    backButton: {
-      backgroundColor: isDarkMode ? "#0458AB" : "#545257",
-      paddingVertical: 10,
-      paddingHorizontal: 20,
-      borderRadius: 8,
-    },
-    saveButton: {
-      backgroundColor: isDarkMode ? "#FFFFFF" : "#0458AB",
-      paddingVertical: 10,
-      paddingHorizontal: 20,
-      borderRadius: 8,
-    },
-    backButtonText: {
-      color: "#FFF",
-      fontWeight: "bold",
-    },
-    saveButtonText: {
-      color: isDarkMode ? "#0458AB" : "#FFFFFF",
-      fontWeight: "bold",
-    },
-    // Estilos para el modal de detalle del operador
-    modalContainer: {
-      flex: 1,
-      justifyContent: "center",
-      alignItems: "center",
-      backgroundColor: "rgba(0,0,0,0.5)",
-    },
-    modalContent: {
-      width: "80%",
-      backgroundColor: "#ffffff",
-      borderRadius: 8,
-      padding: 20,
-    },
-    modalContentDark: {
-      backgroundColor: "#112A4A",
-    },
-    modalHeader: {
-      flexDirection: "row",
-      justifyContent: "space-between",
-      alignItems: "center",
-      borderBottomWidth: 1,
-      borderBottomColor: "#ccc",
-      paddingBottom: 10,
-      marginBottom: 10,
-    },
-    modalHeaderDark: {
-      borderBottomColor: "#444",
-    },
-    modalTitle: {
-      fontSize: 18,
-      fontWeight: "bold",
-      color: "#0458AB",
-    },
-    textDark: {
-      color: "#FFFFFF",
-    },
-    closeButton: {
-      padding: 5,
-    },
-    roleButtonsContainer: {
-      flexDirection: "row",
-      justifyContent: "space-around",
-      marginTop: 20,
-    },
-    roleButton: {
-      backgroundColor: "#0458AB",
-      paddingVertical: 10,
-      paddingHorizontal: 20,
-      borderRadius: 8,
-    },
-    roleButtonDark: {
-      backgroundColor: "#FFF",
-    },
-    roleButtonText: {
-      color: "#FFF",
-      fontWeight: "bold",
-    },
-  });
-
-  // Funciones
-  const openOperatorForm = () => setAddOperatorVisible(true);
-  const closeOperatorForm = () => setAddOperatorVisible(false);
-
-  const handleAddOperator = (operatorName: string) => {
-    if (operatorName.trim() !== "") {
-      setOperators([...operators, operatorName]);
-    }
-    closeOperatorForm();
+  const handleAddOperator = (newOperator: string) => {
+    setOperators((prev) => [...prev, { name: newOperator }]);
+    setAddOperatorVisible(false);
   };
 
-  const handleOperatorPress = (operator: string) => {
-    setSelectedOperator(operator);
-    setDetailModalVisible(true);
-  };
-
-  const assignRole = (role: string) => {
-    if (role === "Team leader") {
-      if (selectedOperator) {
-        const updatedOperators = operators.map((op) =>
-          op === selectedOperator
-            ? op.includes("(Team leader)")
-              ? op
-              : `${op} (Team leader)`
-            : op
-        );
-        setOperators(updatedOperators);
-      }
-      setDetailModalVisible(false);
-    } else if (role === "Driver") {
-      setDetailModalVisible(false);
-      router.push("../"); // Navega a la pantalla de Driver
-    }
-  };
-
-  const handleDeleteOperator = (operatorToDelete: string) => {
-    Alert.alert(
-      "Confirmación",
-      "¿Está seguro que desea eliminar este operador?",
-      [
-        {
-          text: "Cancelar",
-          style: "cancel",
+  const handleDeleteOperator = (index: number) => {
+    Alert.alert("Confirm Delete", "Are you sure you want to delete this operator?", [
+      { text: "Cancel", style: "cancel" },
+      {
+        text: "Delete",
+        style: "destructive",
+        onPress: () => {
+          setOperators((prev) => prev.filter((_, i) => i !== index));
         },
-        {
-          text: "Eliminar",
-          style: "destructive",
-          onPress: () => {
-            setOperators(operators.filter((operator) => operator !== operatorToDelete));
-          },
-        },
-      ]
-    );
+      },
+    ]);
   };
+
+  const handleSelectRole = (index: number) => {
+    setSelectedOperatorIndex(index);
+    setRoleSelectorVisible(true);
+  };
+
+  const assignDriver = () => {
+    setRoleSelectorVisible(false);
+    router.push("/modals/TruckModal");
+  };
+
+  const assignTeamLeader = () => {
+    if (selectedOperatorIndex !== null) {
+      setOperators((prev) =>
+        prev.map((op, i) =>
+          i === selectedOperatorIndex ? { ...op, role: "Team Leader" } : op
+        )
+      );
+    }
+    setRoleSelectorVisible(false);
+  };
+
+  
+const styles = StyleSheet.create({
+  container: { flex: 1, padding: 20 },
+  header: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    paddingBottom: 20,
+    paddingTop: 30,
+    borderBottomWidth: 2,
+    width: "100%",
+    paddingHorizontal: 20,
+  },
+  title: { fontSize: 20, fontWeight: "bold" },
+  addButton: { width: 40, height: 40, borderRadius: 20, alignItems: "center", justifyContent: "center" },
+  plus: { fontSize: 24, fontWeight: "bold" },
+  operatorRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    paddingVertical: 5,
+  },
+  operatorItem: { fontSize: 18, color: "#0458AB" },
+  deleteButton: {
+    backgroundColor: "#FF3B30",
+    borderRadius: 8,
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+    marginLeft: 10,
+  },
+  deleteText: { color: "#FFFFFF", fontWeight: "bold" },
+  buttonContainer: {  flexDirection: "row", // Alinea los botones en fila
+    justifyContent: "space-between", // Espacia los botones
+    alignItems: "center", // Asegura alineación vertical
+    marginTop: 20,
+    width: "100%", // O un valor fijo según el diseño
+    paddingHorizontal: 20, },
+  backButton: { paddingVertical: 10, paddingHorizontal: 20, borderRadius: 8 },
+  saveButton: { paddingVertical: 10, paddingHorizontal: 20, borderRadius: 8 },
+  backButtonText: { color: "#FFF", fontWeight: "bold" },
+  saveButtonText: { fontWeight: "bold" },
+  roleModalContainer: { flex: 1, justifyContent: "flex-end", alignItems: "center", backgroundColor: "rgba(0,0,0,0.5)" },
+  roleModalContent: { backgroundColor: "#cfe2f3", padding: 20, borderRadius: 20,  alignItems: "center", width: "100%", marginBottom:-5  },
+  roleTitle: { fontSize: 16, fontWeight: "bold", color: "#0458AB", marginBottom: 20 },
+  roleButton: { backgroundColor: "#0458AB", paddingVertical: 10, paddingHorizontal: 20, borderRadius: 10, width: "40%", marginBottom: 10 },
+  roleButtonText: { color: "#FFF", fontWeight: "bold", textAlign: "center" },
+  closeButton: { position: "absolute", right: 10,},
+  closeButtonText: { fontSize: 18, fontWeight: "bold", color: "#0458AB" },
+});
 
   return (
-    <>
-      <Modal
-        animationType="slide"
-        transparent={false}
-        visible={visible}
-        onRequestClose={onClose}
-      >
-        <View style={styles.container}>
-          {/* Header */}
-          <View style={styles.header}>
-            <View style={styles.titleContainer}>
-              <Text style={styles.title}>Operators</Text>
-            </View>
-            <TouchableOpacity style={styles.addButton} onPress={openOperatorForm}>
-              <Text style={styles.plus}>+</Text>
-            </TouchableOpacity>
-          </View>
+    <Modal animationType="slide" visible={visible} onRequestClose={onClose}>
+      <View style={{ flex: 1, backgroundColor: "#A1C6EA" }}>
+        <View style={[styles.header, { backgroundColor: isDarkMode ? "#112A4A" : "#ffffff", borderBottomColor: isDarkMode ? 'rgba(0, 0, 0, 0.2)' : 'rgba(0, 0, 0, 0.1)' }]}>
+          <Text style={[styles.title, { color: isDarkMode ? "#FFFFFF" : "#0458AB" }]}>Operators</Text>
+          <TouchableOpacity
+            style={[styles.addButton, { backgroundColor: isDarkMode ? "#FFF" : "#0458AB" }]}
+            onPress={() => setAddOperatorVisible(true)}
+          >
+            <Text style={[styles.plus, { color: isDarkMode ? "#0458AB" : "#FFF" }]}>+</Text>
+          </TouchableOpacity>
+        </View>
 
-          {/* Lista de operadores */}
-          {operators.length > 0 ? (
-            <FlatList
-              data={operators}
-              keyExtractor={(item, index) => index.toString()}
-              renderItem={({ item }) => (
-                <View style={styles.operatorItem}>
-                  <TouchableOpacity onPress={() => handleOperatorPress(item)}>
-                    <Text style={styles.operatorText}>{item}</Text>
-                  </TouchableOpacity>
-                  <TouchableOpacity onPress={() => handleDeleteOperator(item)}>
-                    <Text style={{ color: "red", marginLeft: 10 }}>Delete</Text>
-                  </TouchableOpacity>
-                </View>
-              )}
-            />
-          ) : (
-            <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
-              <Text style={{ color: isDarkMode ? "#FFFFFF" : "#0458AB" }}>
-                No operators added yet
-              </Text>
+        <View style={[styles.container, { backgroundColor: isDarkMode ? "#112A4A" : "#ffffff" }]}>
+          {operators.map((op, index) => (
+            <View key={index} style={styles.operatorRow}>
+              <TouchableOpacity onPress={() => handleSelectRole(index)}>
+                <Text style={styles.operatorItem}>
+                  {op.name} {op.role ? `- ${op.role}` : ""}
+                </Text>
+              </TouchableOpacity>
+              <TouchableOpacity style={styles.deleteButton} onPress={() => handleDeleteOperator(index)}>
+                <Text style={styles.deleteText}>X</Text>
+              </TouchableOpacity>
             </View>
-          )}
+          ))}
 
-          {/* Botones */}
           <View style={styles.buttonContainer}>
-            <TouchableOpacity style={styles.backButton} onPress={onClose}>
+            <TouchableOpacity
+              style={[styles.backButton, { backgroundColor: isDarkMode ? "#0458AB" : "#545257" }]}
+              onPress={onClose}
+            >
               <Text style={styles.backButtonText}>Back</Text>
             </TouchableOpacity>
-            <TouchableOpacity style={styles.saveButton}>
-              <Text style={styles.saveButtonText}>Save</Text>
+            <TouchableOpacity style={[styles.saveButton, { backgroundColor: isDarkMode ? "#FFFFFF" : "#0458AB" }]}>
+              <Text style={[styles.saveButtonText, { color: isDarkMode ? "#0458AB" : "#FFFFFF" }]}>Save</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </View>
+
+      {/* Modal para agregar operador */}
+      <AddOperatorForm visible={addOperatorVisible} onClose={() => setAddOperatorVisible(false)} onAddOperator={handleAddOperator} />
+
+      {/* Modal para seleccionar rol */}
+      <Modal animationType="slide" transparent visible={roleSelectorVisible} onRequestClose={() => setRoleSelectorVisible(false)}>
+        <View style={styles.roleModalContainer}>
+          <View style={styles.roleModalContent}>
+            <Text style={styles.roleTitle}>Namw Operator</Text>
+            <TouchableOpacity style={styles.roleButton} onPress={assignDriver}>
+              <Text style={styles.roleButtonText}>Driver</Text>
+            </TouchableOpacity>
+            <TouchableOpacity style={styles.roleButton} onPress={assignTeamLeader}>
+              <Text style={styles.roleButtonText}>Team Leader</Text>
+            </TouchableOpacity>
+            <TouchableOpacity style={styles.closeButton} onPress={() => setRoleSelectorVisible(false)}>
+              <Text style={styles.closeButtonText}>✕</Text>
             </TouchableOpacity>
           </View>
         </View>
       </Modal>
-
-      {/* Modal para agregar un operador */}
-      <AddOperatorModal
-        visible={addOperatorVisible}
-        onClose={closeOperatorForm}
-        onAddOperator={handleAddOperator}
-      />
-
-      {/* Modal para ver detalles del operador seleccionado */}
-      <Modal
-        animationType="slide"
-        transparent={true}
-        visible={detailModalVisible}
-        onRequestClose={() => setDetailModalVisible(false)}
-      >
-        <View style={styles.modalContainer}>
-          <View style={[styles.modalContent, theme === "dark" && styles.modalContentDark]}>
-            <View style={[styles.modalHeader, theme === "dark" && styles.modalHeaderDark]}>
-              <Text style={[styles.modalTitle, theme === "dark" && styles.textDark]}>
-                {selectedOperator ? selectedOperator : "Name Operator"}
-              </Text>
-              <TouchableOpacity
-                style={styles.closeButton}
-                onPress={() => setDetailModalVisible(false)}
-              >
-                <Ionicons
-                  name="close"
-                  size={24}
-                  color={theme === "dark" ? "#FFFFFF" : "#112A4A"}
-                />
-              </TouchableOpacity>
-            </View>
-            <View style={styles.roleButtonsContainer}>
-              <TouchableOpacity
-                style={[styles.roleButton, theme === "dark" && styles.roleButtonDark]}
-                onPress={() => assignRole("Driver")}
-              >
-                <Text style={styles.roleButtonText}>Driver</Text>
-              </TouchableOpacity>
-              <TouchableOpacity
-                style={[styles.roleButton, theme === "dark" && styles.roleButtonDark]}
-                onPress={() => assignRole("Team leader")}
-              >
-                <Text style={styles.roleButtonText}>Team leader</Text>
-              </TouchableOpacity>
-            </View>
-          </View>
-        </View>
-      </Modal>
-    </>
+    </Modal>
   );
 };
 
