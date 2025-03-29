@@ -29,20 +29,20 @@ export default function AddOrderModal({ visible, onClose }: AddOrderModalProps) 
 
   const handleSave = async () => {
     if (!validateFields()) return;
-  
+
     const orderData = { 
       state, date, keyReference, customerName, customerLastName, 
       cellPhone, address, email, weight, job,
     };
-  
+
     try {
       console.log("Saving order...", orderData);
-  
+
       // Simula un retraso de 1 segundo como si la API respondiera
       setTimeout(() => {
         console.log("Order saved successfully!");
         onClose();
-  
+
         setTimeout(() => {
           router.push("/modals/OperatorModal");
         }, 300);
@@ -51,11 +51,10 @@ export default function AddOrderModal({ visible, onClose }: AddOrderModalProps) 
       console.error("Error saving order:", error);
     }
   };
-  
 
   const validateFields = () => {
     let newErrors: { [key: string]: string } = {};
-  
+
     if (!state) newErrors.state = "State is required";
     if (!date) newErrors.date = "Date is required";
     if (!keyReference) newErrors.keyReference = "Key/Reference is required";
@@ -63,138 +62,133 @@ export default function AddOrderModal({ visible, onClose }: AddOrderModalProps) 
     if (!customerLastName) newErrors.customerLastName = "Customer Last Name is required";
     if (!weight) newErrors.weight = "Weight is required";
     if (!job) newErrors.job = "Job is required";
-  
+
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0; // Devuelve true si no hay errores
   };
-  
 
-    const colorScheme = useColorScheme();
-    const imageSource = colorScheme === "dark"
+  const colorScheme = useColorScheme();
+  const imageSource = colorScheme === "dark"
     ? require("../../assets/images/PNG_blanco.png")
     : require("../../assets/images/PNG_negativo.png");
-  
-    const styles = StyleSheet.create({
-      container: {
-        flex: 1, 
-        padding: 19,
-        paddingTop: 1,
-        borderRadius: 10,
-        backgroundColor: colorScheme === 'dark' ? '#112A4A' : '#ffffff',
-      },
-      header: {
-        backgroundColor: colorScheme === 'dark' ? '#112A4A' : '#ffffff',
-        paddingVertical: 5,
-        flexDirection: 'row', // Poner en fila
-        alignItems: 'center', // Centrar verticalmente
-        justifyContent: 'center',
-        borderBottomWidth: 2,
-        borderBottomColor: colorScheme === 'dark' ? 'rgba(0, 0, 0, 0.2)' : 'rgba(0, 0, 0, 0.1)',
-      },
-      image: {
-        width: 50,  // Ajusta el tamaño deseado
-        height: 50,
-        resizeMode: 'contain', // Para que no se deforme
-        position: 'absolute', // Fija la imagen a la izquierda
-        left: 10,
-      },
-      text: {
-        fontSize: 14,
-        fontWeight: '600',
-        color: colorScheme === 'dark' ? '#ffffff' : '#0458AB',
-        marginTop: 8,
-      },
-      textLarge: {
-        fontSize: 20, 
-        fontWeight: 'bold',
-        color: colorScheme === 'dark' ? '#ffffff' : '#0458AB',
-        marginTop: 16, 
-        marginBottom: 8, 
-      },
-      input: {
-        borderWidth: 2,
-        borderColor: colorScheme === 'dark' ? '#64748b' : '#d1d5db',
-        backgroundColor: colorScheme === 'dark' ? '#FFFFFF36' : '#ffffff',
-        padding: 8,
-        borderRadius: 8,
-        color: colorScheme === 'dark' ? '#ffffff' : '#1f2937',
-      },
-      buttonContainer: {
-        flexDirection: 'row', 
-        justifyContent: 'center',
-        marginTop: 16,
-      },
-        buttonCancel: {
-          backgroundColor: colorScheme === 'dark' ? '#0458AB' : '#545257',
-          padding: 10,
-          borderRadius: 6,
-          flex: 1,
-          alignItems: 'center',
-          marginRight: 8,
-        },
-        buttonSave: {
-          backgroundColor: colorScheme === 'dark' ? '#FFFFFF' : '#0458AB',
-          padding: 10,
-          borderRadius: 6,
-          flex: 1,
-          alignItems: 'center',
-        },
-        buttonTextCancel: {
-          color: '#FFFFFF',
-          fontWeight: 'bold',
-        },
-        buttonTextSave: {
-          color: colorScheme === 'dark' ? '#0458AB' : '#FFFFFF',
-          fontWeight: 'bold',
-        },
-      required: {
-        color: '#FF0000',
-      },
-    });
+
+  const styles = StyleSheet.create({
+    container: {
+      flex: 1, 
+      padding: 19,
+      paddingTop: 1,
+      borderRadius: 10,
+      backgroundColor: colorScheme === 'dark' ? '#112A4A' : '#ffffff',
+    },
+    header: {
+      backgroundColor: colorScheme === 'dark' ? '#112A4A' : '#ffffff',
+      paddingVertical: 5,
+      flexDirection: 'row', // Poner en fila
+      alignItems: 'center', // Centrar verticalmente
+      justifyContent: 'center',
+      borderBottomWidth: 2,
+      borderBottomColor: colorScheme === 'dark' ? 'rgba(0, 0, 0, 0.2)' : 'rgba(0, 0, 0, 0.1)',
+    },
+    image: {
+      width: 50,  // Ajusta el tamaño deseado
+      height: 50,
+      resizeMode: 'contain', // Para que no se deforme
+      position: 'absolute', // Fija la imagen a la izquierda
+      left: 10,
+    },
+    text: {
+      fontSize: 14,
+      fontWeight: '600',
+      color: colorScheme === 'dark' ? '#ffffff' : '#0458AB',
+      marginTop: 8,
+    },
+    textLarge: {
+      fontSize: 20, 
+      fontWeight: 'bold',
+      color: colorScheme === 'dark' ? '#ffffff' : '#0458AB',
+      marginTop: 16, 
+      marginBottom: 8, 
+    },
+    input: {
+      borderWidth: 2,
+      borderColor: colorScheme === 'dark' ? '#64748b' : '#0458AB',
+      backgroundColor: colorScheme === 'dark' ? '#FFFFFF36' : '#ffffff',
+      padding: 8,
+      borderRadius: 8,
+      color: colorScheme === 'dark' ? '#ffffff' : '#1f2937',
+    },
+    buttonContainer: {
+      flexDirection: 'row', 
+      justifyContent: 'center',
+      marginTop: 16,
+    },
+    buttonCancel: {
+      backgroundColor: colorScheme === 'dark' ? '#0458AB' : '#545257',
+      padding: 10,
+      borderRadius: 6,
+      flex: 1,
+      alignItems: 'center',
+      marginRight: 8,
+    },
+    buttonSave: {
+      backgroundColor: colorScheme === 'dark' ? '#FFFFFF' : '#0458AB',
+      padding: 10,
+      borderRadius: 6,
+      flex: 1,
+      alignItems: 'center',
+    },
+    buttonTextCancel: {
+      color: '#FFFFFF',
+      fontWeight: 'bold',
+    },
+    buttonTextSave: {
+      color: colorScheme === 'dark' ? '#0458AB' : '#FFFFFF',
+      fontWeight: 'bold',
+    },
+    required: {
+      color: '#FF0000',
+    },
+  });
 
   return (
     <Modal visible={visible} transparent animationType="slide">
       <SafeAreaView style={{ flex: 1, backgroundColor: colorScheme === 'dark' ? '#112A4A' : '#FFFFFF' }}>
         <ScrollView contentContainerStyle={{ flexGrow: 1 }}>
 
-        <View style={styles.header}>
-        <Image source={imageSource} style={styles.image} />
-         <Text style={styles.textLarge}>Add Order</Text>
-        </View>
-
+          <View style={styles.header}>
+            <Image source={imageSource} style={styles.image} />
+            <Text style={styles.textLarge}>Add Order</Text>
+          </View>
 
           <ThemedView style={styles.container}>
-            <Text style={styles.text}>
-              State <Text style={styles.required}>(*)</Text>
-            </Text>
+            {/* Aquí comienzan los campos que tenías */}
+            <Text style={styles.text}>State <Text style={styles.required}>(*)</Text></Text>
             <View style={[styles.input, { justifyContent: "center", height: 40 }, errors.state && { borderColor: "red" }]}>
-<Picker
-  selectedValue={state}
-  onValueChange={(itemValue) => {
-    setState(itemValue);
-    setErrors((prev) => ({ ...prev, state: "" })); 
-  }}
-  style={{ width: "100%", color: state === "" ? "#9ca3af" : "#000000" }}
->
-  <Picker.Item label="Select State" value="" enabled={false} color="#9ca3af" />
-  <Picker.Item label="Pending" value="pending" />
-  <Picker.Item label="Completed" value="completed" />
-</Picker>
-</View>
-
+              <Picker
+                selectedValue={state}
+                onValueChange={(itemValue) => {
+                  setState(itemValue);
+                  setErrors((prev) => ({ ...prev, state: "" })); 
+                }}
+                style={{ width: "100%", color: state === "" ? "#9ca3af" : "#000000" }}
+              >
+                <Picker.Item label="Select State" value="" enabled={false} color="#9ca3af" />
+                <Picker.Item label="Pending" value="pending" />
+                <Picker.Item label="Completed" value="completed" />
+              </Picker>
+            </View>
 
             <Text style={styles.text}>Date <Text style={styles.required}>(*)</Text></Text>
             <TextInput 
-  style={[styles.input, errors.date ? { borderColor: "red", borderWidth: 2 } : {}]}  
-  placeholder="DD/MM/YYYY"
-  placeholderTextColor="#9ca3af"
-  value={date}
-  onChangeText={(text) => {
-    setDate(text);
-    setErrors((prev) => ({ ...prev, date: "" }));
-  }} 
-/>
-
+              style={[styles.input, errors.date ? { borderColor: "red", borderWidth: 2 } : {}]}  
+              placeholder="DD/MM/YYYY"
+              placeholderTextColor="#9ca3af"
+              value={date}
+              onChangeText={(text) => {
+                setDate(text);
+                setErrors((prev) => ({ ...prev, date: "" }));
+              }} 
+            />
 
             <Text style={styles.textLarge}>General Data</Text>
             
@@ -221,30 +215,27 @@ export default function AddOrderModal({ visible, onClose }: AddOrderModalProps) 
 
             <Text style={styles.text}>Job <Text style={styles.required}>(*)</Text></Text>
             <View style={[styles.input, { justifyContent: "center", height: 40 }, errors.job && { borderColor: "red" }]}>
-<Picker
-  selectedValue={job}
-  onValueChange={(itemValue) => {
-    setJob(itemValue);
-    setErrors((prev) => ({ ...prev, job: "" })); // Borra el error si el usuario selecciona algo
-  }}
-  style={{ width: "100%", color: job === "" ? "#9ca3af" : "#000000" }}
->
-  <Picker.Item label="Select Job" value="" enabled={false} color="#9ca3af" />
-  <Picker.Item label="Delivery" value="delivery" />
-  <Picker.Item label="Pick-up" value="pickup" />
-</Picker>
-</View>
+              <Picker
+                selectedValue={job}
+                onValueChange={(itemValue) => {
+                  setJob(itemValue);
+                  setErrors((prev) => ({ ...prev, job: "" })); // Borra el error si el usuario selecciona algo
+                }}
+                style={{ width: "100%", color: job === "" ? "#9ca3af" : "#000000" }}
+              >
+                <Picker.Item label="Select Job" value="" enabled={false} color="#9ca3af" />
+                <Picker.Item label="Delivery" value="delivery" />
+                <Picker.Item label="Pick-up" value="pickup" />
+              </Picker>
+            </View>
 
-            
             <View style={styles.buttonContainer}>
               <TouchableOpacity style={styles.buttonCancel} onPress={onClose}>
                 <Text style={styles.buttonTextCancel}>Cancel</Text>
               </TouchableOpacity>
               <TouchableOpacity style={styles.buttonSave} onPress={handleSave}>
-<Text style={styles.buttonTextSave}>Save</Text>
-</TouchableOpacity>
-
-
+                <Text style={styles.buttonTextSave}>Save</Text>
+              </TouchableOpacity>
             </View>
           </ThemedView>
         </ScrollView>
