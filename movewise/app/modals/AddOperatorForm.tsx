@@ -1,112 +1,130 @@
-"use client"
+import { Modal, SafeAreaView, ScrollView, View, Text, TextInput, TouchableOpacity, StyleSheet, useColorScheme } from 'react-native';
+import { useState } from 'react';
+import { ThemedView } from '../../components/ThemedView';
 
-import type React from "react"
-
-import { View, Text, TextInput, TouchableOpacity, Modal, StyleSheet } from "react-native"
-import { useState } from "react"
-
-interface AddOperatorModalProps {
-  visible: boolean
-  onClose: () => void
-  onAddOperator: (operatorName: string) => void
+interface AddOperatorFormProps {
+  visible: boolean;
+  onClose: () => void;
+  onAddOperator: (operator: string) => void; // ← Se agregó esta prop
 }
 
-const AddOperatorModal: React.FC<AddOperatorModalProps> = ({ visible, onClose, onAddOperator }) => {
-  const [operatorName, setOperatorName] = useState("")
+export default function AddOperatorForm({ visible, onClose, onAddOperator }: AddOperatorFormProps) {
+  const [operatorId, setOperatorId] = useState('');
+  const [name, setName] = useState('');
+  const [cost, setCost] = useState('');
+  const [additionalCost, setAdditionalCost] = useState('');
+  const colorScheme = useColorScheme();
 
-  const handleAdd = () => {
-    onAddOperator(operatorName)
-    setOperatorName("")
-  }
+  const handleSubmit = () => {
+    if (name.trim() !== '') {
+      onAddOperator(name); // ← Se envía el nombre del operador a OperatorModal
+      setOperatorId('');
+      setName('');
+      setCost('');
+      setAdditionalCost('');
+      onClose(); // Cierra el modal después de agregar
+    }
+  };
+
+  const styles = StyleSheet.create({
+    container: {
+      flex: 1,
+      padding: 19,
+      borderRadius: 10,
+      backgroundColor: colorScheme === 'dark' ? '#112A4A' : '#ffffff',
+    },
+    header: {
+      backgroundColor: colorScheme === 'dark' ? '#112A4A' : '#ffffff',
+      paddingVertical: 10,
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'center',
+      borderBottomWidth: 2,
+      borderBottomColor: colorScheme === 'dark' ? 'rgba(0, 0, 0, 0.2)' : 'rgba(0, 0, 0, 0.1)',
+    },
+    textLarge: {
+      fontSize: 20,
+      fontWeight: 'bold',
+      color: colorScheme === 'dark' ? '#ffffff' : '#0458AB',
+      marginTop: 16,
+      marginBottom: 8,
+    },
+    text: {
+      fontSize: 14,
+      fontWeight: '600',
+      color: colorScheme === 'dark' ? '#ffffff' : '#0458AB',
+      marginTop: 8,
+    },
+    input: {
+      borderWidth: 2,
+      borderColor: colorScheme === 'dark' ? '#64748b' : '#d1d5db',
+      backgroundColor: colorScheme === 'dark' ? '#FFFFFF36' : '#ffffff',
+      padding: 8,
+      borderRadius: 8,
+      color: colorScheme === 'dark' ? '#ffffff' : '#1f2937',
+    },
+    buttonContainer: {
+      flexDirection: 'row',
+      justifyContent: 'center',
+      marginTop: 16,
+    },
+    buttonCancel: {
+      backgroundColor: colorScheme === 'dark' ? '#0458AB' : '#545257',
+      padding: 10,
+      borderRadius: 6,
+      flex: 1,
+      alignItems: 'center',
+      marginRight: 8,
+    },
+    buttonSave: {
+      backgroundColor: colorScheme === 'dark' ? '#FFFFFF' : '#0458AB',
+      padding: 10,
+      borderRadius: 6,
+      flex: 1,
+      alignItems: 'center',
+    },
+    buttonTextCancel: {
+      color: '#FFFFFF',
+      fontWeight: 'bold',
+    },
+    buttonTextSave: {
+      color: colorScheme === 'dark' ? '#0458AB' : '#FFFFFF',
+      fontWeight: 'bold',
+    },
+  });
 
   return (
-    <Modal animationType="slide" transparent={true} visible={visible} onRequestClose={onClose}>
-      <View style={styles.centeredView}>
-        <View style={styles.modalView}>
-          <Text style={styles.modalText}>Add Operator</Text>
-          <TextInput
-            style={styles.input}
-            placeholder="Operator Name"
-            value={operatorName}
-            onChangeText={setOperatorName}
-          />
-          <View style={styles.buttonContainer}>
-            <TouchableOpacity style={styles.cancelButton} onPress={onClose}>
-              <Text style={styles.buttonText}>Cancel</Text>
-            </TouchableOpacity>
-            <TouchableOpacity style={styles.addButton} onPress={handleAdd}>
-              <Text style={styles.buttonText}>Add</Text>
-            </TouchableOpacity>
+    <Modal visible={visible} transparent animationType="slide">
+      <SafeAreaView style={{ flex: 1, backgroundColor: colorScheme === 'dark' ? '#112A4A' : '#FFFFFF' }}>
+        <ScrollView contentContainerStyle={{ flexGrow: 1 }}>
+          <View style={styles.header}>
+            <Text style={styles.textLarge}>Add Operator</Text>
           </View>
-        </View>
-      </View>
+
+          <ThemedView style={styles.container}>
+            <Text style={styles.text}>Search Operator ID</Text>
+            <TextInput style={styles.input} placeholder="Operator ID" placeholderTextColor="#9ca3af" value={operatorId} onChangeText={setOperatorId} />
+
+            <Text style={styles.text}>Name</Text>
+            <TextInput style={styles.input} placeholder="Name" placeholderTextColor="#9ca3af" value={name} onChangeText={setName} />
+
+            <Text style={styles.text}>Cost (USD)</Text>
+            <TextInput style={styles.input} placeholder="0.0" placeholderTextColor="#9ca3af" value={cost} onChangeText={setCost} keyboardType="numeric" />
+
+            <Text style={styles.text}>Additional Cost (USD)</Text>
+            <TextInput style={styles.input} placeholder="0.0" placeholderTextColor="#9ca3af" value={additionalCost} onChangeText={setAdditionalCost} keyboardType="numeric" />
+
+            <View style={styles.buttonContainer}>
+              <TouchableOpacity style={styles.buttonCancel} onPress={onClose}>
+                <Text style={styles.buttonTextCancel}>Cancel</Text>
+              </TouchableOpacity>
+              <TouchableOpacity style={styles.buttonSave} onPress={handleSubmit}>
+                <Text style={styles.buttonTextSave}>Add</Text>
+              </TouchableOpacity>
+            </View>
+          </ThemedView>
+        </ScrollView>
+      </SafeAreaView>
     </Modal>
-  )
+  );
 }
-
-const styles = StyleSheet.create({
-  centeredView: {
-    flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
-    backgroundColor: "rgba(0, 0, 0, 0.5)",
-  },
-  modalView: {
-    backgroundColor: "white",
-    borderRadius: 20,
-    padding: 35,
-    alignItems: "center",
-    shadowColor: "#000",
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
-    shadowOpacity: 0.25,
-    shadowRadius: 4,
-    elevation: 5,
-    width: "80%",
-  },
-  modalText: {
-    marginBottom: 15,
-    textAlign: "center",
-    fontSize: 18,
-    fontWeight: "bold",
-    color: "#0458AB",
-  },
-  input: {
-    height: 40,
-    width: "100%",
-    borderColor: "gray",
-    borderWidth: 1,
-    marginBottom: 20,
-    padding: 10,
-    borderRadius: 8,
-  },
-  buttonContainer: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    width: "100%",
-  },
-  cancelButton: {
-    backgroundColor: "#545257",
-    paddingVertical: 10,
-    paddingHorizontal: 20,
-    borderRadius: 8,
-    marginRight: 10,
-  },
-  addButton: {
-    backgroundColor: "#0458AB",
-    paddingVertical: 10,
-    paddingHorizontal: 20,
-    borderRadius: 8,
-    marginLeft: 10,
-  },
-  buttonText: {
-    color: "white",
-    fontWeight: "bold",
-    textAlign: "center",
-  },
-})
-
-export default AddOperatorModal
-

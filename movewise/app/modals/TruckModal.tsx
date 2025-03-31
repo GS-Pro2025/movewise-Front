@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
 import { Image, useColorScheme, Modal } from 'react-native';
-
 import {
   View,
   Text,
@@ -41,6 +40,9 @@ const TruckModal: React.FC<AddOperatorScreenProps> = ({ visible, onClose }) => {
       flex: 1,
       backgroundColor: isDarkMode ? '#112A4A' : '#FFFFFF',
       padding: 16,
+      borderTopLeftRadius: 20,
+      borderTopRightRadius: 20,
+      marginTop: 'auto'
     },
     header: {
       flexDirection: 'row',
@@ -102,7 +104,7 @@ const TruckModal: React.FC<AddOperatorScreenProps> = ({ visible, onClose }) => {
       height: 47,
       paddingHorizontal: 12,
       fontSize: 16,
-      marginBottom: 16,
+      marginBottom: 0,
       borderColor: isDarkMode ? '#9ca3af' : '#0458AB',
       borderWidth: 2,
       color: isDarkMode ? 'white' : 'black',
