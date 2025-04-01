@@ -4,6 +4,8 @@ import { useState } from 'react';
 import { ThemedView } from '../../components/ThemedView';
 import { Image } from 'react-native';
 import { useRouter } from "expo-router";
+import AddOrderformApi from '@/hooks/AddOrderFormApi';
+import { AddOrderForm } from '@/models/ModelAddOrderForm';
 
 
 interface AddOrderModalProps {
@@ -26,27 +28,25 @@ export default function AddOrderModal({ visible, onClose }: AddOrderModalProps) 
   const [errors, setErrors] = useState<{ [key: string]: string }>({});
 
   const router = useRouter(); // Inicializar router
+  const { saveOrder, isLoading, error } = AddOrderformApi();
 
   const handleSave = async () => {
     if (!validateFields()) return;
   
-    const orderData = { 
+    const orderData: AddOrderForm = {
       state, date, keyReference, customerName, customerLastName, 
-      cellPhone, address, email, weight, job,
+      cellPhone, address, email, weight, job
     };
-  
+
     try {
-      console.log("Saving order...", orderData);
-  
-      // Simula un retraso de 1 segundo como si la API respondiera
-      setTimeout(() => {
+      const savedOrder = await saveOrder(orderData);
+
+      if (savedOrder) {
         console.log("Order saved successfully!");
         onClose();
-  
-        setTimeout(() => {
-          router.push("/modals/OperatorModal");
-        }, 300);
-      }, 1000);
+        router.push("/modals/OperatorModal");
+      }
+
     } catch (error) {
       console.error("Error saving order:", error);
     }
