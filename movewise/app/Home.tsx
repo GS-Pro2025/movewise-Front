@@ -39,12 +39,6 @@ const Home: React.FC = () => {
     >
       <StatusBar barStyle={isDarkMode ? "light-content" : "dark-content"} />
 
-      {/* Modal debe estar dentro del return */}
-      <JobsListModal
-        visible={isModalVisible}
-        onClose={() => setIsModalVisible(false)}
-      />
-
       <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
         {/* Header */}
         <View style={styles.header}>
