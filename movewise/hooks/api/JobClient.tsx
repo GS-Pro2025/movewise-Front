@@ -3,9 +3,9 @@ import apiClient from './apiClient';
 export const ListJobs = async () => {
   
   try {
-    // Starting request to /api/jobs/
-    // Iniciando petición a /api/jobs/
-    console.log('JobClient: Starting request to /api/jobs/');
+    // Starting request to /jobs/
+    // Iniciando petición a /jobs/
+    console.log('JobClient: Starting request to /jobs/');
     const response = await apiClient.get('/jobs/');
     console.log('JobClient: Response received:', response);
     
