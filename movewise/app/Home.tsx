@@ -12,6 +12,7 @@ import {
 } from "react-native";
 import { useRouter } from "expo-router";
 import JobsListModal from "./modals/JobsListModal";
+import { ListJobs } from "../hooks/api/JobClient";
 
 interface ActionButtonProps {
   title: string;
@@ -25,13 +26,13 @@ const Home: React.FC = () => {
   const theme = useColorScheme();
   const isDarkMode = theme === "dark";
   
-  const [isModalVisible, setIsModalVisible] = useState(true);
+  const [isJobsModalVisible, setIsJobsModalVisible] = useState(true);
 
-  // Para abrir el modal:
-  <JobsListModal
-    visible={isModalVisible}
-    onClose={() => setIsModalVisible(false)}
-  />
+  const handleAuthError = () => {
+    setIsJobsModalVisible(false);
+    // Aquí puedes agregar lógica adicional para manejar el error de autenticación
+    // Por ejemplo, redirigir al login
+  };
 
   return (
     <SafeAreaView
@@ -84,7 +85,7 @@ const Home: React.FC = () => {
               title={"Create\nDaily"}
               isDarkMode={isDarkMode}
               iconSource={require("../assets/images/paquete.png")}
-              onPress={() => router.push("/modals/OrderModal")}
+              onPress={() => setIsJobsModalVisible(true)}
             />
             <ActionButton
               title={"Add Extra cost"}
@@ -130,6 +131,12 @@ const Home: React.FC = () => {
           </View>
         </View>
       </ScrollView>
+
+      <JobsListModal
+        visible={isJobsModalVisible}
+        onClose={() => setIsJobsModalVisible(false)}
+        onAuthError={handleAuthError}
+      />
     </SafeAreaView>
   );
 };
