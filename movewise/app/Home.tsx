@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import {
   Image,
   View,
@@ -11,6 +11,7 @@ import {
   ScrollView,
 } from "react-native";
 import { useRouter } from "expo-router";
+import JobsListModal from "./modals/JobsListModal";
 
 interface ActionButtonProps {
   title: string;
@@ -23,12 +24,26 @@ const Home: React.FC = () => {
   const router = useRouter();
   const theme = useColorScheme();
   const isDarkMode = theme === "dark";
+  
+  const [isModalVisible, setIsModalVisible] = useState(true);
+
+  // Para abrir el modal:
+  <JobsListModal
+    visible={isModalVisible}
+    onClose={() => setIsModalVisible(false)}
+  />
 
   return (
     <SafeAreaView
       style={[styles.container, isDarkMode ? styles.darkBackground : styles.lightBackground]}
     >
       <StatusBar barStyle={isDarkMode ? "light-content" : "dark-content"} />
+
+      {/* Modal debe estar dentro del return */}
+      <JobsListModal
+        visible={isModalVisible}
+        onClose={() => setIsModalVisible(false)}
+      />
 
       <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
         {/* Header */}
@@ -41,12 +56,12 @@ const Home: React.FC = () => {
               />
             </View>
             <View style={styles.userTextContainer}>
-            <Text
-             style={[styles.userName,{ color: isDarkMode ? "#FFFFFF" : "#0458AB" }]}>
-                        User name
+              <Text
+                style={[styles.userName, { color: isDarkMode ? "#FFFFFF" : "#0458AB" }]}>
+                User name
               </Text>
               <Text
-                style={[styles.userName,{ color: isDarkMode ? "#FFFFFF" : "#0458AB" }]}>
+                style={[styles.userName, { color: isDarkMode ? "#FFFFFF" : "#0458AB" }]}>
                 Level
               </Text>
             </View>
@@ -154,13 +169,13 @@ const styles = StyleSheet.create({
   avatarContainer: { width: 40, height: 40, borderRadius: 20, overflow: "hidden" },
   userIcono: { width: 40, height: 40 },
   userTextContainer: { marginLeft: 10 },
-  userName: { fontSize: 18, fontWeight: "bold" , color: "#ffff" },
-  userLevel: { fontSize: 14, opacity: 0.7 ,color: "#ffff"},
+  userName: { fontSize: 18, fontWeight: "bold", color: "#ffff" },
+  userLevel: { fontSize: 14, opacity: 0.7, color: "#ffff" },
   shareButton: { padding: 10 },
   divider: { height: 1, backgroundColor: "#ccc", marginVertical: 10 },
   imageContainer: { alignItems: "center", marginVertical: 10 },
   userLogo: { width: 100, height: 100 },
-  gridContainer: { marginTop: 10,  },
+  gridContainer: { marginTop: 10, },
   row: { flexDirection: "row", justifyContent: "space-between", marginBottom: 10 },
   actionButton: { flex: 1, padding: 15, alignItems: "center", borderRadius: 10, marginHorizontal: 5 },
   darkButton: { backgroundColor: "#FFF" },
