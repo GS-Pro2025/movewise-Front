@@ -12,8 +12,7 @@ import { KeyboardAvoidingView, Platform } from 'react-native';
 import { job } from '@/models/ModelJob';
 import { ListJobs } from '@/hooks/api/JobClient';
 import { ListCompanies } from '@/hooks/api/CompanyClient';
-import CalendarPicker from "react-native-calendar-picker";
-
+import { ListStates } from '@/hooks/api/StatesClient';
 
 interface AddOrderModalProps {
   visible: boolean;
@@ -23,11 +22,12 @@ interface AddOrderModalProps {
 export default function AddOrderModal({ visible, onClose }: AddOrderModalProps) {
   const [open, setOpen] = useState(false);
   const [state, setState] = useState<string | null>(null);
+  const [searchTerm, setSearchTerm] = useState<string>(''); // State for search term
   const [openJob, setOpenJob] = useState(false);
   const [job, setJob] = useState<string | null>(null);
-  const [openCompany, setOpenCompany] = useState(false); // State for company dropdown
-  const [company, setCompany] = useState<string | null>(null); // State for selected company
-  const [date, setDate] = useState<string | null>(null); // Cambiado a string para el formato de fecha
+  const [openCompany, setOpenCompany] = useState(false);
+  const [company, setCompany] = useState<string | null>(null);
+  const [date, setDate] = useState<string | null>(null);
   const [isDatePickerVisible, setDatePickerVisibility] = useState(false);
   const [keyReference, setKeyReference] = useState('');
   const [customerName, setCustomerName] = useState('');
@@ -38,7 +38,8 @@ export default function AddOrderModal({ visible, onClose }: AddOrderModalProps) 
   const [weight, setWeight] = useState('');
   const [errors, setErrors] = useState<{ [key: string]: string }>({});
   const [jobList, setJobList] = useState<job[]>([]);
-  const [companyList, setCompanyList] = useState<any[]>([]); // State for companies
+  const [companyList, setCompanyList] = useState<any[]>([]);
+  const [stateList, setStateList] = useState<any[]>([]);
 
   const router = useRouter();
   const { saveOrder, isLoading, error } = AddOrderformApi();
@@ -48,7 +49,7 @@ export default function AddOrderModal({ visible, onClose }: AddOrderModalProps) 
 
     const orderData: AddOrderForm = {
       state: state || "", date: date || "", keyReference, customerName, customerLastName,
-      cellPhone, address, email, weight, job: job || "", company: company || "", // Include company in order data
+      cellPhone, address, email, weight, job: job || "", company: company || "",
     };
 
     try {
@@ -64,21 +65,29 @@ export default function AddOrderModal({ visible, onClose }: AddOrderModalProps) 
     }
   };
 
+  const fetchStates = async () => {
+    try {
+      const states = await ListStates();
+      setStateList(states);
+      console.log('states:', states);
+    } catch (error) {
+      console.error('Error fetching states:', error);
+    }
+  };
+
   const fetchJobs = async () => {
     try {
       const jobs = await ListJobs();
       setJobList(jobs);
-      console.log(jobs);
     } catch (error) {
       console.error('Error fetching jobs:', error);
     }
   };
 
-  const fetchCompanies = async () => { // Fetch companies
+  const fetchCompanies = async () => {
     try {
       const companies = await ListCompanies();
       setCompanyList(companies);
-      console.log(companies);
     } catch (error) {
       console.error('Error fetching companies:', error);
     }
@@ -86,7 +95,8 @@ export default function AddOrderModal({ visible, onClose }: AddOrderModalProps) 
 
   useEffect(() => {
     fetchJobs();
-    fetchCompanies(); // Fetch companies on mount
+    fetchCompanies();
+    fetchStates();
   }, []);
 
   const validateFields = () => {
@@ -98,7 +108,7 @@ export default function AddOrderModal({ visible, onClose }: AddOrderModalProps) 
     if (!customerLastName) newErrors.customerLastName = "Customer Last Name is required";
     if (!weight) newErrors.weight = "Weight is required";
     if (!job) newErrors.job = "Job is required";
-    if (!company) newErrors.company = "Company is required"; // Validate company
+    if (!company) newErrors.company = "Company is required";
 
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
@@ -202,44 +212,78 @@ export default function AddOrderModal({ visible, onClose }: AddOrderModalProps) 
             </View>
 
             <ThemedView style={styles.container}>
-              <View style={{ zIndex: 2000 }}>
+              <View style={{ zIndex: 3000 }}>
                 <Text style={styles.text}>State <Text style={styles.required}>(*)</Text></Text>
                 <DropDownPicker
-                  open={open} value={state || ""}
-                  items={[{ label: "Pending", value: "pending" }, { label: "Completed", value: "completed" }]}
-                  setOpen={setOpen} setValue={setState} setItems={() => { }}
+                  open={open}
+                  value={state || ""}
+                  items={stateList.map((stateItem) => ({
+                    label: `${stateItem.name} (${stateItem.code})`,
+                    value: stateItem.name,
+                    key: stateItem.code // Aseguramos que cada item tiene una key única
+                  }))}
+                  setOpen={setOpen}
+                  // Cambiamos la función setValue a una más simple
+                  setValue={(callback) => {
+                    // Si es una función, ejecutarla para obtener el valor
+                    if (typeof callback === 'function') {
+                      const newValue = callback(state);
+                      setState(newValue);
+                      console.log("Estado seleccionado para enviar:", newValue);
+                    } else {
+                      // Si es un valor directo, usarlo
+                      setState(callback);
+                      console.log("Estado seleccionado para enviar:", callback);
+                    }
+                  }}
+                  setItems={() => { }}
                   placeholder="Select State"
                   placeholderStyle={{ color: '#9ca3af' }}
                   style={[styles.input, { borderColor: errors.state ? "red" : "#0458AB" }]}
-                  listMode="SCROLLVIEW"
+                  listMode="MODAL"
+                  modalTitle="Select a State"
+                  modalProps={{
+                    animationType: "slide"
+                  }}
+                  searchable={true}
+                  searchablePlaceholder="Search..."
+                  searchablePlaceholderTextColor="#9ca3af"
+                  onSearchTextChange={text => setSearchTerm(text)}
+                  scrollViewProps={{
+                    nestedScrollEnabled: true,
+                  }}
+                  dropDownContainerStyle={{ maxHeight: 500 }}
                 />
               </View>
 
-              <Text style={styles.text}>Date <Text style={styles.required}>(*)</Text></Text>
-              <TouchableOpacity onPress={() => setDatePickerVisibility(true)} style={[styles.input, { flexDirection: "row", alignItems: "center", justifyContent: "space-between" }]}>
-                <Text style={{ color: date ? "#000" : "#9ca3af" }}>{date ? date : "Select a date"}</Text>
-                <MaterialIcons name="calendar-today" size={20} color="#9ca3af" />
-              </TouchableOpacity>
+              <View style={{ zIndex: 2000, marginTop: 16 }}>
+                <Text style={styles.text}>Date <Text style={styles.required}>(*)</Text></Text>
+                <TouchableOpacity onPress={() => setDatePickerVisibility(true)} style={[styles.input, { flexDirection: "row", alignItems: "center", justifyContent: "space-between" }]}>
+                  <Text style={{ color: date ? "#000" : "#9ca3af" }}>{date ? date : "Select a date"}</Text>
+                  <MaterialIcons name="calendar-today" size={20} color="#9ca3af" />
+                </TouchableOpacity>
 
-              <DateTimePickerModal
-                isVisible={isDatePickerVisible} mode="date"
-                onConfirm={(selectedDate) => {
-                  setDatePickerVisibility(false);
-                  setDate(selectedDate.toISOString().split('T')[0]); // Formato de fecha: YYYY-MM-DD
-                }}
-                onCancel={() => setDatePickerVisibility(false)}
-              />
+                <DateTimePickerModal
+                  isVisible={isDatePickerVisible} mode="date"
+                  onConfirm={(selectedDate) => {
+                    setDatePickerVisibility(false);
+                    setDate(selectedDate.toISOString().split('T')[0]);
+                  }}
+                  onCancel={() => setDatePickerVisibility(false)}
+                />
+              </View>
 
-              <View style={{ zIndex: 2000 }}>
+              <View style={{ zIndex: 2000, marginTop: 16 }}>
                 <Text style={styles.text}>Company customer <Text style={styles.required}>(*)</Text></Text>
                 <DropDownPicker
                   open={openCompany} value={company || ""}
-                  items={Array.isArray(companyList) ? companyList.map((companyItem) => ({ label: companyItem.name, value: companyItem.id })) : []} // Verificando si companyList es un array
+                  items={Array.isArray(companyList) ? companyList.map((companyItem) => ({ label: companyItem.name, value: companyItem.id })) : []}
                   setOpen={setOpenCompany} setValue={setCompany} setItems={() => []}
                   placeholder="Select Company"
                   placeholderStyle={{ color: '#9ca3af' }}
                   style={[styles.input, { borderColor: errors.company ? "red" : "#0458AB" }]}
                   listMode="SCROLLVIEW"
+                  dropDownContainerStyle={{ maxHeight: 200 }} // Set max height for dropdown
                 />
               </View>
 
@@ -305,12 +349,13 @@ export default function AddOrderModal({ visible, onClose }: AddOrderModalProps) 
                 <Text style={styles.text}>Job <Text style={styles.required}>(*)</Text></Text>
                 <DropDownPicker
                   open={openJob} value={job || ""}
-                  items={jobList.map((jobItem) => ({ label: jobItem.name, value: jobItem.id }))} // Fetching jobs from the database
+                  items={jobList.map((jobItem) => ({ label: jobItem.name, value: jobItem.id }))}
                   setOpen={setOpenJob} setValue={setJob} setItems={() => { }}
                   placeholder="Select Job"
                   placeholderStyle={{ color: '#9ca3af' }}
                   style={[styles.input, { borderColor: errors.job ? "red" : "#0458AB" }]}
                   listMode="SCROLLVIEW"
+                  dropDownContainerStyle={{ maxHeight: 200 }} // Set max height for dropdown
                 />
               </View>
 
