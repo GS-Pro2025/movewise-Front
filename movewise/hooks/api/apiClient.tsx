@@ -1,9 +1,11 @@
 import axios, { AxiosInstance } from "axios";
 
+const token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJwZXJzb25faWQiOjEsImVtYWlsIjoiZXhhbXBsZUBleGFtcGxlLmNvbSIsImV4cCI6MTc0NDEyNzQxMCwiaWF0IjoxNzQ0MDQxMDEwfQ.wQhjt7fbz7RmaJDTtdzi2PPy2g6skgAHFXmO2d-MvEA"
 const apiClient: AxiosInstance = axios.create({
-  baseURL: "http://localhost:8000/",
+  baseURL: "IPLOCAL:8000/",
   timeout: 10000, // 10 segundos de timeout
   headers: {
+    "Authorization": `Bearer ${token}`,
     "Content-Type": "application/json",
   },
 });
