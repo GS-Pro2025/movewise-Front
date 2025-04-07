@@ -1,6 +1,6 @@
 // hooks/useOrderApi.ts
 import { useState } from 'react';
-import { AddOrderForm } from '../models/ModelAddOrderForm';
+import { AddOrderForm } from '../../models/ModelAddOrderForm';
 
 const AddOrderformApi = () => {
   const [isLoading, setIsLoading] = useState(false);
@@ -11,7 +11,7 @@ const AddOrderformApi = () => {
     setError(null);
 
     try {
-      const response = await fetch('', {
+      const response = await fetch('orders/', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
