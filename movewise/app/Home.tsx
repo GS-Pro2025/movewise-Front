@@ -11,6 +11,7 @@ import {
   ScrollView,
 } from "react-native";
 import { useRouter } from "expo-router";
+import Toast from 'react-native-toast-message';
 
 interface ActionButtonProps {
   title: string;
@@ -24,7 +25,7 @@ const Home: React.FC = () => {
   const theme = useColorScheme();
   const isDarkMode = theme === "dark";
 
-  return (
+    return (
     <SafeAreaView
       style={[styles.container, isDarkMode ? styles.darkBackground : styles.lightBackground]}
     >

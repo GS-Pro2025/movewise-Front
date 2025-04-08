@@ -9,4 +9,3 @@ export const ListJobs = async () => {
     throw error;
   }
 };
-//para obtener o enviar los datos necesarios
