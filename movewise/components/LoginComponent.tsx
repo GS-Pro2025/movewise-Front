@@ -14,6 +14,7 @@ import {
 import { useRouter } from "expo-router";
 import Checkbox from "expo-checkbox";
 import { loginUser } from "../hooks/api/loginClient";
+import Toast from "react-native-toast-message";
 
 const LoginComponent: React.FC = () => {
   const [email, setEmail] = useState("example@example.com");
@@ -21,25 +22,36 @@ const LoginComponent: React.FC = () => {
   const [remember, setRemember] = useState(false);
   const theme = useColorScheme();
   const router = useRouter();
-
   const handleLogin = async () => {
     if (!email || !password) {
-      Alert.alert("Error", "Por favor, completa todos los campos.");
+      Toast.show({
+        type: "error",
+        text1: "Campos incompletos",
+        text2: "Por favor, completa todos los campos.",
+      });
       return;
     }
+  
     try {
-      const response = await loginUser({
-        email,
-        password,
+      const response = await loginUser({ email, password });
+  
+      Toast.show({
+        type: "success",
+        text1: "Login exitoso",
+        text2: `Bienvenido/a ${response.name ?? "usuario"}`,
       });
-
-      Alert.alert("Login Exitoso", `Bienvenido/a ${response.name ?? "usuario"}`);
-      router.push("/Home"); 
-
+  
+      router.push("/Home");
+  
     } catch (error: any) {
-      Alert.alert("Error", error.message || "Login fallido");
+      Toast.show({
+        type: "error",
+        text1: "Error de autenticación",
+        text2: error.message || "Login fallido",
+      });
     }
   };
+  
 
   return (
     <ImageBackground
