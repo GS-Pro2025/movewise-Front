@@ -46,18 +46,34 @@ export default function AddOrderModal({ visible, onClose }: AddOrderModalProps) 
 
   const handleSave = async () => {
     if (!validateFields()) return;
-
     const orderData: AddOrderForm = {
-      state: state || "", date: date || "", keyReference, customerName, customerLastName,
-      cellPhone, address, email, weight, job: job || "", company: company || "",
+      status: "Pending",
+      date: date || "",
+      key_ref: keyReference,
+      address: address,
+      state_usa: state || "",
+      phone: cellPhone,
+      person: {
+        first_name: customerName,
+        last_name: customerLastName,
+        address: address,
+        email: email
+      },
+      weight: weight,
+      job: job || "",
+      company: company || ""
     };
 
     try {
       const savedOrder = await saveOrder(orderData);
+      console.log('info', savedOrder);
       if (savedOrder) {
-        console.log("Order saved successfully!");
-        onClose();
-        router.push("/modals/OperatorModal");
+        console.log('Order saved successfully!', saveOrder);
+        alert("Order saved successfully!");
+        setTimeout(() => {
+          onClose();
+          router.push("/modals/OperatorModal");
+        }, 3000); 
       }
       console.log("Saving order...", orderData);
     } catch (error) {
@@ -219,7 +235,7 @@ export default function AddOrderModal({ visible, onClose }: AddOrderModalProps) 
                   value={state || ""}
                   items={stateList.map((stateItem) => ({
                     label: `${stateItem.name} (${stateItem.code})`,
-                    value: stateItem.name,
+                    value: stateItem.code,
                     key: stateItem.code // Aseguramos que cada item tiene una key única
                   }))}
                   setOpen={setOpen}

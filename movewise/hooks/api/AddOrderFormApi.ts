@@ -1,6 +1,7 @@
 // hooks/useOrderApi.ts
 import { useState } from 'react';
 import { AddOrderForm } from '../../models/ModelAddOrderForm';
+import { token, url } from './apiClient';
 
 const AddOrderformApi = () => {
   const [isLoading, setIsLoading] = useState(false);
@@ -11,9 +12,10 @@ const AddOrderformApi = () => {
     setError(null);
 
     try {
-      const response = await fetch('orders/', {
+      const response = await fetch(url + 'orders/', {
         method: 'POST',
         headers: {
+          'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json',
         },
         body: JSON.stringify(orderData),
@@ -22,10 +24,9 @@ const AddOrderformApi = () => {
       const data = await response.json();
 
       if (!response.ok) {
+        console.log('error', response);
         throw new Error(data.message || 'Error al guardar la orden');
       }
-
-      console.log('Order saved successfully!', data);
       return data;  // Retorna la respuesta en caso de éxito
 
     } catch (err: any) {
