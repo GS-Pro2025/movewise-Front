@@ -1,0 +1,2 @@
+npx expo install expo-checkbox
+npm install react-native-toast-message
