@@ -4,7 +4,6 @@ export const ListStates = async () => {
   try {
     const response = await apiClient.get('/orders-states/');
     return response.data;
-    console.log('states:', response.data);
     
   } catch (error) {
     console.error('Error fetching states:', error);

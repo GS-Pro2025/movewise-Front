@@ -1,14 +1,19 @@
+export interface Person {
+  first_name: string;
+  last_name: string;
+  address: string;
+  email: string;
+}
 
 export interface AddOrderForm {
-    state: string;
-    date: string;
-    keyReference: string;
-    customerName: string;
-    customerLastName: string;
-    cellPhone: string;
-    address: string;
-    email: string;
-    weight: string;
-    job: string;
-  }
-  
+  status: string;
+  date: string;
+  key_ref: string;
+  address: string;
+  state_usa: string;
+  phone: string;
+  person: Person;
+  weight: string;
+  job: string;
+  company?: string;
+}
