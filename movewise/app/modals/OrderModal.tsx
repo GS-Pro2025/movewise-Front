@@ -62,6 +62,7 @@ const OrderModal: React.FC<OrderModalProps> = ({ visible, onClose }) => {
     } catch (error) {
       console.error("Error loading orders:", error);
       Alert.alert("Error", "Could not load orders");
+      router.back();
     } finally {
       setLoading(false);
       setRefreshing(false);
