@@ -1,5 +1,5 @@
 import axios, { AxiosInstance } from "axios";
-export const  url = 'http://192.168.18.164:8000/'
+export const  url = 'http://localhost:8000/'
 export const token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJwZXJzb25faWQiOjEsImVtYWlsIjoiZXhhbXBsZUBleGFtcGxlLmNvbSIsImV4cCI6MTc0NDEyNzQxMCwiaWF0IjoxNzQ0MDQxMDEwfQ.wQhjt7fbz7RmaJDTtdzi2PPy2g6skgAHFXmO2d-MvEA"
 const apiClient: AxiosInstance = axios.create({
   baseURL: url,

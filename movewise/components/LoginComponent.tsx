@@ -117,7 +117,7 @@ const LoginComponent: React.FC = () => {
         <TouchableOpacity style={styles.button} onPress={handleLogin}>
           <Text style={styles.buttonText}>LOGIN</Text>
         </TouchableOpacity>
-        <TouchableOpacity style={styles.button}>
+        <TouchableOpacity style={styles.button} onPress={() => router.push("/OperatorLogin")}>
           <Text style={styles.buttonText}>OPERATOR DAILY WORK</Text>
         </TouchableOpacity>
         <Text style={styles.bottomText}>Don't have a company?</Text>
