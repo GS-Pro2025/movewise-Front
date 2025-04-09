@@ -1,17 +1,26 @@
-import { Modal, View, Text, TextInput, TouchableOpacity, StyleSheet, useColorScheme, Alert } from 'react-native';
+import { Modal, View, Text, TextInput, TouchableOpacity, StyleSheet, useColorScheme, Alert, Image } from 'react-native';
 import DropDownPicker from "react-native-dropdown-picker";
 import { useState, useEffect } from 'react';
 import { ThemedView } from '../../components/ThemedView';
 import { useRouter } from "expo-router";
 import DateTimePickerModal from "react-native-modal-datetime-picker";
 import { KeyboardAwareView } from '../../components/KeyboardAwareView';
+import { ListJobs } from '@/hooks/api/JobClient';
+import UpdateOrderFormApi from '@/hooks/api/UpdateOrderFormApi';
+import { AntDesign } from '@expo/vector-icons';
+
+// Job interface definition
+interface Job {
+  id: number;
+  name: string;
+}
 
 // Props for the modal, including visibility, close function, and order data
 interface UpdateOrderModalProps {
   visible?: boolean; // Determines if the modal is visible
   onClose?: () => void; // Function to call when closing the modal
   orderData: { // Object containing order details
-    key : string;
+    key: string;
     state_usa: string; // State of the order
     date: string; // Date of the order
     key_ref: string; // Reference key for the order
@@ -23,13 +32,23 @@ interface UpdateOrderModalProps {
     phone: string; // Customer's phone number
     address: string; // Customer's address
     weight: string; // Weight of the order
+    job?: number; // Job ID
+    distance?: number;
+    expense?: string;
+    income?: string;
+    status?: string;
+    payStatus?: number;
   };
 }
 
 export default function UpdateOrderModal({ visible = true, onClose, orderData }: UpdateOrderModalProps) {
   const router = useRouter();
-  const [dropdownOpen, setDropdownOpen] = useState(false);
-  console.log(orderData);
+  const [stateDropdownOpen, setStateDropdownOpen] = useState(false);
+  const [jobDropdownOpen, setJobDropdownOpen] = useState(false);
+  const { updateOrder, isLoading, error } = UpdateOrderFormApi();
+  const colorScheme = useColorScheme();
+  const isDarkMode = colorScheme === "dark";
+
   // State variables for form fields
   const [state, setState] = useState<string | null>(null);
   const [date, setDate] = useState<string | null>(null);
@@ -41,9 +60,24 @@ export default function UpdateOrderModal({ visible = true, onClose, orderData }:
   const [address, setAddress] = useState('');
   const [email, setEmail] = useState('');
   const [weight, setWeight] = useState('');
+  const [jobId, setJobId] = useState<number | null>(null);
+  const [jobList, setJobList] = useState<Job[]>([]);
   const [errors, setErrors] = useState<{ [key: string]: string }>({});
   const [isDatePickerVisible, setDatePickerVisibility] = useState(false);
-  const colorScheme = useColorScheme();
+
+  // Fetch jobs when component mounts
+  useEffect(() => {
+    fetchJobs();
+  }, []);
+
+  const fetchJobs = async () => {
+    try {
+      const jobs = await ListJobs();
+      setJobList(jobs);
+    } catch (error) {
+      console.error('Error fetching jobs:', error);
+    }
+  };
 
   // Effect to populate form fields with order data when modal is visible
   useEffect(() => {
@@ -58,6 +92,7 @@ export default function UpdateOrderModal({ visible = true, onClose, orderData }:
       setAddress(orderData.address || '');
       setEmail(orderData.person?.email || '');
       setWeight(orderData.weight || '');
+      setJobId(orderData.job || null);
       setErrors({});
     }
   }, [orderData, visible]);
@@ -71,68 +106,115 @@ export default function UpdateOrderModal({ visible = true, onClose, orderData }:
     if (!customerFirstName) newErrors.customerFirstName = "Customer's first name is required";
     if (!customerLastName) newErrors.customerLastName = "Customer's last name is required";
     if (!weight) newErrors.weight = "Weight is required";
+    if (!jobId) newErrors.jobId = "Job is required";
 
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0; // Returns true if no errors
   };
 
-  // Function to handle order update
-  const handleUpdate = () => {
+
+  const handleUpdate = async () => {
     if (!validateFields()) return; // Validate fields before updating
-    console.log("updating order with key: ", key);
-    // Alert.alert("Order updated successfully"); // Alert on successful update
-    // router.back(); // Navigate back after update
+  
+    try {
+      console.log("Updating order with key:", key);
+  
+      const updateData = {
+        key_ref: keyReference,
+        date: date || '',
+        distance: orderData.distance || 0,
+        expense: orderData.expense || "0",
+        income: orderData.income || "0",
+        weight: weight,
+        status: orderData.status || "In Progress",
+        payStatus: orderData.payStatus || 0,
+        state_usa: state || '',
+        person: {
+          email: email || '',
+          first_name: customerFirstName,
+          last_name: customerLastName
+        },
+        job: jobId || 0
+      };
+  
+      console.log("Sending update data:", JSON.stringify(updateData));
+  
+      const result = await updateOrder(key || '', updateData);
+  
+      if (result.success) {
+        Alert.alert("Success", "Order updated successfully");
+        if (onClose) {
+          onClose();
+        } else {
+          router.back();
+        }
+      } else {
+        // Display the error message returned from the API call
+        Alert.alert("Error", result.errorMessage);
+      }
+    } catch (err: any) {
+      console.error("Error in handleUpdate:", err);
+      Alert.alert("Error", `An unexpected error occurred: ${err.message}`);
+    }
   };
 
   // Function to handle modal close
   const handleClose = () => {
     if (onClose) {
       onClose(); // Call onClose if provided
-    } 
-    else {
-      router.replace("/modals/OrderModal"); // Navigate to OrderModal if no onClose
+    } else {
+      router.back(); // Navigate back if no onClose
     }
   };
 
   return (
-    <Modal 
-      visible={visible} 
-      transparent 
+    <Modal
+      visible={visible}
+      transparent
       animationType="slide"
       onRequestClose={handleClose}
     >
-      <View style={{ flex: 1, backgroundColor: colorScheme === 'dark' ? '#112A4A' : '#FFFFFF' }}>
+      <View style={{ flex: 1, backgroundColor: isDarkMode ? '#112A4A' : '#FFFFFF' }}>
         <KeyboardAwareView style={{ flex: 1 }}>
-          <ThemedView style={{ padding: 19, flex: 1 }}>
-            <Text style={{ fontSize: 20, fontWeight: 'bold', color: colorScheme === 'dark' ? '#ffffff' : '#0458AB', marginBottom: 20 }}>Update Order</Text>
+          <View style={[styles.header, { backgroundColor: isDarkMode ? '#1E3A5F' : '#0458AB' }]}>
+            <Text style={[styles.headerText, { color: '#FFFFFF' }]}>Edit Order</Text>
+          </View>
 
+          <ThemedView style={{ padding: 16, flex: 1, backgroundColor: isDarkMode ? '#112A4A' : '#FFFFFF' }}>
             <View style={styles.inputContainer}>
-              <Text style={styles.label}>State <Text style={{ color: '#FF0000' }}>(*)</Text></Text>
+              <Text style={[styles.label, { color: isDarkMode ? '#FFFFFF' : '#0458AB' }]}>State <Text style={{ color: '#FF0000' }}>(*)</Text></Text>
               <DropDownPicker
-                open={dropdownOpen}
+                open={stateDropdownOpen}
                 value={state}
                 items={[
+                  { label: 'Alabama', value: 'AL' },
                   { label: 'Wisconsin', value: 'WI' },
-                  { label: 'New York', value: 'NY' }, 
+                  { label: 'New York', value: 'NY' },
                   { label: 'California', value: 'CA' },
                   { label: 'Texas', value: 'TX' },
                   { label: 'Florida', value: 'FL' },
                 ]}
-                setOpen={setDropdownOpen}
+                setOpen={setStateDropdownOpen}
                 setValue={setState}
                 placeholder="Select State"
-                style={styles.dropdown}
-                containerStyle={dropdownOpen ? { zIndex: 1000 } : undefined}
+                style={[styles.dropdown, { backgroundColor: isDarkMode ? '#1E3A5F' : '#FFFFFF' }]}
+                containerStyle={stateDropdownOpen ? { zIndex: 2000 } : undefined}
+                textStyle={{ color: isDarkMode ? '#FFFFFF' : '#333333' }}
+                placeholderStyle={{ color: isDarkMode ? '#AAAAAA' : '#666666' }}
               />
+              {errors.state && <Text style={styles.errorText}>{errors.state}</Text>}
             </View>
 
             <View style={styles.inputContainer}>
-              <Text style={styles.label}>Date <Text style={{ color: '#FF0000' }}>(*)</Text></Text>
-              <TouchableOpacity 
-                style={styles.dateButton}
+              <Text style={[styles.label, { color: isDarkMode ? '#FFFFFF' : '#0458AB' }]}>Date <Text style={{ color: '#FF0000' }}>(*)</Text></Text>
+              <TouchableOpacity
+                style={[styles.dateButton, { backgroundColor: isDarkMode ? '#1E3A5F' : '#FFFFFF' }]}
                 onPress={() => setDatePickerVisibility(true)}
               >
-                <Text style={styles.dateButtonText}>{date ? date : "Select date"}</Text>
+                <Text style={[styles.dateButtonText, { color: isDarkMode ? '#FFFFFF' : '#666666' }]}>
+                  {date ? date : "MM/DD/YYYY"}
+                </Text>
+                <AntDesign name="calendar" size={24} color={isDarkMode ? "#A1C6EA" : "#0458AB"} />
               </TouchableOpacity>
               <DateTimePickerModal
                 isVisible={isDatePickerVisible}
@@ -143,59 +225,97 @@ export default function UpdateOrderModal({ visible = true, onClose, orderData }:
                 }}
                 onCancel={() => setDatePickerVisibility(false)}
               />
+              {errors.date && <Text style={styles.errorText}>{errors.date}</Text>}
             </View>
 
+            <Text style={[styles.sectionTitle, { color: isDarkMode ? '#A1C6EA' : '#0458AB' }]}>General Data</Text>
+
             <View style={styles.inputContainer}>
-              <Text style={styles.label}>Reference <Text style={{ color: '#FF0000' }}>(*)</Text></Text>
+              <Text style={[styles.label, { color: isDarkMode ? '#FFFFFF' : '#0458AB' }]}>Key/Reference <Text style={{ color: '#FF0000' }}>(*)</Text></Text>
               <TextInput
                 value={keyReference}
                 onChangeText={setKeyReference}
-                placeholder="Reference"
-                style={styles.input}
+                placeholder="Key/Reference"
+                placeholderTextColor={isDarkMode ? '#AAAAAA' : '#666666'}
+                style={[styles.input, { 
+                  backgroundColor: isDarkMode ? '#1E3A5F' : '#FFFFFF',
+                  color: isDarkMode ? '#FFFFFF' : '#333333'
+                }]}
               />
               {errors.keyReference && <Text style={styles.errorText}>{errors.keyReference}</Text>}
             </View>
 
             <View style={styles.inputContainer}>
-              <Text style={styles.label}>Customer's First Name <Text style={{ color: '#FF0000' }}>(*)</Text></Text>
+              <Text style={[styles.label, { color: isDarkMode ? '#FFFFFF' : '#0458AB' }]}>Customer Name <Text style={{ color: '#FF0000' }}>(*)</Text></Text>
               <TextInput
-                value={customerFirstName}
-                onChangeText={setCustomerFirstName}
-                placeholder="Customer's First Name"
-                style={styles.input}
+                value={`${customerFirstName} ${customerLastName}`}
+                onChangeText={(text) => {
+                  const names = text.split(' ');
+                  setCustomerFirstName(names[0] || '');
+                  setCustomerLastName(names.slice(1).join(' ') || '');
+                }}
+                placeholder="Customer Name"
+                placeholderTextColor={isDarkMode ? '#AAAAAA' : '#666666'}
+                style={[styles.input, { 
+                  backgroundColor: isDarkMode ? '#1E3A5F' : '#FFFFFF',
+                  color: isDarkMode ? '#FFFFFF' : '#333333'
+                }]}
               />
-              {errors.customerFirstName && <Text style={styles.errorText}>{errors.customerFirstName}</Text>}
+              {(errors.customerFirstName || errors.customerLastName) && (
+                <Text style={styles.errorText}>Customer name is required</Text>
+              )}
             </View>
 
             <View style={styles.inputContainer}>
-              <Text style={styles.label}>Customer's Last Name <Text style={{ color: '#FF0000' }}>(*)</Text></Text>
-              <TextInput
-                value={customerLastName}
-                onChangeText={setCustomerLastName}
-                placeholder="Customer's Last Name"
-                style={styles.input}
-              />
-              {errors.customerLastName && <Text style={styles.errorText}>{errors.customerLastName}</Text>}
-            </View>
-
-            <View style={styles.inputContainer}>
-              <Text style={styles.label}>Weight (kg) <Text style={{ color: '#FF0000' }}>(*)</Text></Text>
+              <Text style={[styles.label, { color: isDarkMode ? '#FFFFFF' : '#0458AB' }]}>Weight (kg) <Text style={{ color: '#FF0000' }}>(*)</Text></Text>
               <TextInput
                 value={weight}
                 onChangeText={setWeight}
-                placeholder="Weight (kg)"
+                placeholder="0.0"
+                placeholderTextColor={isDarkMode ? '#AAAAAA' : '#666666'}
                 keyboardType="numeric"
-                style={styles.input}
+                style={[styles.input, { 
+                  backgroundColor: isDarkMode ? '#1E3A5F' : '#FFFFFF',
+                  color: isDarkMode ? '#FFFFFF' : '#333333'
+                }]}
               />
               {errors.weight && <Text style={styles.errorText}>{errors.weight}</Text>}
             </View>
 
+            <View style={styles.inputContainer}>
+              <Text style={[styles.label, { color: isDarkMode ? '#FFFFFF' : '#0458AB' }]}>Job <Text style={{ color: '#FF0000' }}>(*)</Text></Text>
+              <DropDownPicker
+                open={jobDropdownOpen}
+                value={jobId}
+                items={jobList.map(job => ({ label: job.name, value: job.id }))}
+                setOpen={setJobDropdownOpen}
+                setValue={setJobId}
+                placeholder="Job"
+                style={[styles.dropdown, { backgroundColor: isDarkMode ? '#1E3A5F' : '#FFFFFF' }]}
+                containerStyle={jobDropdownOpen ? { zIndex: 1000 } : undefined}
+                textStyle={{ color: isDarkMode ? '#FFFFFF' : '#333333' }}
+                placeholderStyle={{ color: isDarkMode ? '#AAAAAA' : '#666666' }}
+              />
+              {errors.jobId && <Text style={styles.errorText}>{errors.jobId}</Text>}
+            </View>
+
+            <TouchableOpacity style={styles.operatorsButton}>
+              <Text style={[styles.operatorsButtonText, { color: isDarkMode ? '#A1C6EA' : '#0458AB' }]}>Edit Operators</Text>
+            </TouchableOpacity>
+
             <View style={styles.buttonContainer}>
-              <TouchableOpacity style={styles.cancelButton} onPress={handleClose}>
+              <TouchableOpacity 
+                style={[styles.cancelButton, { backgroundColor: isDarkMode ? '#545257' : '#777' }]} 
+                onPress={handleClose}
+              >
                 <Text style={styles.cancelButtonText}>Cancel</Text>
               </TouchableOpacity>
-              <TouchableOpacity style={styles.updateButton} onPress={handleUpdate}>
-                <Text style={styles.updateButtonText}>Update</Text>
+              <TouchableOpacity
+                style={[styles.saveButton, { backgroundColor: isDarkMode ? '#A1C6EA' : '#0458AB' }]}
+                onPress={handleUpdate}
+                disabled={isLoading}
+              >
+                <Text style={[styles.saveButtonText, { color: isDarkMode ? '#0458AB' : '#FFFFFF' }]}>Save</Text>
               </TouchableOpacity>
             </View>
           </ThemedView>
@@ -206,60 +326,94 @@ export default function UpdateOrderModal({ visible = true, onClose, orderData }:
 }
 
 const styles = StyleSheet.create({
+  header: {
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+    alignItems: 'center',
+    borderBottomWidth: 2,
+    borderBottomColor: 'rgba(0, 0, 0, 0.1)',
+  },
+  headerText: {
+    fontSize: 18,
+    fontWeight: 'bold',
+  },
+  sectionTitle: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    marginTop: 10,
+    marginBottom: 10,
+  },
   inputContainer: {
     marginBottom: 15,
   },
   label: {
     marginBottom: 5,
-    fontSize: 16,
+    fontSize: 14,
   },
   input: {
     borderWidth: 1,
     borderColor: '#ddd',
-    borderRadius: 5,
+    borderRadius: 8,
     padding: 10,
-    fontSize: 16,
+    fontSize: 14,
   },
   dropdown: {
     borderColor: '#ddd',
+    borderRadius: 8,
   },
   dateButton: {
     borderWidth: 1,
     borderColor: '#ddd',
-    borderRadius: 5,
+    borderRadius: 8,
     padding: 10,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
   },
   dateButtonText: {
-    fontSize: 16,
+    fontSize: 14,
   },
   errorText: {
     color: 'red',
     fontSize: 12,
     marginTop: 5,
   },
+  operatorsButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginTop: 15,
+    marginBottom: 20,
+  },
+  operatorsButtonText: {
+    fontSize: 16,
+  },
   buttonContainer: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    marginTop: 20,
+    marginTop: 'auto',
+    marginBottom: 20,
   },
   cancelButton: {
-    backgroundColor: '#f5f5f5',
-    paddingVertical: 10,
-    paddingHorizontal: 20,
-    borderRadius: 5,
+    paddingVertical: 12,
+    paddingHorizontal: 30,
+    borderRadius: 8,
+    flex: 1,
+    marginRight: 10,
+    alignItems: 'center',
   },
   cancelButtonText: {
-    color: 'red',
+    color: 'white',
     fontWeight: 'bold',
   },
-  updateButton: {
-    backgroundColor: '#0458AB',
-    paddingVertical: 10,
-    paddingHorizontal: 20,
-    borderRadius: 5,
+  saveButton: {
+    paddingVertical: 12,
+    paddingHorizontal: 30,
+    borderRadius: 8,
+    flex: 1,
+    marginLeft: 10,
+    alignItems: 'center',
   },
-  updateButtonText: {
-    color: 'white',
+  saveButtonText: {
     fontWeight: 'bold',
   },
 });
