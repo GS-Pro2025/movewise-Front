@@ -1,16 +1,16 @@
-import { Modal, View, Text, TextInput, TouchableOpacity, StyleSheet, useColorScheme, Alert, Image } from 'react-native';
+import { Modal, View, Text, TextInput, TouchableOpacity, StyleSheet, useColorScheme, Alert } from 'react-native';
 import DropDownPicker from "react-native-dropdown-picker";
 import { useState, useEffect } from 'react';
 import { ThemedView } from '../../components/ThemedView';
-import { Image } from 'react-native';
 import { useRouter } from "expo-router";
-import AddOrderformApi from '@/hooks/api/AddOrderFormApi';
-import { AddOrderForm } from '@/models/ModelAddOrderForm';
 import DateTimePickerModal from "react-native-modal-datetime-picker";
 import { KeyboardAwareView } from '../../components/KeyboardAwareView';
 import { ListJobs } from '@/hooks/api/JobClient';
+import { ListStates } from '@/hooks/api/StatesClient';
+import { ListCompanies } from '@/hooks/api/CompanyClient';
 import UpdateOrderFormApi from '@/hooks/api/UpdateOrderFormApi';
 import { AntDesign } from '@expo/vector-icons';
+import OperatorModal from './OperatorModal'; // Import the OperatorModal component
 
 // Job interface definition
 interface Job {
@@ -48,21 +48,16 @@ export default function UpdateOrderModal({ visible = true, onClose, orderData }:
   const router = useRouter();
   const [stateDropdownOpen, setStateDropdownOpen] = useState(false);
   const [jobDropdownOpen, setJobDropdownOpen] = useState(false);
-  const { updateOrder, isLoading, error } = UpdateOrderFormApi();
+  const [addOperatorVisible, setAddOperatorVisible] = useState(false); // State for operator modal visibility
+  const { updateOrder, isLoading } = UpdateOrderFormApi();
   const colorScheme = useColorScheme();
   const isDarkMode = colorScheme === "dark";
 
   // State variables for form fields
   const [state, setState] = useState<string | null>(null);
-  const [searchTerm, setSearchTerm] = useState<string>(''); // State for search term
-  const [openJob, setOpenJob] = useState(false);
-  const [job, setJob] = useState<string | null>(null);
-  const [openCompany, setOpenCompany] = useState(false);
-  const [company, setCompany] = useState<string | null>(null);
   const [date, setDate] = useState<string | null>(null);
-  const [isDatePickerVisible, setDatePickerVisibility] = useState(false);
   const [keyReference, setKeyReference] = useState('');
-  const [customerName, setCustomerName] = useState('');
+  const [customerFirstName, setCustomerFirstName] = useState('');
   const [customerLastName, setCustomerLastName] = useState('');
   const [cellPhone, setCellPhone] = useState('');
   const [address, setAddress] = useState('');
@@ -73,9 +68,11 @@ export default function UpdateOrderModal({ visible = true, onClose, orderData }:
   const [errors, setErrors] = useState<{ [key: string]: string }>({});
   const [isDatePickerVisible, setDatePickerVisibility] = useState(false);
 
-  // Fetch jobs when component mounts
+  // Fetch jobs and companies when component mounts
   useEffect(() => {
     fetchJobs();
+    fetchCompanies();
+    fetchStates();
   }, []);
 
   const fetchJobs = async () => {
@@ -87,10 +84,27 @@ export default function UpdateOrderModal({ visible = true, onClose, orderData }:
     }
   };
 
+  const fetchStates = async () => {
+    try {
+      const states = await ListStates();
+      // Assuming you have a stateList to set
+    } catch (error) {
+      console.error('Error fetching states:', error);
+    }
+  };
+
+  const fetchCompanies = async () => {
+    try {
+      const companies = await ListCompanies();
+      // Assuming you have a companyList to set
+    } catch (error) {
+      console.error('Error fetching companies:', error);
+    }
+  };
+
   // Effect to populate form fields with order data when modal is visible
   useEffect(() => {
     if (visible && orderData) {
-      setKey(orderData.key || '');
       setState(orderData.state_usa || null);
       setDate(orderData.date || null);
       setKeyReference(orderData.key_ref || '');
@@ -103,63 +117,26 @@ export default function UpdateOrderModal({ visible = true, onClose, orderData }:
       setJobId(orderData.job || null);
       setErrors({});
     }
-  };
-
-  const fetchStates = async () => {
-    try {
-      const states = await ListStates();
-      setStateList(states);
-    } catch (error) {
-      console.error('Error fetching states:', error);
-    }
-  };
-
-  const fetchJobs = async () => {
-    try {
-      const jobs = await ListJobs();
-      setJobList(jobs);
-    } catch (error) {
-      console.error('Error fetching jobs:', error);
-    }
-  };
-
-  const fetchCompanies = async () => {
-    try {
-      const companies = await ListCompanies();
-      setCompanyList(companies);
-    } catch (error) {
-      console.error('Error fetching companies:', error);
-    }
-  };
-
-  useEffect(() => {
-    fetchJobs();
-    fetchCompanies();
-    fetchStates();
-  }, []);
+  }, [visible, orderData]);
 
   const validateFields = () => {
     let newErrors: { [key: string]: string } = {};
     if (!state) newErrors.state = "State is required";
     if (!date) newErrors.date = "Date is required";
     if (!keyReference) newErrors.keyReference = "Key/Reference is required";
-    if (!customerName) newErrors.customerName = "Customer Name is required";
+    if (!customerFirstName) newErrors.customerFirstName = "Customer First Name is required";
     if (!customerLastName) newErrors.customerLastName = "Customer Last Name is required";
     if (!weight) newErrors.weight = "Weight is required";
-    if (!job) newErrors.job = "Job is required";
-    if (!company) newErrors.company = "Company is required";
+    if (!jobId) newErrors.job = "Job is required";
 
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
 
-
   const handleUpdate = async () => {
     if (!validateFields()) return; // Validate fields before updating
   
     try {
-      console.log("Updating order with key:", key);
-  
       const updateData = {
         key_ref: keyReference,
         date: date || '',
@@ -178,9 +155,7 @@ export default function UpdateOrderModal({ visible = true, onClose, orderData }:
         job: jobId || 0
       };
   
-      console.log("Sending update data:", JSON.stringify(updateData));
-  
-      const result = await updateOrder(key || '', updateData);
+      const result = await updateOrder(orderData.key || '', updateData);
   
       if (result.success) {
         Alert.alert("Success", "Order updated successfully");
@@ -190,7 +165,6 @@ export default function UpdateOrderModal({ visible = true, onClose, orderData }:
           router.back();
         }
       } else {
-        // Display the error message returned from the API call
         Alert.alert("Error", result.errorMessage);
       }
     } catch (err: any) {
@@ -217,12 +191,13 @@ export default function UpdateOrderModal({ visible = true, onClose, orderData }:
     >
       <View style={{ flex: 1, backgroundColor: isDarkMode ? '#112A4A' : '#FFFFFF' }}>
         <KeyboardAwareView style={{ flex: 1 }}>
-          <View style={[styles.header, { backgroundColor: isDarkMode ? '#1E3A5F' : '#0458AB' }]}>
-            <Text style={[styles.headerText, { color: '#FFFFFF' }]}>Edit Order</Text>
-          </View>
+          {/* Wrap children in a single parent View */}
+          <View style={{ flex: 1 }}>
+            <View style={[styles.header, { backgroundColor: isDarkMode ? '#1E3A5F' : '#0458AB' }]}>
+              <Text style={[styles.headerText, { color: '#FFFFFF' }]}>Edit Order</Text>
+            </View>
 
-          <ThemedView style={{ padding: 16, flex: 1, backgroundColor: isDarkMode ? '#112A4A' : '#FFFFFF' }}>
-            <View style={styles.inputContainer}>
+            <ThemedView style={{ padding: 16, flex: 1, backgroundColor: isDarkMode ? '#112A4A' : '#FFFFFF' }}><View style={styles.inputContainer}>
               <Text style={[styles.label, { color: isDarkMode ? '#FFFFFF' : '#0458AB' }]}>State <Text style={{ color: '#FF0000' }}>(*)</Text></Text>
               <DropDownPicker
                 open={stateDropdownOpen}
@@ -320,6 +295,8 @@ export default function UpdateOrderModal({ visible = true, onClose, orderData }:
                   color: isDarkMode ? '#FFFFFF' : '#333333'
                 }]}
               />
+              {errors.weight && <Text style={styles.errorText}>{errors.weight}</Text>}
+            </View>
 
             <View style={styles.inputContainer}>
               <Text style={[styles.label, { color: isDarkMode ? '#FFFFFF' : '#0458AB' }]}>Job <Text style={{ color: '#FF0000' }}>(*)</Text></Text>
@@ -335,12 +312,13 @@ export default function UpdateOrderModal({ visible = true, onClose, orderData }:
                 textStyle={{ color: isDarkMode ? '#FFFFFF' : '#333333' }}
                 placeholderStyle={{ color: isDarkMode ? '#AAAAAA' : '#666666' }}
               />
-              {errors.jobId && <Text style={styles.errorText}>{errors.jobId}</Text>}
+              {errors.job && <Text style={styles.errorText}>{errors.job}</Text>}
             </View>
 
-            <TouchableOpacity style={styles.operatorsButton}>
+            <TouchableOpacity style={styles.operatorsButton} onPress={() => setAddOperatorVisible(true)}>
               <Text style={[styles.operatorsButtonText, { color: isDarkMode ? '#A1C6EA' : '#0458AB' }]}>Edit Operators</Text>
             </TouchableOpacity>
+            <OperatorModal visible={addOperatorVisible} onClose={() => setAddOperatorVisible(false)} /> {/* Operator modal visibility */}
 
             <View style={styles.buttonContainer}>
               <TouchableOpacity 
@@ -357,7 +335,8 @@ export default function UpdateOrderModal({ visible = true, onClose, orderData }:
                 <Text style={[styles.saveButtonText, { color: isDarkMode ? '#0458AB' : '#FFFFFF' }]}>Save</Text>
               </TouchableOpacity>
             </View>
-          </ThemedView>
+            </ThemedView>
+          </View>
         </KeyboardAwareView>
       </View>
     </Modal>

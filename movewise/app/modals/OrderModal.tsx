@@ -1,7 +1,7 @@
 import { View, Text, TouchableOpacity, Modal, StyleSheet, useColorScheme, FlatList, TextInput, ActivityIndicator, RefreshControl, Alert, SafeAreaView } from "react-native";
 import { useState, useEffect, useCallback } from "react";
 import { useRouter } from "expo-router";
-import DateTimePicker from '@react-native-community/datetimepicker';
+import DateTimePicker, { DateTimePickerEvent } from '@react-native-community/datetimepicker';
 import { Ionicons } from '@expo/vector-icons';
 import AddOrderForm from "./AddOrderForm";
 import UpdateOrder from "./UpdateOrder";
@@ -35,6 +35,7 @@ interface Order {
 }
 
 const OrderModal: React.FC<OrderModalProps> = ({ visible, onClose }) => {
+
   const [addOrderVisible, setAddOrderVisible] = useState(false);
   const [updateOrderVisible, setUpdateOrderVisible] = useState(false);
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
@@ -102,14 +103,18 @@ const OrderModal: React.FC<OrderModalProps> = ({ visible, onClose }) => {
     return isDateMatch && isTextMatch;
   });
 
-  const onStartDateChange = (date : any) => {
+  const onStartDateChange = (event: DateTimePickerEvent, selectedDate?: Date) => {
     setShowStartDatePicker(false);
-    if (date) setStartDate(date);
+    if (selectedDate) {
+      setStartDate(selectedDate);
+    }
   };
 
-  const onEndDateChange = (date : any) => {
+  const onEndDateChange = (event: DateTimePickerEvent, selectedDate?: Date) => {
     setShowEndDatePicker(false);
-    if (date) setEndDate(date);
+    if (selectedDate) {
+      setEndDate(selectedDate);
+    }
   };
 
   const handleEditOrder = (order: Order) => {
@@ -239,7 +244,7 @@ const OrderModal: React.FC<OrderModalProps> = ({ visible, onClose }) => {
           </TouchableOpacity>
           {showStartDatePicker && (
             <DateTimePicker
-              value={startDate || new Date()} 
+              value={startDate || new Date()}
               mode="date"
               display="default"
               onChange={onStartDateChange}
@@ -260,7 +265,7 @@ const OrderModal: React.FC<OrderModalProps> = ({ visible, onClose }) => {
           </TouchableOpacity>
           {showEndDatePicker && (
             <DateTimePicker
-              value={endDate || new Date()} 
+              value={endDate || new Date()}
               mode="date"
               display="default"
               onChange={onEndDateChange}

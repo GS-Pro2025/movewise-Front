@@ -159,7 +159,7 @@ const styles = StyleSheet.create({
       <Modal animationType="slide" transparent visible={roleSelectorVisible} onRequestClose={() => setRoleSelectorVisible(false)}>
         <View style={styles.roleModalContainer}>
           <View style={styles.roleModalContent}>
-            <Text style={styles.roleTitle}>Namw Operator</Text>
+            <Text style={styles.roleTitle}>Name Operator</Text>
             <TouchableOpacity style={styles.roleButton} onPress={assignDriver}>
               <Text style={styles.roleButtonText}>Driver</Text>
             </TouchableOpacity>
