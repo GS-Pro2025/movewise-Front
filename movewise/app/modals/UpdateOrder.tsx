@@ -10,32 +10,30 @@ import { ListStates } from '@/hooks/api/StatesClient';
 import { ListCompanies } from '@/hooks/api/CompanyClient';
 import UpdateOrderFormApi from '@/hooks/api/UpdateOrderFormApi';
 import { AntDesign } from '@expo/vector-icons';
-import OperatorModal from './OperatorModal'; // Import the OperatorModal component
+import OperatorModal from './OperatorModal';
 
-// Job interface definition
 interface Job {
   id: number;
   name: string;
 }
 
-// Props for the modal, including visibility, close function, and order data
 interface UpdateOrderModalProps {
-  visible?: boolean; // Determines if the modal is visible
-  onClose?: () => void; // Function to call when closing the modal
-  orderData: { // Object containing order details
+  visible?: boolean;
+  onClose?: () => void;
+  orderData: {
     key: string;
-    state_usa: string; // State of the order
-    date: string; // Date of the order
-    key_ref: string; // Reference key for the order
-    person: { // Customer information
-      first_name: string; // Customer's first name
-      last_name: string; // Customer's last name
-      email: string; // Customer's email
+    state_usa: string;
+    date: string;
+    key_ref: string;
+    person: {
+      first_name: string;
+      last_name: string;
+      email: string;
     };
-    phone: string; // Customer's phone number
-    address: string; // Customer's address
-    weight: string; // Weight of the order
-    job?: number; // Job ID
+    phone: string;
+    address: string;
+    weight: string;
+    job?: number;
     distance?: number;
     expense?: string;
     income?: string;
@@ -135,7 +133,7 @@ export default function UpdateOrderModal({ visible = true, onClose, orderData }:
 
   const handleUpdate = async () => {
     if (!validateFields()) return; // Validate fields before updating
-  
+
     try {
       const updateData = {
         key_ref: keyReference,
@@ -154,9 +152,9 @@ export default function UpdateOrderModal({ visible = true, onClose, orderData }:
         },
         job: jobId || 0
       };
-  
+
       const result = await updateOrder(orderData.key || '', updateData);
-  
+
       if (result.success) {
         Alert.alert("Success", "Order updated successfully");
         if (onClose) {
@@ -213,128 +211,150 @@ export default function UpdateOrderModal({ visible = true, onClose, orderData }:
                 setOpen={setStateDropdownOpen}
                 setValue={setState}
                 placeholder="Select State"
-                style={[styles.dropdown, { backgroundColor: isDarkMode ? '#1E3A5F' : '#FFFFFF' }]}
-                containerStyle={stateDropdownOpen ? { zIndex: 2000 } : undefined}
+                style={[styles.dropdown, {
+                  backgroundColor: isDarkMode ? '#1E3A5F' : '#FFFFFF',
+                  borderColor: isDarkMode ? '#A1C6EA' : '#0458AB' // Agregar borde
+                }]}
+                dropDownContainerStyle={{ // ESTILO NUEVO PARA EL CONTENEDOR
+                  backgroundColor: isDarkMode ? '#1E3A5F' : '#FFFFFF',
+                  borderColor: isDarkMode ? '#A1C6EA' : '#0458AB'
+                }}
+                listItemLabelStyle={{ // ESTILO NUEVO PARA LOS ITEMS
+                  color: isDarkMode ? '#FFFFFF' : '#333333'
+                }}
                 textStyle={{ color: isDarkMode ? '#FFFFFF' : '#333333' }}
                 placeholderStyle={{ color: isDarkMode ? '#AAAAAA' : '#666666' }}
               />
               {errors.state && <Text style={styles.errorText}>{errors.state}</Text>}
             </View>
 
-            <View style={styles.inputContainer}>
-              <Text style={[styles.label, { color: isDarkMode ? '#FFFFFF' : '#0458AB' }]}>Date <Text style={{ color: '#FF0000' }}>(*)</Text></Text>
-              <TouchableOpacity
-                style={[styles.dateButton, { backgroundColor: isDarkMode ? '#1E3A5F' : '#FFFFFF' }]}
-                onPress={() => setDatePickerVisibility(true)}
-              >
-                <Text style={[styles.dateButtonText, { color: isDarkMode ? '#FFFFFF' : '#666666' }]}>
-                  {date ? date : "MM/DD/YYYY"}
+              <View style={styles.inputContainer}>
+                <Text style={[styles.label, { color: isDarkMode ? '#FFFFFF' : '#0458AB' }]}>Date <Text style={{ color: '#FF0000' }}>(*)</Text></Text>
+                <TouchableOpacity
+                  style={[styles.dateButton, { backgroundColor: isDarkMode ? '#1E3A5F' : '#FFFFFF' }]}
+                  onPress={() => setDatePickerVisibility(true)}
+                >
+                  <Text style={[styles.dateButtonText, { color: isDarkMode ? '#FFFFFF' : '#666666' }]}>
+                    {date ? date : "MM/DD/YYYY"}
+                  </Text>
+                  <AntDesign name="calendar" size={24} color={isDarkMode ? "#A1C6EA" : "#0458AB"} />
+                </TouchableOpacity>
+                <DateTimePickerModal
+                  isVisible={isDatePickerVisible}
+                  mode="date"
+                  onConfirm={(selectedDate) => {
+                    setDatePickerVisibility(false);
+                    setDate(selectedDate.toISOString().split('T')[0]); // Format date to YYYY-MM-DD
+                  }}
+                  onCancel={() => setDatePickerVisibility(false)}
+                />
+                {errors.date && <Text style={styles.errorText}>{errors.date}</Text>}
+              </View>
+
+              <Text style={[styles.sectionTitle, { color: isDarkMode ? '#A1C6EA' : '#0458AB' }]}>General Data</Text>
+
+              <View style={styles.inputContainer}>
+                <Text style={[styles.label, { color: isDarkMode ? '#FFFFFF' : '#0458AB' }]}>Key/Reference <Text style={{ color: '#FF0000' }}>(*)</Text></Text>
+                <TextInput
+                  value={keyReference}
+                  onChangeText={setKeyReference}
+                  placeholder="Key/Reference"
+                  placeholderTextColor={isDarkMode ? '#AAAAAA' : '#666666'}
+                  style={[styles.input, {
+                    backgroundColor: isDarkMode ? '#1E3A5F' : '#FFFFFF',
+                    color: isDarkMode ? '#FFFFFF' : '#333333'
+                  }]}
+                />
+                {errors.keyReference && <Text style={styles.errorText}>{errors.keyReference}</Text>}
+              </View>
+
+              <View style={styles.inputContainer}>
+                {(errors.customerFirstName || errors.customerLastName) && (
+                  <Text style={styles.errorText}>Customer name is required</Text>
+                )}
+                <Text style={[styles.label, { color: isDarkMode ? '#FFFFFF' : '#0458AB' }]}>
+                  Customer Name <Text style={{ color: '#FF0000' }}>(*)</Text>
                 </Text>
-                <AntDesign name="calendar" size={24} color={isDarkMode ? "#A1C6EA" : "#0458AB"} />
+                <TextInput
+                  value={`${customerFirstName} ${customerLastName}`}
+                  onChangeText={(text) => {
+                    const names = text.split(' ');
+                    setCustomerFirstName(names[0] || '');
+                    setCustomerLastName(names.slice(1).join(' ') || '');
+                  }}
+                  placeholder="Customer Name"
+                  placeholderTextColor={isDarkMode ? '#AAAAAA' : '#666666'}
+                  style={[styles.input, {
+                    backgroundColor: isDarkMode ? '#1E3A5F' : '#FFFFFF',
+                    color: isDarkMode ? '#FFFFFF' : '#333333'
+                  }]}
+                />
+                {(errors.customerFirstName || errors.customerLastName) && (
+                  <Text style={styles.errorText}>Customer name is required</Text>
+                )}
+              </View>
+
+              <View style={styles.inputContainer}>
+                <Text style={[styles.label, { color: isDarkMode ? '#FFFFFF' : '#0458AB' }]}>Weight (kg) <Text style={{ color: '#FF0000' }}>(*)</Text></Text>
+                <TextInput
+                  value={weight}
+                  onChangeText={setWeight}
+                  placeholder="0.0"
+                  placeholderTextColor={isDarkMode ? '#AAAAAA' : '#666666'}
+                  keyboardType="numeric"
+                  style={[styles.input, {
+                    backgroundColor: isDarkMode ? '#1E3A5F' : '#FFFFFF',
+                    color: isDarkMode ? '#FFFFFF' : '#333333'
+                  }]}
+                />
+                {errors.weight && <Text style={styles.errorText}>{errors.weight}</Text>}
+              </View>
+
+              <View style={styles.inputContainer}>
+                <Text style={[styles.label, { color: isDarkMode ? '#FFFFFF' : '#0458AB' }]}>Job <Text style={{ color: '#FF0000' }}>(*)</Text></Text>
+                <DropDownPicker
+                  open={jobDropdownOpen}
+                  value={jobId}
+                  items={jobList.map(job => ({ label: job.name, value: job.id }))}
+                  setOpen={setJobDropdownOpen}
+                  setValue={setJobId}
+                  placeholder="Job"
+                  style={[styles.dropdown, {
+                    backgroundColor: isDarkMode ? '#1E3A5F' : '#FFFFFF',
+                    borderColor: isDarkMode ? '#A1C6EA' : '#0458AB' // Agregar borde
+                  }]}
+                  dropDownContainerStyle={{ // ESTILO NUEVO PARA EL CONTENEDOR
+                    backgroundColor: isDarkMode ? '#1E3A5F' : '#FFFFFF',
+                    borderColor: isDarkMode ? '#A1C6EA' : '#0458AB'
+                  }}
+                  textStyle={{ color: isDarkMode ? '#FFFFFF' : '#333333' }}
+                  placeholderStyle={{ color: isDarkMode ? '#AAAAAA' : '#666666' }}
+                />
+                {errors.job && <Text style={styles.errorText}>{errors.job}</Text>}
+              </View>
+
+              <TouchableOpacity style={styles.operatorsButton} onPress={() => setAddOperatorVisible(true)}>
+                <Text style={[styles.operatorsButtonText, { color: isDarkMode ? '#A1C6EA' : '#0458AB' }]}>Edit Operators</Text>
               </TouchableOpacity>
-              <DateTimePickerModal
-                isVisible={isDatePickerVisible}
-                mode="date"
-                onConfirm={(selectedDate) => {
-                  setDatePickerVisibility(false);
-                  setDate(selectedDate.toISOString().split('T')[0]); // Format date to YYYY-MM-DD
-                }}
-                onCancel={() => setDatePickerVisibility(false)}
-              />
-              {errors.date && <Text style={styles.errorText}>{errors.date}</Text>}
-            </View>
+              <OperatorModal visible={addOperatorVisible} onClose={() => setAddOperatorVisible(false)} /> 
 
-            <Text style={[styles.sectionTitle, { color: isDarkMode ? '#A1C6EA' : '#0458AB' }]}>General Data</Text>
-
-            <View style={styles.inputContainer}>
-              <Text style={[styles.label, { color: isDarkMode ? '#FFFFFF' : '#0458AB' }]}>Key/Reference <Text style={{ color: '#FF0000' }}>(*)</Text></Text>
-              <TextInput
-                value={keyReference}
-                onChangeText={setKeyReference}
-                placeholder="Key/Reference"
-                placeholderTextColor={isDarkMode ? '#AAAAAA' : '#666666'}
-                style={[styles.input, { 
-                  backgroundColor: isDarkMode ? '#1E3A5F' : '#FFFFFF',
-                  color: isDarkMode ? '#FFFFFF' : '#333333'
-                }]}
-              />
-              {errors.keyReference && <Text style={styles.errorText}>{errors.keyReference}</Text>}
-            </View>
-
-            <View style={styles.inputContainer}>
-              <Text style={[styles.label, { color: isDarkMode ? '#FFFFFF' : '#0458AB' }]}>Customer Name <Text style={{ color: '#FF0000' }}>(*)</Text></Text>
-              <TextInput
-                value={`${customerFirstName} ${customerLastName}`}
-                onChangeText={(text) => {
-                  const names = text.split(' ');
-                  setCustomerFirstName(names[0] || '');
-                  setCustomerLastName(names.slice(1).join(' ') || '');
-                }}
-                placeholder="Customer Name"
-                placeholderTextColor={isDarkMode ? '#AAAAAA' : '#666666'}
-                style={[styles.input, { 
-                  backgroundColor: isDarkMode ? '#1E3A5F' : '#FFFFFF',
-                  color: isDarkMode ? '#FFFFFF' : '#333333'
-                }]}
-              />
-              {(errors.customerFirstName || errors.customerLastName) && (
-                <Text style={styles.errorText}>Customer name is required</Text>
-              )}
-            </View>
-
-            <View style={styles.inputContainer}>
-              <Text style={[styles.label, { color: isDarkMode ? '#FFFFFF' : '#0458AB' }]}>Weight (kg) <Text style={{ color: '#FF0000' }}>(*)</Text></Text>
-              <TextInput
-                value={weight}
-                onChangeText={setWeight}
-                placeholder="0.0"
-                placeholderTextColor={isDarkMode ? '#AAAAAA' : '#666666'}
-                keyboardType="numeric"
-                style={[styles.input, { 
-                  backgroundColor: isDarkMode ? '#1E3A5F' : '#FFFFFF',
-                  color: isDarkMode ? '#FFFFFF' : '#333333'
-                }]}
-              />
-              {errors.weight && <Text style={styles.errorText}>{errors.weight}</Text>}
-            </View>
-
-            <View style={styles.inputContainer}>
-              <Text style={[styles.label, { color: isDarkMode ? '#FFFFFF' : '#0458AB' }]}>Job <Text style={{ color: '#FF0000' }}>(*)</Text></Text>
-              <DropDownPicker
-                open={jobDropdownOpen}
-                value={jobId}
-                items={jobList.map(job => ({ label: job.name, value: job.id }))}
-                setOpen={setJobDropdownOpen}
-                setValue={setJobId}
-                placeholder="Job"
-                style={[styles.dropdown, { backgroundColor: isDarkMode ? '#1E3A5F' : '#FFFFFF' }]}
-                containerStyle={jobDropdownOpen ? { zIndex: 1000 } : undefined}
-                textStyle={{ color: isDarkMode ? '#FFFFFF' : '#333333' }}
-                placeholderStyle={{ color: isDarkMode ? '#AAAAAA' : '#666666' }}
-              />
-              {errors.job && <Text style={styles.errorText}>{errors.job}</Text>}
-            </View>
-
-            <TouchableOpacity style={styles.operatorsButton} onPress={() => setAddOperatorVisible(true)}>
-              <Text style={[styles.operatorsButtonText, { color: isDarkMode ? '#A1C6EA' : '#0458AB' }]}>Edit Operators</Text>
-            </TouchableOpacity>
-            <OperatorModal visible={addOperatorVisible} onClose={() => setAddOperatorVisible(false)} /> {/* Operator modal visibility */}
-
-            <View style={styles.buttonContainer}>
-              <TouchableOpacity 
-                style={[styles.cancelButton, { backgroundColor: isDarkMode ? '#545257' : '#777' }]} 
-                onPress={handleClose}
-              >
-                <Text style={styles.cancelButtonText}>Cancel</Text>
-              </TouchableOpacity>
-              <TouchableOpacity
-                style={[styles.saveButton, { backgroundColor: isDarkMode ? '#A1C6EA' : '#0458AB' }]}
-                onPress={handleUpdate}
-                disabled={isLoading}
-              >
-                <Text style={[styles.saveButtonText, { color: isDarkMode ? '#0458AB' : '#FFFFFF' }]}>Save</Text>
-              </TouchableOpacity>
-            </View>
+              <View style={styles.buttonContainer}>
+                <TouchableOpacity
+                  style={[styles.cancelButton, { backgroundColor: isDarkMode ? '#545257' : '#777' }]}
+                  onPress={handleClose}
+                >
+                  <Text style={styles.cancelButtonText}>Cancel</Text>
+                </TouchableOpacity>
+                <TouchableOpacity
+                  style={[styles.saveButton, { backgroundColor: isDarkMode ? '#A1C6EA' : '#0458AB' }]}
+                  onPress={handleUpdate}
+                  disabled={isLoading}
+                >
+                  <Text style={[styles.saveButtonText, { color: isDarkMode ? '#0458AB' : '#FFFFFF' }]}>
+                    {isLoading ? 'Saving...' : 'Save'}
+                  </Text>
+                </TouchableOpacity>
+              </View>
             </ThemedView>
           </View>
         </KeyboardAwareView>
