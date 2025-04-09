@@ -1,27 +1,47 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   View,
   Text,
   TextInput,
   TouchableOpacity,
-  Image,
   StyleSheet,
   useColorScheme,
   StatusBar,
   ImageBackground,
-  Alert,
 } from "react-native";
 import { useRouter } from "expo-router";
 import Checkbox from "expo-checkbox";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import { loginUser } from "../hooks/api/loginClient";
 import Toast from "react-native-toast-message";
 
 const LoginComponent: React.FC = () => {
-  const [email, setEmail] = useState("example@example.com");
-  const [password, setPassword] = useState("password123");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const [remember, setRemember] = useState(false);
   const theme = useColorScheme();
   const router = useRouter();
+
+  // Cargar datos guardados en cahcé
+  useEffect(() => {
+    const loadStoredCredentials = async () => {
+      try {
+        const savedEmail = await AsyncStorage.getItem("savedEmail");
+        const savedPassword = await AsyncStorage.getItem("savedPassword");
+
+        if (savedEmail && savedPassword) {
+          setEmail(savedEmail);
+          setPassword(savedPassword);
+          setRemember(true);
+        }
+      } catch (err) {
+        console.warn("Error al cargar credenciales guardadas", err);
+      }
+    };
+
+    loadStoredCredentials();
+  }, []);
+
   const handleLogin = async () => {
     if (!email || !password) {
       Toast.show({
@@ -31,18 +51,27 @@ const LoginComponent: React.FC = () => {
       });
       return;
     }
-  
+
     try {
       const response = await loginUser({ email, password });
-  
+
+      // Guardar o limpiar credenciales
+      if (remember) {
+        await AsyncStorage.setItem("savedEmail", email);
+        await AsyncStorage.setItem("savedPassword", password);
+      } else {
+        await AsyncStorage.removeItem("savedEmail");
+        await AsyncStorage.removeItem("savedPassword");
+      }
+
       Toast.show({
         type: "success",
         text1: "Login exitoso",
         text2: `Bienvenido/a ${response.name ?? "usuario"}`,
       });
-  
+
       router.push("/Home");
-  
+
     } catch (error: any) {
       Toast.show({
         type: "error",
@@ -51,7 +80,6 @@ const LoginComponent: React.FC = () => {
       });
     }
   };
-  
 
   return (
     <ImageBackground
@@ -69,7 +97,6 @@ const LoginComponent: React.FC = () => {
           value={email}
           onChangeText={setEmail}
         />
-
         <TextInput
           style={styles.input}
           placeholder="Password"
@@ -78,7 +105,6 @@ const LoginComponent: React.FC = () => {
           value={password}
           onChangeText={setPassword}
         />
-
         <View style={styles.row}>
           <View style={styles.checkboxContainer}>
             <Checkbox value={remember} onValueChange={setRemember} color="#0458AB" />
@@ -88,17 +114,13 @@ const LoginComponent: React.FC = () => {
             <Text style={styles.forgotText}>Forgot password?</Text>
           </TouchableOpacity>
         </View>
-
         <TouchableOpacity style={styles.button} onPress={handleLogin}>
           <Text style={styles.buttonText}>LOGIN</Text>
         </TouchableOpacity>
-
         <TouchableOpacity style={styles.button}>
           <Text style={styles.buttonText}>OPERATOR DAILY WORK</Text>
         </TouchableOpacity>
-
         <Text style={styles.bottomText}>Don't have a company?</Text>
-
         <TouchableOpacity style={styles.button}>
           <Text style={styles.buttonText}>REGISTER COMPANY</Text>
         </TouchableOpacity>
