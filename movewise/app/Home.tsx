@@ -82,6 +82,7 @@ const Home: React.FC = () => {
               title={"Add Extra cost"}
               isDarkMode={isDarkMode}
               iconSource={require("../assets/images/dolar.png")}
+              onPress={() => router.push("/modals/EditOrder")}
             />
           </View>
           <View style={styles.row}>
