@@ -11,6 +11,7 @@ interface UpdateOrderModalProps {
   visible?: boolean; // Determines if the modal is visible
   onClose?: () => void; // Function to call when closing the modal
   orderData: { // Object containing order details
+    key : string;
     state_usa: string; // State of the order
     date: string; // Date of the order
     key_ref: string; // Reference key for the order
@@ -28,10 +29,11 @@ interface UpdateOrderModalProps {
 export default function UpdateOrderModal({ visible = true, onClose, orderData }: UpdateOrderModalProps) {
   const router = useRouter();
   const [dropdownOpen, setDropdownOpen] = useState(false);
-  
+  console.log(orderData);
   // State variables for form fields
   const [state, setState] = useState<string | null>(null);
   const [date, setDate] = useState<string | null>(null);
+  const [key, setKey] = useState<string | null>(null);
   const [keyReference, setKeyReference] = useState('');
   const [customerFirstName, setCustomerFirstName] = useState('');
   const [customerLastName, setCustomerLastName] = useState('');
@@ -46,7 +48,7 @@ export default function UpdateOrderModal({ visible = true, onClose, orderData }:
   // Effect to populate form fields with order data when modal is visible
   useEffect(() => {
     if (visible && orderData) {
-      console.log("Received order data:", orderData);
+      setKey(orderData.key || '');
       setState(orderData.state_usa || null);
       setDate(orderData.date || null);
       setKeyReference(orderData.key_ref || '');
@@ -77,9 +79,9 @@ export default function UpdateOrderModal({ visible = true, onClose, orderData }:
   // Function to handle order update
   const handleUpdate = () => {
     if (!validateFields()) return; // Validate fields before updating
-    console.log("Updating order...", { state, date, keyReference, customerFirstName, customerLastName, cellPhone, address, email, weight });
-    Alert.alert("Order updated successfully"); // Alert on successful update
-    router.back(); // Navigate back after update
+    console.log("updating order with key: ", key);
+    // Alert.alert("Order updated successfully"); // Alert on successful update
+    // router.back(); // Navigate back after update
   };
 
   // Function to handle modal close
