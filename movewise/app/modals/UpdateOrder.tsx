@@ -2,7 +2,10 @@ import { Modal, View, Text, TextInput, TouchableOpacity, StyleSheet, useColorSch
 import DropDownPicker from "react-native-dropdown-picker";
 import { useState, useEffect } from 'react';
 import { ThemedView } from '../../components/ThemedView';
+import { Image } from 'react-native';
 import { useRouter } from "expo-router";
+import AddOrderformApi from '@/hooks/api/AddOrderFormApi';
+import { AddOrderForm } from '@/models/ModelAddOrderForm';
 import DateTimePickerModal from "react-native-modal-datetime-picker";
 import { KeyboardAwareView } from '../../components/KeyboardAwareView';
 import { ListJobs } from '@/hooks/api/JobClient';
@@ -51,10 +54,15 @@ export default function UpdateOrderModal({ visible = true, onClose, orderData }:
 
   // State variables for form fields
   const [state, setState] = useState<string | null>(null);
+  const [searchTerm, setSearchTerm] = useState<string>(''); // State for search term
+  const [openJob, setOpenJob] = useState(false);
+  const [job, setJob] = useState<string | null>(null);
+  const [openCompany, setOpenCompany] = useState(false);
+  const [company, setCompany] = useState<string | null>(null);
   const [date, setDate] = useState<string | null>(null);
-  const [key, setKey] = useState<string | null>(null);
+  const [isDatePickerVisible, setDatePickerVisibility] = useState(false);
   const [keyReference, setKeyReference] = useState('');
-  const [customerFirstName, setCustomerFirstName] = useState('');
+  const [customerName, setCustomerName] = useState('');
   const [customerLastName, setCustomerLastName] = useState('');
   const [cellPhone, setCellPhone] = useState('');
   const [address, setAddress] = useState('');
@@ -95,21 +103,54 @@ export default function UpdateOrderModal({ visible = true, onClose, orderData }:
       setJobId(orderData.job || null);
       setErrors({});
     }
-  }, [orderData, visible]);
+  };
 
-  // Function to validate form fields
+  const fetchStates = async () => {
+    try {
+      const states = await ListStates();
+      setStateList(states);
+    } catch (error) {
+      console.error('Error fetching states:', error);
+    }
+  };
+
+  const fetchJobs = async () => {
+    try {
+      const jobs = await ListJobs();
+      setJobList(jobs);
+    } catch (error) {
+      console.error('Error fetching jobs:', error);
+    }
+  };
+
+  const fetchCompanies = async () => {
+    try {
+      const companies = await ListCompanies();
+      setCompanyList(companies);
+    } catch (error) {
+      console.error('Error fetching companies:', error);
+    }
+  };
+
+  useEffect(() => {
+    fetchJobs();
+    fetchCompanies();
+    fetchStates();
+  }, []);
+
   const validateFields = () => {
     let newErrors: { [key: string]: string } = {};
     if (!state) newErrors.state = "State is required";
     if (!date) newErrors.date = "Date is required";
-    if (!keyReference) newErrors.keyReference = "Reference is required";
-    if (!customerFirstName) newErrors.customerFirstName = "Customer's first name is required";
-    if (!customerLastName) newErrors.customerLastName = "Customer's last name is required";
+    if (!keyReference) newErrors.keyReference = "Key/Reference is required";
+    if (!customerName) newErrors.customerName = "Customer Name is required";
+    if (!customerLastName) newErrors.customerLastName = "Customer Last Name is required";
     if (!weight) newErrors.weight = "Weight is required";
-    if (!jobId) newErrors.jobId = "Job is required";
+    if (!job) newErrors.job = "Job is required";
+    if (!company) newErrors.company = "Company is required";
 
     setErrors(newErrors);
-    return Object.keys(newErrors).length === 0; // Returns true if no errors
+    return Object.keys(newErrors).length === 0;
   };
 
 
@@ -279,8 +320,6 @@ export default function UpdateOrderModal({ visible = true, onClose, orderData }:
                   color: isDarkMode ? '#FFFFFF' : '#333333'
                 }]}
               />
-              {errors.weight && <Text style={styles.errorText}>{errors.weight}</Text>}
-            </View>
 
             <View style={styles.inputContainer}>
               <Text style={[styles.label, { color: isDarkMode ? '#FFFFFF' : '#0458AB' }]}>Job <Text style={{ color: '#FF0000' }}>(*)</Text></Text>
