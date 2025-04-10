@@ -19,14 +19,11 @@ interface ActionButtonProps {
   isDarkMode: boolean;
   onPress?: () => void;
 }
-import AddOperatorForm from './modals/AddOperatorForm';
-
 
 const Home: React.FC = () => {
   const router = useRouter();
   const theme = useColorScheme();
   const isDarkMode = theme === "dark";
-  const [AddOperatorFormModalVisible, setAddOperatorFormModalVisible] = useState(true); // State for OperatorModal visibility
 
     return (
     <SafeAreaView
@@ -125,8 +122,7 @@ const Home: React.FC = () => {
             />
           </View>
         </View>
-        <AddOperatorForm visible={AddOperatorFormModalVisible} onClose={() => setAddOperatorFormModalVisible(false)} orderKey="01343bf285ce459a9b4a68783859ca1c" />
-
+       
       </ScrollView>
     </SafeAreaView>
   );

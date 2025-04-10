@@ -3,14 +3,16 @@ import { useState, useEffect } from 'react';
 import { ThemedView } from '../../components/ThemedView';
 import { getOperatorById } from '../../hooks/api/GetOperatorById';
 import { MaterialIcons } from '@expo/vector-icons';
-import AsyncStorage from '@react-native-async-storage/async-storage'; // Import AsyncStorage
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { ALERT_TYPE, Dialog, AlertNotificationRoot, Toast } from 'react-native-alert-notification';
 import { ToastAndroid, Platform } from 'react-native';
-import { url, token } from '../../hooks/api/apiClient';
+import { token } from '@/hooks/api/apiClient';
+import { url } from '../../hooks/api/apiClient';
+
 interface AddOperatorFormProps {
   visible: boolean;
   onClose: () => void;
-  onAddOperator: (operator: string) => void; // ← Added this prop
+  onAddOperator?: (operator: string) => void;
   orderKey: string;
 }
 
@@ -20,7 +22,7 @@ export default function AddOperatorForm({ visible, onClose, onAddOperator, order
     return null;
   }
 
-  //Notify message
+  // Notify message
   function notifyMessage(msg: string) {
     if (Platform.OS === 'android') {
       ToastAndroid.show(msg, ToastAndroid.SHORT)
@@ -31,93 +33,111 @@ export default function AddOperatorForm({ visible, onClose, onAddOperator, order
   const [name, setName] = useState('');
   const [cost, setCost] = useState('');
   const [additionalCost, setAdditionalCost] = useState('');
+  const [fetchedOperatorId, setFetchedOperatorId] = useState<number | null>(null); // Now properly managed as state
   const colorScheme = useColorScheme();
-  let fetchedOperatorId: number | null = null; // Variable para almacenar el ID del operador
 
   const handleSearch = () => {
     if (operatorId.length > 0) {
       try {
         getOperatorById(Number(operatorId)).then(data => {
           if (data) {
-            notifyMessage("Operador " + (data.person.name || data.person.last_name) + " encontrado ");
+            notifyMessage("Operator " + (data.person.name || data.person.last_name) + " found ");
             setName(data.person.last_name || '');
-            setCost(data.salary ? data.salary.toString() : ''); // Asegurando que el salary se establece correctamente
-            fetchedOperatorId = data.person.id_operator; // Guardar el ID del operador
+            setCost(data.salary ? data.salary.toString() : '');
+            setFetchedOperatorId(data.id_operator); // Store the operator ID in state
+            console.log("Fetched operator ID:", data.person.id_operator); // Log for debugging
           } else {
             setName('');
             setCost('');
+            setFetchedOperatorId(null);
           }
         });
       } catch (error) {
         setName('');
         setCost('');
+        setFetchedOperatorId(null);
         console.error('Error fetching operator:', error);
       }
     } else {
       setName('');
       setCost('');
+      setFetchedOperatorId(null);
     }
   };
 
   const handleSubmit = async () => {
-    if (name.trim() !== '' && fetchedOperatorId) {
-      onAddOperator(name);
+    // Validate we have a fetched operator ID
+    if (!fetchedOperatorId) {
+      notifyMessage("Please search for a valid operator first");
+      return;
+    }
 
-      // Validar que additionalCost sea un número válido
-      const additionalCostValue = additionalCost.trim() !== ''
-        ? parseFloat(additionalCost)
-        : 0;
+    if (name.trim() === '') {
+      notifyMessage("The operator's name cannot be empty");
+      return;
+    }
 
-      if (isNaN(additionalCostValue)) {
-        notifyMessage("El costo adicional debe ser un número válido");
-        return;
+    // Validate additional cost is a valid number
+    const additionalCostValue = additionalCost.trim() !== ''
+      ? parseFloat(additionalCost)
+      : 0;
+
+    if (isNaN(additionalCostValue)) {
+      notifyMessage("The additional cost must be a valid number");
+      return;
+    }
+
+    // Prepare request body
+    const requestBody = {
+      operator: fetchedOperatorId,
+      order: orderKey,
+      assigned_at: new Date().toISOString(),
+      rol: "operator",
+      additional_costs: additionalCostValue
+    };
+    
+    console.log("body to send", requestBody);
+    
+    try {
+      const token = await AsyncStorage.getItem("userToken");
+      if (!token) {
+        throw new Error("Authentication token not found");
       }
 
-      // Preparar el cuerpo de la petición
-      const requestBody = {
-        operator: fetchedOperatorId,
-        order: orderKey,
-        assigned_at: new Date().toISOString(),
-        rol: "operator",
-        additional_costs: additionalCostValue
-      };
+      // Make the API request
+      const response = await fetch(`${url}/assigns/`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify(requestBody)
+      });
 
-      try {
-        // Obtener el token directamente de AsyncStorage
-        const token = await AsyncStorage.getItem("userToken");
-
-        if (!token) {
-          throw new Error("No se encontró el token de autenticación");
-        }
-
-        // Hacer la petición directamente con fetch
-        const response = await fetch(url + '/assigns/', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${token}`
-          },
-          body: JSON.stringify(requestBody)
-        });
-
-        console.log(response);
-        if (!response.ok) {
-          const errorData = await response.json();
-          throw new Error(errorData.message || "Error en la petición");
-        }
-
-        notifyMessage("Operador asignado exitosamente");
-
-        // Limpiar el formulario
-        setOperatorId('');
-        setName('');
-        setCost('');
-        setAdditionalCost('');
-        onClose();
-      } catch (error) {
-        console.error('Error asignando operador:', error);
-        notifyMessage(error.message || "Error al asignar el operador");
+      console.log("Response status:", response.status);
+      
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || "Error in the request");
       }
+
+      // Notify success and clean up
+      notifyMessage("Operator assigned successfully");
+      if (onAddOperator !== undefined) {
+        onAddOperator(name);
+      }
+      
+      // Clear the form
+      setOperatorId('');
+      setName('');
+      setCost('');
+      setAdditionalCost('');
+      setFetchedOperatorId(null);
+      onClose();
+      
+    } catch (error) {
+      console.error('Error assigning operator:', error);
+      notifyMessage(error.message || "Error assigning the operator");
     }
   };
 
@@ -206,6 +226,7 @@ export default function AddOperatorForm({ visible, onClose, onAddOperator, order
                 placeholderTextColor="#9ca3af"
                 value={operatorId}
                 onChangeText={setOperatorId}
+                keyboardType="numeric"
               />
               <TouchableOpacity
                 style={{

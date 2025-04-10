@@ -336,7 +336,7 @@ export default function UpdateOrderModal({ visible = true, onClose, orderData }:
               <TouchableOpacity style={styles.operatorsButton} onPress={() => setAddOperatorVisible(true)}>
                 <Text style={[styles.operatorsButtonText, { color: isDarkMode ? '#A1C6EA' : '#0458AB' }]}>Edit Operators</Text>
               </TouchableOpacity>
-              <OperatorModal visible={addOperatorVisible} onClose={() => setAddOperatorVisible(false)} /> 
+              <OperatorModal visible={addOperatorVisible} onClose={() => setAddOperatorVisible(false)} orderKey={orderData.key} /> 
 
               <View style={styles.buttonContainer}>
                 <TouchableOpacity
