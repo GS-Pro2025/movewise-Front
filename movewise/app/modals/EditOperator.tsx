@@ -133,5 +133,3 @@ export default function AddOperatorForm({ visible, onClose, onAddOperator }: Add
     </Modal>
   );
 }
-
-export 

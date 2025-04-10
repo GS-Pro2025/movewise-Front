@@ -63,7 +63,7 @@ const OrderModal: React.FC<OrderModalProps> = ({ visible, onClose }) => {
     } catch (error) {
       console.error("Error loading orders:", error);
       Alert.alert("Error", "Could not load orders");
-      router.back();
+      //router.back();
     } finally {
       setLoading(false);
       setRefreshing(false);
@@ -370,6 +370,9 @@ const styles = StyleSheet.create({
   backButtonText: { color: "#FFF", fontWeight: "bold" },
   saveButtonText: { fontWeight: "bold" },
   // Additional styles for the list and filters
+  datePickerContainer: {
+
+  },
   filtersContainer: {
     flexDirection: 'row',
     padding: 10,

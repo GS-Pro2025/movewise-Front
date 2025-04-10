@@ -60,7 +60,9 @@ const OperatorModal: React.FC<OperatorModalProps> = ({ visible, onClose }) => {
     }
     setRoleSelectorVisible(false);
   };
-
+  const toHome = () => {
+    router.push("/modals/OrderModal");
+  }
   
 const styles = StyleSheet.create({
   container: { flex: 1, padding: 20 },
@@ -143,7 +145,11 @@ const styles = StyleSheet.create({
               style={[styles.backButton, { backgroundColor: isDarkMode ? "#0458AB" : "#545257" }]}
               onPress={onClose}
             >
+            
+            <TouchableOpacity onPress={toHome}>
               <Text style={styles.backButtonText}>Back</Text>
+            </TouchableOpacity>
+              
             </TouchableOpacity>
             <TouchableOpacity style={[styles.saveButton, { backgroundColor: isDarkMode ? "#FFFFFF" : "#0458AB" }]}>
               <Text style={[styles.saveButtonText, { color: isDarkMode ? "#0458AB" : "#FFFFFF" }]}>Save</Text>
