@@ -14,6 +14,8 @@ interface OperatorModalProps {
 }
 
 const OperatorModal: React.FC<OperatorModalProps> = ({ visible, onClose }) => {
+  console.log('visible', visible);
+  
   const [addOperatorVisible, setAddOperatorVisible] = useState(false);
   const [roleSelectorVisible, setRoleSelectorVisible] = useState(false);
   const [selectedOperatorIndex, setSelectedOperatorIndex] = useState<number | null>(null);
