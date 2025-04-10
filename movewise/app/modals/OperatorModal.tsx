@@ -33,7 +33,7 @@ const OperatorModal: React.FC<OperatorModalProps> = ({ visible, onClose, orderKe
     Alert.alert("Confirm deletion", "Are you sure you want to delete this operator?", [
       { text: "Cancel", style: "cancel" },
       {
-        text: "Delete",
+        text: "Eliminar",
         style: "destructive",
         onPress: () => {
           setOperators((prev) => prev.filter((_, i) => i !== index));
