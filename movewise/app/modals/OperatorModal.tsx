@@ -11,10 +11,10 @@ interface Operator {
 interface OperatorModalProps {
   visible: boolean;
   onClose: () => void;
+  orderKey: string; // Agregado para recibir el key
 }
 
-const OperatorModal: React.FC<OperatorModalProps> = ({ visible, onClose }) => {
-  console.log('visible', visible);
+const OperatorModal: React.FC<OperatorModalProps> = ({ visible, onClose, orderKey }) => {
   
   const [addOperatorVisible, setAddOperatorVisible] = useState(false);
   const [roleSelectorVisible, setRoleSelectorVisible] = useState(false);
@@ -30,10 +30,10 @@ const OperatorModal: React.FC<OperatorModalProps> = ({ visible, onClose }) => {
   };
 
   const handleDeleteOperator = (index: number) => {
-    Alert.alert("Confirm Delete", "Are you sure you want to delete this operator?", [
-      { text: "Cancel", style: "cancel" },
+    Alert.alert("Confirmar eliminación", "¿Estás seguro de que deseas eliminar este operador?", [
+      { text: "Cancelar", style: "cancel" },
       {
-        text: "Delete",
+        text: "Eliminar",
         style: "destructive",
         onPress: () => {
           setOperators((prev) => prev.filter((_, i) => i !== index));
@@ -117,7 +117,7 @@ const styles = StyleSheet.create({
     <Modal animationType="slide" visible={visible} onRequestClose={onClose}>
       <View style={{ flex: 1, backgroundColor: "#A1C6EA" }}>
         <View style={[styles.header, { backgroundColor: isDarkMode ? "#112A4A" : "#ffffff", borderBottomColor: isDarkMode ? 'rgba(0, 0, 0, 0.2)' : 'rgba(0, 0, 0, 0.1)' }]}>
-          <Text style={[styles.title, { color: isDarkMode ? "#FFFFFF" : "#0458AB" }]}>Operators</Text>
+          <Text style={[styles.title, { color: isDarkMode ? "#FFFFFF" : "#0458AB" }]}>Operadores</Text>
           <TouchableOpacity
             style={[styles.addButton, { backgroundColor: isDarkMode ? "#FFF" : "#0458AB" }]}
             onPress={() => setAddOperatorVisible(true)}
@@ -145,28 +145,26 @@ const styles = StyleSheet.create({
               style={[styles.backButton, { backgroundColor: isDarkMode ? "#0458AB" : "#545257" }]}
               onPress={onClose}
             >
-              <Text style={styles.backButtonText}>Back</Text>
+              <Text style={styles.backButtonText}>Atrás</Text>
             </TouchableOpacity>
             <TouchableOpacity style={[styles.saveButton, { backgroundColor: isDarkMode ? "#FFFFFF" : "#0458AB" }]}>
-              <Text style={[styles.saveButtonText, { color: isDarkMode ? "#0458AB" : "#FFFFFF" }]}>Save</Text>
+              <Text style={[styles.saveButtonText, { color: isDarkMode ? "#0458AB" : "#FFFFFF" }]}>Guardar</Text>
             </TouchableOpacity>
           </View>
         </View>
       </View>
 
-      {/* Modal para agregar operador */}
-      <AddOperatorForm visible={addOperatorVisible} onClose={() => setAddOperatorVisible(false)} onAddOperator={handleAddOperator} />
+      <AddOperatorForm visible={addOperatorVisible} onClose={() => setAddOperatorVisible(false)} onAddOperator={handleAddOperator} orderKey={orderKey} />
 
-      {/* Modal para seleccionar rol */}
       <Modal animationType="slide" transparent visible={roleSelectorVisible} onRequestClose={() => setRoleSelectorVisible(false)}>
         <View style={styles.roleModalContainer}>
           <View style={styles.roleModalContent}>
-            <Text style={styles.roleTitle}>Name Operator</Text>
+            <Text style={styles.roleTitle}>Nombre del Operador</Text>
             <TouchableOpacity style={styles.roleButton} onPress={assignDriver}>
-              <Text style={styles.roleButtonText}>Driver</Text>
+              <Text style={styles.roleButtonText}>Conductor</Text>
             </TouchableOpacity>
             <TouchableOpacity style={styles.roleButton} onPress={assignTeamLeader}>
-              <Text style={styles.roleButtonText}>Team Leader</Text>
+              <Text style={styles.roleButtonText}>Líder de Equipo</Text>
             </TouchableOpacity>
             <TouchableOpacity style={styles.closeButton} onPress={() => setRoleSelectorVisible(false)}>
               <Text style={styles.closeButtonText}>✕</Text>

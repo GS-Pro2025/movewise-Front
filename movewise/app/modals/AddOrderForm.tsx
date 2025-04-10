@@ -41,6 +41,7 @@ export default function AddOrderModal({ visible, onClose }: AddOrderModalProps) 
   const [companyList, setCompanyList] = useState<any[]>([]);
   const [stateList, setStateList] = useState<any[]>([]);
   const [operatorModalVisible, setOperatorModalVisible] = useState(false); // State for OperatorModal visibility
+  const [savedOrderKey, setSavedOrderKey] = useState<string | null>(null); // State to store saved order key
 
   const { saveOrder, isLoading, error } = AddOrderformApi();
 
@@ -71,6 +72,7 @@ export default function AddOrderModal({ visible, onClose }: AddOrderModalProps) 
       if (savedOrder) {
         console.log('Order saved successfully!', savedOrder);
         alert("Order saved successfully!");
+        setSavedOrderKey(savedOrder.key); // Store the key from savedOrder
         setOperatorModalVisible(true); // Show OperatorModal instead of pushing to it
       }
       console.log("Saving order...", orderData);
@@ -383,7 +385,7 @@ export default function AddOrderModal({ visible, onClose }: AddOrderModalProps) 
             </ThemedView>
 
             {/* Operator Modal */}
-            <OperatorModal visible={operatorModalVisible} onClose={() => setOperatorModalVisible(false)} />
+            <OperatorModal visible={operatorModalVisible} onClose={() => setOperatorModalVisible(false)} orderKey={savedOrderKey} />
           </ScrollView>
         </KeyboardAvoidingView>
       </SafeAreaView>
