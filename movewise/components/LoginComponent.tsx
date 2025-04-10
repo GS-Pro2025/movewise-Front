@@ -54,7 +54,6 @@ const LoginComponent: React.FC = () => {
 
     try {
       const response = await loginUser({ email, password });
-
       // Guardar o limpiar credenciales
       if (remember) {
         await AsyncStorage.setItem("savedEmail", email);
@@ -62,6 +61,10 @@ const LoginComponent: React.FC = () => {
       } else {
         await AsyncStorage.removeItem("savedEmail");
         await AsyncStorage.removeItem("savedPassword");
+      }
+      // Guardar el token en AsyncStorage
+      if (response.token) {
+        await AsyncStorage.setItem("userToken", response.token);
       }
 
       Toast.show({
