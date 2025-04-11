@@ -55,6 +55,12 @@ const LoginComponent: React.FC = () => {
     try {
       const response = await loginUser({ email, password });
 
+      // Guardar el token en AsyncStorage
+      if (response.token) {
+        console.log("Token guardado en AsyncStorage:", response.token);
+        await AsyncStorage.setItem("userToken", response.token);
+      }
+
       // Guardar o limpiar credenciales
       if (remember) {
         await AsyncStorage.setItem("savedEmail", email);

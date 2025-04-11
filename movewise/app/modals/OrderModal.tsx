@@ -57,6 +57,7 @@ const OrderModal: React.FC<OrderModalProps> = ({ visible, onClose }) => {
     setRefreshing(true);
     try {
       const response = await getOrders();
+      console.log(response)
       // Check response structure
       const ordersData = Array.isArray(response) ? response : response?.data || [];
       setOrders(ordersData);
@@ -118,8 +119,12 @@ const OrderModal: React.FC<OrderModalProps> = ({ visible, onClose }) => {
   };
 
   const handleEditOrder = (order: Order) => {
-    setSelectedOrder(order);
-    setUpdateOrderVisible(true);
+    if (order) {
+      setSelectedOrder(order);
+      setUpdateOrderVisible(true);
+    } else {
+      Alert.alert("Error", "Selected order data is null or undefined.");
+    }
   };
 
   const handleDeleteOrder = (keyRef: string) => {
@@ -344,7 +349,7 @@ const OrderModal: React.FC<OrderModalProps> = ({ visible, onClose }) => {
       </SafeAreaView>
       {/* Here we control the visibility of the AddOrderForm and UpdateOrder modals */}
       <AddOrderForm visible={addOrderVisible} onClose={() => setAddOrderVisible(false)} />
-      <UpdateOrder visible={updateOrderVisible} onClose={() => setUpdateOrderVisible(false)} orderData={selectedOrder} />
+      <UpdateOrder visible={updateOrderVisible} onClose={() => setUpdateOrderVisible(false)} orderData={selectedOrder || {}} />
     </Modal>
   );
 };

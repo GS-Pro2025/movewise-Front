@@ -1,7 +1,8 @@
-// hooks/useOrderApi.ts
 import { useState } from 'react';
 import { AddOrderForm } from '../../models/ModelAddOrderForm';
-import { token, url } from './apiClient';
+import apiClient from './apiClient';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { url } from './apiClient';
 
 const AddOrderformApi = () => {
   const [isLoading, setIsLoading] = useState(false);
@@ -12,7 +13,8 @@ const AddOrderformApi = () => {
     setError(null);
 
     try {
-      const response = await fetch(url + 'orders/', {
+      const token = await AsyncStorage.getItem("userToken"); // Obtener el token de AsyncStorage
+      const response = await fetch(url + '/orders/', {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -25,7 +27,8 @@ const AddOrderformApi = () => {
 
       if (!response.ok) {
         console.log('error', response);
-        throw new Error(data.message || 'Error al guardar la orden');
+        const errorMessage = data.error || 'Error al guardar la orden';
+        throw new Error(errorMessage);
       }
       return data;  // Retorna la respuesta en caso de éxito
 

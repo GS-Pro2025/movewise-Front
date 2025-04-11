@@ -11,9 +11,11 @@ interface Operator {
 interface OperatorModalProps {
   visible: boolean;
   onClose: () => void;
+  orderKey: string; // Added to receive the key
 }
 
-const OperatorModal: React.FC<OperatorModalProps> = ({ visible, onClose }) => {
+const OperatorModal: React.FC<OperatorModalProps> = ({ visible, onClose, orderKey }) => {
+  
   const [addOperatorVisible, setAddOperatorVisible] = useState(false);
   const [roleSelectorVisible, setRoleSelectorVisible] = useState(false);
   const [selectedOperatorIndex, setSelectedOperatorIndex] = useState<number | null>(null);
@@ -28,10 +30,10 @@ const OperatorModal: React.FC<OperatorModalProps> = ({ visible, onClose }) => {
   };
 
   const handleDeleteOperator = (index: number) => {
-    Alert.alert("Confirm Delete", "Are you sure you want to delete this operator?", [
+    Alert.alert("Confirm deletion", "Are you sure you want to delete this operator?", [
       { text: "Cancel", style: "cancel" },
       {
-        text: "Delete",
+        text: "Eliminar",
         style: "destructive",
         onPress: () => {
           setOperators((prev) => prev.filter((_, i) => i !== index));
@@ -92,11 +94,11 @@ const styles = StyleSheet.create({
     marginLeft: 10,
   },
   deleteText: { color: "#FFFFFF", fontWeight: "bold" },
-  buttonContainer: {  flexDirection: "row", // Alinea los botones en fila
-    justifyContent: "space-between", // Espacia los botones
-    alignItems: "center", // Asegura alineación vertical
+  buttonContainer: {  flexDirection: "row", // Align buttons in a row
+    justifyContent: "space-between", // Space buttons
+    alignItems: "center", // Ensure vertical alignment
     marginTop: 20,
-    width: "100%", // O un valor fijo según el diseño
+    width: "100%", // Or a fixed value according to the design
     paddingHorizontal: 20, },
   backButton: { paddingVertical: 10, paddingHorizontal: 20, borderRadius: 8 },
   saveButton: { paddingVertical: 10, paddingHorizontal: 20, borderRadius: 8 },
@@ -152,14 +154,12 @@ const styles = StyleSheet.create({
         </View>
       </View>
 
-      {/* Modal para agregar operador */}
-      <AddOperatorForm visible={addOperatorVisible} onClose={() => setAddOperatorVisible(false)} onAddOperator={handleAddOperator} />
+      <AddOperatorForm visible={addOperatorVisible} onClose={() => setAddOperatorVisible(false)} onAddOperator={handleAddOperator} orderKey={orderKey} />
 
-      {/* Modal para seleccionar rol */}
       <Modal animationType="slide" transparent visible={roleSelectorVisible} onRequestClose={() => setRoleSelectorVisible(false)}>
         <View style={styles.roleModalContainer}>
           <View style={styles.roleModalContent}>
-            <Text style={styles.roleTitle}>Name Operator</Text>
+            <Text style={styles.roleTitle}>Operator Name</Text>
             <TouchableOpacity style={styles.roleButton} onPress={assignDriver}>
               <Text style={styles.roleButtonText}>Driver</Text>
             </TouchableOpacity>
