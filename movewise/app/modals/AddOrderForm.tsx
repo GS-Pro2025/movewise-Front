@@ -84,6 +84,7 @@ export default function AddOrderModal({ visible, onClose }: AddOrderModalProps) 
   const fetchStates = async () => {
     try {
       const states = await ListStates();
+      console.log('States list:', states); // Log the response data for debugging
       setStateList(states);
     } catch (error) {
       console.error('Error fetching states:', error);
