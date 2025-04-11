@@ -9,10 +9,18 @@ import { ToastAndroid, Platform } from 'react-native';
 import { token } from '@/hooks/api/apiClient';
 import { url } from '../../hooks/api/apiClient';
 
+interface Operator {
+  id: number;
+  name: string;
+  role?: string;
+  additionalCosts?: number;
+  truckId?: number;
+}
+
 interface AddOperatorFormProps {
   visible: boolean;
   onClose: () => void;
-  onAddOperator?: (operator: string) => void;
+  onAddOperator?: (operator: Operator) => void;
   orderKey: string;
 }
 
@@ -65,81 +73,32 @@ export default function AddOperatorForm({ visible, onClose, onAddOperator, order
     }
   };
 
-  const handleSubmit = async () => {
-    // Validate we have a fetched operator ID
+  const handleSubmit = () => {
     if (!fetchedOperatorId) {
-      notifyMessage("Please search for a valid operator first");
+      notifyMessage("Busque un operador válido primero");
       return;
     }
 
-    if (name.trim() === '') {
-      notifyMessage("The operator's name cannot be empty");
-      return;
-    }
-
-    // Validate additional cost is a valid number
-    const additionalCostValue = additionalCost.trim() !== ''
-      ? parseFloat(additionalCost)
-      : 0;
-
-    if (isNaN(additionalCostValue)) {
-      notifyMessage("The additional cost must be a valid number");
-      return;
-    }
-
-    // Prepare request body
-    const requestBody = {
-      operator: fetchedOperatorId,
-      order: orderKey,
-      assigned_at: new Date().toISOString(),
-      rol: "operator",
-      additional_costs: additionalCostValue
+    const newOperator: Operator = {
+      id: fetchedOperatorId,
+      name: name,
+      additionalCosts: additionalCost.trim() !== '' ? parseFloat(additionalCost) : 0,
+      role: "operator", // Valor por defecto
     };
-    
-    console.log("body to send", requestBody);
-    
-    try {
-      const token = await AsyncStorage.getItem("userToken");
-      if (!token) {
-        throw new Error("Authentication token not found");
-      }
 
-      // Make the API request
-      const response = await fetch(`${url}/assigns/`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
-        },
-        body: JSON.stringify(requestBody)
-      });
-
-      console.log("Response status:", response.status);
-      
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.message || "Error in the request");
-      }
-
-      // Notify success and clean up
-      notifyMessage("Operator assigned successfully");
-      if (onAddOperator !== undefined) {
-        onAddOperator(name);
-      }
-      
-      // Clear the form
-      setOperatorId('');
-      setName('');
-      setCost('');
-      setAdditionalCost('');
-      setFetchedOperatorId(null);
-      onClose();
-      
-    } catch (error) {
-      console.error('Error assigning operator:', error);
-      notifyMessage(error.message || "Error assigning the operator");
+    if (onAddOperator) {
+      onAddOperator(newOperator);
     }
+
+    // Limpiar formulario
+    setOperatorId('');
+    setName('');
+    setCost('');
+    setAdditionalCost('');
+    setFetchedOperatorId(null);
+    onClose();
   };
+
 
   const styles = StyleSheet.create({
     container: {

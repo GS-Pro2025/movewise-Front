@@ -1,4 +1,4 @@
-import { Modal, View, Text, TextInput, TouchableOpacity, StyleSheet, useColorScheme, Alert } from 'react-native';
+import { Modal, View, Text, ScrollView, TextInput, TouchableOpacity, StyleSheet, useColorScheme, Alert } from 'react-native';
 import DropDownPicker from "react-native-dropdown-picker";
 import { useState, useEffect } from 'react';
 import { ThemedView } from '../../components/ThemedView';
@@ -196,9 +196,14 @@ export default function UpdateOrderModal({ visible = true, onClose, orderData }:
       <View style={{ flex: 1, backgroundColor: isDarkMode ? '#112A4A' : '#FFFFFF' }}>
         <KeyboardAwareView style={{ flex: 1 }}>
           {/* Wrap children in a single parent View */}
-          <View style={{ flex: 1 }}>
+          <ScrollView
+            contentContainerStyle={{ flexGrow: 1 }}
+            keyboardShouldPersistTaps="handled"
+            nestedScrollEnabled={true}
+          >
             <View style={[styles.header, { backgroundColor: isDarkMode ? '#1E3A5F' : '#0458AB' }]}>
               <Text style={[styles.headerText, { color: '#FFFFFF' }]}>Edit Order</Text>
+              <Text style={{ color: '#FFFFFF' }}>current order: {orderData.key}</Text>
             </View>
 
             <ThemedView style={{ padding: 16, flex: 1, backgroundColor: isDarkMode ? '#112A4A' : '#FFFFFF' }}><View style={styles.inputContainer}>
@@ -362,7 +367,7 @@ export default function UpdateOrderModal({ visible = true, onClose, orderData }:
                 </TouchableOpacity>
               </View>
             </ThemedView>
-          </View>
+          </ScrollView>
         </KeyboardAwareView>
       </View>
     </Modal>
