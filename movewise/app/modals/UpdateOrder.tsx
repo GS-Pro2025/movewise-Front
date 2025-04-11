@@ -43,6 +43,12 @@ interface UpdateOrderModalProps {
 }
 
 export default function UpdateOrderModal({ visible = true, onClose, orderData }: UpdateOrderModalProps) {
+
+  if (!orderData) {
+    console.error("orderData is null or undefined");
+    return null; // O puedes mostrar un mensaje de error
+  }
+  console.log(orderData)
   const router = useRouter();
   const [stateDropdownOpen, setStateDropdownOpen] = useState(false);
   const [jobDropdownOpen, setJobDropdownOpen] = useState(false);

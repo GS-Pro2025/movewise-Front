@@ -12,7 +12,6 @@ import {
 } from "react-native";
 import { useRouter } from "expo-router";
 import Toast from 'react-native-toast-message';
-
 interface ActionButtonProps {
   title: string;
   iconSource?: any;
@@ -122,7 +121,6 @@ const Home: React.FC = () => {
             />
           </View>
         </View>
-       
       </ScrollView>
     </SafeAreaView>
   );
