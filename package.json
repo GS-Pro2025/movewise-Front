@@ -1,0 +1,6 @@
+{
+  "dependencies": {
+    "expo-image-picker": "~16.0.6",
+    "react-native-modal-datetime-picker": "^18.0.0"
+  }
+}
