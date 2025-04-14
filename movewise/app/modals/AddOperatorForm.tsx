@@ -10,8 +10,8 @@ import { token } from '@/hooks/api/apiClient';
 import { url } from '../../hooks/api/apiClient';
 
 interface Operator {
-  id: number;
-  name: string;
+  id_operator: number;
+  first_name: string;
   role?: string;
   additionalCosts?: number;
   truckId?: number;
@@ -49,28 +49,32 @@ export default function AddOperatorForm({ visible, onClose, onAddOperator, order
       try {
         getOperatorById(Number(operatorId)).then(data => {
           if (data) {
-            notifyMessage("Operator " + (data.person.name || data.person.last_name) + " found ");
-            setName(data.person.last_name || '');
+            console.log("Datos recibidos:", data);
+            notifyMessage(`Operador ${data.first_name} ${data.last_name} encontrado`);
+
+            // Actualiza estos accesos
+            setName(`${data.first_name} ${data.last_name}`);
             setCost(data.salary ? data.salary.toString() : '');
-            setFetchedOperatorId(data.id_operator); // Store the operator ID in state
-            console.log("Fetched operator ID:", data.person.id_operator); // Log for debugging
+            setFetchedOperatorId(data.id); // Usar id_operator directo
+
           } else {
-            setName('');
-            setCost('');
-            setFetchedOperatorId(null);
+            resetForm();
           }
         });
       } catch (error) {
-        setName('');
-        setCost('');
-        setFetchedOperatorId(null);
+        resetForm();
         console.error('Error fetching operator:', error);
       }
     } else {
-      setName('');
-      setCost('');
-      setFetchedOperatorId(null);
+      resetForm();
     }
+  };
+
+  // Función auxiliar para resetear el formulario
+  const resetForm = () => {
+    setName('');
+    setCost('');
+    setFetchedOperatorId(null);
   };
 
   const handleSubmit = () => {

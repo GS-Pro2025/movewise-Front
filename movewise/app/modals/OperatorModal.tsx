@@ -5,6 +5,7 @@ import AddOperatorForm from "./AddOperatorForm";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { url } from "../../hooks/api/apiClient";
 import { ToastAndroid, Platform } from 'react-native';
+import TruckModal from "./TruckModal";
 
 interface Operator {
   id: number;
@@ -33,7 +34,7 @@ interface AssignedOperator {
   phone: number;
   address: string;
   username: string;
-  // Campos opcionales que podrían venir de la relación
+  //optional fields
   role?: string;
   truck?: {
     id_truck: number;
@@ -54,6 +55,7 @@ const OperatorModal: React.FC<OperatorModalProps> = ({ visible, onClose, orderKe
   const [addOperatorVisible, setAddOperatorVisible] = useState(false);
   const [roleSelectorVisible, setRoleSelectorVisible] = useState(false);
   const [selectedOperatorIndex, setSelectedOperatorIndex] = useState<number | null>(null);
+  const [truckModalVisible, setTruckModalVisible] = useState(false);
   const colorScheme = useColorScheme();
   const isDarkMode = colorScheme === "dark";
   const router = useRouter();
@@ -69,7 +71,7 @@ const OperatorModal: React.FC<OperatorModalProps> = ({ visible, onClose, orderKe
     try {
       setLoading(true);
       const token = await AsyncStorage.getItem("userToken");
-      if (!token) throw new Error("Authentication required");
+      if (!token) throw new Error("Authentication required"); 
   
       const response = await fetch(`${url}/assigns/order/${orderKey}/operators/`, {
         method: 'GET',
@@ -132,7 +134,7 @@ const OperatorModal: React.FC<OperatorModalProps> = ({ visible, onClose, orderKe
 
   const assignDriver = () => {
     setRoleSelectorVisible(false);
-    router.push("/modals/TruckModal");
+    setTruckModalVisible(true);
   };
 
   const assignTeamLeader = () => {
@@ -491,6 +493,11 @@ const OperatorModal: React.FC<OperatorModalProps> = ({ visible, onClose, orderKe
           </View>
         </View>
       </Modal>
+      <TruckModal
+        visible={truckModalVisible}
+        onClose={() => setTruckModalVisible(false)}
+        orderKey={orderKey}
+      />
     </Modal>
   );
 };
