@@ -102,7 +102,7 @@ const Home: React.FC = () => {
               title={"Create\nTruck"}
               isDarkMode={isDarkMode}
               iconSource={require("../assets/images/truck.png")}
-              onPress={() => router.push("/modals/CreateTruck")}
+              onPress={() => router.push("/modals/ListTruckModal")}
             />
             <ActionButton
               title={"Collaborator\nRegistration"}

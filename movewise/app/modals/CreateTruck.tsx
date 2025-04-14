@@ -8,11 +8,11 @@ import {
   Platform,
   Modal,
 } from "react-native";
-import { Picker } from "@react-native-picker/picker";
 import { useNavigation } from "@react-navigation/native";
 import HeaderWithDivider from "@/components/HeaderWithDivider";
 import { CreateTruck } from "@/hooks/api/TruckClient";
 import { ModelAddTruck } from "@/models/ModelAddTruck";
+import DropDownPicker from "react-native-dropdown-picker";
 import Toast from "react-native-toast-message";
 
 const CreateTruckScreen: React.FC = () => {
@@ -23,7 +23,20 @@ const CreateTruckScreen: React.FC = () => {
   const [number, setNumber] = useState("");
   const [loading, setLoading] = useState(false);
   const [showConfirmModal, setShowConfirmModal] = useState(false);
-
+  const [openType, setOpenType] = useState(false);
+  const [openCategory, setOpenCategory] = useState(false);
+  
+  const typeOptions = [
+    { label: "Refrigerated", value: "Refrigerated" },
+    { label: "Tanker", value: "Tanker" },
+    { label: "Flatbed", value: "Flatbed" },
+    { label: "Cargo", value: "Cargo" },
+  ];
+  
+  const categoryOptions = [
+    { label: "Category A", value: "a" },
+    { label: "Category B", value: "b" },
+  ];
   const [errors, setErrors] = useState({
     type: false,
     category: false,
@@ -82,40 +95,37 @@ const CreateTruckScreen: React.FC = () => {
       <HeaderWithDivider />
 
       <View style={styles.form}>
-        <Text style={styles.label}>
-          Type <Text style={styles.required}>*</Text>
-        </Text>
-        <View
-          style={[styles.pickerContainer, errors.type && styles.errorBorder]}
-        >
-          <Picker
-            selectedValue={type}
-            onValueChange={(itemValue) => setType(itemValue)}
-            style={styles.picker}
-          >
-            <Picker.Item label="Select Type" value="" />
-            <Picker.Item label="Refrigerated" value="Refrigerated" />
-            <Picker.Item label="Tanker" value="Tanker" />
-            <Picker.Item label="Flatbed" value="Flatbed" />
-            <Picker.Item label="Cargo" value="Cargo" />
-          </Picker>
+        <View style={{ zIndex: 1000 }}>
+          <Text style={styles.label}>Type <Text style={styles.required}>(*)</Text></Text>
+          <DropDownPicker
+            open={openType}
+            value={type}
+            items={typeOptions}
+            setOpen={setOpenType}
+            setValue={setType}
+            setItems={() => {}}
+            placeholder="Select Type"
+            placeholderStyle={{ color: "#9ca3af" }}
+            style={[styles.input, { borderColor: errors.type ? "red" : "#0458AB" }]}
+            listMode="SCROLLVIEW"
+            dropDownContainerStyle={{ maxHeight: 200 }}
+          />
         </View>
-
-        <Text style={styles.label}>
-          Category <Text style={styles.required}>*</Text>
-        </Text>
-        <View
-          style={[styles.pickerContainer, errors.category && styles.errorBorder]}
-        >
-          <Picker
-            selectedValue={category}
-            onValueChange={(itemValue) => setCategory(itemValue)}
-            style={styles.picker}
-          >
-            <Picker.Item label="Select Category" value="" />
-            <Picker.Item label="Category A" value="a" />
-            <Picker.Item label="Category B" value="b" />
-          </Picker>
+        <View style={{ zIndex: 999 }}>
+          <Text style={styles.label}>Category <Text style={styles.required}>(*)</Text></Text>
+          <DropDownPicker
+            open={openCategory}
+            value={category}
+            items={categoryOptions}
+            setOpen={setOpenCategory}
+            setValue={setCategory}
+            setItems={() => {}}
+            placeholder="Select Category"
+            placeholderStyle={{ color: "#9ca3af" }}
+            style={[styles.input, { borderColor: errors.category ? "red" : "#0458AB" }]}
+            listMode="SCROLLVIEW"
+            dropDownContainerStyle={{ maxHeight: 200 }}
+          />
         </View>
 
         <Text style={styles.label}>
@@ -205,7 +215,7 @@ const styles = StyleSheet.create({
   },
   form: {
     paddingHorizontal: 16,
-    paddingTop: 24,
+    paddingTop: 30,
   },
   label: {
     fontSize: 14,
