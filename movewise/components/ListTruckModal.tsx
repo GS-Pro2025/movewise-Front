@@ -5,18 +5,17 @@ import {
   Text,
   FlatList,
   TouchableOpacity,
-  Alert,
   ActivityIndicator,
-  StyleSheet
 } from "react-native";
 import { Swipeable } from "react-native-gesture-handler";
 import { Ionicons } from "@expo/vector-icons";
 import { ListTruck, DeleteTruck } from "@/hooks/api/TruckClient";
+import Toast from "react-native-toast-message";
 
 interface ListTruckModalProps {
   visible: boolean;
   onClose: () => void;
-  onEdit?: (truck: any) => void; // opcional para manejar edición
+  onEdit?: (truck: any) => void;
 }
 
 const ListTruckModal: React.FC<ListTruckModalProps> = ({
@@ -30,32 +29,40 @@ const ListTruckModal: React.FC<ListTruckModalProps> = ({
   const fetchTrucks = async () => {
     setLoading(true);
     try {
-      const { data } = await ListTruck();
-      console.log("Trucks data:", data);
-      setTrucks(data);
+      const response = await ListTruck();
+      setTrucks(response.data);
+      Toast.show({
+        type: "success",
+        text1: "Trucks loaded",
+        text2: "List of trucks successfully fetched.",
+      });
     } catch (error) {
-      Alert.alert("Error", "No se pudo obtener la lista de camiones.");
+      Toast.show({
+        type: "error",
+        text1: "Error loading trucks",
+        text2: "Failed to fetch the list of trucks.",
+      });
     } finally {
       setLoading(false);
     }
   };
 
-  const handleDelete = (id: string) => {
-    Alert.alert("Eliminar", "¿Estás seguro de eliminar este camión?", [
-      { text: "Cancelar", style: "cancel" },
-      {
-        text: "Eliminar",
-        style: "destructive",
-        onPress: async () => {
-          try {
-            await DeleteTruck(id);
-            setTrucks((prev) => prev.filter((t) => t.id !== id));
-          } catch {
-            Alert.alert("Error", "No se pudo eliminar el camión.");
-          }
-        },
-      },
-    ]);
+  const handleDelete = async (id: string) => {
+    try {
+      await DeleteTruck(id);
+      setTrucks((prev) => prev.filter((t) => t.id_truck !== id));
+      Toast.show({
+        type: "success",
+        text1: "Truck deleted",
+        text2: "The truck has been successfully removed.",
+      });
+    } catch {
+      Toast.show({
+        type: "error",
+        text1: "Deletion failed",
+        text2: "Could not delete the truck.",
+      });
+    }
   };
 
   useEffect(() => {
@@ -66,7 +73,12 @@ const ListTruckModal: React.FC<ListTruckModalProps> = ({
 
   const renderLeftActions = (item: any) => (
     <TouchableOpacity
-      style={{ justifyContent: "center", alignItems: "center", backgroundColor: "#60a5fa", width: 70 }}
+      style={{
+        justifyContent: "center",
+        alignItems: "center",
+        backgroundColor: "#60a5fa",
+        width: 70,
+      }}
       onPress={() => onEdit?.(item)}
     >
       <Ionicons name="create-outline" size={24} color="#fff" />
@@ -75,8 +87,13 @@ const ListTruckModal: React.FC<ListTruckModalProps> = ({
 
   const renderRightActions = (item: any) => (
     <TouchableOpacity
-      style={{ justifyContent: "center", alignItems: "center", backgroundColor: "#ef4444", width: 70 }}
-      onPress={() => handleDelete(item.id)}
+      style={{
+        justifyContent: "center",
+        alignItems: "center",
+        backgroundColor: "#ef4444",
+        width: 70,
+      }}
+      onPress={() => handleDelete(item.id_truck)}
     >
       <Ionicons name="trash-outline" size={24} color="#fff" />
     </TouchableOpacity>
@@ -87,9 +104,18 @@ const ListTruckModal: React.FC<ListTruckModalProps> = ({
       renderLeftActions={() => renderLeftActions(item)}
       renderRightActions={() => renderRightActions(item)}
     >
-      <View style={{ padding: 15, backgroundColor: "#f3f4f6", borderRadius: 8, marginBottom: 10 }}>
+      <View
+        style={{
+          padding: 15,
+          backgroundColor: "#f3f4f6",
+          borderRadius: 8,
+          marginBottom: 10,
+        }}
+      >
         <Text style={{ fontWeight: "600", fontSize: 16 }}>{item.number_truck}</Text>
-        <Text>{item.type} - {item.rol} - {item.name}</Text>
+        <Text>
+          {item.type} - {item.rol || "No role"} - {item.name}
+        </Text>
       </View>
     </Swipeable>
   );
@@ -97,8 +123,15 @@ const ListTruckModal: React.FC<ListTruckModalProps> = ({
   return (
     <Modal visible={visible} animationType="slide" onRequestClose={onClose}>
       <View style={{ flex: 1, padding: 20, backgroundColor: "#fff" }}>
-        <Text style={{ fontSize: 20, fontWeight: "bold", marginBottom: 20, textAlign: "center" }}>
-          Lista de Camiones
+        <Text
+          style={{
+            fontSize: 20,
+            fontWeight: "bold",
+            marginBottom: 20,
+            textAlign: "center",
+          }}
+        >
+          Truck List
         </Text>
 
         {loading ? (
@@ -106,17 +139,28 @@ const ListTruckModal: React.FC<ListTruckModalProps> = ({
         ) : (
           <FlatList
             data={trucks}
-            keyExtractor={(item) => item.id}
+            keyExtractor={(item) => String(item.id_truck)}
             renderItem={renderItem}
-            ListEmptyComponent={<Text style={{ textAlign: "center" }}>No hay camiones registrados.</Text>}
+            ListEmptyComponent={
+              <Text style={{ textAlign: "center" }}>No trucks registered.</Text>
+            }
           />
         )}
 
         <TouchableOpacity
           onPress={onClose}
-          style={{ marginTop: 20, padding: 12, backgroundColor: "#4b5563", borderRadius: 8 }}
+          style={{
+            marginTop: 20,
+            padding: 12,
+            backgroundColor: "#4b5563",
+            borderRadius: 8,
+          }}
         >
-          <Text style={{ color: "#fff", textAlign: "center", fontWeight: "600" }}>Cerrar</Text>
+          <Text
+            style={{ color: "#fff", textAlign: "center", fontWeight: "600" }}
+          >
+            Close
+          </Text>
         </TouchableOpacity>
       </View>
     </Modal>
@@ -124,5 +168,3 @@ const ListTruckModal: React.FC<ListTruckModalProps> = ({
 };
 
 export default ListTruckModal;
-
-
