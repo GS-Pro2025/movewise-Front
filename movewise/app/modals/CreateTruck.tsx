@@ -6,6 +6,7 @@ import {
   TouchableOpacity,
   StyleSheet,
   Platform,
+  Modal,
 } from "react-native";
 import { Picker } from "@react-native-picker/picker";
 import { useNavigation } from "@react-navigation/native";
@@ -20,6 +21,8 @@ const CreateTruckScreen: React.FC = () => {
   const [category, setCategory] = useState("");
   const [name, setName] = useState("");
   const [number, setNumber] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [showConfirmModal, setShowConfirmModal] = useState(false);
 
   const [errors, setErrors] = useState({
     type: false,
@@ -28,8 +31,6 @@ const CreateTruckScreen: React.FC = () => {
     number: false,
   });
 
-  const [loading, setLoading] = useState(false); // Estado de carga
-
   const validateFields = () => {
     const newErrors = {
       type: !type,
@@ -37,15 +38,16 @@ const CreateTruckScreen: React.FC = () => {
       name: !name.trim(),
       number: !number.trim(),
     };
-
     setErrors(newErrors);
-
     return !Object.values(newErrors).some((error) => error);
   };
 
-  const handleSave = async () => {
+  const confirmBeforeSave = () => {
     if (!validateFields()) return;
+    setShowConfirmModal(true);
+  };
 
+  const handleSave = async () => {
     const newTruck: ModelAddTruck = {
       number_truck: number,
       type: type,
@@ -53,24 +55,24 @@ const CreateTruckScreen: React.FC = () => {
       name: name,
     };
 
-    setLoading(true); // Mostrar carga
+    setLoading(true);
 
     try {
       await CreateTruck(newTruck);
-      console.log("Camión creado:", newTruck);
       Toast.show({
         type: "success",
-        text1: "Camion creado",
+        text1: "Truck created",
       });
       setLoading(false);
+      setShowConfirmModal(false);
       navigation.goBack();
     } catch (error) {
-      console.error("Error al crear el camión:", error);
+      console.error("Error on the truck creation:", error);
       setLoading(false);
       Toast.show({
-        type: "error", // Cambié el tipo a error
+        type: "error",
         text1: "Error",
-        text2: "Error al crear el camión",
+        text2: "Error on the truck creation",
       });
     }
   };
@@ -149,15 +151,47 @@ const CreateTruckScreen: React.FC = () => {
 
           <TouchableOpacity
             style={[styles.button, styles.saveButton]}
-            onPress={handleSave}
-            disabled={loading} // Deshabilitar el botón mientras carga
+            onPress={confirmBeforeSave}
+            disabled={loading}
           >
             <Text style={styles.saveText}>
-              {loading ? "Guardando..." : "Guardar"}
+              {loading ? "Saving..." : "save"}
             </Text>
           </TouchableOpacity>
         </View>
       </View>
+
+      <Modal
+        animationType="slide"
+        transparent={true}
+        visible={showConfirmModal}
+        onRequestClose={() => setShowConfirmModal(false)}
+      >
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalContainer}>
+            <Text style={styles.modalText}>Type: {type}</Text>
+            <Text style={styles.modalText}>Category: {category}</Text>
+            <Text style={styles.modalText}>Name: {name}</Text>
+            <Text style={styles.modalText}>Number: {number}</Text>
+
+            <View style={styles.modalButtonRow}>
+              <TouchableOpacity
+                style={[styles.button, styles.cancelButton]}
+                onPress={() => setShowConfirmModal(false)}
+              >
+                <Text style={styles.cancelText}>Cancel</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={[styles.button, styles.saveButton]}
+                onPress={handleSave}
+                disabled={loading}
+              >
+                <Text style={styles.saveText}>{loading ? "..." : "OK"}</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      </Modal>
     </View>
   );
 };
@@ -230,5 +264,32 @@ const styles = StyleSheet.create({
   saveText: {
     color: "#fff",
     fontWeight: "bold",
+  },
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: "rgba(0, 0, 0, 0.5)",
+    justifyContent: "flex-end",
+  },
+  modalContainer: {
+    backgroundColor: "#0458AB",
+    padding: 20,
+    borderTopLeftRadius: 16,
+    borderTopRightRadius: 16,
+  },
+  modalTitle: {
+    fontSize: 18,
+    fontWeight: "bold",
+    color: "#fff",
+    marginBottom: 12,
+  },
+  modalText: {
+    color: "#fff",
+    fontSize: 16,
+    marginBottom: 4,
+  },
+  modalButtonRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    marginTop: 20,
   },
 });
