@@ -10,6 +10,9 @@ import {
 import { Picker } from "@react-native-picker/picker";
 import { useNavigation } from "@react-navigation/native";
 import HeaderWithDivider from "@/components/HeaderWithDivider";
+import { CreateTruck } from "@/hooks/api/TruckClient";
+import { ModelAddTruck } from "@/models/ModelAddTruck";
+import Toast from "react-native-toast-message";
 
 const CreateTruckScreen: React.FC = () => {
   const navigation = useNavigation();
@@ -18,9 +21,58 @@ const CreateTruckScreen: React.FC = () => {
   const [name, setName] = useState("");
   const [number, setNumber] = useState("");
 
-  const handleSave = () => {
-    console.log({ type, category, name, number });
-    // lógica para guardar
+  const [errors, setErrors] = useState({
+    type: false,
+    category: false,
+    name: false,
+    number: false,
+  });
+
+  const [loading, setLoading] = useState(false); // Estado de carga
+
+  const validateFields = () => {
+    const newErrors = {
+      type: !type,
+      category: !category,
+      name: !name.trim(),
+      number: !number.trim(),
+    };
+
+    setErrors(newErrors);
+
+    return !Object.values(newErrors).some((error) => error);
+  };
+
+  const handleSave = async () => {
+    if (!validateFields()) return;
+
+    const newTruck: ModelAddTruck = {
+      number_truck: number,
+      type: type,
+      rol: category,
+      name: name,
+    };
+
+    setLoading(true); // Mostrar carga
+
+    try {
+      await CreateTruck(newTruck);
+      console.log("Camión creado:", newTruck);
+      Toast.show({
+        type: "success",
+        text1: "Camion creado",
+      });
+      setLoading(false);
+      navigation.goBack();
+    } catch (error) {
+      console.error("Error al crear el camión:", error);
+      setLoading(false);
+      Toast.show({
+        type: "error", // Cambié el tipo a error
+        text1: "Error",
+        text2: "Error al crear el camión",
+      });
+    }
   };
 
   return (
@@ -31,22 +83,28 @@ const CreateTruckScreen: React.FC = () => {
         <Text style={styles.label}>
           Type <Text style={styles.required}>*</Text>
         </Text>
-        <View style={styles.pickerContainer}>
+        <View
+          style={[styles.pickerContainer, errors.type && styles.errorBorder]}
+        >
           <Picker
             selectedValue={type}
             onValueChange={(itemValue) => setType(itemValue)}
             style={styles.picker}
           >
             <Picker.Item label="Select Type" value="" />
-            <Picker.Item label="Type 1" value="type1" />
-            <Picker.Item label="Type 2" value="type2" />
+            <Picker.Item label="Refrigerated" value="Refrigerated" />
+            <Picker.Item label="Tanker" value="Tanker" />
+            <Picker.Item label="Flatbed" value="Flatbed" />
+            <Picker.Item label="Cargo" value="Cargo" />
           </Picker>
         </View>
 
         <Text style={styles.label}>
           Category <Text style={styles.required}>*</Text>
         </Text>
-        <View style={styles.pickerContainer}>
+        <View
+          style={[styles.pickerContainer, errors.category && styles.errorBorder]}
+        >
           <Picker
             selectedValue={category}
             onValueChange={(itemValue) => setCategory(itemValue)}
@@ -62,7 +120,7 @@ const CreateTruckScreen: React.FC = () => {
           Name <Text style={styles.required}>*</Text>
         </Text>
         <TextInput
-          style={styles.input}
+          style={[styles.input, errors.name && styles.errorBorder]}
           placeholder="Truck Name"
           placeholderTextColor="#ccc"
           value={name}
@@ -73,7 +131,7 @@ const CreateTruckScreen: React.FC = () => {
           Number of Truck <Text style={styles.required}>*</Text>
         </Text>
         <TextInput
-          style={styles.input}
+          style={[styles.input, errors.number && styles.errorBorder]}
           placeholder="0.0"
           placeholderTextColor="#ccc"
           keyboardType="numeric"
@@ -89,8 +147,14 @@ const CreateTruckScreen: React.FC = () => {
             <Text style={styles.cancelText}>Cancel</Text>
           </TouchableOpacity>
 
-          <TouchableOpacity style={[styles.button, styles.saveButton]} onPress={handleSave}>
-            <Text style={styles.saveText}>Save</Text>
+          <TouchableOpacity
+            style={[styles.button, styles.saveButton]}
+            onPress={handleSave}
+            disabled={loading} // Deshabilitar el botón mientras carga
+          >
+            <Text style={styles.saveText}>
+              {loading ? "Guardando..." : "Guardar"}
+            </Text>
           </TouchableOpacity>
         </View>
       </View>
@@ -137,6 +201,9 @@ const styles = StyleSheet.create({
     backgroundColor: "#fff",
     fontSize: 16,
     marginBottom: 8,
+  },
+  errorBorder: {
+    borderColor: "red",
   },
   buttonRow: {
     flexDirection: "row",
