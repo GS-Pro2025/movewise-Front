@@ -5,17 +5,19 @@ import {
   Text,
   FlatList,
   TouchableOpacity,
+  Alert,
   ActivityIndicator,
+  StyleSheet,
 } from "react-native";
 import { Swipeable } from "react-native-gesture-handler";
 import { Ionicons } from "@expo/vector-icons";
 import { ListTruck, DeleteTruck } from "@/hooks/api/TruckClient";
-import Toast from "react-native-toast-message";
+import CreateTruck from "../app/modals/CreateTruck"; // Import the CreateTruckForm component
 
 interface ListTruckModalProps {
   visible: boolean;
   onClose: () => void;
-  onEdit?: (truck: any) => void;
+  onEdit?: (truck: any) => void; // Optional for handling edits
 }
 
 const ListTruckModal: React.FC<ListTruckModalProps> = ({
@@ -25,44 +27,37 @@ const ListTruckModal: React.FC<ListTruckModalProps> = ({
 }) => {
   const [trucks, setTrucks] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
+  const [addTruckVisible, setAddTruckVisible] = useState(false); // State to manage CreateTruckForm visibility
 
   const fetchTrucks = async () => {
     setLoading(true);
     try {
-      const response = await ListTruck();
-      setTrucks(response.data);
-      Toast.show({
-        type: "success",
-        text1: "Trucks loaded",
-        text2: "List of trucks successfully fetched.",
-      });
+      const { data } = await ListTruck();
+      console.log("Trucks data:", data);
+      setTrucks(data);
     } catch (error) {
-      Toast.show({
-        type: "error",
-        text1: "Error loading trucks",
-        text2: "Failed to fetch the list of trucks.",
-      });
+      Alert.alert("Error", "No se pudo obtener la lista de camiones.");
     } finally {
       setLoading(false);
     }
   };
 
-  const handleDelete = async (id: string) => {
-    try {
-      await DeleteTruck(id);
-      setTrucks((prev) => prev.filter((t) => t.id_truck !== id));
-      Toast.show({
-        type: "success",
-        text1: "Truck deleted",
-        text2: "The truck has been successfully removed.",
-      });
-    } catch {
-      Toast.show({
-        type: "error",
-        text1: "Deletion failed",
-        text2: "Could not delete the truck.",
-      });
-    }
+  const handleDelete = (id: string) => {
+    Alert.alert("Eliminar", "¿Estás seguro de eliminar este camión?", [
+      { text: "Cancelar", style: "cancel" },
+      {
+        text: "Eliminar",
+        style: "destructive",
+        onPress: async () => {
+          try {
+            await DeleteTruck(id);
+            setTrucks((prev) => prev.filter((t) => t.id !== id));
+          } catch {
+            Alert.alert("Error", "No se pudo eliminar el camión.");
+          }
+        },
+      },
+    ]);
   };
 
   useEffect(() => {
@@ -93,7 +88,7 @@ const ListTruckModal: React.FC<ListTruckModalProps> = ({
         backgroundColor: "#ef4444",
         width: 70,
       }}
-      onPress={() => handleDelete(item.id_truck)}
+      onPress={() => handleDelete(item.id)}
     >
       <Ionicons name="trash-outline" size={24} color="#fff" />
     </TouchableOpacity>
@@ -114,7 +109,7 @@ const ListTruckModal: React.FC<ListTruckModalProps> = ({
       >
         <Text style={{ fontWeight: "600", fontSize: 16 }}>{item.number_truck}</Text>
         <Text>
-          {item.type} - {item.rol || "No role"} - {item.name}
+          {item.type} - {item.rol} - {item.name}
         </Text>
       </View>
     </Swipeable>
@@ -123,26 +118,34 @@ const ListTruckModal: React.FC<ListTruckModalProps> = ({
   return (
     <Modal visible={visible} animationType="slide" onRequestClose={onClose}>
       <View style={{ flex: 1, padding: 20, backgroundColor: "#fff" }}>
-        <Text
-          style={{
-            fontSize: 20,
-            fontWeight: "bold",
-            marginBottom: 20,
-            textAlign: "center",
-          }}
+        {/* Header */}
+        <View
+          style={[
+            styles.header,
+            {
+              backgroundColor: "#112A4A",
+              borderBottomColor: "rgba(0, 0, 0, 0.2)",
+            },
+          ]}
         >
-          Truck List
-        </Text>
+          <Text style={[styles.title, { color: "#FFFFFF" }]}>Lista de Camiones</Text>
+          <TouchableOpacity
+            style={[styles.addButton, { backgroundColor: "#FFF" }]}
+            onPress={() => setAddTruckVisible(true)} // Show the CreateTruckForm modal
+          >
+            <Text style={[styles.plus, { color: "#0458AB" }]}>+</Text>
+          </TouchableOpacity>
+        </View>
 
         {loading ? (
           <ActivityIndicator size="large" color="#000" />
         ) : (
           <FlatList
             data={trucks}
-            keyExtractor={(item) => String(item.id_truck)}
+            keyExtractor={(item) => item.id}
             renderItem={renderItem}
             ListEmptyComponent={
-              <Text style={{ textAlign: "center" }}>No trucks registered.</Text>
+              <Text style={{ textAlign: "center" }}>No hay camiones registrados.</Text>
             }
           />
         )}
@@ -156,15 +159,42 @@ const ListTruckModal: React.FC<ListTruckModalProps> = ({
             borderRadius: 8,
           }}
         >
-          <Text
-            style={{ color: "#fff", textAlign: "center", fontWeight: "600" }}
-          >
-            Close
+          <Text style={{ color: "#fff", textAlign: "center", fontWeight: "600" }}>
+            Cerrar
           </Text>
         </TouchableOpacity>
       </View>
+
+      {/* CreateTruckForm Modal */}
+      <CreateTruck
+        visible={addTruckVisible}
+        onClose={() => setAddTruckVisible(false)} // Close the CreateTruckForm modal
+        onTruckCreated={fetchTrucks} // Refresh the truck list after creating a truck
+      />
     </Modal>
   );
 };
+
+const styles = StyleSheet.create({
+  header: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    paddingBottom: 20,
+    paddingTop: 30,
+    borderBottomWidth: 2,
+    width: "100%",
+    paddingHorizontal: 20,
+  },
+  title: { fontSize: 20, fontWeight: "bold" },
+  addButton: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  plus: { fontSize: 24, fontWeight: "bold" },
+});
 
 export default ListTruckModal;
