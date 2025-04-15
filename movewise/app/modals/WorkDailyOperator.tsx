@@ -48,12 +48,14 @@ interface Assignment {
 const WorkDailyOperator: React.FC<WorkDailyOperatorProps> = ({ visible, onClose }) => {
   const { operatorId } = useLocalSearchParams<{ operatorId: string }>();
   const [assignments, setAssignments] = useState<Assignment[]>([]);
+  const [filteredAssignments, setFilteredAssignments] = useState<Assignment[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [searchText, setSearchText] = useState('');
   const [selectedAssignment, setSelectedAssignment] = useState<Assignment | null>(null);
   const [modalVisible, setModalVisible] = useState(false);
   const [showDatePicker, setShowDatePicker] = useState(false);
+  const [selectedDate, setSelectedDate] = useState(new Date());
   const colorScheme = useColorScheme();
   const isDarkMode = colorScheme === "dark";
   const router = useRouter();
@@ -86,12 +88,33 @@ const WorkDailyOperator: React.FC<WorkDailyOperatorProps> = ({ visible, onClose 
   // Format date for display
   const formatDate = (date: string | Date) => {
     const dateObject = typeof date === 'string' ? new Date(date) : date;
-    return dateObject.toLocaleDateString('es-ES', {
+    return dateObject.toLocaleDateString('en-US', {
       day: '2-digit',
       month: '2-digit',
       year: 'numeric'
     });
   };
+
+  // Format date for comparison (YYYY-MM-DD)
+  const formatDateForComparison = (date: Date) => {
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+  };
+
+  // Filter assignments by date
+  useEffect(() => {
+    if (assignments.length > 0) {
+      const formattedDate = formatDateForComparison(selectedDate);
+      const filtered = assignments.filter(
+        assignment => assignment.data_order.date === formattedDate
+      );
+      setFilteredAssignments(filtered);
+    } else {
+      setFilteredAssignments([]);
+    }
+  }, [assignments, selectedDate]);
 
   // Load assignments when component becomes visible
   useEffect(() => {
@@ -99,6 +122,7 @@ const WorkDailyOperator: React.FC<WorkDailyOperatorProps> = ({ visible, onClose 
   }, [loadAssignments]);
 
   const onRefresh = useCallback(() => {
+    setRefreshing(true);
     loadAssignments();
   }, [loadAssignments]);
 
@@ -109,6 +133,17 @@ const WorkDailyOperator: React.FC<WorkDailyOperatorProps> = ({ visible, onClose 
 
   const handleClose = () => {
     router.back();
+  };
+
+  const handleDateChange = (event: any, date?: Date) => {
+    setShowDatePicker(false);
+    if (date) {
+      setSelectedDate(date);
+    }
+  };
+
+  const clearDateFilter = () => {
+    setSelectedDate(new Date());
   };
 
   return (
@@ -127,6 +162,42 @@ const WorkDailyOperator: React.FC<WorkDailyOperatorProps> = ({ visible, onClose 
           </TouchableOpacity>
         </View>
 
+        {/* Date Selector */}
+        <View style={[styles.dateContainer, { backgroundColor: isDarkMode ? "#1E3A5F" : "#f5f5f5" }]}>
+          <Text style={[styles.dateLabel, { color: isDarkMode ? "#FFFFFF" : "#0458AB" }]}>
+            Selected Date
+          </Text>
+          <View style={styles.dateSelectorContainer}>
+            <TouchableOpacity 
+              style={[
+                styles.dateSelector, 
+                { 
+                  backgroundColor: isDarkMode ? "#112A4A" : "#ffffff",
+                  borderColor: isDarkMode ? "#3A5F8E" : "#DDDDDD",
+                  flex: 1
+                }
+              ]} 
+              onPress={() => setShowDatePicker(true)}
+            >
+              <Text style={{ color: isDarkMode ? "#FFFFFF" : "#333333" }}>
+                {formatDate(selectedDate)}
+              </Text>
+              <Ionicons name="calendar-outline" size={20} color={isDarkMode ? "#FFFFFF" : "#0458AB"} />
+            </TouchableOpacity>
+            <TouchableOpacity style={styles.clearButton} onPress={clearDateFilter}>
+              <Ionicons name="refresh" size={20} color={isDarkMode ? "#FFFFFF" : "#0458AB"} />
+            </TouchableOpacity>
+          </View>
+          {showDatePicker && (
+            <DateTimePicker
+              value={selectedDate}
+              mode="date"
+              display="default"
+              onChange={handleDateChange}
+            />
+          )}
+        </View>
+
         {/* Assignment List */}
         {loading ? (
           <View style={styles.loadingContainer}>
@@ -134,7 +205,7 @@ const WorkDailyOperator: React.FC<WorkDailyOperatorProps> = ({ visible, onClose 
           </View>
         ) : (
           <FlatList
-            data={assignments.filter(assignment =>
+            data={filteredAssignments.filter(assignment =>
               assignment.order.toLowerCase().includes(searchText.toLowerCase())
             )}
             keyExtractor={(item) => item.id.toString()}
@@ -168,7 +239,7 @@ const WorkDailyOperator: React.FC<WorkDailyOperatorProps> = ({ visible, onClose 
             }}
             contentContainerStyle={[
               styles.listContainer,
-              assignments.length === 0 && styles.emptyListContainer
+              filteredAssignments.length === 0 && styles.emptyListContainer
             ]}
             refreshControl={
               <RefreshControl
@@ -181,7 +252,7 @@ const WorkDailyOperator: React.FC<WorkDailyOperatorProps> = ({ visible, onClose 
               <View style={styles.emptyContainer}>
                 <Ionicons name="calendar-outline" size={50} color={isDarkMode ? '#FFFFFF80' : '#0458AB80'} />
                 <Text style={[styles.emptyText, { color: isDarkMode ? '#FFFFFF' : '#666666' }]}>
-                  "No assignments available"
+                  No assignments available for {formatDate(selectedDate)}
                 </Text>
               </View>
             }
@@ -298,10 +369,12 @@ const styles = StyleSheet.create({
   closeButton: {
     position: "absolute",
     right: 15,
-    padding: 10, // Added padding to increase tap area
+    padding: 10,
   },
   dateContainer: {
     padding: 15,
+    borderBottomWidth: 1,
+    borderBottomColor: "#DDDDDD",
   },
   dateLabel: {
     marginBottom: 5,
@@ -314,18 +387,6 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderRadius: 5,
     padding: 10,
-  },
-  // Debug styles
-  debugContainer: {
-    padding: 10,
-    borderWidth: 1,
-    borderColor: 'red',
-    margin: 10,
-    backgroundColor: 'rgba(255,0,0,0.1)'
-  },
-  debugText: {
-    fontSize: 12,
-    color: 'red'
   },
   searchContainer: {
     padding: 10,
@@ -400,7 +461,7 @@ const styles = StyleSheet.create({
     fontSize: 18,
     color: '#FFFFFF',
     fontWeight: 'bold',
-    flex: 1, // Added to ensure text can wrap
+    flex: 1,
   },
   modalClose: {
     padding: 5,
