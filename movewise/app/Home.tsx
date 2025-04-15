@@ -82,7 +82,7 @@ const Home: React.FC = () => {
               title={"Add Extra cost"}
               isDarkMode={isDarkMode}
               iconSource={require("../assets/images/dolar.png")}
-              onPress={() => router.push("/modals/EditOrder")}
+              onPress={() => router.push("/modals/CreateOperator1")}
             />
           </View>
           <View style={styles.row}>
@@ -90,6 +90,7 @@ const Home: React.FC = () => {
               title={"Edit\nDaily"}
               isDarkMode={isDarkMode}
               iconSource={require("../assets/images/paquete.png")}
+              onPress={() => router.push("/modals/CreateOperator3")}
             />
             <ActionButton
               title={"Resume\nOrder"}

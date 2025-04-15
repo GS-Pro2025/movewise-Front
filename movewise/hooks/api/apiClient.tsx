@@ -1,6 +1,6 @@
 import axios, { AxiosInstance } from "axios";
-export const  url = 'http://192.168.0.5:8000/'
-export const token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJwZXJzb25faWQiOjIsImVtYWlsIjoiZXhhbXBsZUBleGFtcGxlLmNvbSIsImV4cCI6MTc0NDQyOTczNiwiaWF0IjoxNzQ0MzQzMzM2fQ.sX5VIMPFLJpjW_ZzMl_QYrh2XAN8fqtJb9g1sY8dllg"
+export const  url = 'http://192.168.101.21:8000/'
+export const token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJwZXJzb25faWQiOjIsImVtYWlsIjoiZXhhbXBsZUBleGFtcGxlLmNvbSIsImV4cCI6MTc0NDU5ODYyMywiaWF0IjoxNzQ0NTEyMjIzfQ.1l_bX9CESjkX5jHKzsamO4iha2-nKoEyZe89HFcecd4"
 const apiClient: AxiosInstance = axios.create({
   baseURL: url,
   timeout: 10000, // 10 segundos de timeout
@@ -9,7 +9,7 @@ const apiClient: AxiosInstance = axios.create({
     "Content-Type": "application/json",
   },
 });
-// Interceptor para manejar respuestas y errores globales
+// Interceptor para manejar respuestas y errores globaless
 apiClient.interceptors.response.use(
     (response) => response,
     (error) => {
