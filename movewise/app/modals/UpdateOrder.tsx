@@ -1,4 +1,4 @@
-import { Modal, View, Text, TextInput, TouchableOpacity, StyleSheet, useColorScheme, Alert } from 'react-native';
+import { Modal, View, Text, ScrollView, TextInput, TouchableOpacity, StyleSheet, useColorScheme, Alert } from 'react-native';
 import DropDownPicker from "react-native-dropdown-picker";
 import { useState, useEffect } from 'react';
 import { ThemedView } from '../../components/ThemedView';
@@ -43,6 +43,12 @@ interface UpdateOrderModalProps {
 }
 
 export default function UpdateOrderModal({ visible = true, onClose, orderData }: UpdateOrderModalProps) {
+
+  if (!orderData) {
+    console.error("orderData is null or undefined");
+    return null; // O puedes mostrar un mensaje de error
+  }
+  console.log(orderData)
   const router = useRouter();
   const [stateDropdownOpen, setStateDropdownOpen] = useState(false);
   const [jobDropdownOpen, setJobDropdownOpen] = useState(false);
@@ -190,9 +196,14 @@ export default function UpdateOrderModal({ visible = true, onClose, orderData }:
       <View style={{ flex: 1, backgroundColor: isDarkMode ? '#112A4A' : '#FFFFFF' }}>
         <KeyboardAwareView style={{ flex: 1 }}>
           {/* Wrap children in a single parent View */}
-          <View style={{ flex: 1 }}>
+          <ScrollView
+            contentContainerStyle={{ flexGrow: 1 }}
+            keyboardShouldPersistTaps="handled"
+            nestedScrollEnabled={true}
+          >
             <View style={[styles.header, { backgroundColor: isDarkMode ? '#1E3A5F' : '#0458AB' }]}>
               <Text style={[styles.headerText, { color: '#FFFFFF' }]}>Edit Order</Text>
+              <Text style={{ color: '#FFFFFF' }}>current order: {orderData.key}</Text>
             </View>
 
             <ThemedView style={{ padding: 16, flex: 1, backgroundColor: isDarkMode ? '#112A4A' : '#FFFFFF' }}><View style={styles.inputContainer}>
@@ -336,7 +347,7 @@ export default function UpdateOrderModal({ visible = true, onClose, orderData }:
               <TouchableOpacity style={styles.operatorsButton} onPress={() => setAddOperatorVisible(true)}>
                 <Text style={[styles.operatorsButtonText, { color: isDarkMode ? '#A1C6EA' : '#0458AB' }]}>Edit Operators</Text>
               </TouchableOpacity>
-              <OperatorModal visible={addOperatorVisible} onClose={() => setAddOperatorVisible(false)} /> 
+              <OperatorModal visible={addOperatorVisible} onClose={() => setAddOperatorVisible(false)} orderKey={orderData.key} /> 
 
               <View style={styles.buttonContainer}>
                 <TouchableOpacity
@@ -356,7 +367,7 @@ export default function UpdateOrderModal({ visible = true, onClose, orderData }:
                 </TouchableOpacity>
               </View>
             </ThemedView>
-          </View>
+          </ScrollView>
         </KeyboardAwareView>
       </View>
     </Modal>
