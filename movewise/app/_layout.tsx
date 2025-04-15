@@ -6,6 +6,7 @@ import { StatusBar } from 'expo-status-bar';
 import { useEffect } from 'react';
 import { View } from 'react-native';
 import 'react-native-reanimated';
+import { AlertNotificationRoot } from "react-native-alert-notification";
 
 import { useColorScheme } from '@/hooks/useColorScheme';
 
@@ -32,11 +33,13 @@ export default function RootLayout() {
   }
 
   return (
+    <AlertNotificationRoot>
     <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
       <Stack screenOptions={{ headerShown: false }}>
         <Stack.Screen name="+not-found" />
       </Stack>
       <StatusBar style="auto" />
     </ThemeProvider>
+    </AlertNotificationRoot>
   );
 }

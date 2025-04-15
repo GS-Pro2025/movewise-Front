@@ -3,7 +3,6 @@ import DropDownPicker from "react-native-dropdown-picker";
 import { useState, useEffect } from 'react';
 import { ThemedView } from '../../components/ThemedView';
 import { Image } from 'react-native';
-import { useRouter } from "expo-router";
 import AddOrderformApi from '@/hooks/api/AddOrderFormApi';
 import { AddOrderForm } from '@/models/ModelAddOrderForm';
 import DateTimePickerModal from "react-native-modal-datetime-picker";
@@ -13,6 +12,7 @@ import { job } from '@/models/ModelJob';
 import { ListJobs } from '@/hooks/api/JobClient';
 import { ListCompanies } from '@/hooks/api/CompanyClient';
 import { ListStates } from '@/hooks/api/StatesClient';
+import OperatorModal from './OperatorModal';
 
 interface AddOrderModalProps {
   visible: boolean;
@@ -40,10 +40,12 @@ export default function AddOrderModal({ visible, onClose }: AddOrderModalProps) 
   const [jobList, setJobList] = useState<job[]>([]);
   const [companyList, setCompanyList] = useState<any[]>([]);
   const [stateList, setStateList] = useState<any[]>([]);
+  const [operatorModalVisible, setOperatorModalVisible] = useState(false); // State for OperatorModal visibility
+  const [savedOrderKey, setSavedOrderKey] = useState<string | null>(null); // State to store saved order key
 
-  const router = useRouter();
   const { saveOrder, isLoading, error } = AddOrderformApi();
 
+ 
   const handleSave = async () => {
     if (!validateFields()) return;
     const orderData: AddOrderForm = {
@@ -68,12 +70,10 @@ export default function AddOrderModal({ visible, onClose }: AddOrderModalProps) 
       const savedOrder = await saveOrder(orderData);
       console.log('info', savedOrder);
       if (savedOrder) {
-        console.log('Order saved successfully!', saveOrder);
+        console.log('Order saved successfully!', savedOrder);
         alert("Order saved successfully!");
-        setTimeout(() => {
-          onClose();
-          router.push("/modals/OperatorModal");
-        }, 3000); 
+        setSavedOrderKey(savedOrder.key); // Store the key from savedOrder
+        setOperatorModalVisible(true); // Show OperatorModal instead of pushing to it
       }
       console.log("Saving order...", orderData);
     } catch (error) {
@@ -384,6 +384,9 @@ export default function AddOrderModal({ visible, onClose }: AddOrderModalProps) 
                 </TouchableOpacity>
               </View>
             </ThemedView>
+
+            {/* Operator Modal */}
+            <OperatorModal visible={operatorModalVisible} onClose={() => setOperatorModalVisible(false)} orderKey={savedOrderKey} />
           </ScrollView>
         </KeyboardAvoidingView>
       </SafeAreaView>
