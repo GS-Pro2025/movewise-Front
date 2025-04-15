@@ -8,6 +8,7 @@ import { Ionicons } from '@expo/vector-icons';
 import BaseOperatorView, { Assignment } from "../../components/operator/BaseOperator";
 import AssignmentItem from "../../components/operator/AssignmentItem";
 import AssignmentDetails from "./assignmentDetails";
+import TruckDetail from "./TruckDetail"; // Importar el componente TruckDetail
 
 const OperatorView = () => {
     const params = useLocalSearchParams();
@@ -76,15 +77,22 @@ const OperatorView = () => {
                 )}
             />
 
-            {/* here render the modal */}
+            {/* aquí renderizar el modal */}
             {selected && (
-                <AssignmentDetails
-                    visible={modalVisible}
-                    onClose={handleClose}
-                    assignment={selected}
-                    operatorId={operatorId}
-                    type={type}
-                />
+                isTruckView ? (
+                    <TruckDetail
+                        visible={modalVisible}
+                        onClose={handleClose}
+                    />
+                ) : (
+                    <AssignmentDetails
+                        visible={modalVisible}
+                        onClose={handleClose}
+                        assignment={selected}
+                        operatorId={operatorId}
+                        type={type}
+                    />
+                )
             )}
         </SafeAreaView>
     );
