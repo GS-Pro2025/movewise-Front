@@ -19,10 +19,11 @@ const LoginComponent: React.FC = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [remember, setRemember] = useState(false);
+  const [errors, setErrors] = useState<{ email?: string; password?: string }>({});
   const theme = useColorScheme();
   const router = useRouter();
 
-  // Cargar datos guardados en cahcé
+  // Load saved credentials from cache
   useEffect(() => {
     const loadStoredCredentials = async () => {
       try {
@@ -35,19 +36,40 @@ const LoginComponent: React.FC = () => {
           setRemember(true);
         }
       } catch (err) {
-        console.warn("Error al cargar credenciales guardadas", err);
+        console.warn("Error loading saved credentials", err);
       }
     };
 
     loadStoredCredentials();
   }, []);
 
+  const validateFields = () => {
+    const newErrors: { email?: string; password?: string } = {};
+
+    if (!email.trim()) {
+      newErrors.email = "Email is required.";
+    } else if (!/\S+@\S+\.\S+/.test(email)) {
+      newErrors.email = "Invalid email format.";
+    }
+
+    if (!password.trim()) {
+      newErrors.password = "Password is required.";
+    } else if (password.length < 6) {
+      newErrors.password = "Password must be at least 6 characters long.";
+    }
+
+    setErrors(newErrors);
+
+    return Object.keys(newErrors).length === 0; // Return true if no errors
+  };
+
   const handleLogin = async () => {
-    if (!email || !password) {
+    if (!validateFields()) {
+      // Show error toast if validation fails
       Toast.show({
         type: "error",
-        text1: "Campos incompletos",
-        text2: "Por favor, completa todos los campos.",
+        text1: "Validation Error",
+        text2: "Please fix the errors before submitting.",
       });
       return;
     }
@@ -55,7 +77,7 @@ const LoginComponent: React.FC = () => {
     try {
       const response = await loginUser({ email, password });
 
-      // Guardar o limpiar credenciales
+      // Save or clear credentials
       if (remember) {
         await AsyncStorage.setItem("savedEmail", email);
         await AsyncStorage.setItem("savedPassword", password);
@@ -66,17 +88,16 @@ const LoginComponent: React.FC = () => {
 
       Toast.show({
         type: "success",
-        text1: "Login exitoso",
-        text2: `Bienvenido/a ${response.name ?? "usuario"}`,
+        text1: "Login Successful",
+        text2: `Welcome ${response.name ?? "user"}`,
       });
 
       router.push("/Home");
-
     } catch (error: any) {
       Toast.show({
         type: "error",
-        text1: "Error de autenticación",
-        text2: error.message || "Login fallido",
+        text1: "Authentication Error",
+        text2: error.message || "Login failed",
       });
     }
   };
@@ -91,20 +112,24 @@ const LoginComponent: React.FC = () => {
       <View style={styles.container}>
         <Text style={styles.title}>Welcome to{"\n"}Movewise</Text>
         <TextInput
-          style={styles.input}
+          style={[styles.input, errors.email && styles.inputError]}
           placeholder="Email"
           placeholderTextColor="#333"
           value={email}
           onChangeText={setEmail}
         />
+        {errors.email && <Text style={styles.errorText}>{errors.email}</Text>}
+
         <TextInput
-          style={styles.input}
+          style={[styles.input, errors.password && styles.inputError]}
           placeholder="Password"
           placeholderTextColor="#333"
           secureTextEntry
           value={password}
           onChangeText={setPassword}
         />
+        {errors.password && <Text style={styles.errorText}>{errors.password}</Text>}
+
         <View style={styles.row}>
           <View style={styles.checkboxContainer}>
             <Checkbox value={remember} onValueChange={setRemember} color="#0458AB" />
@@ -121,10 +146,16 @@ const LoginComponent: React.FC = () => {
           <Text style={styles.buttonText}>OPERATOR DAILY WORK</Text>
         </TouchableOpacity>
         <Text style={styles.bottomText}>Don't have a company?</Text>
-        <TouchableOpacity style={styles.button}>
+        <TouchableOpacity
+          style={styles.button}
+          onPress={() => router.push("/CompanyRegister")}
+        >
           <Text style={styles.buttonText}>REGISTER COMPANY</Text>
         </TouchableOpacity>
       </View>
+
+      {/* Toast Component */}
+      <Toast />
     </ImageBackground>
   );
 };
@@ -153,10 +184,18 @@ const styles = StyleSheet.create({
     borderColor: "#0458AB",
     borderRadius: 10,
     paddingHorizontal: 16,
-    marginBottom: 16,
+    marginBottom: 8,
     backgroundColor: "#fff",
     fontSize: 16,
     color: "#000",
+  },
+  inputError: {
+    borderColor: "#FF0000", // Highlight input with error in red
+  },
+  errorText: {
+    color: "#FF0000",
+    fontSize: 12,
+    marginBottom: 8,
   },
   row: {
     flexDirection: "row",

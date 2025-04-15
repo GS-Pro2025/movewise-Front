@@ -9,3 +9,13 @@ export const ListCompanies = async () => {
     throw error;
   }
 };
+
+export const CreateCompany = async (companyData: any) => {
+  try {
+    const response = await apiClient.post('/companies/', companyData);
+    return response.data;
+  } catch (error) {
+    console.error('Error al crear company:', error);
+    throw error;
+  }
+}
