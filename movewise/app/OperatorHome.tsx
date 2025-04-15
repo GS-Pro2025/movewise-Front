@@ -35,7 +35,6 @@ const Home: React.FC = () => {
     const theme = useColorScheme();
     const isDarkMode = theme === "dark";
     const [operator, setOperator] = useState<Operator | null>(null);
-    const [workDailyVisible, setWorkDailyVisible] = useState(false);
     useEffect(() => {
         const loadOperator = async () => {
             const operatorData = await AsyncStorage.getItem("currentUser");
@@ -94,15 +93,24 @@ const Home: React.FC = () => {
                             isDarkMode={isDarkMode}
                             iconSource={require("../assets/images/workDailyIcon.png")}
                             onPress={() => router.push({
-                                pathname: "/modals/WorkDailyOperator",
-                                params: { operatorId: operator?.id }  // 👈 Forma correcta
+                                pathname: "/modals/OperatorView",
+                                params: {
+                                    type: "work",
+                                    operatorId: operator?.id
+                                }
                             })}
                         />
                         <ActionButton
                             title={"Truck\nDaily"}
                             isDarkMode={isDarkMode}
                             iconSource={require("../assets/images/truck.png")}
-                            onPress={() => router.push("/modals/TruckModal")}
+                            onPress={() => router.push({
+                                pathname: "/modals/OperatorView",
+                                params: {
+                                    type: "truck",
+                                    operatorId: operator?.id
+                                }
+                            })}
                         />
                     </View>
                     <View style={styles.row}>
