@@ -82,6 +82,7 @@ const Home: React.FC = () => {
               isDarkMode={isDarkMode}
               iconSource={require("../assets/images/dolar.png")}
               onPress={() => router.push("/modals/EditOrder")}
+              
             />
           </View>
           <View style={styles.row}>
@@ -89,6 +90,7 @@ const Home: React.FC = () => {
               title={"Edit\nDaily"}
               isDarkMode={isDarkMode}
               iconSource={require("../assets/images/paquete.png")}
+              onPress={() => router.push("/modals/CreateOperator2")}//aqui estoy trabajando yo
             />
             <ActionButton
               title={"Resume\nOrder"}
@@ -101,6 +103,7 @@ const Home: React.FC = () => {
               title={"Create\nTruck"}
               isDarkMode={isDarkMode}
               iconSource={require("../assets/images/truck.png")}
+              onPress={() => router.push("/modals/ListTruckModal")}
             />
             <ActionButton
               title={"Collaborator\nRegistration"}
