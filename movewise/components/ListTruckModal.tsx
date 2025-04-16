@@ -3,7 +3,7 @@ import { useState, useEffect, useCallback } from "react";
 import { Ionicons } from '@expo/vector-icons';
 import { GestureHandlerRootView, Swipeable } from "react-native-gesture-handler";
 import { TouchableHighlight } from "react-native";
-import { ListTruck, DeleteTruck } from "../hooks/api/TruckClient"; // Import TruckClient methods
+import { ListTruck, UpdateTruckStatus } from "../hooks/api/TruckClient"; // Import TruckClient methods
 import CreateTruckScreen from "../app/modals/CreateTruck"; // Updated import for CreateTruck
 import UpdateTruckModal from "../app/modals/UpdateTruckModal"; // Component for updating a truck
 import CreateTruckModal from "../app/modals/CreateTruck";
@@ -82,7 +82,7 @@ const ListTruckModal: React.FC<ListTruckModalProps> = ({ visible, onClose }) => 
           text: "Delete",
           onPress: async () => {
             try {
-              await DeleteTruck(id);
+              await UpdateTruckStatus(id, 'false');
               setTrucks(prev => prev.filter(truck => truck.id !== id));
             } catch (error) {
               console.error("Error deleting truck:", error);

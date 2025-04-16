@@ -13,22 +13,44 @@ import Toast from "react-native-toast-message";
 const RegisterCompany = () => {
   const [license, setLicense] = useState("");
   const [companyName, setCompanyName] = useState("");
-  const [errors, setErrors] = useState<{ license?: string; companyName?: string }>({});
+  const [address, setAddress] = useState("");
+  const [zipCode, setZipCode] = useState("");
+  const [errors, setErrors] = useState<{
+    license?: string;
+    companyName?: string;
+    address?: string;
+    zipCode?: string;
+  }>({});
   const router = useRouter();
 
   const validateFields = () => {
-    const newErrors: { license?: string; companyName?: string } = {};
+    const newErrors: {
+      license?: string;
+      companyName?: string;
+      address?: string;
+      zipCode?: string;
+    } = {};
 
     if (!license.trim()) {
-      newErrors.license = "License is required.";
+      newErrors.license = "License Number is required.";
     } else if (license.length < 5) {
-      newErrors.license = "License must be at least 5 characters long.";
+      newErrors.license = "License Number must be at least 5 characters long.";
     }
 
     if (!companyName.trim()) {
-      newErrors.companyName = "Company Name is required.";
+      newErrors.companyName = "Name is required.";
     } else if (companyName.length < 3) {
-      newErrors.companyName = "Company Name must be at least 3 characters long.";
+      newErrors.companyName = "Name must be at least 3 characters long.";
+    }
+
+    if (!address.trim()) {
+      newErrors.address = "Address is required.";
+    }
+
+    if (!zipCode.trim()) {
+      newErrors.zipCode = "Zip Code is required.";
+    } else if (isNaN(Number(zipCode))) {
+      newErrors.zipCode = "Zip Code must be a valid number.";
     }
 
     setErrors(newErrors);
@@ -42,6 +64,8 @@ const RegisterCompany = () => {
       const companyData = {
         license,
         company_name: companyName,
+        address,
+        zip_code: zipCode,
       };
 
       Toast.show({
@@ -76,7 +100,7 @@ const RegisterCompany = () => {
 
           <TextInput
             style={[styles.input, errors.license && styles.inputError]}
-            placeholder="License"
+            placeholder="License Number"
             placeholderTextColor="#888"
             value={license}
             onChangeText={setLicense}
@@ -85,12 +109,31 @@ const RegisterCompany = () => {
 
           <TextInput
             style={[styles.input, errors.companyName && styles.inputError]}
-            placeholder="Company Name"
+            placeholder="Name"
             placeholderTextColor="#888"
             value={companyName}
             onChangeText={setCompanyName}
           />
           {errors.companyName && <Text style={styles.errorText}>{errors.companyName}</Text>}
+
+          <TextInput
+            style={[styles.input, errors.address && styles.inputError]}
+            placeholder="Address"
+            placeholderTextColor="#888"
+            value={address}
+            onChangeText={setAddress}
+          />
+          {errors.address && <Text style={styles.errorText}>{errors.address}</Text>}
+
+          <TextInput
+            style={[styles.input, errors.zipCode && styles.inputError]}
+            placeholder="Zip Code"
+            placeholderTextColor="#888"
+            value={zipCode}
+            onChangeText={setZipCode}
+            keyboardType="numeric"
+          />
+          {errors.zipCode && <Text style={styles.errorText}>{errors.zipCode}</Text>}
 
           <TouchableOpacity style={styles.button} onPress={handleRegister}>
             <Text style={styles.buttonText}>REGISTER COMPANY</Text>

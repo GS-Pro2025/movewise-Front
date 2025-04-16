@@ -9,6 +9,9 @@ interface Person {
     address: string;
     id_number: number;
     type_id: string;
+    state: string; // Added state
+    city: string;  // Added city
+    zip_code: string; // Added zip_code
 }
 
 interface RegisterRequestBody {

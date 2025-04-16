@@ -12,7 +12,7 @@ import { useLocalSearchParams, useRouter } from "expo-router";
 import Toast from "react-native-toast-message";
 import { CreateCompany } from "../../hooks/api/CompanyClient";
 import { registerUser } from "../../hooks/api/RegistryClient";
- // Adjust the path as necessary
+
 const RegistryUser = () => {
   const router = useRouter();
   const { company } = useLocalSearchParams(); // Retrieve the company object
@@ -22,11 +22,27 @@ const RegistryUser = () => {
   const [password, setPassword] = useState("");
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
+  const [birthDate, setBirthDate] = useState("");
+  const [idType, setIdType] = useState("");
+  const [idNumber, setIdNumber] = useState("");
+  const [state, setState] = useState("");
+  const [city, setCity] = useState("");
+  const [zipCode, setZipCode] = useState("");
+  const [address, setAddress] = useState("");
+  const [phone, setPhone] = useState("");
   const [errors, setErrors] = useState<{
     email?: string;
     password?: string;
     firstName?: string;
     lastName?: string;
+    birthDate?: string;
+    idType?: string;
+    idNumber?: string;
+    state?: string;
+    city?: string;
+    zipCode?: string;
+    address?: string;
+    phone?: string;
   }>({});
 
   const validateFields = () => {
@@ -35,6 +51,14 @@ const RegistryUser = () => {
       password?: string;
       firstName?: string;
       lastName?: string;
+      birthDate?: string;
+      idType?: string;
+      idNumber?: string;
+      state?: string;
+      city?: string;
+      zipCode?: string;
+      address?: string;
+      phone?: string;
     } = {};
 
     if (!email.trim()) {
@@ -57,6 +81,38 @@ const RegistryUser = () => {
       newErrors.lastName = "Last Name is required.";
     }
 
+    if (!birthDate.trim()) {
+      newErrors.birthDate = "Date of Birth is required.";
+    }
+
+    if (!idType.trim()) {
+      newErrors.idType = "Identification Type is required.";
+    }
+
+    if (!idNumber.trim()) {
+      newErrors.idNumber = "ID Number is required.";
+    }
+
+    if (!state.trim()) {
+      newErrors.state = "State is required.";
+    }
+
+    if (!city.trim()) {
+      newErrors.city = "City is required.";
+    }
+
+    if (!zipCode.trim()) {
+      newErrors.zipCode = "Zip Code is required.";
+    }
+
+    if (!address.trim()) {
+      newErrors.address = "Address is required.";
+    }
+
+    if (!phone.trim()) {
+      newErrors.phone = "Phone is required.";
+    }
+
     setErrors(newErrors);
 
     return Object.keys(newErrors).length === 0; // Return true if no errors
@@ -77,11 +133,14 @@ const RegistryUser = () => {
             email,
             first_name: firstName,
             last_name: lastName,
-            birth_date: "1995-08-20", // Example birth date
-            phone: 3101234567, // Example phone
-            address: "Example Street 456", // Example address
-            id_number: 44411233, // Example ID number
-            type_id: "ID Card", // Example type ID
+            birth_date: birthDate,
+            phone,
+            address,
+            id_number: idNumber,
+            type_id: idType,
+            state,
+            city,
+            zip_code: zipCode,
           },
         };
 
@@ -121,25 +180,6 @@ const RegistryUser = () => {
         <Text style={styles.title}>Register User for {companyData?.company_name}</Text>
 
         <TextInput
-          style={[styles.input, errors.email && styles.inputError]}
-          placeholder="Email"
-          placeholderTextColor="#888"
-          value={email}
-          onChangeText={setEmail}
-        />
-        {errors.email && <Text style={styles.errorText}>{errors.email}</Text>}
-
-        <TextInput
-          style={[styles.input, errors.password && styles.inputError]}
-          placeholder="Password"
-          placeholderTextColor="#888"
-          secureTextEntry
-          value={password}
-          onChangeText={setPassword}
-        />
-        {errors.password && <Text style={styles.errorText}>{errors.password}</Text>}
-
-        <TextInput
           style={[styles.input, errors.firstName && styles.inputError]}
           placeholder="First Name"
           placeholderTextColor="#888"
@@ -156,6 +196,78 @@ const RegistryUser = () => {
           onChangeText={setLastName}
         />
         {errors.lastName && <Text style={styles.errorText}>{errors.lastName}</Text>}
+
+        <TextInput
+          style={[styles.input, errors.birthDate && styles.inputError]}
+          placeholder="Date of Birth"
+          placeholderTextColor="#888"
+          value={birthDate}
+          onChangeText={setBirthDate}
+        />
+        {errors.birthDate && <Text style={styles.errorText}>{errors.birthDate}</Text>}
+
+        <TextInput
+          style={[styles.input, errors.idType && styles.inputError]}
+          placeholder="Identification Type"
+          placeholderTextColor="#888"
+          value={idType}
+          onChangeText={setIdType}
+        />
+        {errors.idType && <Text style={styles.errorText}>{errors.idType}</Text>}
+
+        <TextInput
+          style={[styles.input, errors.idNumber && styles.inputError]}
+          placeholder="ID Number"
+          placeholderTextColor="#888"
+          value={idNumber}
+          onChangeText={setIdNumber}
+        />
+        {errors.idNumber && <Text style={styles.errorText}>{errors.idNumber}</Text>}
+
+        <TextInput
+          style={[styles.input, errors.state && styles.inputError]}
+          placeholder="State"
+          placeholderTextColor="#888"
+          value={state}
+          onChangeText={setState}
+        />
+        {errors.state && <Text style={styles.errorText}>{errors.state}</Text>}
+
+        <TextInput
+          style={[styles.input, errors.city && styles.inputError]}
+          placeholder="City"
+          placeholderTextColor="#888"
+          value={city}
+          onChangeText={setCity}
+        />
+        {errors.city && <Text style={styles.errorText}>{errors.city}</Text>}
+
+        <TextInput
+          style={[styles.input, errors.zipCode && styles.inputError]}
+          placeholder="Zip Code"
+          placeholderTextColor="#888"
+          value={zipCode}
+          onChangeText={setZipCode}
+        />
+        {errors.zipCode && <Text style={styles.errorText}>{errors.zipCode}</Text>}
+
+        <TextInput
+          style={[styles.input, errors.address && styles.inputError]}
+          placeholder="Address"
+          placeholderTextColor="#888"
+          value={address}
+          onChangeText={setAddress}
+        />
+        {errors.address && <Text style={styles.errorText}>{errors.address}</Text>}
+
+        <TextInput
+          style={[styles.input, errors.phone && styles.inputError]}
+          placeholder="Phone"
+          placeholderTextColor="#888"
+          value={phone}
+          onChangeText={setPhone}
+        />
+        {errors.phone && <Text style={styles.errorText}>{errors.phone}</Text>}
 
         <TouchableOpacity style={styles.button} onPress={handleRegister}>
           <Text style={styles.buttonText}>REGISTER USER</Text>
