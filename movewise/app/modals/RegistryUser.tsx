@@ -12,6 +12,7 @@ import { useLocalSearchParams, useRouter } from "expo-router";
 import Toast from "react-native-toast-message";
 import { CreateCompany } from "../../hooks/api/CompanyClient";
 import { registerUser } from "../../hooks/api/RegistryClient";
+import HeaderWithDivider from "@/components/HeaderWithDivider";
 
 const RegistryUser = () => {
   const router = useRouter();
@@ -130,16 +131,16 @@ const RegistryUser = () => {
           user_name: `${firstName}.${lastName}`, // Example user_name generation
           password,
           person: {
-            email,
+            email: email,
             first_name: firstName,
             last_name: lastName,
             birth_date: birthDate,
-            phone,
-            address,
+            phone: phone,
+            address: address,
             id_number: idNumber,
             type_id: idType,
-            state,
-            city,
+            state: state,
+            city: city,
             zip_code: zipCode,
           },
         };
@@ -176,9 +177,37 @@ const RegistryUser = () => {
       style={styles.background}
       resizeMode="cover"
     >
-      <ScrollView contentContainerStyle={styles.container}>
-        <Text style={styles.title}>Register User for {companyData?.company_name}</Text>
+    <ScrollView contentContainerStyle={styles.container}>
+      <Text style={styles.title}>Register User for {companyData?.company_name}</Text>
 
+      {/* Sección de credenciales */}
+      <View style={styles.separator} />
+      <View style={styles.section}>
+        <Text style={styles.textUserFields}>User admin credentials</Text>
+        <TextInput
+          style={[styles.input, errors.email && styles.inputError]}
+          placeholder="Email"
+          placeholderTextColor="#888"
+          value={email}
+          onChangeText={setEmail}
+          keyboardType="email-address"
+          autoCapitalize="none"
+        />
+        {errors.email && <Text style={styles.errorText}>{errors.email}</Text>}
+
+        <TextInput
+          style={[styles.input, errors.password && styles.inputError]}
+          placeholder="Password"
+          placeholderTextColor="#888"
+          value={password}
+          onChangeText={setPassword}
+          secureTextEntry
+        />
+        {errors.password && <Text style={styles.errorText}>{errors.password}</Text>}
+      </View>
+      <View style={styles.separator} />
+      {/* Resto de campos */}
+      <View style={styles.section}>
         <TextInput
           style={[styles.input, errors.firstName && styles.inputError]}
           placeholder="First Name"
@@ -268,12 +297,11 @@ const RegistryUser = () => {
           onChangeText={setPhone}
         />
         {errors.phone && <Text style={styles.errorText}>{errors.phone}</Text>}
-
         <TouchableOpacity style={styles.button} onPress={handleRegister}>
-          <Text style={styles.buttonText}>REGISTER USER</Text>
-        </TouchableOpacity>
-      </ScrollView>
-
+        <Text style={styles.buttonText}>REGISTER USER</Text>
+      </TouchableOpacity>
+      </View>
+    </ScrollView>
       {/* Toast Component */}
       <Toast />
     </ImageBackground>
@@ -281,13 +309,33 @@ const RegistryUser = () => {
 };
 
 const styles = StyleSheet.create({
+
   background: {
     flex: 1,
+  },
+  separator: {
+    borderBottomWidth: 1,
+    borderBottomColor: "#000000",
+    marginVertical: 6,
+  },
+  textUserFields:{
+    fontSize: 20,
+    fontWeight: "bold",
+    textAlign: "center",
+    justifyContent: "center",
+    marginTop: 20,
+    marginBottom: 10
+  },
+  section: {
+    marginTop: 12,
+    marginBottom: 12,
   },
   container: {
     flexGrow: 1,
     paddingHorizontal: 32,
     justifyContent: "center",
+    paddingBottom: 80,
+    marginTop: 50
   },
   title: {
     fontSize: 24,
