@@ -1,8 +1,11 @@
 import apiClient from './apiClient';
 import { ModelAddTruck } from "@/models/ModelAddTruck";
 
-export interface Truck extends ModelAddTruck {
+interface Truck {
   id: string;
+  licensePlate: string;
+  model: string;
+  capacity: string;
   status: string;
 }
 

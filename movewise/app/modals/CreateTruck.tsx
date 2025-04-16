@@ -14,8 +14,12 @@ import { CreateTruck } from "@/hooks/api/TruckClient";
 import { ModelAddTruck } from "@/models/ModelAddTruck";
 import DropDownPicker from "react-native-dropdown-picker";
 import Toast from "react-native-toast-message";
+type CreateTruckScreenProps = {
+  visible: boolean;
+  onClose: () => void;
+};
 
-const CreateTruckScreen: React.FC = () => {
+const CreateTruckScreen = ({ visible, onClose }: CreateTruckScreenProps) => {
   const navigation = useNavigation();
   const [type, setType] = useState("");
   const [category, setCategory] = useState("");
@@ -91,7 +95,8 @@ const CreateTruckScreen: React.FC = () => {
   };
 
   return (
-    <View style={styles.container}>
+    <Modal visible={visible} animationType="slide" onRequestClose={onClose}>
+      <View style={styles.container}>
       <HeaderWithDivider />
 
       <View style={styles.form}>
@@ -203,6 +208,7 @@ const CreateTruckScreen: React.FC = () => {
         </View>
       </Modal>
     </View>
+    </Modal>
   );
 };
 
