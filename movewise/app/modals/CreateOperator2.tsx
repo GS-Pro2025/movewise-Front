@@ -1,156 +1,123 @@
-"use client";
+"use client"
 
-import {
-  Modal,
-  SafeAreaView,
-  ScrollView,
-  View,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  StyleSheet,
-} from "react-native";
-import DropDownPicker from "react-native-dropdown-picker";
-import { useState, useEffect } from "react";
-import { ThemedView } from "../../components/ThemedView";
-import { useRouter } from "expo-router";
-import AddOrderformApi from "@/hooks/api/AddOrderFormApi";
-import type { AddOrderForm } from "@/models/ModelAddOrderForm";
-import DateTimePickerModal from "react-native-modal-datetime-picker";
-import { MaterialIcons } from "@expo/vector-icons";
-import { KeyboardAvoidingView, Platform } from "react-native";
-import type { job } from "@/models/ModelJob";
-import { ListJobs } from "@/hooks/api/JobClient";
-import { ListCompanies } from "@/hooks/api/CompanyClient";
-import { ListStates } from "@/hooks/api/StatesClient";
-import { Image, useColorScheme } from "react-native";
+import { Modal, SafeAreaView, ScrollView, Text, TextInput, TouchableOpacity } from "react-native"
+import { ThemedView } from "../../components/ThemedView"
+import { useRouter } from "expo-router"
+import DateTimePickerModal from "react-native-modal-datetime-picker"
+import { MaterialIcons } from "@expo/vector-icons"
+import { KeyboardAvoidingView, Platform } from "react-native"
+import { useColorScheme } from "react-native"
+import { useState, useEffect } from "react"
+import { Image, View, StyleSheet } from "react-native"
+import * as ImagePicker from "expo-image-picker"
 
-interface AddOrderModalProps {
-  visible: boolean;
-  onClose: () => void;
+interface CreateOperator2 {
+  visible: boolean
+  onClose: () => void
 }
 
-export default function AddOrderModal({
-  visible,
-  onClose,
-}: AddOrderModalProps) {
-  const [open, setOpen] = useState(false);
-  const [state, setState] = useState<string | null>(null);
-  const [searchTerm, setSearchTerm] = useState<string>(""); // State for search term
-  const [openJob, setOpenJob] = useState(false);
-  const [job, setJob] = useState<string | null>(null);
-  const [openCompany, setOpenCompany] = useState(false);
-  const [company, setCompany] = useState<string | null>(null);
-  const [date, setDate] = useState<string | null>(null);
-  const [isDatePickerVisible, setDatePickerVisibility] = useState(false);
-  const [keyReference, setKeyReference] = useState("");
-  const [customerName, setCustomerName] = useState("");
-  const [customerLastName, setCustomerLastName] = useState("");
-  const [cellPhone, setCellPhone] = useState("");
-  const [address, setAddress] = useState("");
-  const [email, setEmail] = useState("");
-  const [weight, setWeight] = useState("");
-  const [errors, setErrors] = useState<{ [key: string]: string }>({});
-  const [jobList, setJobList] = useState<job[]>([]);
-  const [companyList, setCompanyList] = useState<any[]>([]);
-  const [stateList, setStateList] = useState<any[]>([]);
-  const [hasDrivingLicense, setHasDrivingLicense] = useState<
-    "yes" | "no" | null
-  >(null);
-  const [selectedDrivingLicense, setSelectedDrivingLicense] = useState<
-    "yes" | "no" | null
-  >(null);
+export default function CreateOperator2({ visible, onClose }: CreateOperator2) {
+  const [date, setDate] = useState<string | null>(null)
+  const [isDatePickerVisible, setDatePickerVisibility] = useState(false)
+  const [Driving, setDriving] = useState("")
+  const [NameParent, setNameParent] = useState("")
+  const [CellPhone, setCellPhone] = useState("")
+  const [NumberChildren, setNumberChildren] = useState("")
 
-  const router = useRouter();
-  const { saveOrder, isLoading, error } = AddOrderformApi();
+  const [hasDrivingLicense, setHasDrivingLicense] = useState<"yes" | "no" | null>(null)
+  const [selectedDrivingLicense, setSelectedDrivingLicense] = useState<"yes" | "no" | null>(null)
+  const router = useRouter()
+  const [licencePhoto1, setLicencePhoto1] = useState<string | null>(null)
+  const [licencePhoto2, setLicencePhoto2] = useState<string | null>(null)
+  // Add new state variables for children
+  const [numberOfChildren, setNumberOfChildren] = useState("0")
+  const [showChildrenDropdown, setShowChildrenDropdown] = useState(false)
+  const [childrenData, setChildrenData] = useState<Array<{ name: string; birthDate: string }>>([])
+  const [childBirthDateIndex, setChildBirthDateIndex] = useState<number | null>(null)
 
-  const handleSave = async () => {
-    if (!validateFields()) return;
-    const orderData: AddOrderForm = {
-      status: "Pending",
-      date: date || "",
-      key_ref: keyReference,
-      address: address,
-      state_usa: state || "",
-      phone: cellPhone,
-      person: {
-        first_name: customerName,
-        last_name: customerLastName,
-        address: address,
-        email: email,
-      },
-      weight: weight,
-      job: job || "",
-      company: company || "",
-    };
-
-    try {
-      const savedOrder = await saveOrder(orderData);
-      console.log("info", savedOrder);
-      if (savedOrder) {
-        console.log("Order saved successfully!", saveOrder);
-        alert("Order saved successfully!");
-        setTimeout(() => {
-          onClose();
-          router.push("/modals/OperatorModal");
-        }, 3000);
-      }
-      console.log("Saving order...", orderData);
-    } catch (error) {
-      console.error("Error saving order:", error);
-    }
-  };
-
-  const fetchStates = async () => {
-    try {
-      const states = await ListStates();
-      setStateList(states);
-    } catch (error) {
-      console.error("Error fetching states:", error);
-    }
-  };
-
-  const fetchJobs = async () => {
-    try {
-      const jobs = await ListJobs();
-      setJobList(jobs);
-    } catch (error) {
-      console.error("Error fetching jobs:", error);
-    }
-  };
-
-  const fetchCompanies = async () => {
-    try {
-      const companies = await ListCompanies();
-      setCompanyList(companies);
-    } catch (error) {
-      console.error("Error fetching companies:", error);
-    }
-  };
+  const colorScheme = useColorScheme()
 
   useEffect(() => {
-    fetchJobs();
-    fetchCompanies();
-    fetchStates();
-  }, []);
+    ;(async () => {
+      const cameraStatus = await ImagePicker.requestCameraPermissionsAsync()
+      const mediaLibraryStatus = await ImagePicker.requestMediaLibraryPermissionsAsync()
+      if (cameraStatus.status !== "granted" || mediaLibraryStatus.status !== "granted") {
+        alert("Se necesitan permisos para acceder a la cámara y a la galería de fotos.")
+      }
+    })()
+  }, [])
 
-  //   const validateFields = () => {
-  //     const newErrors: { [key: string]: string } = {};
-  //     if (!state) newErrors.state = "State is required";
-  //     if (!date) newErrors.date = "Date is required";
-  //     if (!keyReference) newErrors.keyReference = "Key/Reference is required";
-  //     if (!customerName) newErrors.customerName = "Customer Name is required";
-  //     if (!customerLastName)
-  //       newErrors.customerLastName = "Customer Last Name is required";
-  //     if (!weight) newErrors.weight = "Weight is required";
-  //     if (!job) newErrors.job = "Job is required";
-  //     if (!company) newErrors.company = "Company is required";
+  // Update children data when number of children changes
+  useEffect(() => {
+    const count = Number.parseInt(numberOfChildren)
+    const newChildrenData = [...childrenData]
 
-  //     setErrors(newErrors);
-  //     return Object.keys(newErrors).length === 0;
-  //   };
+    // Add or remove children data as needed
+    while (newChildrenData.length < count) {
+      newChildrenData.push({ name: "", birthDate: "" })
+    }
+    while (newChildrenData.length > count) {
+      newChildrenData.pop()
+    }
 
-  const colorScheme = useColorScheme();
+    setChildrenData(newChildrenData)
+  }, [numberOfChildren])
+
+  const pickImage1 = async () => {
+    const result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.All,
+      allowsEditing: true,
+      aspect: [4, 3],
+      quality: 1,
+    })
+
+    console.log("Resultado de pickImage1:", result)
+
+    if (!result.canceled) {
+      setLicencePhoto1(result.assets[0].uri)
+    }
+  }
+
+  const pickImage2 = async () => {
+    const result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.All,
+      allowsEditing: true,
+      aspect: [4, 3],
+      quality: 1,
+    })
+
+    console.log("Resultado de pickImage2:", result)
+
+    if (!result.canceled) {
+      setLicencePhoto2(result.assets[0].uri)
+    }
+  }
+
+  const selectNumberOfChildren = (value: string) => {
+    setNumberOfChildren(value)
+    setShowChildrenDropdown(false)
+  }
+
+  const openChildDatePicker = (index: number) => {
+    setChildBirthDateIndex(index)
+    setDatePickerVisibility(true)
+  }
+
+  const handleDateConfirm = (selectedDate: Date) => {
+    setDatePickerVisibility(false)
+    const formattedDate = selectedDate.toISOString().split("T")[0]
+
+    if (childBirthDateIndex !== null) {
+      // Update child birth date
+      const newChildrenData = [...childrenData]
+      newChildrenData[childBirthDateIndex].birthDate = formattedDate
+      setChildrenData(newChildrenData)
+      setChildBirthDateIndex(null)
+    } else {
+      // Update license expiry date
+      setDate(formattedDate)
+    }
+  }
 
   const styles = StyleSheet.create({
     container: {
@@ -160,6 +127,62 @@ export default function AddOrderModal({
       borderRadius: 10,
       backgroundColor: colorScheme === "dark" ? "#112A4A" : "#ffffff",
     },
+    photoContainer: {
+      flexDirection: "row",
+      justifyContent: "space-around",
+      marginVertical: 10,
+    },
+    photoBox: {
+      width: 130,
+      height: 130,
+      borderWidth: 2,
+      borderColor: "#0458AB",
+      borderRadius: 8,
+      justifyContent: "center",
+      alignItems: "center",
+      marginBottom: 5,
+    },
+    photoLabel: {
+      color: "#0458AB",
+      fontWeight: "bold",
+      fontSize: 16,
+      marginTop: 5,
+      paddingTop:20,
+    },
+    photoImage: {
+      width: "100%",
+      height: "100%",
+      borderRadius: 6,
+    },
+    photoPlaceholder: {
+      width: "100%",
+      height: "100%",
+      justifyContent: "center",
+      alignItems: "center",
+    },
+    photoCircle: {
+      width: 20,
+      height: 20,
+      borderRadius: 10,
+      borderWidth: 2,
+      borderColor: "#0458AB",
+      position: "absolute",
+      top: "30%",
+      left: "30%",
+    },
+    photoMountain: {
+      width: 80,
+      height: 40,
+      borderBottomWidth: 2,
+      borderLeftWidth: 2,
+      borderRightWidth: 2,
+      borderColor: "#0458AB",
+      borderBottomLeftRadius: 40,
+      borderBottomRightRadius: 40,
+      position: "absolute",
+      bottom: "30%",
+      transform: [{ rotate: "10deg" }],
+    },
     header: {
       backgroundColor: colorScheme === "dark" ? "#112A4A" : "#ffffff",
       paddingVertical: 5,
@@ -167,15 +190,7 @@ export default function AddOrderModal({
       alignItems: "center",
       justifyContent: "center",
       borderBottomWidth: 2,
-      borderBottomColor:
-        colorScheme === "dark" ? "rgba(0, 0, 0, 0.2)" : "rgba(0, 0, 0, 0.1)",
-    },
-    image: {
-      width: 50,
-      height: 50,
-      resizeMode: "contain",
-      position: "absolute",
-      left: 10,
+      borderBottomColor: colorScheme === "dark" ? "rgba(0, 0, 0, 0.2)" : "rgba(0, 0, 0, 0.1)",
     },
     text: {
       fontSize: 14,
@@ -219,7 +234,7 @@ export default function AddOrderModal({
       marginRight: 8,
     },
     buttonBack: {
-      backgroundColor: colorScheme === "dark" ? "#0458AB" : "#60A3D9",
+      backgroundColor: colorScheme === "dark" ? "#545257" : "#0458AB",
       padding: 10,
       borderRadius: 6,
       flex: 1,
@@ -227,7 +242,7 @@ export default function AddOrderModal({
       marginRight: 8,
     },
     buttonNext: {
-      backgroundColor: colorScheme === "dark" ? "#FFFFFF" : "#0458AB",
+      backgroundColor: colorScheme === "dark" ? "#FFFFFF" : "#60A3D9",
       padding: 10,
       borderRadius: 6,
       flex: 1,
@@ -238,11 +253,11 @@ export default function AddOrderModal({
       fontWeight: "bold",
     },
     buttonTextBack: {
-      color: colorScheme === "dark" ? "#0458AB" : "#FFFFFF",
+      color: colorScheme === "dark" ? "#ffffff" : "#FFFFFF",
       fontWeight: "bold",
     },
     buttonTextNext: {
-      color: colorScheme === "dark" ? "#ffffff" : "#FFFFFF",
+      color: colorScheme === "dark" ? "#0458AB" : "#FFFFFF",
       fontWeight: "bold",
     },
     required: {
@@ -253,10 +268,60 @@ export default function AddOrderModal({
       height: 40,
       marginBottom: 10,
       marginTop: 10,
-      padding: 20,
+      padding: 0,
       alignSelf: "center",
     },
-  });
+    // Add new styles for the dropdown
+    dropdownButton: {
+      borderWidth: 2,
+      borderColor: colorScheme === "dark" ? "#9ca3af" : "#0458AB",
+      backgroundColor: colorScheme === "dark" ? "#FFFFFF36" : "#ffffff",
+      padding: 10,
+      borderRadius: 8,
+      flexDirection: "row",
+      justifyContent: "space-between",
+      alignItems: "center",
+      marginBottom: 10,
+    },
+    dropdownText: {
+      color: colorScheme === "dark" ? "#ffffff" : "#1f2937",
+    },
+    dropdownMenu: {
+      position: "absolute",
+      top: 45,
+      left: 0,
+      right: 0,
+      backgroundColor: colorScheme === "dark" ? "#112A4A" : "#ffffff",
+      borderWidth: 2,
+      borderColor: colorScheme === "dark" ? "#9ca3af" : "#0458AB",
+      borderRadius: 8,
+      zIndex: 1000,
+      elevation: 5,
+    },
+    dropdownItem: {
+      padding: 10,
+      borderBottomWidth: 1,
+      borderBottomColor: colorScheme === "dark" ? "#9ca3af" : "#e5e7eb",
+    },
+    childContainer: {
+      borderWidth: 2,
+      borderColor: colorScheme === "dark" ? "#9ca3af" : "#0458AB",
+      borderRadius: 8,
+      padding: 10,
+      marginTop: 10,
+      backgroundColor: colorScheme === "dark" ? "rgba(255, 255, 255, 0.1)" : "rgba(4, 88, 171, 0.05)",
+    },
+    childDateButton: {
+      flexDirection: "row",
+      alignItems: "center",
+      justifyContent: "space-between",
+      borderWidth: 2,
+      borderColor: colorScheme === "dark" ? "#9ca3af" : "#0458AB",
+      backgroundColor: colorScheme === "dark" ? "#FFFFFF36" : "#ffffff",
+      padding: 8,
+      borderRadius: 8,
+    },
+  })
 
   return (
     <Modal visible={visible} transparent animationType="slide">
@@ -266,10 +331,7 @@ export default function AddOrderModal({
           backgroundColor: colorScheme === "dark" ? "#112A4A" : "#FFFFFF",
         }}
       >
-        <KeyboardAvoidingView
-          behavior={Platform.OS === "ios" ? "padding" : "height"}
-          style={{ flex: 1 }}
-        >
+        <KeyboardAvoidingView behavior={Platform.OS === "ios" ? "padding" : "height"} style={{ flex: 1 }}>
           <ScrollView
             contentContainerStyle={{ flexGrow: 1 }}
             keyboardShouldPersistTaps="handled"
@@ -302,9 +364,7 @@ export default function AddOrderModal({
                       alignItems: "center",
                       marginRight: 20,
                     }}
-                    onPress={() =>
-                      setHasDrivingLicense(option.value as "yes" | "no")
-                    }
+                    onPress={() => setHasDrivingLicense(option.value as "yes" | "no")}
                   >
                     <View
                       style={{
@@ -340,8 +400,8 @@ export default function AddOrderModal({
                 style={styles.input}
                 placeholder="010100"
                 placeholderTextColor="#9ca3af"
-                value={weight}
-                onChangeText={setWeight}
+                value={Driving}
+                onChangeText={setDriving}
                 keyboardType="numeric"
               />
               <View style={{ zIndex: 2000 }}>
@@ -359,30 +419,43 @@ export default function AddOrderModal({
                     },
                   ]}
                 >
-                  <Text style={{ color: date ? "#000" : "#9ca3af" }}>
-                    {date ? date : "01/01/2025"}
-                  </Text>
-                  <MaterialIcons
-                    name="calendar-today"
-                    size={20}
-                    color="#9ca3af"
-                  />
+                  <Text style={{ color: date ? "#000" : "#9ca3af" }}>{date ? date : "01/01/2025"}</Text>
+                  <MaterialIcons name="calendar-today" size={20} color="#9ca3af" />
                 </TouchableOpacity>
-
-                <DateTimePickerModal
-                  isVisible={isDatePickerVisible}
-                  mode="date"
-                  onConfirm={(selectedDate) => {
-                    setDatePickerVisibility(false);
-                    setDate(selectedDate.toISOString().split("T")[0]);
-                  }}
-                  onCancel={() => setDatePickerVisibility(false)}
-                />
               </View>
 
               <Text style={styles.text}>
-                Licence photo <Text style={styles.required}>(*)</Text>
+                Licence photo<Text style={styles.required}>(*)</Text>
               </Text>
+              <View style={styles.photoContainer}>
+                <TouchableOpacity style={styles.photoBox} onPress={pickImage1}>
+                  {licencePhoto1 ? (
+                    <Image source={{ uri: licencePhoto1 }} style={styles.photoImage} />
+                  ) : (
+                    <>
+                      <View style={styles.photoPlaceholder}>
+                        <View style={styles.photoCircle} />
+                        <View style={styles.photoMountain} />
+                      </View>
+                    </>
+                  )}
+                  <Text style={styles.photoLabel}>Front</Text>
+                </TouchableOpacity>
+
+                <TouchableOpacity style={styles.photoBox} onPress={pickImage2}>
+                  {licencePhoto2 ? (
+                    <Image source={{ uri: licencePhoto2 }} style={styles.photoImage} />
+                  ) : (
+                    <>
+                      <View style={styles.photoPlaceholder}>
+                        <View style={styles.photoCircle} />
+                        <View style={styles.photoMountain} />
+                      </View>
+                    </>
+                  )}
+                  <Text style={styles.photoLabel}>Back</Text>
+                </TouchableOpacity>
+              </View>
 
               <Text style={styles.textLarge}>Family information</Text>
               <Text style={styles.text}>
@@ -390,22 +463,20 @@ export default function AddOrderModal({
               </Text>
               <TextInput
                 style={styles.input}
-                placeholder="select Type"
+                placeholder="Enter name"
                 placeholderTextColor="#9ca3af"
-                value={weight}
-                onChangeText={setWeight}
-                keyboardType="numeric"
+                value={NameParent}
+                onChangeText={setNameParent}
               />
               <Text style={styles.text}>
-                Cell Phone parent/guardian{" "}
-                <Text style={styles.required}>(*)</Text>
+                Cell Phone parent/guardian <Text style={styles.required}>(*)</Text>
               </Text>
               <TextInput
                 style={styles.input}
                 placeholder="100101010"
                 placeholderTextColor="#9ca3af"
-                value={weight}
-                onChangeText={setWeight}
+                value={CellPhone}
+                onChangeText={setCellPhone}
                 keyboardType="numeric"
               />
 
@@ -413,25 +484,6 @@ export default function AddOrderModal({
                 <Text style={styles.text}>
                   state <Text style={styles.required}>(*)</Text>
                 </Text>
-                <DropDownPicker
-                  open={openJob}
-                  value={job || ""}
-                  items={jobList.map((jobItem) => ({
-                    label: jobItem.name,
-                    value: jobItem.id,
-                  }))}
-                  setOpen={setOpenJob}
-                  setValue={setJob}
-                  setItems={() => {}}
-                  placeholder="Select State"
-                  placeholderStyle={{ color: "#9ca3af" }} //aqui para cambiar el color de state, solamente de aqui
-                  style={[
-                    styles.input,
-                    { borderColor: errors.job ? "#9ca3af" : "#0458AB" }, //en job se llamaria otro controlador si no estoy mal
-                  ]}
-                  listMode="SCROLLVIEW"
-                  dropDownContainerStyle={{ maxHeight: 200 }} // Set max height for dropdown
-                />
               </View>
 
               <Text style={styles.text}>
@@ -450,11 +502,7 @@ export default function AddOrderModal({
                       alignItems: "center",
                       marginRight: 20,
                     }}
-                    onPress={() =>
-                      setSelectedDrivingLicense(
-                        drivingLicenseOption.value as "yes" | "no"
-                      )
-                    }
+                    onPress={() => setSelectedDrivingLicense(drivingLicenseOption.value as "yes" | "no")}
                   >
                     <View
                       style={{
@@ -468,8 +516,7 @@ export default function AddOrderModal({
                         marginRight: 8,
                       }}
                     >
-                      {selectedDrivingLicense ===
-                        drivingLicenseOption.value && (
+                      {selectedDrivingLicense === drivingLicenseOption.value && (
                         <View
                           style={{
                             height: 10,
@@ -480,9 +527,7 @@ export default function AddOrderModal({
                         />
                       )}
                     </View>
-                    <Text style={styles.text}>
-                      {drivingLicenseOption.label}
-                    </Text>
+                    <Text style={styles.text}>{drivingLicenseOption.label}</Text>
                   </TouchableOpacity>
                 ))}
               </View>
@@ -490,29 +535,39 @@ export default function AddOrderModal({
               <Text style={styles.text}>
                 Number of children <Text style={styles.required}>(*)</Text>
               </Text>
-              <TextInput
-                style={styles.input}
-                placeholder="0"
-                placeholderTextColor="#9ca3af"
-                value={weight}
-                onChangeText={setWeight}
-                keyboardType="numeric"
-              />
 
-              <View style={{ marginTop: 10 }}>
-                <View
-                  style={{
-                    borderWidth: 2,
-                    borderColor: colorScheme === "dark" ? "#9ca3af" : "#0458AB",
-                    borderRadius: 8,
-                    padding: 10,
-                    marginTop: 5,
-                    backgroundColor:
-                      colorScheme === "dark"
-                        ? "rgba(255, 255, 255, 0.1)"
-                        : "rgba(4, 88, 171, 0.05)",
-                  }}
+              {/* Custom dropdown for number of children */}
+              <View style={{ position: "relative", marginBottom: 15 }}>
+                <TouchableOpacity
+                  style={styles.dropdownButton}
+                  onPress={() => setShowChildrenDropdown(!showChildrenDropdown)}
                 >
+                  <Text style={styles.dropdownText}>{numberOfChildren}</Text>
+                  <MaterialIcons
+                    name={showChildrenDropdown ? "keyboard-arrow-up" : "keyboard-arrow-down"}
+                    size={24}
+                    color="#0458AB"
+                  />
+                </TouchableOpacity>
+
+                {showChildrenDropdown && (
+                  <View style={styles.dropdownMenu}>
+                    {["0", "1", "2", "3", "4", "5"].map((num) => (
+                      <TouchableOpacity
+                        key={num}
+                        style={styles.dropdownItem}
+                        onPress={() => selectNumberOfChildren(num)}
+                      >
+                        <Text style={styles.dropdownText}>{num}</Text>
+                      </TouchableOpacity>
+                    ))}
+                  </View>
+                )}
+              </View>
+
+              {/* Child information sections */}
+              {childrenData.map((child, index) => (
+                <View key={index} style={styles.childContainer}>
                   <Text style={styles.text}>
                     Son's name <Text style={styles.required}>(*)</Text>
                   </Text>
@@ -520,51 +575,44 @@ export default function AddOrderModal({
                     style={styles.input}
                     placeholder="Name"
                     placeholderTextColor="#9ca3af"
+                    value={child.name}
+                    onChangeText={(text) => {
+                      const newData = [...childrenData]
+                      newData[index].name = text
+                      setChildrenData(newData)
+                    }}
                   />
 
                   <Text style={styles.text}>
                     Date of birth <Text style={styles.required}>(*)</Text>
                   </Text>
-                  <TouchableOpacity
-                    onPress={() => setDatePickerVisibility(true)}
-                    style={[
-                      styles.input,
-                      {
-                        flexDirection: "row",
-                        alignItems: "center",
-                        justifyContent: "space-between",
-                      },
-                    ]}
-                  >
-                    <Text style={{ color: date ? "#000" : "#9ca3af" }}>
-                      01/01/2025
+                  <TouchableOpacity style={styles.childDateButton} onPress={() => openChildDatePicker(index)}>
+                    <Text style={{ color: child.birthDate ? "#000" : "#9ca3af" }}>
+                      {child.birthDate || "01/01/2025"}
                     </Text>
-                    <MaterialIcons
-                      name="calendar-today"
-                      size={20}
-                      color="#9ca3af"
-                    />
+                    <MaterialIcons name="calendar-today" size={20} color="#9ca3af" />
                   </TouchableOpacity>
                 </View>
-              </View>
+              ))}
+
+              <DateTimePickerModal
+                isVisible={isDatePickerVisible}
+                mode="date"
+                onConfirm={handleDateConfirm}
+                onCancel={() => {
+                  setDatePickerVisibility(false)
+                  setChildBirthDateIndex(null)
+                }}
+              />
 
               <View style={styles.buttonContainer}>
-                <TouchableOpacity
-                  style={styles.buttonCancel}
-                  onPress={() => router.back()}
-                >
+                <TouchableOpacity style={styles.buttonCancel} onPress={() => router.back()}>
                   <Text style={styles.buttonTextCancel}>Cancel</Text>
                 </TouchableOpacity>
-                <TouchableOpacity
-                  style={styles.buttonNext}
-                  onPress={handleSave}
-                >
+                <TouchableOpacity style={styles.buttonBack} onPress={() => router.back()}>
                   <Text style={styles.buttonTextBack}>Back</Text>
                 </TouchableOpacity>
-                <TouchableOpacity
-                  style={styles.buttonBack}
-                  onPress={handleSave}
-                >
+                <TouchableOpacity style={styles.buttonNext} onPress={() => router.back()}>
                   <Text style={styles.buttonTextNext}>Next</Text>
                 </TouchableOpacity>
               </View>
@@ -573,5 +621,5 @@ export default function AddOrderModal({
         </KeyboardAvoidingView>
       </SafeAreaView>
     </Modal>
-  );
+  )
 }

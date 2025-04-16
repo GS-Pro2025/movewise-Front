@@ -1,6 +1,6 @@
 import axios, { AxiosInstance } from "axios";
 export const  url = 'http://192.168.1.6:8000/'
-export const token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJwZXJzb25faWQiOjEsImVtYWlsIjoiZXhhbXBsZUBleGFtcGxlLmNvbSIsImV4cCI6MTc0NDQyODk1NSwiaWF0IjoxNzQ0MzQyNTU1fQ.RWIVh89k1je44ZPfpGH9yJ201F40FjpRXE-MjUobq8U"
+export const token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJwZXJzb25faWQiOjEsImVtYWlsIjoiZXhhbXBsZUBleGFtcGxlLmNvbSIsImlzX2FkbWluIjp0cnVlLCJleHAiOjE3NDQ2NzE4OTMsImlhdCI6MTc0NDU4NTQ5M30.KNsD_ARi79XEMV4V5pksHCFS3m7xl4axuwlne_gHiEc"
 const apiClient: AxiosInstance = axios.create({
   baseURL: url,
   timeout: 10000, // 10 segundos de timeout
