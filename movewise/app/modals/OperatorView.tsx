@@ -22,9 +22,10 @@ const OperatorView = () => {
 
     const [modalVisible, setModalVisible] = useState(false);
     const [selected, setSelected] = useState<Assignment | null>(null);
-
     const isTruckView = type === 'truck';
-    const filterRole = isTruckView ? 'driver' : null;
+    const filterRole = isTruckView 
+    ? (role: string) => role.toLowerCase() === 'driver' 
+    : (role: string) => role.toLowerCase() !== 'driver' && !role.toLowerCase().includes('driver');
     const emptyMessage = isTruckView
         ? "No truck assignments available"
         : "No work assignments available";
@@ -83,6 +84,7 @@ const OperatorView = () => {
                     <TruckDetail
                         visible={modalVisible}
                         onClose={handleClose}
+                        assignment={selected}
                     />
                 ) : (
                     <AssignmentDetails

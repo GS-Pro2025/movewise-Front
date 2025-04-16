@@ -10,7 +10,17 @@ import {
     ScrollView,
 } from "react-native";
 import { Ionicons } from '@expo/vector-icons';
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import apiClient from "@/hooks/api/apiClient";
+import { Assignment } from "@/components/operator/BaseOperator";
+import { ALERT_TYPE, Dialog, AlertNotificationRoot, Toast } from 'react-native-alert-notification';
+import { ToastAndroid, Platform } from 'react-native';
 
+interface Props {
+    visible: boolean;
+    onClose: () => void;
+    assignment: Assignment;
+}
 interface Errors {
     name?: string;
     costFuel?: string;
@@ -20,9 +30,8 @@ interface Errors {
     finalOdometer?: string;
     distance?: string;
 }
-
 // TruckDetailModal component
-const TruckDetailModal: React.FC<Props> = ({ visible, onClose }) => {
+const TruckDetailModal: React.FC<Props> = ({ visible, onClose, assignment }) => {
     const [errors, setErrors] = useState<Errors>({});
     const [name, setName] = useState("");
     const [costFuel, setCostFuel] = useState("");
@@ -83,23 +92,45 @@ const TruckDetailModal: React.FC<Props> = ({ visible, onClose }) => {
     };
 
     // Handle save action
-    const handleSave = () => {
+    const handleSave = async () => {
         if (!validateForm()) return;
 
         const calculatedDistance = parseFloat(finalOdometer) - parseFloat(initialOdometer);
         setDistance(calculatedDistance.toString());
 
         const dataToSend = {
-            name,
-            costFuel: parseFloat(costFuel),
-            costPerGL: parseFloat(costPerGL),
-            fuelQty: parseFloat(fuelQty),
-            initialOdometer: parseFloat(initialOdometer),
-            finalOdometer: parseFloat(finalOdometer),
+            order: assignment.order, 
+            truck: assignment.truck, 
+            cost_fuel: parseFloat(costFuel),
+            cost_gl: parseFloat(costPerGL),
+            fuel_qty: parseFloat(fuelQty),
             distance: calculatedDistance,
         };
-        
-        console.log(dataToSend);
+
+        try {
+            const token = await AsyncStorage.getItem("userToken");
+            const response = await apiClient.post('/costfuels/', dataToSend, {
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                },
+            });
+            console.log('Response:', response.data);
+            Toast.show({
+                type: response.data.status === "success" ? ALERT_TYPE.SUCCESS : ALERT_TYPE.DANGER,
+                title: response.data.status === "success" ? "Success" : "Error",
+                textBody: response.data.messDev,
+                autoClose: 3000,
+            });
+        } catch (error) {
+            console.error('Error al enviar los datos:', error);
+            Toast.show({
+                type: ALERT_TYPE.DANGER,
+                title: "Error",
+                textBody: "Error al enviar los datos",
+                autoClose: 3000,
+            });
+        }
+
         onClose();
     };
 

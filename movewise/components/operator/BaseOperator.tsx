@@ -113,13 +113,21 @@ const BaseOperatorView: React.FC<BaseOperatorViewProps> = ({
     }, [operatorId]);
 
     useEffect(() => {
-        const filtered = assignments.filter(assignment => {
-            const dateMatches = assignment.data_order.date === formatDateForComparison(selectedDate);
-            const roleMatches = isTruckView ? assignment.rol === 'driver' : assignment.rol !== 'driver';
+        const filtered = assignments.filter(({ data_order, rol }) => {
+            const dateMatches =
+                data_order.date === formatDateForComparison(selectedDate);
+            //normalize the role to lowercase
+            const roleNormalized = rol?.toLowerCase().trim();
+            const isDriver = roleNormalized === 'driver';
+            //exclude drivers if isTruckView is true
+            const roleMatches = isTruckView ? isDriver : !isDriver;
+
             return dateMatches && roleMatches;
         });
+
         setFilteredAssignments(filtered);
-    }, [assignments, selectedDate, filterRole, isTruckView]);
+    }, [assignments, selectedDate, isTruckView]);
+
 
     useEffect(() => {
         loadAssignments();
