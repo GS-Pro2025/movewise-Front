@@ -1,13 +1,15 @@
+import CreateTruckModel from '@/models/ModelCreateTruck';
 import apiClient from './apiClient';
-import { ModelAddTruck } from "@/models/ModelAddTruck";
 
 interface Truck {
-  id: string;
-  licensePlate: string;
-  model: string;
-  capacity: string;
+  id_truck: string;
+  number_truck: string;
+  name: string;
+  category: string;
+  type: string;
   status: string;
 }
+export default Truck;
 
 // GET /trucks/ (camiones disponibles)
 export const ListTruck = async (): Promise<{ data: Truck[] }> => {
@@ -18,7 +20,7 @@ export const ListTruck = async (): Promise<{ data: Truck[] }> => {
 
 
 // POST /trucks/
-export const CreateTruck = async (data: ModelAddTruck): Promise<Truck> => {
+export const CreateTruck = async (data: CreateTruckModel): Promise<Truck> => {
   try {
     const response = await apiClient.post("/trucks/", data);
     return response.data;
@@ -42,14 +44,14 @@ export const GetTruckById = async (id_truck: string): Promise<Truck> => {
 // DELETE /trucks/<pk>/delete/
 export const DeleteTruck = async (id: string): Promise<void> => {
   try {
-    await apiClient.delete(`/trucks/${id}/delete/`);  // Asegúrate de que esta ruta coincida con la del backend
+    await apiClient.delete(`/trucks/${id}/delete/`); 
   } catch (error) {
     console.error("Error deleting truck:", error);
     throw error;
   }
 };
 
-// PATCH /trucks/<pk>/ (para actualizar estado)
+// PATCH /trucks/<pk>/ (para ELIMINAR)
 export const UpdateTruckStatus = async (id: string, status: string): Promise<Truck> => {
   try {
     const response = await apiClient.patch(`/trucks/${id}/`, { status });
@@ -60,8 +62,7 @@ export const UpdateTruckStatus = async (id: string, status: string): Promise<Tru
   }
 };
 
-// PUT /trucks/<pk>/update/ (si necesitas actualizar el camión completamente)
-export const UpdateTruck = async (id: string, data: ModelAddTruck): Promise<Truck> => {
+export const UpdateTruck = async (id: string, data: Partial<Truck>): Promise<Truck> => {
   try {
     const response = await apiClient.put(`/trucks/${id}/update/`, data);
     return response.data;
