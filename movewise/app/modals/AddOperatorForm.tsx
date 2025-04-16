@@ -1,7 +1,7 @@
 import { Modal, SafeAreaView, ScrollView, View, Text, TextInput, TouchableOpacity, StyleSheet, useColorScheme } from 'react-native';
 import { useState, useEffect } from 'react';
 import { ThemedView } from '../../components/ThemedView';
-import { getOperatorById } from '../../hooks/api/GetOperatorById';
+import { getOperatorByNumberId } from '../../hooks/api/GetOperatorByNumberId';
 import { MaterialIcons } from '@expo/vector-icons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { ALERT_TYPE, Dialog, AlertNotificationRoot, Toast } from 'react-native-alert-notification';
@@ -47,7 +47,7 @@ export default function AddOperatorForm({ visible, onClose, onAddOperator, order
   const handleSearch = () => {
     if (operatorId.length > 0) {
       try {
-        getOperatorById(Number(operatorId)).then(data => {
+        getOperatorByNumberId(Number(operatorId)).then(data => {
           if (data) {
             console.log("Datos recibidos:", data);
             notifyMessage(`Operador ${data.first_name} ${data.last_name} encontrado`);
