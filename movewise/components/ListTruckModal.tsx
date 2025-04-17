@@ -3,25 +3,19 @@ import { useState, useEffect, useCallback } from "react";
 import { Ionicons } from '@expo/vector-icons';
 import { GestureHandlerRootView, Swipeable } from "react-native-gesture-handler";
 import { TouchableHighlight } from "react-native";
-import { ListTruck, UpdateTruckStatus } from "../hooks/api/TruckClient"; // Import TruckClient methods
-import CreateTruckScreen from "../app/modals/CreateTruck"; // Updated import for CreateTruck
-import UpdateTruckModal from "../app/modals/UpdateTruckModal"; // Component for updating a truck
+import { ListTruck, DeleteTruck, UpdateTruckStatus } from "../hooks/api/TruckClient"; // Import TruckClient methods
+import CreateTruckScreen from "../app/modals/CreateTruck"; 
+import UpdateTruckModal from "../app/modals/UpdateTruckModal"; // Modal for updating a truck
 import CreateTruckModal from "../app/modals/CreateTruck";
-
-interface Truck {
-  id: string;
-  licensePlate: string;
-  model: string;
-  capacity: string;
-  status: string;
-}
+import Toast from "react-native-toast-message";
+import Truck from "@/hooks/api/TruckClient"
 
 interface ListTruckModalProps {
   visible: boolean;
   onClose: () => void;
 }
 
-const ListTruckModal: React.FC<ListTruckModalProps> = ({ visible, onClose }) => {
+const   ListTruckModal: React.FC<ListTruckModalProps> = ({ visible, onClose }) => {
   const [addTruckVisible, setAddTruckVisible] = useState(false);
   const [updateTruckVisible, setUpdateTruckVisible] = useState(false);
   const [selectedTruck, setSelectedTruck] = useState<Truck | null>(null);
@@ -58,12 +52,12 @@ const ListTruckModal: React.FC<ListTruckModalProps> = ({ visible, onClose }) => 
   }, [loadTrucks]);
 
   const filteredTrucks = trucks.filter(truck => {
-    const licensePlate = truck.licensePlate || ''; // Fallback to an empty string if undefined
-    const model = truck.model || ''; // Fallback to an empty string if undefined
+    const number_truck = truck.number_truck || ''; // Fallback to an empty string if undefined
+    const category = truck.category || ''; // Fallback to an empty string if undefined
   
     return (
-      licensePlate.toLowerCase().includes(searchText.toLowerCase()) ||
-      model.toLowerCase().includes(searchText.toLowerCase())
+      number_truck.toLowerCase().includes(searchText.toLowerCase()) ||
+      category.toLowerCase().includes(searchText.toLowerCase())
     );
   });
 
@@ -72,7 +66,7 @@ const ListTruckModal: React.FC<ListTruckModalProps> = ({ visible, onClose }) => 
     setUpdateTruckVisible(true);
   };
 
-  const handleDeleteTruck = async (id: string) => {
+  const handleDeleteTruck = async (id_truck: string) => {
     Alert.alert(
       "Confirm Delete",
       "Are you sure you want to delete this truck?",
@@ -82,8 +76,14 @@ const ListTruckModal: React.FC<ListTruckModalProps> = ({ visible, onClose }) => 
           text: "Delete",
           onPress: async () => {
             try {
-              await UpdateTruckStatus(id, 'false');
-              setTrucks(prev => prev.filter(truck => truck.id !== id));
+              await UpdateTruckStatus(id_truck, 'False');
+              setTrucks(prev => prev.filter(truck => truck.id_truck !== id_truck));
+              Toast.show({
+                      type: "success",
+                      text1: "Truck eliminated",
+                      text2: "Truck has been sucessfully eliminated"
+                    });
+                    loadTrucks();
             } catch (error) {
               console.error("Error deleting truck:", error);
               Alert.alert("Error", "Could not delete truck");
@@ -111,7 +111,7 @@ const ListTruckModal: React.FC<ListTruckModalProps> = ({ visible, onClose }) => 
       <View style={styles.rightSwipeActions}>
         <TouchableOpacity
           style={[styles.deleteAction, { backgroundColor: '#e74c3c' }]}
-          onPress={() => handleDeleteTruck(item.id)}
+          onPress={() => handleDeleteTruck(item.id_truck)}
         >
           <Ionicons name="trash-outline" size={24} color="#FFFFFF" />
           <Text style={styles.actionText}>Delete</Text>
@@ -132,17 +132,13 @@ const ListTruckModal: React.FC<ListTruckModalProps> = ({ visible, onClose }) => 
             <View style={[styles.truckItem, { backgroundColor: isDarkMode ? '#1E3A5F' : '#f5f5f5' }]}>
               <View style={styles.truckDetails}>
                 <Text style={[styles.truckLicense, { color: isDarkMode ? '#FFFFFF' : '#0458AB' }]}>
-                  {item.licensePlate}
+                  {item.number_truck}
                 </Text>
                 <Text style={[styles.truckModel, { color: isDarkMode ? '#CCCCCC' : '#333333' }]}>
-                  {item.model}
+                  category: {item.category}
                 </Text>
-              </View>
-              <View style={styles.truckStatus}>
-                <Text style={[styles.statusText, {
-                  color: item.status === 'Available' ? '#48dc33' : '#f39c12'
-                }]}>
-                  {item.status}
+                <Text style={[styles.truckModel, { color: isDarkMode ? '#CCCCCC' : '#333333' }]}>
+                  type: {item.type}
                 </Text>
               </View>
             </View>
@@ -169,7 +165,7 @@ const ListTruckModal: React.FC<ListTruckModalProps> = ({ visible, onClose }) => 
           <Ionicons name="search" size={20} color={isDarkMode ? "#A1C6EA" : "#0458AB"} />
           <TextInput
             style={[styles.searchInput, { color: isDarkMode ? '#FFFFFF' : '#333333' }]}
-            placeholder="Search by license or model"
+            placeholder="Search by number or category"
             placeholderTextColor={isDarkMode ? '#AAAAAA' : '#999999'}
             value={searchText}
             onChangeText={setSearchText}
@@ -188,19 +184,19 @@ const ListTruckModal: React.FC<ListTruckModalProps> = ({ visible, onClose }) => 
         ) : (
           <FlatList
             data={filteredTrucks}
-            keyExtractor={(item, index) => (item.id ? item.id.toString() : index.toString())}
+            keyExtractor={(item, index) => (item.id_truck ? item.id_truck.toString() : index.toString())}
             renderItem={renderItem}
             contentContainerStyle={styles.listContainer}
             refreshControl={
               <RefreshControl
                 refreshing={refreshing}
                 onRefresh={onRefresh}
-                colors={["#0458AB"]}
+                colors={["#000000"]}
               />
             }
             ListEmptyComponent={
               <View style={styles.emptyContainer}>
-                <Text style={[styles.emptyText, { color: isDarkMode ? '#FFFFFF' : '#666666' }]}>
+                <Text style={[styles.emptyText, { color: isDarkMode ? '#0458AB' : '#666666' }]}>
                   No trucks available
                 </Text>
               </View>
@@ -211,16 +207,15 @@ const ListTruckModal: React.FC<ListTruckModalProps> = ({ visible, onClose }) => 
       <CreateTruckModal
         visible={addTruckVisible}
         onClose={() => setAddTruckVisible(false)}
+        onSuccess={loadTrucks} 
       />
-      
-      <TouchableOpacity onPress={() => setAddTruckVisible(true)}>
-      <Text>Agregar camión</Text>
-      </TouchableOpacity>
       <UpdateTruckModal
         visible={updateTruckVisible}
         onClose={() => setUpdateTruckVisible(false)}
-        truck={selectedTruck || null} // Pass the correct 'truck' prop
+        truck={selectedTruck || null}
+        onSuccess={loadTrucks} 
       />
+      <Toast/>
     </Modal>
   );
 };

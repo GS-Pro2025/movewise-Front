@@ -10,16 +10,18 @@ import {
 } from "react-native";
 import { useNavigation } from "@react-navigation/native";
 import HeaderWithDivider from "@/components/HeaderWithDivider";
-import { CreateTruck } from "@/hooks/api/TruckClient";
-import { ModelAddTruck } from "@/models/ModelAddTruck";
 import DropDownPicker from "react-native-dropdown-picker";
 import Toast from "react-native-toast-message";
+import CreateTruckModel  from "@/models/ModelCreateTruck"
+import { CreateTruck } from "@/hooks/api/TruckClient";
+
 type CreateTruckScreenProps = {
   visible: boolean;
   onClose: () => void;
+  onSuccess?: () => void;
 };
-
-const CreateTruckScreen = ({ visible, onClose }: CreateTruckScreenProps) => {
+// Reemplaza el contenido de tu componente actual por este
+const CreateTruckScreen = ({ visible, onClose, onSuccess }: CreateTruckScreenProps) => {
   const navigation = useNavigation();
   const [type, setType] = useState("");
   const [category, setCategory] = useState("");
@@ -29,21 +31,20 @@ const CreateTruckScreen = ({ visible, onClose }: CreateTruckScreenProps) => {
   const [showConfirmModal, setShowConfirmModal] = useState(false);
   const [openType, setOpenType] = useState(false);
   const [openCategory, setOpenCategory] = useState(false);
-  
+
   const typeOptions = [
-    { label: "Refrigerated", value: "Refrigerated" },
-    { label: "Tanker", value: "Tanker" },
-    { label: "Flatbed", value: "Flatbed" },
-    { label: "Cargo", value: "Cargo" },
+    { label: "Carga ligera", value: "Carga ligera" },
+    { label: "Carga mediana", value: "Carga mediana" },
+    { label: "Carga pesada", value: "Carga pesada" },
   ];
-  
+
   const categoryOptions = [
-    { label: "Category A", value: "a" },
-    { label: "Category B", value: "b" },
+    { label: "Categoría A", value: "a" },
+    { label: "Categoría B", value: "b" },
   ];
+
   const [errors, setErrors] = useState({
     type: false,
-    category: false,
     name: false,
     number: false,
   });
@@ -51,7 +52,6 @@ const CreateTruckScreen = ({ visible, onClose }: CreateTruckScreenProps) => {
   const validateFields = () => {
     const newErrors = {
       type: !type,
-      category: !category,
       name: !name.trim(),
       number: !number.trim(),
     };
@@ -65,10 +65,10 @@ const CreateTruckScreen = ({ visible, onClose }: CreateTruckScreenProps) => {
   };
 
   const handleSave = async () => {
-    const newTruck: ModelAddTruck = {
+    const newTruck: CreateTruckModel = {
       number_truck: number,
+      category: category,
       type: type,
-      rol: category,
       name: name,
     };
 
@@ -76,13 +76,18 @@ const CreateTruckScreen = ({ visible, onClose }: CreateTruckScreenProps) => {
 
     try {
       await CreateTruck(newTruck);
+      setLoading(false);
+      setShowConfirmModal(false);
+      onClose();
+      //For refreshing the list
+      if (onSuccess) {
+        onSuccess();
+      }
       Toast.show({
         type: "success",
         text1: "Truck created",
+        text2: "Truck created and added to the list"
       });
-      setLoading(false);
-      setShowConfirmModal(false);
-      navigation.goBack();
     } catch (error) {
       console.error("Error on the truck creation:", error);
       setLoading(false);
@@ -97,120 +102,130 @@ const CreateTruckScreen = ({ visible, onClose }: CreateTruckScreenProps) => {
   return (
     <Modal visible={visible} animationType="slide" onRequestClose={onClose}>
       <View style={styles.container}>
-      <HeaderWithDivider />
+        <HeaderWithDivider />
 
-      <View style={styles.form}>
-        <View style={{ zIndex: 1000 }}>
-          <Text style={styles.label}>Type <Text style={styles.required}>(*)</Text></Text>
-          <DropDownPicker
-            open={openType}
-            value={type}
-            items={typeOptions}
-            setOpen={setOpenType}
-            setValue={setType}
-            setItems={() => {}}
-            placeholder="Select Type"
-            placeholderStyle={{ color: "#9ca3af" }}
-            style={[styles.input, { borderColor: errors.type ? "red" : "#0458AB" }]}
-            listMode="SCROLLVIEW"
-            dropDownContainerStyle={{ maxHeight: 200 }}
-          />
-        </View>
-        <View style={{ zIndex: 999 }}>
-          <Text style={styles.label}>Category <Text style={styles.required}>(*)</Text></Text>
-          <DropDownPicker
-            open={openCategory}
-            value={category}
-            items={categoryOptions}
-            setOpen={setOpenCategory}
-            setValue={setCategory}
-            setItems={() => {}}
-            placeholder="Select Category"
-            placeholderStyle={{ color: "#9ca3af" }}
-            style={[styles.input, { borderColor: errors.category ? "red" : "#0458AB" }]}
-            listMode="SCROLLVIEW"
-            dropDownContainerStyle={{ maxHeight: 200 }}
-          />
-        </View>
-
-        <Text style={styles.label}>
-          Name <Text style={styles.required}>*</Text>
-        </Text>
-        <TextInput
-          style={[styles.input, errors.name && styles.errorBorder]}
-          placeholder="Truck Name"
-          placeholderTextColor="#ccc"
-          value={name}
-          onChangeText={setName}
-        />
-
-        <Text style={styles.label}>
-          Number of Truck <Text style={styles.required}>*</Text>
-        </Text>
-        <TextInput
-          style={[styles.input, errors.number && styles.errorBorder]}
-          placeholder="0.0"
-          placeholderTextColor="#ccc"
-          keyboardType="numeric"
-          value={number}
-          onChangeText={setNumber}
-        />
-
-        <View style={styles.buttonRow}>
-          <TouchableOpacity
-            style={[styles.button, styles.cancelButton]}
-            onPress={() => navigation.goBack()}
-          >
-            <Text style={styles.cancelText}>Cancel</Text>
-          </TouchableOpacity>
-
-          <TouchableOpacity
-            style={[styles.button, styles.saveButton]}
-            onPress={confirmBeforeSave}
-            disabled={loading}
-          >
-            <Text style={styles.saveText}>
-              {loading ? "Saving..." : "save"}
+        <View style={styles.form}>
+          {/* Type */}
+          <View style={{ zIndex: 1000 }}>
+            <Text style={styles.label}>
+              Truck Type <Text style={styles.required}>*</Text>
             </Text>
-          </TouchableOpacity>
-        </View>
-      </View>
+            <DropDownPicker
+              open={openType}
+              value={type}
+              items={typeOptions}
+              setOpen={setOpenType}
+              setValue={setType}
+              setItems={() => {}}
+              placeholder="Select Type"
+              placeholderStyle={{ color: "#9ca3af" }}
+              style={[styles.input, { borderColor: errors.type ? "red" : "#0458AB" }]}
+              listMode="SCROLLVIEW"
+              dropDownContainerStyle={{ maxHeight: 200 }}
+            />
+          </View>
 
-      <Modal
-        animationType="slide"
-        transparent={true}
-        visible={showConfirmModal}
-        onRequestClose={() => setShowConfirmModal(false)}
-      >
-        <View style={styles.modalOverlay}>
-          <View style={styles.modalContainer}>
-            <Text style={styles.modalText}>Type: {type}</Text>
-            <Text style={styles.modalText}>Category: {category}</Text>
-            <Text style={styles.modalText}>Name: {name}</Text>
-            <Text style={styles.modalText}>Number: {number}</Text>
+          {/* Category */}
+          <View style={{ zIndex: 999 }}>
+            <Text style={styles.label}>Category</Text>
+            <DropDownPicker
+              open={openCategory}
+              value={category}
+              items={categoryOptions}
+              setOpen={setOpenCategory}
+              setValue={setCategory}
+              setItems={() => {}}
+              placeholder="(Optional)"
+              placeholderStyle={{ color: "#9ca3af" }}
+              style={styles.input}
+              listMode="SCROLLVIEW"
+              dropDownContainerStyle={{ maxHeight: 200 }}
+            />
+          </View>
 
-            <View style={styles.modalButtonRow}>
-              <TouchableOpacity
-                style={[styles.button, styles.cancelButton]}
-                onPress={() => setShowConfirmModal(false)}
-              >
-                <Text style={styles.cancelText}>Cancel</Text>
-              </TouchableOpacity>
-              <TouchableOpacity
-                style={[styles.button, styles.saveButton]}
-                onPress={handleSave}
-                disabled={loading}
-              >
-                <Text style={styles.saveText}>{loading ? "..." : "OK"}</Text>
-              </TouchableOpacity>
-            </View>
+          {/* Name */}
+          <Text style={styles.label}>
+            Name <Text style={styles.required}>*</Text>
+          </Text>
+          <TextInput
+            style={[styles.input, errors.name && styles.errorBorder]}
+            placeholder="Truck Name"
+            placeholderTextColor="#ccc"
+            value={name}
+            onChangeText={setName}
+          />
+
+          {/* Number */}
+          <Text style={styles.label}>
+            Truck Number <Text style={styles.required}>*</Text>
+          </Text>
+          <TextInput
+            style={[styles.input, errors.number && styles.errorBorder]}
+            placeholder="DEF456"
+            placeholderTextColor="#ccc"
+            keyboardType="default"
+            value={number}
+            onChangeText={setNumber}
+          />
+
+          <View style={styles.buttonRow}>
+            <TouchableOpacity
+              style={[styles.button, styles.cancelButton]}
+              onPress={() => onClose()}
+            >
+              <Text style={styles.cancelText}>Cancel</Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              style={[styles.button, styles.saveButton]}
+              onPress={confirmBeforeSave}
+              disabled={loading}
+            >
+              <Text style={styles.saveText}>
+                {loading ? "Saving..." : "Save"}
+              </Text>
+            </TouchableOpacity>
           </View>
         </View>
-      </Modal>
-    </View>
+
+        {/* Confirm Modal */}
+        <Modal
+          animationType="slide"
+          transparent={true}
+          visible={showConfirmModal}
+          onRequestClose={() => setShowConfirmModal(false)}
+        >
+          <View style={styles.modalOverlay}>
+            <View style={styles.modalContainer}>
+              <Text style={styles.modalText}>Truck Type: {type}</Text>
+              <Text style={styles.modalText}>Category: {category || "N/A"}</Text>
+              <Text style={styles.modalText}>Name: {name}</Text>
+              <Text style={styles.modalText}>Number: {number}</Text>
+
+              <View style={styles.modalButtonRow}>
+                <TouchableOpacity
+                  style={[styles.button, styles.cancelButton]}
+                  onPress={() => setShowConfirmModal(false)}
+                >
+                  <Text style={styles.cancelText}>Cancel</Text>
+                </TouchableOpacity>
+                <TouchableOpacity
+                  style={[styles.button, styles.saveButton]}
+                  onPress={handleSave}
+                  disabled={loading}
+                >
+                  <Text style={styles.saveText}>{loading ? "..." : "OK"}</Text>
+                </TouchableOpacity>
+              </View>
+            </View>
+          </View>
+        </Modal>
+      </View>
+      <Toast/>
     </Modal>
   );
 };
+
 
 export default CreateTruckScreen;
 
