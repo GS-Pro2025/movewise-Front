@@ -233,7 +233,7 @@ const RegistryUser = () => {
       resizeMode="cover"
     >
     <ScrollView contentContainerStyle={styles.container}>
-      <Text style={styles.title}>Register User for {companyData?.name}</Text>
+      <Text style={styles.title}>Register User admin for {companyData?.name}</Text>
 
       {/* Sección de credenciales */}
       <View style={styles.separator} />
