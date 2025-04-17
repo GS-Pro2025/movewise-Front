@@ -42,8 +42,8 @@ const UpdateTruckModal = ({ visible, truck, onClose, onSuccess }: UpdateTruckMod
     if (!number || !type || !name || !category) {
       Toast.show({
         type: "error",
-        text1: "Campos requeridos",
-        text2: "Los campos obligatorios no pueden estar vacíos.",
+        text1: "Mandatory fields",
+        text2: "Some fields are required, please complete them",
       });
       return;
     }
@@ -60,8 +60,8 @@ const UpdateTruckModal = ({ visible, truck, onClose, onSuccess }: UpdateTruckMod
 
         Toast.show({
           type: "success",
-          text1: "Camión actualizado",
-          text2: "Se ha actualizado correctamente el camión.",
+          text1: "Truck updated",
+          text2: "Truck has been succesfully updated",
         });
 
         onSuccess?.();

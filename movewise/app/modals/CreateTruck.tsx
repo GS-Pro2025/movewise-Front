@@ -18,9 +18,10 @@ import { CreateTruck } from "@/hooks/api/TruckClient";
 type CreateTruckScreenProps = {
   visible: boolean;
   onClose: () => void;
+  onSuccess?: () => void;
 };
 // Reemplaza el contenido de tu componente actual por este
-const CreateTruckScreen = ({ visible, onClose }: CreateTruckScreenProps) => {
+const CreateTruckScreen = ({ visible, onClose, onSuccess }: CreateTruckScreenProps) => {
   const navigation = useNavigation();
   const [type, setType] = useState("");
   const [category, setCategory] = useState("");
@@ -77,6 +78,11 @@ const CreateTruckScreen = ({ visible, onClose }: CreateTruckScreenProps) => {
       await CreateTruck(newTruck);
       setLoading(false);
       setShowConfirmModal(false);
+      onClose();
+      //For refreshing the list
+      if (onSuccess) {
+        onSuccess();
+      }
       Toast.show({
         type: "success",
         text1: "Truck created",
@@ -165,7 +171,7 @@ const CreateTruckScreen = ({ visible, onClose }: CreateTruckScreenProps) => {
           <View style={styles.buttonRow}>
             <TouchableOpacity
               style={[styles.button, styles.cancelButton]}
-              onPress={() => navigation.goBack()}
+              onPress={() => onClose()}
             >
               <Text style={styles.cancelText}>Cancel</Text>
             </TouchableOpacity>
@@ -215,6 +221,7 @@ const CreateTruckScreen = ({ visible, onClose }: CreateTruckScreenProps) => {
           </View>
         </Modal>
       </View>
+      <Toast/>
     </Modal>
   );
 };

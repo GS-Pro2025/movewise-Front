@@ -4,8 +4,8 @@ import { Ionicons } from '@expo/vector-icons';
 import { GestureHandlerRootView, Swipeable } from "react-native-gesture-handler";
 import { TouchableHighlight } from "react-native";
 import { ListTruck, DeleteTruck, UpdateTruckStatus } from "../hooks/api/TruckClient"; // Import TruckClient methods
-import CreateTruckScreen from "../app/modals/CreateTruck"; // Updated import for CreateTruck
-import UpdateTruckModal from "../app/modals/UpdateTruckModal"; // Component for updating a truck
+import CreateTruckScreen from "../app/modals/CreateTruck"; 
+import UpdateTruckModal from "../app/modals/UpdateTruckModal"; // Modal for updating a truck
 import CreateTruckModal from "../app/modals/CreateTruck";
 import Toast from "react-native-toast-message";
 import Truck from "@/hooks/api/TruckClient"
@@ -15,7 +15,7 @@ interface ListTruckModalProps {
   onClose: () => void;
 }
 
-const ListTruckModal: React.FC<ListTruckModalProps> = ({ visible, onClose }) => {
+const   ListTruckModal: React.FC<ListTruckModalProps> = ({ visible, onClose }) => {
   const [addTruckVisible, setAddTruckVisible] = useState(false);
   const [updateTruckVisible, setUpdateTruckVisible] = useState(false);
   const [selectedTruck, setSelectedTruck] = useState<Truck | null>(null);
@@ -80,7 +80,8 @@ const ListTruckModal: React.FC<ListTruckModalProps> = ({ visible, onClose }) => 
               setTrucks(prev => prev.filter(truck => truck.id_truck !== id_truck));
               Toast.show({
                       type: "success",
-                      text1: "Truck eliminated"
+                      text1: "Truck eliminated",
+                      text2: "Truck has been sucessfully eliminated"
                     });
                     loadTrucks();
             } catch (error) {
@@ -206,6 +207,7 @@ const ListTruckModal: React.FC<ListTruckModalProps> = ({ visible, onClose }) => 
       <CreateTruckModal
         visible={addTruckVisible}
         onClose={() => setAddTruckVisible(false)}
+        onSuccess={loadTrucks} 
       />
       <UpdateTruckModal
         visible={updateTruckVisible}
@@ -213,6 +215,7 @@ const ListTruckModal: React.FC<ListTruckModalProps> = ({ visible, onClose }) => 
         truck={selectedTruck || null}
         onSuccess={loadTrucks} 
       />
+      <Toast/>
     </Modal>
   );
 };
