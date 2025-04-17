@@ -1,4 +1,3 @@
-// UpdateTruckModal.tsx
 import React, { useEffect, useState } from "react";
 import {
   Modal,
@@ -8,17 +7,12 @@ import {
   TouchableOpacity,
   StyleSheet,
   ActivityIndicator,
-  Alert,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
-import apiClient from "@/hooks/api/apiClient";
-
-type Truck = {
-  id_truck: string;
-  plate: string;
-  brand: string;
-};
+import Toast from "react-native-toast-message";
+import { UpdateTruck } from "@/hooks/api/TruckClient";
+import Truck from "@/hooks/api/TruckClient";
 
 type UpdateTruckModalProps = {
   visible: boolean;
@@ -28,37 +22,60 @@ type UpdateTruckModalProps = {
 };
 
 const UpdateTruckModal = ({ visible, truck, onClose, onSuccess }: UpdateTruckModalProps) => {
-  const [plate, setPlate] = useState("");
-  const [brand, setBrand] = useState("");
+  const [number, setNumber] = useState("");
+  const [type, setType] = useState("");
+  const [name, setName] = useState("");
+  const [category, setCategory] = useState("");
   const [loading, setLoading] = useState(false);
   const router = useRouter();
 
   useEffect(() => {
     if (truck) {
-      setPlate(truck.plate);
-      setBrand(truck.brand);
+      setNumber(truck.number_truck);
+      setType(truck.type);
+      setName(truck.name);
+      setCategory(truck.category ?? "");
     }
   }, [truck]);
 
   const handleUpdate = async () => {
-    if (!plate || !brand) {
-      Alert.alert("Error", "Todos los campos son obligatorios");
+    if (!number || !type || !name || !category) {
+      Toast.show({
+        type: "error",
+        text1: "Mandatory fields",
+        text2: "Some fields are required, please complete them",
+      });
       return;
     }
 
     setLoading(true);
     try {
-      await apiClient.put(`/trucks/${truck?.id_truck}/`, {
-        plate,
-        brand,
-      });
+      if (truck) {
+        await UpdateTruck(truck.id_truck, {
+          number_truck: number,
+          type,
+          name,
+          category: category,
+        });
 
-      Alert.alert("Éxito", "Camión actualizado correctamente");
-      onSuccess?.();
-      onClose();
+        Toast.show({
+          type: "success",
+          text1: "Truck updated",
+          text2: "Truck has been succesfully updated",
+        });
+
+        onSuccess?.();
+        onClose();
+      } else {
+        throw new Error("Truck data is missing.");
+      }
     } catch (error) {
       console.error("Error actualizando camión:", error);
-      Alert.alert("Error", "No se pudo actualizar el camión");
+      Toast.show({
+        type: "error",
+        text1: "Error",
+        text2: "No se pudo actualizar el camión.",
+      });
     } finally {
       setLoading(false);
     }
@@ -68,18 +85,26 @@ const UpdateTruckModal = ({ visible, truck, onClose, onSuccess }: UpdateTruckMod
     <Modal visible={visible} animationType="slide" onRequestClose={onClose}>
       <View style={styles.container}>
         <Text style={styles.title}>Actualizar Camión</Text>
-
+        <Text style={styles.labelInput}>Type</Text>
         <TextInput
           style={styles.input}
-          placeholder="Placa"
-          value={plate}
-          onChangeText={setPlate}
+          placeholder="Type"
+          value={type}
+          onChangeText={setType}
         />
+        <Text style={styles.labelInput}>Name</Text>
         <TextInput
           style={styles.input}
-          placeholder="Marca"
-          value={brand}
-          onChangeText={setBrand}
+          placeholder="Name"
+          value={name}
+          onChangeText={setName}
+        />
+        <Text style={styles.labelInput}>Category</Text>
+        <TextInput
+          style={styles.input}
+          placeholder="Category"
+          value={category}
+          onChangeText={setCategory}
         />
 
         <TouchableOpacity style={styles.saveBtn} onPress={handleUpdate} disabled={loading}>
@@ -110,6 +135,11 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
     marginBottom: 30,
     textAlign: "center",
+  },
+  labelInput: {
+    fontSize: 16,
+    fontWeight: "bold",
+    marginBottom: 0,
   },
   input: {
     borderColor: "#ccc",
