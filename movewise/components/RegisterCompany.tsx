@@ -77,8 +77,14 @@ const RegisterCompany = () => {
       // Navigate to RegistryUser and pass the company object
       router.push({
         pathname: "/modals/RegistryUser",
-        params: { company: JSON.stringify(companyData) }, // Pass company object as a string
+        params: {
+          license: license,
+          company_name: companyName,
+          address: address,
+          zip_code: zipCode,
+        },
       });
+      
     } else {
       Toast.show({
         type: "error",

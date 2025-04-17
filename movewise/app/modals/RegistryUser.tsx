@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   View,
   Text,
@@ -13,11 +13,24 @@ import Toast from "react-native-toast-message";
 import { CreateCompany } from "../../hooks/api/CompanyClient";
 import { registerUser } from "../../hooks/api/RegistryClient";
 import HeaderWithDivider from "@/components/HeaderWithDivider";
+import DropDownPicker from "react-native-dropdown-picker";
+import MaterialIcons from "@expo/vector-icons/MaterialIcons";
+import DateTimePickerModal from "react-native-modal-datetime-picker";
+import { ListStates } from "@/hooks/api/StatesClient";
+import ModelState from "@/models/ModelState";
+import { ModelCompany } from "@/models/ModelCompany";
 
 const RegistryUser = () => {
   const router = useRouter();
-  const { company } = useLocalSearchParams(); // Retrieve the company object
-  const companyData = typeof company === "string" ? JSON.parse(company) : null;
+  const { license, company_name, address, zip_code } = useLocalSearchParams();
+
+  // Asegúrate de que sean strings, y si no, convierte o valida
+  const companyData: ModelCompany = {
+    license_number: typeof license === "string" ? license : license?.[0] ?? "",
+    name: typeof company_name === "string" ? company_name : company_name?.[0] ?? "",
+    address: typeof address === "string" ? address : address?.[0] ?? "",
+    zip_code: typeof zip_code === "string" ? zip_code : zip_code?.[0] ?? "",
+  };
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -29,11 +42,18 @@ const RegistryUser = () => {
   const [state, setState] = useState("");
   const [city, setCity] = useState("");
   const [zipCode, setZipCode] = useState("");
-  const [address, setAddress] = useState("");
+  const [adressPerson, setAddress] = useState("");
   const [phone, setPhone] = useState("");
+  const [openIdType, setOpenIdType] = useState(false);
+  const [openState, setOpenState] = useState(false);
+  const [isDatePickerVisible, setDatePickerVisibility] = useState(false);
+  const [stateList, setStateList] = useState<{ label: string; value: string }[]>([]);
+  const [userName, setUserName] = useState("");
+  const [searchTerm, setSearchTerm] = useState(""); // Added state for search term
   const [errors, setErrors] = useState<{
     email?: string;
     password?: string;
+    userName?: string; 
     firstName?: string;
     lastName?: string;
     birthDate?: string;
@@ -42,14 +62,19 @@ const RegistryUser = () => {
     state?: string;
     city?: string;
     zipCode?: string;
-    address?: string;
+    adressPerson?: string;
     phone?: string;
   }>({});
+
+
+
+  
 
   const validateFields = () => {
     const newErrors: {
       email?: string;
       password?: string;
+      userName?: string; 
       firstName?: string;
       lastName?: string;
       birthDate?: string;
@@ -58,7 +83,7 @@ const RegistryUser = () => {
       state?: string;
       city?: string;
       zipCode?: string;
-      address?: string;
+      adressPerson?: string;
       phone?: string;
     } = {};
 
@@ -73,7 +98,9 @@ const RegistryUser = () => {
     } else if (password.length < 6) {
       newErrors.password = "Password must be at least 6 characters long.";
     }
-
+    if (!userName.trim()) {
+      newErrors.userName = "Username is required."; // Add validation message
+    }
     if (!firstName.trim()) {
       newErrors.firstName = "First Name is required.";
     }
@@ -102,12 +129,8 @@ const RegistryUser = () => {
       newErrors.city = "City is required.";
     }
 
-    if (!zipCode.trim()) {
-      newErrors.zipCode = "Zip Code is required.";
-    }
-
-    if (!address.trim()) {
-      newErrors.address = "Address is required.";
+    if (!adressPerson.trim()) {
+      newErrors.adressPerson = "Address is required.";
     }
 
     if (!phone.trim()) {
@@ -120,57 +143,89 @@ const RegistryUser = () => {
   };
 
   const handleRegister = async () => {
-    if (validateFields()) {
-      try {
-        // Step 1: Register the company
-        const companyResponse = await CreateCompany(companyData);
-        const companyId = companyResponse.id;
-
-        // Step 2: Register the user for the company
-        const userData = {
-          user_name: `${firstName}.${lastName}`, // Example user_name generation
-          password,
-          person: {
-            email: email,
-            first_name: firstName,
-            last_name: lastName,
-            birth_date: birthDate,
-            phone: phone,
-            address: address,
-            id_number: idNumber,
-            type_id: idType,
-            state: state,
-            city: city,
-            zip_code: zipCode,
-          },
-        };
-
-        console.log("Registering user:", userData);
-        await registerUser(userData);
-
-        Toast.show({
-          type: "success",
-          text1: "Success",
-          text2: "Company and user registered successfully!",
-        });
-
-        router.push("/"); // Navigate back to the home screen or another route
-      } catch (error: any) {
-        Toast.show({
-          type: "error",
-          text1: "Registration Error",
-          text2: error.message || "Registration failed.",
-        });
-      }
-    } else {
+    if (!validateFields()) {
       Toast.show({
         type: "error",
         text1: "Validation Error",
         text2: "Please fix the errors before submitting.",
       });
     }
-  };
+      // Step 1: Register the company
+      try {
+        if (companyData) {
+          Toast.show({
+            type: "error",
+            text1: "Error",
+            text2: "Company null.",
+          });
+        }
+        const companyResponse = await CreateCompany(companyData);
+        Toast.show({
+          type: "success",
+          text1: "Company Registered",
+          text2: `Company Name: ${companyData.name}, ZIP: ${companyData.zip_code}`, 
+        });
+      } catch (error: any) {
+        Toast.show({
+          type: "error",
+          text1: "Error",
+          text2: "Company data invalid.",
+        });
+      }
+      
 
+      // Step 2: Register the user for the company
+      const userData = {
+        user_name: userName,
+        password: password,
+        person: {
+          email: email,
+          first_name: firstName,
+          last_name: lastName,
+          birth_date: birthDate,
+          phone: phone,
+          address: adressPerson,
+          id_number: idNumber,
+          type_id: idType,
+          state: state,
+          city: city,
+        },
+      };
+    try {
+      await registerUser(userData);
+
+      Toast.show({
+        type: "success",
+        text1: "Success",
+        text2: "Company and user registered successfully!",
+      });
+
+      router.push("/"); // Navigate back to the home screen or another route
+    } catch (error: any) {
+      Toast.show({
+        type: "error",
+        text1: "Registration Error",
+        text2: error.message || "Registration failed.",
+      });
+    }
+  };
+  useEffect(() => {
+    const fetchStates = async () => {
+      try {
+        const states: ModelState[] = await ListStates(); // Define states as ModelState[]
+        setStateList(
+          states.map((state) => ({
+            label: String(state.name), 
+            value: String(state.code),
+          }))
+        );
+      } catch (error) {
+        console.error("Error fetching states:", error);
+      }
+    };
+
+    fetchStates();
+  }, []);
   return (
     <ImageBackground
       source={require("../../assets/images/bg_login.jpg")}
@@ -178,12 +233,14 @@ const RegistryUser = () => {
       resizeMode="cover"
     >
     <ScrollView contentContainerStyle={styles.container}>
-      <Text style={styles.title}>Register User for {companyData?.company_name}</Text>
+      <Text style={styles.title}>Register User for {companyData?.name}</Text>
 
       {/* Sección de credenciales */}
       <View style={styles.separator} />
       <View style={styles.section}>
+        
         <Text style={styles.textUserFields}>User admin credentials</Text>
+        {errors.email && <Text style={styles.errorText}>{errors.email}</Text>}
         <TextInput
           style={[styles.input, errors.email && styles.inputError]}
           placeholder="Email"
@@ -193,8 +250,15 @@ const RegistryUser = () => {
           keyboardType="email-address"
           autoCapitalize="none"
         />
-        {errors.email && <Text style={styles.errorText}>{errors.email}</Text>}
-
+        {errors.userName && <Text style={styles.errorText}>{errors.userName}</Text>}
+        <TextInput
+          style={[styles.input, errors.userName && styles.inputError]}
+          placeholder="Username"
+          placeholderTextColor="#888"
+          value={userName}
+          onChangeText={setUserName}
+        />
+        {errors.password && <Text style={styles.errorText}>{errors.password}</Text>}
         <TextInput
           style={[styles.input, errors.password && styles.inputError]}
           placeholder="Password"
@@ -203,10 +267,11 @@ const RegistryUser = () => {
           onChangeText={setPassword}
           secureTextEntry
         />
-        {errors.password && <Text style={styles.errorText}>{errors.password}</Text>}
+        
       </View>
       <View style={styles.separator} />
       {/* Resto de campos */}
+      {errors.firstName && <Text style={styles.errorText}>{errors.firstName}</Text>}
       <View style={styles.section}>
         <TextInput
           style={[styles.input, errors.firstName && styles.inputError]}
@@ -215,8 +280,8 @@ const RegistryUser = () => {
           value={firstName}
           onChangeText={setFirstName}
         />
-        {errors.firstName && <Text style={styles.errorText}>{errors.firstName}</Text>}
 
+        {errors.lastName && <Text style={styles.errorText}>{errors.lastName}</Text>}
         <TextInput
           style={[styles.input, errors.lastName && styles.inputError]}
           placeholder="Last Name"
@@ -224,44 +289,101 @@ const RegistryUser = () => {
           value={lastName}
           onChangeText={setLastName}
         />
-        {errors.lastName && <Text style={styles.errorText}>{errors.lastName}</Text>}
+        
 
-        <TextInput
-          style={[styles.input, errors.birthDate && styles.inputError]}
-          placeholder="Date of Birth"
-          placeholderTextColor="#888"
-          value={birthDate}
-          onChangeText={setBirthDate}
-        />
+        {/* Fecha de nacimiento */}
         {errors.birthDate && <Text style={styles.errorText}>{errors.birthDate}</Text>}
+        <View style={{ zIndex: 1000, marginTop: 16 }}>
+          <TouchableOpacity onPress={() => setDatePickerVisibility(true)} style={[styles.input, { flexDirection: "row", justifyContent: "space-between" }]}>
+            <Text style={{ color: birthDate ? "#000" : "#9ca3af" }}>{birthDate ? birthDate : "Birthdate"}</Text>
+            <MaterialIcons name="calendar-today" size={20} color="#9ca3af" />
+          </TouchableOpacity>
+          <DateTimePickerModal
+            isVisible={isDatePickerVisible}
+            mode="date"
+            onConfirm={(selectedDate) => {
+              setDatePickerVisibility(false);
+              setBirthDate(selectedDate.toISOString().split('T')[0]);
+            }}
+            onCancel={() => setDatePickerVisibility(false)}
+          />
+        </View>
 
-        <TextInput
-          style={[styles.input, errors.idType && styles.inputError]}
-          placeholder="Identification Type"
-          placeholderTextColor="#888"
-          value={idType}
-          onChangeText={setIdType}
-        />
         {errors.idType && <Text style={styles.errorText}>{errors.idType}</Text>}
+        <DropDownPicker
+          open={openIdType}
+          value={idType}
+          items={[
+            { label: 'Driver’s License', value: 'DL' },
+            { label: 'State ID', value: 'SI' },
+            { label: 'Green Card', value: 'GC' },
+            { label: 'Passport', value: 'PA' },
+          ]}
+          setOpen={setOpenIdType}
+          setValue={setIdType}
+          setItems={() => {}}
+          placeholder="Select ID type"
+          placeholderStyle={{ color: '#9ca3af' }}
+          style={[styles.input, { borderColor: errors.idType ? "red" : "#0458AB" }]}
+          listMode="MODAL"
+          modalTitle="Select ID type"
+          modalProps={{
+            animationType: "slide"
+          }}
+          searchable={true}
+          searchPlaceholder="Search..."
+          searchPlaceholderTextColor="#9ca3af"
+          onChangeSearchText={text => setSearchTerm(text)}
+          scrollViewProps={{
+            nestedScrollEnabled: true,
+          }}
+        />
 
+        {errors.idNumber && <Text style={styles.errorText}>{errors.idNumber}</Text>}
         <TextInput
           style={[styles.input, errors.idNumber && styles.inputError]}
           placeholder="ID Number"
           placeholderTextColor="#888"
           value={idNumber}
+          keyboardType="numeric"
           onChangeText={setIdNumber}
         />
-        {errors.idNumber && <Text style={styles.errorText}>{errors.idNumber}</Text>}
 
-        <TextInput
-          style={[styles.input, errors.state && styles.inputError]}
-          placeholder="State"
-          placeholderTextColor="#888"
-          value={state}
-          onChangeText={setState}
-        />
+
         {errors.state && <Text style={styles.errorText}>{errors.state}</Text>}
+        <DropDownPicker
+          open={openState}
+          value={state}
+          items={stateList.map(state => ({
+            label: state.label,
+            value: state.value
+          }))}
+          setOpen={setOpenState}
+          setValue={setState}
+          setItems={() => {}}
+          placeholder="Select State"
+          placeholderStyle={{ color: '#9ca3af' }}
+          style={[styles.input, { borderColor: errors.state ? "red" : "#0458AB" }]}
+          dropDownContainerStyle={{ maxHeight: 200 }}
+          listMode="MODAL"
+          modalTitle="Select a State"
+          modalProps={{
+            animationType: "slide"
+          }}
+          searchable={true}
+          searchPlaceholder="Search..."
+          searchPlaceholderTextColor="#9ca3af"
+          searchTextInputProps={{
+            onChangeText: text => setSearchTerm(text),
+          }}
+          scrollViewProps={{
+            nestedScrollEnabled: true,
+          }}
+        />
 
+        
+
+        {errors.zipCode && <Text style={styles.errorText}>{errors.zipCode}</Text>}
         <TextInput
           style={[styles.input, errors.city && styles.inputError]}
           placeholder="City"
@@ -271,38 +393,31 @@ const RegistryUser = () => {
         />
         {errors.city && <Text style={styles.errorText}>{errors.city}</Text>}
 
+        {errors.adressPerson && <Text style={styles.errorText}>{errors.adressPerson}</Text>}
         <TextInput
-          style={[styles.input, errors.zipCode && styles.inputError]}
-          placeholder="Zip Code"
-          placeholderTextColor="#888"
-          value={zipCode}
-          onChangeText={setZipCode}
-        />
-        {errors.zipCode && <Text style={styles.errorText}>{errors.zipCode}</Text>}
-
-        <TextInput
-          style={[styles.input, errors.address && styles.inputError]}
+          style={[styles.input, errors.adressPerson && styles.inputError]}
           placeholder="Address"
           placeholderTextColor="#888"
-          value={address}
+          value={adressPerson}
           onChangeText={setAddress}
         />
-        {errors.address && <Text style={styles.errorText}>{errors.address}</Text>}
+        
 
+        {errors.phone && <Text style={styles.errorText}>{errors.phone}</Text>}
         <TextInput
           style={[styles.input, errors.phone && styles.inputError]}
           placeholder="Phone"
           placeholderTextColor="#888"
+          keyboardType="numeric"
           value={phone}
           onChangeText={setPhone}
         />
-        {errors.phone && <Text style={styles.errorText}>{errors.phone}</Text>}
+        
         <TouchableOpacity style={styles.button} onPress={handleRegister}>
         <Text style={styles.buttonText}>REGISTER USER</Text>
       </TouchableOpacity>
       </View>
     </ScrollView>
-      {/* Toast Component */}
       <Toast />
     </ImageBackground>
   );

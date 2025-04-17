@@ -5,13 +5,12 @@ interface Person {
     first_name: string;
     last_name: string;
     birth_date: string;
-    phone: number;
+    phone: string;
     address: string;
-    id_number: number;
+    id_number: string;
     type_id: string;
-    state: string; // Added state
-    city: string;  // Added city
-    zip_code: string; // Added zip_code
+    state: string; 
+    city: string;  
 }
 
 interface RegisterRequestBody {
