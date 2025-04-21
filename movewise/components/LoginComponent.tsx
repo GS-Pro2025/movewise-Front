@@ -13,17 +13,27 @@ import { useRouter } from "expo-router";
 import Checkbox from "expo-checkbox";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { loginUser } from "../hooks/api/loginClient";
-import Toast from "react-native-toast-message";
-
+import { ALERT_TYPE, Dialog, AlertNotificationRoot, Toast } from 'react-native-alert-notification';
+import { ToastAndroid, Platform } from 'react-native';
+import { decodeToken } from "../utils/decodeToken";
+import { getOperatorById } from "../hooks/api/GetOperatorById";
 const LoginComponent: React.FC = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [idNumber, setIdNumber] = useState("");
   const [remember, setRemember] = useState(false);
   const [errors, setErrors] = useState<{ email?: string; password?: string }>({});
+  // Load saved credentials from cache
+  const [showAdminLogin, setShowAdminLogin] = useState(true);
   const theme = useColorScheme();
   const router = useRouter();
 
-  // Load saved credentials from cache
+  function notifyMessage(msg: string) {
+    if (Platform.OS === 'android') {
+      ToastAndroid.show(msg, ToastAndroid.SHORT)
+    }
+  }
+
   useEffect(() => {
     const loadStoredCredentials = async () => {
       try {
@@ -73,37 +83,70 @@ const LoginComponent: React.FC = () => {
       });
       return;
     }
+  }, [showAdminLogin]);
 
+  const handleLogin = async () => {
     try {
-      const response = await loginUser({ email, password });
+      const credentials = showAdminLogin
+        ? { email, password }
+        : { id_number: idNumber };
 
-      // Guardar el token en AsyncStorage
+      const response = await loginUser(credentials);
+
       if (response.token) {
-        console.log("Token guardado en AsyncStorage:", response.token);
         await AsyncStorage.setItem("userToken", response.token);
+        const tokenPayload = decodeToken(response.token);
+        const personId = tokenPayload.person_id;
+        const isUserAdmin = tokenPayload.is_admin;
+
+        console.log('personId', personId);
+        console.log('isUserAdmin', isUserAdmin);
+
+        //get operator data
+        if (personId) {
+          const operatorData = await getOperatorById(personId);
+          if (operatorData) {
+            const currentUser = {
+              id: operatorData.id,
+              first_name: operatorData.first_name,
+              last_name: operatorData.last_name,
+              status: operatorData.status,
+              id_number: operatorData.id_number,
+            };
+            await AsyncStorage.setItem("currentUser", JSON.stringify(currentUser));
+          }
+        }
       }
 
-      // Guardar o limpiar credenciales
-      if (remember) {
+      if (showAdminLogin && remember) {
         await AsyncStorage.setItem("savedEmail", email);
         await AsyncStorage.setItem("savedPassword", password);
-      } else {
+      } else if (showAdminLogin) {
         await AsyncStorage.removeItem("savedEmail");
         await AsyncStorage.removeItem("savedPassword");
       }
 
+      notifyMessage("Login successful");
       Toast.show({
-        type: "success",
-        text1: "Login Successful",
-        text2: `Welcome ${response.name ?? "user"}`,
+        type: ALERT_TYPE.SUCCESS,
+        title: "Login successful",
+        textBody: "Welcome to Movewise",
+        autoClose: 3000,
       });
 
-      router.push("/Home");
+      if (!showAdminLogin) {
+        router.push("/OperatorHome");
+      } else {
+        router.push("/Home");
+      }
     } catch (error: any) {
+      console.log('Backend error:', error.message);
+
       Toast.show({
-        type: "error",
-        text1: "Authentication Error",
-        text2: error.message || "Login failed",
+        type: ALERT_TYPE.DANGER,
+        title: "Authentication Error",
+        textBody: error.message || "Login failed, verify your credentials", // Usar error.message
+        autoClose: 3000,
       });
     }
   };
@@ -158,6 +201,24 @@ const LoginComponent: React.FC = () => {
         >
           <Text style={styles.buttonText}>REGISTER COMPANY</Text>
         </TouchableOpacity>
+
+        {showAdminLogin && (
+          <TouchableOpacity
+            style={styles.button}
+            onPress={() => setShowAdminLogin(false)}
+          >
+            <Text style={styles.buttonText}>OPERATOR DAILY WORK</Text>
+          </TouchableOpacity>
+        )}
+
+        {showAdminLogin && (
+          <>
+            <Text style={styles.bottomText}>Don't have a company?</Text>
+            <TouchableOpacity style={styles.button}>
+              <Text style={styles.buttonText}>REGISTER COMPANY</Text>
+            </TouchableOpacity>
+          </>
+        )}
       </View>
 
       {/* Toast Component */}
@@ -239,5 +300,14 @@ const styles = StyleSheet.create({
     color: "#002366",
     fontSize: 14,
     marginBottom: 8,
+  },
+  switchButton: {
+    marginBottom: 16,
+    alignItems: "center",
+  },
+  switchButtonText: {
+    color: "#0458AB",
+    fontWeight: "500",
+    textDecorationLine: "underline",
   },
 });
