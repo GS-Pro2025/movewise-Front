@@ -7,8 +7,8 @@ import { useEffect } from 'react';
 import { View } from 'react-native';
 import 'react-native-reanimated';
 import { AlertNotificationRoot } from "react-native-alert-notification";
-
 import { useColorScheme } from '@/hooks/useColorScheme';
+import Toast from 'react-native-toast-message';
 
 // Evita que la pantalla de carga desaparezca antes de que se carguen los assets
 SplashScreen.preventAutoHideAsync();
@@ -37,9 +37,11 @@ export default function RootLayout() {
     <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
       <Stack screenOptions={{ headerShown: false }}>
         <Stack.Screen name="+not-found" />
+        <Stack.Screen name="modals/operatorView" options={{ presentation: 'modal' }} />
       </Stack>
       <StatusBar style="auto" />
     </ThemeProvider>
+    <Toast />
     </AlertNotificationRoot>
   );
 }

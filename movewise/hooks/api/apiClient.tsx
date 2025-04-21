@@ -1,6 +1,10 @@
 import axios, { AxiosInstance } from "axios";
-export const  url = 'http://192.168.101.21:8000/'
-export const token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJwZXJzb25faWQiOjIsImVtYWlsIjoiZXhhbXBsZUBleGFtcGxlLmNvbSIsImlzX2FkbWluIjp0cnVlLCJleHAiOjE3NDQ4NTM0ODYsImlhdCI6MTc0NDc2NzA4Nn0.ci9HqFs433XF0g8i4Sre8W1ONwyOYKCAGCFdKL2xbXE"
+
+export const  url = 'http://192.168.1.11:8000/'
+
+import AsyncStorage from "@react-native-async-storage/async-storage";
+let token = null;
+
 const apiClient: AxiosInstance = axios.create({
   baseURL: url,
   timeout: 10000, // 10 segundos de timeout

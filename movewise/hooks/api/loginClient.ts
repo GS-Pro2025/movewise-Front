@@ -11,12 +11,15 @@ export interface LoginResponse {
   message?: string;
 }
 
-export async function loginUser(credentials: LoginRequest): Promise<LoginResponse> {
-    console.log("Invocando login back")
+export async function loginUser(credentials: LoginRequest | { id_number: string }): Promise<LoginResponse> {
   try {
     const response = await apiClient.post("/login/", credentials);
     return response.data;
   } catch (error: any) {
-    throw new Error(error.response?.data?.message || "Login failed");
+    // Capturar el mensaje del backend directamente
+    const errorMessage = error.response?.data?.detail || 
+                        error.response?.data?.message || 
+                        "Login failed";
+    throw new Error(errorMessage);
   }
 }
