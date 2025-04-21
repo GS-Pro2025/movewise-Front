@@ -22,6 +22,8 @@ const LoginComponent: React.FC = () => {
   const [password, setPassword] = useState("");
   const [idNumber, setIdNumber] = useState("");
   const [remember, setRemember] = useState(false);
+  const [errors, setErrors] = useState<{ email?: string; password?: string }>({});
+  // Load saved credentials from cache
   const [showAdminLogin, setShowAdminLogin] = useState(true);
   const theme = useColorScheme();
   const router = useRouter();
@@ -44,12 +46,42 @@ const LoginComponent: React.FC = () => {
           setRemember(true);
         }
       } catch (err) {
-        console.warn("Error loading stored credentials", err);
+        console.warn("Error loading saved credentials", err);
       }
     };
 
-    if (showAdminLogin) {
-      loadStoredCredentials();
+    loadStoredCredentials();
+  }, []);
+
+  const validateFields = () => {
+    const newErrors: { email?: string; password?: string } = {};
+
+    if (!email.trim()) {
+      newErrors.email = "Email is required.";
+    } else if (!/\S+@\S+\.\S+/.test(email)) {
+      newErrors.email = "Invalid email format.";
+    }
+
+    if (!password.trim()) {
+      newErrors.password = "Password is required.";
+    } else if (password.length < 6) {
+      newErrors.password = "Password must be at least 6 characters long.";
+    }
+
+    setErrors(newErrors);
+
+    return Object.keys(newErrors).length === 0; // Return true if no errors
+  };
+
+  const handleLogin = async () => {
+    if (!validateFields()) {
+      // Show error toast if validation fails
+      Toast.show({
+        type: "error",
+        text1: "Validation Error",
+        text2: "Please fix the errors before submitting.",
+      });
+      return;
     }
   }, [showAdminLogin]);
 
@@ -128,57 +160,46 @@ const LoginComponent: React.FC = () => {
       <StatusBar barStyle="light-content" />
       <View style={styles.container}>
         <Text style={styles.title}>Welcome to{"\n"}Movewise</Text>
+        <TextInput
+          style={[styles.input, errors.email && styles.inputError]}
+          placeholder="Email"
+          placeholderTextColor="#333"
+          value={email}
+          onChangeText={setEmail}
+        />
+        {errors.email && <Text style={styles.errorText}>{errors.email}</Text>}
 
-        {showAdminLogin ? (
-          <>
-            <TextInput
-              style={styles.input}
-              placeholder="Email"
-              placeholderTextColor="#333"
-              value={email}
-              onChangeText={setEmail}
-            />
-            <TextInput
-              style={styles.input}
-              placeholder="Password"
-              placeholderTextColor="#333"
-              secureTextEntry
-              value={password}
-              onChangeText={setPassword}
-            />
-            <View style={styles.row}>
-              <View style={styles.checkboxContainer}>
-                <Checkbox value={remember} onValueChange={setRemember} color="#0458AB" />
-                <Text style={styles.checkboxText}> Remember me</Text>
-              </View>
-              <TouchableOpacity>
-                <Text style={styles.forgotText}>Forgot password?</Text>
-              </TouchableOpacity>
-            </View>
-          </>
-        ) : (
-          <>
-            <TextInput
-              style={styles.input}
-              placeholder="ID Number"
-              placeholderTextColor="#333"
-              keyboardType="numeric"
-              value={idNumber}
-              onChangeText={setIdNumber}
-            />
-            <TouchableOpacity
-              style={styles.switchButton}
-              onPress={() => setShowAdminLogin(true)}
-            >
-              <Text style={styles.switchButtonText}>Back to Admin Login</Text>
-            </TouchableOpacity>
-          </>
-        )}
+        <TextInput
+          style={[styles.input, errors.password && styles.inputError]}
+          placeholder="Password"
+          placeholderTextColor="#333"
+          secureTextEntry
+          value={password}
+          onChangeText={setPassword}
+        />
+        {errors.password && <Text style={styles.errorText}>{errors.password}</Text>}
 
+        <View style={styles.row}>
+          <View style={styles.checkboxContainer}>
+            <Checkbox value={remember} onValueChange={setRemember} color="#0458AB" />
+            <Text style={styles.checkboxText}> Remember me.</Text>
+          </View>
+          <TouchableOpacity>
+            <Text style={styles.forgotText}>Forgot password?</Text>
+          </TouchableOpacity>
+        </View>
         <TouchableOpacity style={styles.button} onPress={handleLogin}>
-          <Text style={styles.buttonText}>
-            {showAdminLogin ? "LOGIN" : "OPERATOR LOGIN"}
-          </Text>
+          <Text style={styles.buttonText}>LOGIN</Text>
+        </TouchableOpacity>
+        <TouchableOpacity style={styles.button}>
+          <Text style={styles.buttonText}>OPERATOR DAILY WORK</Text>
+        </TouchableOpacity>
+        <Text style={styles.bottomText}>Don't have a company?</Text>
+        <TouchableOpacity
+          style={styles.button}
+          onPress={() => router.push("/CompanyRegister")}
+        >
+          <Text style={styles.buttonText}>REGISTER COMPANY</Text>
         </TouchableOpacity>
 
         {showAdminLogin && (
@@ -199,6 +220,9 @@ const LoginComponent: React.FC = () => {
           </>
         )}
       </View>
+
+      {/* Toast Component */}
+      <Toast />
     </ImageBackground>
   );
 };
@@ -227,10 +251,18 @@ const styles = StyleSheet.create({
     borderColor: "#0458AB",
     borderRadius: 10,
     paddingHorizontal: 16,
-    marginBottom: 16,
+    marginBottom: 8,
     backgroundColor: "#fff",
     fontSize: 16,
     color: "#000",
+  },
+  inputError: {
+    borderColor: "#FF0000", // Highlight input with error in red
+  },
+  errorText: {
+    color: "#FF0000",
+    fontSize: 12,
+    marginBottom: 8,
   },
   row: {
     flexDirection: "row",
