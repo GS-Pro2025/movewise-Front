@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import {
   Image,
   View,
@@ -12,7 +12,6 @@ import {
 } from "react-native";
 import { useRouter } from "expo-router";
 import Toast from 'react-native-toast-message';
-
 interface ActionButtonProps {
   title: string;
   iconSource?: any;
@@ -103,6 +102,7 @@ const Home: React.FC = () => {
               title={"Create\nTruck"}
               isDarkMode={isDarkMode}
               iconSource={require("../assets/images/truck.png")}
+              onPress={() => router.push("/modals/ListTruckModal")}
             />
             <ActionButton
               title={"Collaborator\nRegistration"}
