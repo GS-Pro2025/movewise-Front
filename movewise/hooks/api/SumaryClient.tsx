@@ -1,6 +1,7 @@
 import apiClient from './apiClient'; // Adjust the path as needed
 
 interface Summary{
+    [x: string]: any;
     expense: string;
     rentingCost: string;
     fuelCost: string;
