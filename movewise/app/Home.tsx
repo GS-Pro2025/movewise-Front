@@ -115,6 +115,7 @@ const Home: React.FC = () => {
               title={"Resume\nOrder"}
               isDarkMode={isDarkMode}
               iconSource={require("../assets/images/paper.png")}
+              onPress={()=> router.push("/modals/ListOfOrdersForSumary")}
             />
           </View>
           <View style={styles.row}>
