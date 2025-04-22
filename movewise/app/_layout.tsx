@@ -38,6 +38,9 @@ export default function RootLayout() {
       <Stack screenOptions={{ headerShown: false }}>
         <Stack.Screen name="+not-found" />
         <Stack.Screen name="modals/operatorView" options={{ presentation: 'modal' }} />
+        <Stack.Screen name="modals/WorkDailyScreen" options={{ presentation: 'modal' }} />
+        <Stack.Screen name="modals/ExtraCostScreen" options={{ presentation: 'modal'}} /> 
+        <Stack.Screen name="modals/AddExtraCostForm" options={{ presentation: 'modal'}} />    
       </Stack>
       <StatusBar style="auto" />
     </ThemeProvider>
