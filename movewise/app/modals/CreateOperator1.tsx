@@ -156,15 +156,12 @@ export default function OperatorRegistrationForm(): JSX.Element {
     setCurrentStep(currentStep - 1);
   };
 
-  // Function to submit the complete form
   const handleSubmit = async (): Promise<void> => {
     try {
       setLoading(true);
-
-      // Create FormData object
       const apiFormData = new FormData();
 
-      // Step 1 data
+      // Step 1 - General Data
       apiFormData.append('first_name', formData.firstName);
       apiFormData.append('last_name', formData.lastName);
       apiFormData.append('birth_date', formData.dateOfBirth);
@@ -176,97 +173,99 @@ export default function OperatorRegistrationForm(): JSX.Element {
         apiFormData.append('email', formData.email);
       }
 
-      // Step 2 data
-      apiFormData.append('number_licence', formData.drivingLicenseNumber);
-      apiFormData.append('code', formData.code);
-      apiFormData.append('n_children', formData.minorCount.toString());
+      // Step 2 - Driving License
+      if (formData.drivingLicenseNumber.trim()) {
+        apiFormData.append('number_licence', formData.drivingLicenseNumber);
+      }
 
-      // Add sons data as JSON string
+      if (formData.code.trim()) {
+        apiFormData.append('code', formData.code);
+      }
+
+      apiFormData.append('n_children', formData.minorCount.toString());
       if (formData.sons.length > 0) {
         apiFormData.append('sons', JSON.stringify(formData.sons));
       }
 
-      // Step 3 data
+      // Step 3 - Final Info
       apiFormData.append('size_t_shift', formData.size);
       apiFormData.append('name_t_shift', formData.tshirtName);
-      apiFormData.append('salary', formData.salary);
+
+      if (formData.salary.trim()) {
+        apiFormData.append('salary', formData.salary);
+      }
+
       apiFormData.append('status', formData.status);
 
-      // Add images
-      if (formData.photo) {
-        const photoFile = {
-          uri: formData.photo.uri,
-          name: 'photo.jpg',
-          type: 'image/jpeg'
-        };
-        // @ts-ignore - FormData in React Native has issues with TypeScript
-        apiFormData.append('photo', photoFile);
-      }
+      // Fix for handling images
+      const appendImageToFormData = (fieldName: string, imageInfo: ImageInfo | null) => {
+        if (!imageInfo) return;
 
-      if (formData.licenseFront) {
-        const licenseFileF = {
-          uri: formData.licenseFront.uri,
-          name: 'license_front.jpg',
-          type: 'image/jpeg'
-        };
-        // @ts-ignore
-        apiFormData.append('license_front', licenseFileF);
-      }
+        // Log the image info for debugging
+        console.log(`Processing ${fieldName}:`, JSON.stringify(imageInfo));
 
-      if (formData.licenseBack) {
-        const licenseFileB = {
-          uri: formData.licenseBack.uri,
-          name: 'license_back.jpg',
-          type: 'image/jpeg'
+        // Create the file object correctly for React Native
+        const fileObj = {
+          uri: Platform.OS === 'android' ? imageInfo.uri : imageInfo.uri.replace('file://', ''),
+          type: 'image/jpeg',
+          name: imageInfo.name || `${fieldName}.jpg`
         };
-        // @ts-ignore
-        apiFormData.append('license_back', licenseFileB);
-      }
+
+        console.log(`Adding ${fieldName} to form:`, JSON.stringify(fileObj));
+        apiFormData.append(fieldName, fileObj as any);
+      };
+
+      // Apply our function to all three image fields
+      appendImageToFormData('photo', formData.photo);
+      appendImageToFormData('license_front', formData.licenseFront);
+      appendImageToFormData('license_back', formData.licenseBack);
+
+      // Add debug logs
+      console.log("FormData keys:", Object.keys(apiFormData));
+      console.log("Photo in formData:", formData.photo ? "present" : "missing");
 
       // Submit form
       const response = await PostOperator(apiFormData);
+      console.log("Registration response:", response);
 
-      Toast.show({
-        type: ALERT_TYPE.SUCCESS,
-        title: "Registration Successful",
-        textBody: "Operator has been registered successfully",
-        autoClose: 3000,
-      });
-
-      // Navigate back or to a success screen
-      router.back();
+      // Handle success response
+      if (response?.data) {
+        Dialog.show({
+          type: ALERT_TYPE.SUCCESS,
+          title: "Registration Successful",
+          textBody: `Operator #${response.data.id_operator} created successfully!`,
+          button: 'OK',
+          onHide: () => {
+            router.back();
+          }
+        });
+      } else {
+        throw new Error("Invalid server response format");
+      }
 
     } catch (error: any) {
-      console.error('Error submitting form:', error);
+      console.error('Submission error:', error);
+      let errorMessage = "Failed to register operator. Please try again.";
 
-      const errorMessage = error.response?.data?.error ||
-        error.response?.data?.detail ||
-        (typeof error.response?.data === 'string' ? error.response?.data : null) ||
-        "An error occurred while registering the operator";
+      // Display error details
+      console.error("Error details:", error.response?.data || error.message);
 
-      // Check if we have validation errors (object with field names as keys)
-      if (error.response?.data && typeof error.response.data === 'object' && !Array.isArray(error.response.data)) {
-        const validationErrors = Object.entries(error.response.data)
-          .map(([field, msgs]) => `${field}: ${Array.isArray(msgs) ? msgs.join(', ') : msgs}`)
-          .join('\n');
+      if (error.response?.data) {
+        if (error.response.data.message) {
+          errorMessage = error.response.data.message;
+        }
 
-        if (validationErrors) {
-          Toast.show({
-            type: ALERT_TYPE.DANGER,
-            title: "Validation Error",
-            textBody: validationErrors,
-            autoClose: 5000,
-          });
-          return;
+        // Handle validation errors
+        if (error.response.data.errors) {
+          // Show validation errors
         }
       }
 
-      // Show generic error message
       Toast.show({
         type: ALERT_TYPE.DANGER,
         title: "Registration Failed",
         textBody: errorMessage,
-        autoClose: 3000,
+        autoClose: 4000,
       });
     } finally {
       setLoading(false);
@@ -770,6 +769,7 @@ function Step2Form({ formData, updateFormData, onNext, onBack }: StepProps): JSX
 
 // Step 3: Final Info Component
 function Step3Form({ formData, updateFormData, onBack, onSubmit }: StepProps): JSX.Element {
+  console.log("Initial photo in Step3Form:", formData.photo);
   const [localData, setLocalData] = useState({
     salary: formData.salary,
     size: formData.size,
@@ -993,7 +993,7 @@ function ImageUpload({ label, image, onImageSelected, error, required = false }:
     try {
       // Request permission to access the media library
       const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
-      
+
       if (status !== 'granted') {
         Toast.show({
           type: ALERT_TYPE.DANGER,
@@ -1003,22 +1003,25 @@ function ImageUpload({ label, image, onImageSelected, error, required = false }:
         });
         return;
       }
-      
       // Launch image picker
       const result = await ImagePicker.launchImageLibraryAsync({
-        mediaTypes: ['images'],
+        mediaTypes: ImagePicker.MediaTypeOptions.Images,
         allowsEditing: true,
         aspect: [4, 3],
         quality: 0.8,
       });
-      
+
       if (!result.canceled && result.assets && result.assets.length > 0) {
         const selectedAsset = result.assets[0];
+
+        // Enhanced image info with clearer data
         const imageInfo: ImageInfo = {
           uri: selectedAsset.uri,
-          name: `image-${Date.now()}.jpg`,
+          name: `image_${Date.now()}.jpg`,
           type: 'image/jpeg',
         };
+
+        console.log(`Selected image for ${label}:`, imageInfo);
         onImageSelected(imageInfo);
       }
     } catch (error) {
@@ -1026,7 +1029,7 @@ function ImageUpload({ label, image, onImageSelected, error, required = false }:
       Toast.show({
         type: ALERT_TYPE.DANGER,
         title: "Error",
-        textBody: "Failed to select image",
+        textBody: "Failed to select image: " + error,
         autoClose: 3000,
       });
     }
@@ -1035,8 +1038,8 @@ function ImageUpload({ label, image, onImageSelected, error, required = false }:
   return (
     <View style={styles.inputContainer}>
       <Text style={styles.inputLabel}>{label}</Text>
-      <TouchableOpacity 
-        style={[styles.imageUploadContainer, error ? styles.inputError : null]} 
+      <TouchableOpacity
+        style={[styles.imageUploadContainer, error ? styles.inputError : null]}
         onPress={pickImage}
       >
         {image ? (
@@ -1133,7 +1136,7 @@ const styles = StyleSheet.create({
     marginBottom: 4,
   },
   required: {
-    color: '#e63946',   
+    color: '#e63946',
   },
   textInputContainer: {
     flexDirection: 'row',
@@ -1141,7 +1144,7 @@ const styles = StyleSheet.create({
     height: 50,
     paddingHorizontal: 12,
     borderWidth: 1.5,
-    borderColor: '#3b5998',     
+    borderColor: '#3b5998',
     borderRadius: 8,
     backgroundColor: '#fff',
   },
@@ -1312,6 +1315,6 @@ const styles = StyleSheet.create({
     fontSize: 14,
   },
   inputError: {
-    borderColor:'red'
+    borderColor: 'red'
   }
 });
