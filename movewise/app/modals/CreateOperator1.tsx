@@ -1,7 +1,10 @@
 import React, { useState } from 'react';
-import { StyleSheet, View, SafeAreaView, Text, TouchableOpacity, TextInput, ScrollView } from 'react-native';
+import { StyleSheet, View, SafeAreaView, Text, TouchableOpacity, TextInput, ScrollView, Platform } from 'react-native';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { router } from 'expo-router';
+import * as ImagePicker from 'expo-image-picker';
+import { PostOperator } from '@/hooks/api/PostOperator';
+import { ALERT_TYPE, Dialog, AlertNotificationRoot, Toast } from 'react-native-alert-notification';
 
 // Define types for our form data
 interface FormData {
@@ -11,34 +14,39 @@ interface FormData {
   dateOfBirth: string;
   identificationType: string;
   identificationNumber: string;
-  state: string;
-  city: string;
-  zipCode: string;
   address: string;
   cellPhone: string;
+  email: string;
 
   // Step 2 - Driving License
-  hasDrivingPermit: boolean;
   drivingLicenseNumber: string;
-  expiryDate: string;
-  licensePhoto: ImageInfo | null;
-  parentName: string;
-  parentCellPhone: string;
+  code: string;
   hasMinors: boolean;
   minorCount: number;
-  kidName: string;
-  kidDateOfBirth: string;
+  sons: Son[];
 
   // Step 3 - Final Info
   salary: string;
   size: string;
   tshirtName: string;
   photo: ImageInfo | null;
+  licenseFront: ImageInfo | null;
+  licenseBack: ImageInfo | null;
+  status: string;
+}
+
+// Type for sons/children data
+interface Son {
+  name: string;
+  birth_date: string;
+  gender: string;
 }
 
 // Type for image data
 interface ImageInfo {
   uri: string;
+  name?: string;
+  type?: string;
 }
 
 // Props for step components
@@ -56,12 +64,16 @@ interface FormInputProps {
   value: string;
   onChangeText: (text: string) => void;
   keyboardType?: 'default' | 'number-pad' | 'decimal-pad' | 'numeric' | 'email-address' | 'phone-pad';
+  error?: string;
+  required?: boolean;
 }
 
 interface DateInputProps {
   label: string;
   value: string;
   onChangeDate: (date: string) => void;
+  error?: string;
+  required?: boolean;
 }
 
 interface DropdownInputProps {
@@ -69,6 +81,8 @@ interface DropdownInputProps {
   value: string;
   onChange: (value: string) => void;
   options: string[];
+  error?: string;
+  required?: boolean;
 }
 
 interface RadioOption {
@@ -81,17 +95,22 @@ interface RadioGroupProps {
   options: RadioOption[];
   selectedValue: boolean;
   onSelect: (value: boolean) => void;
+  error?: string;
+  required?: boolean;
 }
 
 interface ImageUploadProps {
   label: string;
   image: ImageInfo | null;
   onImageSelected: (image: ImageInfo) => void;
+  error?: string;
+  required?: boolean;
 }
 
 export default function OperatorRegistrationForm(): JSX.Element {
   // State to track current step
   const [currentStep, setCurrentStep] = useState<number>(1);
+  const [loading, setLoading] = useState<boolean>(false);
 
   // Main form data object that will be passed between components and sent to backend
   const [formData, setFormData] = useState<FormData>({
@@ -99,31 +118,27 @@ export default function OperatorRegistrationForm(): JSX.Element {
     firstName: '',
     lastName: '',
     dateOfBirth: '',
-    identificationType: '',
+    identificationType: 'Passport',
     identificationNumber: '',
-    state: '',
-    city: '',
-    zipCode: '',
     address: '',
     cellPhone: '',
+    email: '',
 
     // Step 2 - Driving License
-    hasDrivingPermit: false,
     drivingLicenseNumber: '',
-    expiryDate: '',
-    licensePhoto: null,
-    parentName: '',
-    parentCellPhone: '',
+    code: '',
     hasMinors: false,
     minorCount: 0,
-    kidName: '',
-    kidDateOfBirth: '',
+    sons: [],
 
     // Step 3 - Final Info
     salary: '',
-    size: '',
+    size: 'M',
     tshirtName: '',
-    photo: null
+    photo: null,
+    licenseFront: null,
+    licenseBack: null,
+    status: 'Active'
   });
 
   // Function to update form data
@@ -142,65 +157,173 @@ export default function OperatorRegistrationForm(): JSX.Element {
   };
 
   // Function to submit the complete form
-  const handleSubmit = (): void => {
-    console.log('Form submitted with data:', formData);
-    // Here you would send the formData to your backend endpoint
-    // fetch('your-api-endpoint', {
-    //   method: 'POST',
-    //   headers: { 'Content-Type': 'application/json' },
-    //   body: JSON.stringify(formData)
-    // });
+  const handleSubmit = async (): Promise<void> => {
+    try {
+      setLoading(true);
+
+      // Create FormData object
+      const apiFormData = new FormData();
+
+      // Step 1 data
+      apiFormData.append('first_name', formData.firstName);
+      apiFormData.append('last_name', formData.lastName);
+      apiFormData.append('birth_date', formData.dateOfBirth);
+      apiFormData.append('type_id', formData.identificationType);
+      apiFormData.append('id_number', formData.identificationNumber);
+      apiFormData.append('address', formData.address);
+      apiFormData.append('phone', formData.cellPhone);
+      if (formData.email) {
+        apiFormData.append('email', formData.email);
+      }
+
+      // Step 2 data
+      apiFormData.append('number_licence', formData.drivingLicenseNumber);
+      apiFormData.append('code', formData.code);
+      apiFormData.append('n_children', formData.minorCount.toString());
+
+      // Add sons data as JSON string
+      if (formData.sons.length > 0) {
+        apiFormData.append('sons', JSON.stringify(formData.sons));
+      }
+
+      // Step 3 data
+      apiFormData.append('size_t_shift', formData.size);
+      apiFormData.append('name_t_shift', formData.tshirtName);
+      apiFormData.append('salary', formData.salary);
+      apiFormData.append('status', formData.status);
+
+      // Add images
+      if (formData.photo) {
+        const photoFile = {
+          uri: formData.photo.uri,
+          name: 'photo.jpg',
+          type: 'image/jpeg'
+        };
+        // @ts-ignore - FormData in React Native has issues with TypeScript
+        apiFormData.append('photo', photoFile);
+      }
+
+      if (formData.licenseFront) {
+        const licenseFileF = {
+          uri: formData.licenseFront.uri,
+          name: 'license_front.jpg',
+          type: 'image/jpeg'
+        };
+        // @ts-ignore
+        apiFormData.append('license_front', licenseFileF);
+      }
+
+      if (formData.licenseBack) {
+        const licenseFileB = {
+          uri: formData.licenseBack.uri,
+          name: 'license_back.jpg',
+          type: 'image/jpeg'
+        };
+        // @ts-ignore
+        apiFormData.append('license_back', licenseFileB);
+      }
+
+      // Submit form
+      const response = await PostOperator(apiFormData);
+
+      Toast.show({
+        type: ALERT_TYPE.SUCCESS,
+        title: "Registration Successful",
+        textBody: "Operator has been registered successfully",
+        autoClose: 3000,
+      });
+
+      // Navigate back or to a success screen
+      router.back();
+
+    } catch (error: any) {
+      console.error('Error submitting form:', error);
+
+      const errorMessage = error.response?.data?.error ||
+        error.response?.data?.detail ||
+        (typeof error.response?.data === 'string' ? error.response?.data : null) ||
+        "An error occurred while registering the operator";
+
+      // Check if we have validation errors (object with field names as keys)
+      if (error.response?.data && typeof error.response.data === 'object' && !Array.isArray(error.response.data)) {
+        const validationErrors = Object.entries(error.response.data)
+          .map(([field, msgs]) => `${field}: ${Array.isArray(msgs) ? msgs.join(', ') : msgs}`)
+          .join('\n');
+
+        if (validationErrors) {
+          Toast.show({
+            type: ALERT_TYPE.DANGER,
+            title: "Validation Error",
+            textBody: validationErrors,
+            autoClose: 5000,
+          });
+          return;
+        }
+      }
+
+      // Show generic error message
+      Toast.show({
+        type: ALERT_TYPE.DANGER,
+        title: "Registration Failed",
+        textBody: errorMessage,
+        autoClose: 3000,
+      });
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
-    <SafeAreaView style={styles.container}>
-      <View style={styles.header}>
-        <Text style={styles.headerText}>Operator Registration</Text>
-        <View style={styles.stepIndicator}>
-          {[1, 2, 3].map((step) => (
-            <View key={step} style={styles.stepContainer}>
-              <View
-                style={[
-                  styles.stepCircle,
-                  currentStep >= step ? styles.activeStep : styles.inactiveStep,
-                ]}
-              >
-                <Text style={styles.stepText}>{step}</Text>
+    <AlertNotificationRoot>
+      <SafeAreaView style={styles.container}>
+        <View style={styles.header}>
+          <Text style={styles.headerText}>Operator Registration</Text>
+          <View style={styles.stepIndicator}>
+            {[1, 2, 3].map((step) => (
+              <View key={step} style={styles.stepContainer}>
+                <View
+                  style={[
+                    styles.stepCircle,
+                    currentStep >= step ? styles.activeStep : styles.inactiveStep,
+                  ]}
+                >
+                  <Text style={styles.stepText}>{step}</Text>
+                </View>
+                {step < 3 && <View style={styles.stepLine} />}
               </View>
-              {step < 3 && <View style={styles.stepLine} />}
-            </View>
-          ))}
+            ))}
+          </View>
         </View>
-      </View>
 
-      <View style={styles.formContainer}>
-        {currentStep === 1 && (
-          <Step1Form
-            formData={formData}
-            updateFormData={updateFormData}
-            onNext={nextStep}
-          />
-        )}
+        <View style={styles.formContainer}>
+          {currentStep === 1 && (
+            <Step1Form
+              formData={formData}
+              updateFormData={updateFormData}
+              onNext={nextStep}
+            />
+          )}
 
-        {currentStep === 2 && (
-          <Step2Form
-            formData={formData}
-            updateFormData={updateFormData}
-            onNext={nextStep}
-            onBack={prevStep}
-          />
-        )}
+          {currentStep === 2 && (
+            <Step2Form
+              formData={formData}
+              updateFormData={updateFormData}
+              onNext={nextStep}
+              onBack={prevStep}
+            />
+          )}
 
-        {currentStep === 3 && (
-          <Step3Form
-            formData={formData}
-            updateFormData={updateFormData}
-            onBack={prevStep}
-            onSubmit={handleSubmit}
-          />
-        )}
-      </View>
-    </SafeAreaView>
+          {currentStep === 3 && (
+            <Step3Form
+              formData={formData}
+              updateFormData={updateFormData}
+              onBack={prevStep}
+              onSubmit={handleSubmit}
+            />
+          )}
+        </View>
+      </SafeAreaView>
+    </AlertNotificationRoot>
   );
 }
 
@@ -213,23 +336,86 @@ function Step1Form({ formData, updateFormData, onNext }: StepProps): JSX.Element
     dateOfBirth: formData.dateOfBirth,
     identificationType: formData.identificationType,
     identificationNumber: formData.identificationNumber,
-    state: formData.state,
-    city: formData.city,
-    zipCode: formData.zipCode,
     address: formData.address,
     cellPhone: formData.cellPhone,
+    email: formData.email,
   });
+
+  // Validation errors
+  const [errors, setErrors] = useState<Record<string, string>>({});
 
   // Handle text input changes
   const handleChange = (field: string, value: string): void => {
     setLocalData({ ...localData, [field]: value });
+    // Clear error when user types
+    if (errors[field]) {
+      setErrors({ ...errors, [field]: '' });
+    }
+  };
+
+  // Validate form
+  const validateForm = (): boolean => {
+    const newErrors: Record<string, string> = {};
+
+    if (!localData.firstName.trim()) {
+      newErrors.firstName = 'First name is required';
+    }
+
+    if (!localData.lastName.trim()) {
+      newErrors.lastName = 'Last name is required';
+    }
+
+    if (!localData.dateOfBirth) {
+      newErrors.dateOfBirth = 'Date of birth is required';
+    } else {
+      const today = new Date();
+      const dob = new Date(localData.dateOfBirth);
+      const age = today.getFullYear() - dob.getFullYear();
+      if (age < 18) {
+        newErrors.dateOfBirth = 'Operator must be at least 18 years old';
+      }
+    }
+
+    if (!localData.identificationType) {
+      newErrors.identificationType = 'Identification type is required';
+    }
+
+    if (!localData.identificationNumber.trim()) {
+      newErrors.identificationNumber = 'ID number is required';
+    }
+
+    if (!localData.address.trim()) {
+      newErrors.address = 'Address is required';
+    }
+
+    if (!localData.cellPhone.trim()) {
+      newErrors.cellPhone = 'Phone number is required';
+    } else if (!/^\+?[0-9]{10,15}$/.test(localData.cellPhone)) {
+      newErrors.cellPhone = 'Enter a valid phone number';
+    }
+
+    if (localData.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(localData.email)) {
+      newErrors.email = 'Enter a valid email address';
+    }
+
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
   };
 
   // Handle next button press
   const handleNext = (): void => {
-    // Update parent form data
-    updateFormData(localData);
-    if (onNext) onNext();
+    if (validateForm()) {
+      // Update parent form data
+      updateFormData(localData);
+      if (onNext) onNext();
+    } else {
+      Toast.show({
+        type: ALERT_TYPE.DANGER,
+        title: "Validation Error",
+        textBody: "Please check the form for errors",
+        autoClose: 3000,
+      });
+    }
   };
 
   return (
@@ -241,58 +427,49 @@ function Step1Form({ formData, updateFormData, onNext }: StepProps): JSX.Element
           label="First Name (*)"
           value={localData.firstName}
           onChangeText={(text) => handleChange('firstName', text)}
+          error={errors.firstName}
+          required={true}
         />
 
         <FormInput
           label="Last Name (*)"
           value={localData.lastName}
           onChangeText={(text) => handleChange('lastName', text)}
+          error={errors.lastName}
+          required={true}
         />
 
         <DateInput
           label="Date of Birth (*)"
           value={localData.dateOfBirth}
           onChangeDate={(date) => handleChange('dateOfBirth', date)}
+          error={errors.dateOfBirth}
+          required={true}
         />
 
         <DropdownInput
           label="Identification type (*)"
           value={localData.identificationType}
           onChange={(value) => handleChange('identificationType', value)}
-          options={['Driver License', 'Passport', 'ID Card']}
+          options={['Passport', 'Driver License', 'ID Card']}
+          error={errors.identificationType}
+          required={true}
         />
 
         <FormInput
           label="ID Number (*)"
           value={localData.identificationNumber}
           onChangeText={(text) => handleChange('identificationNumber', text)}
-        />
-
-        <DropdownInput
-          label="State (*)"
-          value={localData.state}
-          onChange={(value) => handleChange('state', value)}
-          options={['State 1', 'State 2', 'State 3']}
-        />
-
-        <DropdownInput
-          label="City (*)"
-          value={localData.city}
-          onChange={(value) => handleChange('city', value)}
-          options={['City 1', 'City 2', 'City 3']}
-        />
-
-        <FormInput
-          label="Zip Code (*)"
-          value={localData.zipCode}
-          onChangeText={(text) => handleChange('zipCode', text)}
-          keyboardType="numeric"
+          error={errors.identificationNumber}
+          required={true}
         />
 
         <FormInput
           label="Address (*)"
           value={localData.address}
           onChangeText={(text) => handleChange('address', text)}
+          error={errors.address}
+          required={true}
         />
 
         <FormInput
@@ -300,6 +477,16 @@ function Step1Form({ formData, updateFormData, onNext }: StepProps): JSX.Element
           value={localData.cellPhone}
           onChangeText={(text) => handleChange('cellPhone', text)}
           keyboardType="phone-pad"
+          error={errors.cellPhone}
+          required={true}
+        />
+
+        <FormInput
+          label="Email"
+          value={localData.email}
+          onChangeText={(text) => handleChange('email', text)}
+          keyboardType="email-address"
+          error={errors.email}
         />
 
         <View style={styles.buttonContainer}>
@@ -312,81 +499,201 @@ function Step1Form({ formData, updateFormData, onNext }: StepProps): JSX.Element
         </View>
       </View>
     </ScrollView>
-
   );
 }
 
 // Step 2: Driving License Component
 function Step2Form({ formData, updateFormData, onNext, onBack }: StepProps): JSX.Element {
   const [localData, setLocalData] = useState({
-    hasDrivingPermit: formData.hasDrivingPermit,
     drivingLicenseNumber: formData.drivingLicenseNumber,
-    expiryDate: formData.expiryDate,
-    licensePhoto: formData.licensePhoto,
-    parentName: formData.parentName,
-    parentCellPhone: formData.parentCellPhone,
+    code: formData.code,
     hasMinors: formData.hasMinors,
     minorCount: formData.minorCount,
-    kidName: formData.kidName,
-    kidDateOfBirth: formData.kidDateOfBirth,
+    sons: formData.sons.length > 0 ? [...formData.sons] : [],
+    licenseFront: formData.licenseFront,
+    licenseBack: formData.licenseBack,
   });
+
+  // State for the current son being added
+  const [currentSon, setCurrentSon] = useState<Partial<Son>>({
+    name: '',
+    birth_date: '',
+    gender: 'M'
+  });
+
+  // Validation errors
+  const [errors, setErrors] = useState<Record<string, string>>({});
+  const [sonErrors, setSonErrors] = useState<Record<string, string>>({});
 
   const handleChange = (field: string, value: any): void => {
     setLocalData({ ...localData, [field]: value });
+    // Clear error
+    if (errors[field]) {
+      setErrors({ ...errors, [field]: '' });
+    }
+  };
+
+  const handleSonChange = (field: string, value: string): void => {
+    setCurrentSon({ ...currentSon, [field]: value });
+    // Clear error
+    if (sonErrors[field]) {
+      setSonErrors({ ...sonErrors, [field]: '' });
+    }
+  };
+
+  const validateSon = (): boolean => {
+    const newErrors: Record<string, string> = {};
+
+    if (!currentSon.name?.trim()) {
+      newErrors.name = 'Child name is required';
+    }
+
+    if (!currentSon.birth_date) {
+      newErrors.birth_date = 'Birth date is required';
+    } else {
+      const today = new Date();
+      const dob = new Date(currentSon.birth_date);
+      const age = today.getFullYear() - dob.getFullYear();
+      if (age >= 18) {
+        newErrors.birth_date = 'Child must be under 18 years old';
+      }
+    }
+
+    if (!currentSon.gender) {
+      newErrors.gender = 'Gender is required';
+    }
+
+    setSonErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
+  const addSon = (): void => {
+    if (validateSon()) {
+      // Add the current son to the sons list
+      const updatedSons = [...localData.sons, currentSon as Son];
+      setLocalData({ ...localData, sons: updatedSons });
+
+      // Reset current son form
+      setCurrentSon({
+        name: '',
+        birth_date: '',
+        gender: 'M'
+      });
+
+      // Update minor count
+      setLocalData(prev => ({
+        ...prev,
+        minorCount: updatedSons.length
+      }));
+
+      Toast.show({
+        type: ALERT_TYPE.SUCCESS,
+        title: "Child Added",
+        textBody: "Child information has been added",
+        autoClose: 1500,
+      });
+    }
+  };
+
+  const removeSon = (index: number): void => {
+    const updatedSons = localData.sons.filter((_, i) => i !== index);
+    setLocalData({
+      ...localData,
+      sons: updatedSons,
+      minorCount: updatedSons.length
+    });
+
+    Toast.show({
+      type: ALERT_TYPE.INFO,
+      title: "Child Removed",
+      textBody: "Child information has been removed",
+      autoClose: 1500,
+    });
+  };
+
+  // Validate the entire form
+  const validateForm = (): boolean => {
+    const newErrors: Record<string, string> = {};
+
+    if (!localData.drivingLicenseNumber.trim()) {
+      newErrors.drivingLicenseNumber = 'License number is required';
+    }
+
+    if (!localData.code.trim()) {
+      newErrors.code = 'Code is required';
+    }
+
+    if (localData.hasMinors && localData.sons.length === 0) {
+      newErrors.sons = 'Please add children information';
+    }
+
+    if (!localData.licenseFront) {
+      newErrors.licenseFront = 'License front photo is required';
+    }
+
+    if (!localData.licenseBack) {
+      newErrors.licenseBack = 'License back photo is required';
+    }
+
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
   };
 
   const handleNext = (): void => {
-    updateFormData(localData);
-    if (onNext) onNext();
+    if (validateForm()) {
+      updateFormData(localData);
+      if (onNext) onNext();
+    } else {
+      Toast.show({
+        type: ALERT_TYPE.DANGER,
+        title: "Validation Error",
+        textBody: "Please check the form for errors",
+        autoClose: 3000,
+      });
+    }
   };
 
   return (
     <ScrollView>
       <View style={styles.stepForm}>
-        <Text style={styles.sectionTitle}>Driving licence</Text>
-
-        <RadioGroup
-          label="Driving permit (*)"
-          options={[{ label: 'Yes', value: true }, { label: 'No', value: false }]}
-          selectedValue={localData.hasDrivingPermit}
-          onSelect={(value) => handleChange('hasDrivingPermit', value)}
-        />
+        <Text style={styles.sectionTitle}>Driving License Information</Text>
 
         <FormInput
           label="Driving License Number (*)"
           value={localData.drivingLicenseNumber}
           onChangeText={(text) => handleChange('drivingLicenseNumber', text)}
+          error={errors.drivingLicenseNumber}
+          required={true}
         />
 
-        <DateInput
-          label="Expiry Date (*)"
-          value={localData.expiryDate}
-          onChangeDate={(date) => handleChange('expiryDate', date)}
+        <FormInput
+          label="Code (*)"
+          value={localData.code}
+          onChangeText={(text) => handleChange('code', text)}
+          error={errors.code}
+          required={true}
         />
 
         <ImageUpload
-          label="License photo (*)"
-          image={localData.licensePhoto}
-          onImageSelected={(image) => handleChange('licensePhoto', image)}
+          label="License Front Photo (*)"
+          image={localData.licenseFront}
+          onImageSelected={(image) => handleChange('licenseFront', image)}
+          error={errors.licenseFront}
+          required={true}
         />
 
-        <Text style={styles.subSectionTitle}>Family information</Text>
-
-        <FormInput
-          label="Name parent/guardian"
-          value={localData.parentName}
-          onChangeText={(text) => handleChange('parentName', text)}
+        <ImageUpload
+          label="License Back Photo (*)"
+          image={localData.licenseBack}
+          onImageSelected={(image) => handleChange('licenseBack', image)}
+          error={errors.licenseBack}
+          required={true}
         />
 
-        <FormInput
-          label="Cell Phone parent/guardian (*)"
-          value={localData.parentCellPhone}
-          onChangeText={(text) => handleChange('parentCellPhone', text)}
-          keyboardType="phone-pad"
-        />
+        <Text style={styles.subSectionTitle}>Children Information</Text>
 
         <RadioGroup
-          label="Minor children (*)"
+          label="Do you have minor children? (*)"
           options={[{ label: 'Yes', value: true }, { label: 'No', value: false }]}
           selectedValue={localData.hasMinors}
           onSelect={(value) => handleChange('hasMinors', value)}
@@ -394,24 +701,57 @@ function Step2Form({ formData, updateFormData, onNext, onBack }: StepProps): JSX
 
         {localData.hasMinors && (
           <>
-            <FormInput
-              label="Number of minors (*)"
-              value={localData.minorCount.toString()}
-              onChangeText={(text) => handleChange('minorCount', parseInt(text) || 0)}
-              keyboardType="numeric"
-            />
+            <Text style={styles.inputLabel}>Children Count: {localData.minorCount}</Text>
+            {errors.sons && <Text style={styles.errorText}>{errors.sons}</Text>}
 
-            <FormInput
-              label="Kids name (*)"
-              value={localData.kidName}
-              onChangeText={(text) => handleChange('kidName', text)}
-            />
+            {/* List of added children */}
+            {localData.sons.length > 0 && (
+              <View style={styles.sonsList}>
+                <Text style={styles.subsectionTitle}>Added Children:</Text>
+                {localData.sons.map((son, index) => (
+                  <View key={index} style={styles.sonItem}>
+                    <Text>{son.name} - {son.birth_date} - {son.gender === 'M' ? 'Male' : 'Female'}</Text>
+                    <TouchableOpacity onPress={() => removeSon(index)}>
+                      <Text style={styles.removeButton}>Remove</Text>
+                    </TouchableOpacity>
+                  </View>
+                ))}
+              </View>
+            )}
 
-            <DateInput
-              label="Date of birth (*)"
-              value={localData.kidDateOfBirth}
-              onChangeDate={(date) => handleChange('kidDateOfBirth', date)}
-            />
+            {/* Form to add a new child */}
+            <View style={styles.addSonForm}>
+              <Text style={styles.subsectionTitle}>Add Child:</Text>
+
+              <FormInput
+                label="Name (*)"
+                value={currentSon.name || ''}
+                onChangeText={(text) => handleSonChange('name', text)}
+                error={sonErrors.name}
+                required={true}
+              />
+
+              <DateInput
+                label="Date of Birth (*)"
+                value={currentSon.birth_date || ''}
+                onChangeDate={(date) => handleSonChange('birth_date', date)}
+                error={sonErrors.birth_date}
+                required={true}
+              />
+
+              <DropdownInput
+                label="Gender (*)"
+                value={currentSon.gender || 'M'}
+                onChange={(value) => handleSonChange('gender', value)}
+                options={['M', 'F']}
+                error={sonErrors.gender}
+                required={true}
+              />
+
+              <TouchableOpacity style={styles.addButton} onPress={addSon}>
+                <Text style={styles.buttonText}>Add Child</Text>
+              </TouchableOpacity>
+            </View>
           </>
         )}
 
@@ -434,16 +774,58 @@ function Step3Form({ formData, updateFormData, onBack, onSubmit }: StepProps): J
     salary: formData.salary,
     size: formData.size,
     tshirtName: formData.tshirtName,
-    photo: formData.photo
+    photo: formData.photo,
+    status: formData.status
   });
+
+  // Validation errors
+  const [errors, setErrors] = useState<Record<string, string>>({});
 
   const handleChange = (field: string, value: any): void => {
     setLocalData({ ...localData, [field]: value });
+    // Clear error
+    if (errors[field]) {
+      setErrors({ ...errors, [field]: '' });
+    }
+  };
+
+  const validateForm = (): boolean => {
+    const newErrors: Record<string, string> = {};
+
+    if (!localData.salary.trim()) {
+      newErrors.salary = 'Salary is required';
+    } else if (isNaN(parseFloat(localData.salary)) || parseFloat(localData.salary) <= 0) {
+      newErrors.salary = 'Enter a valid salary amount';
+    }
+
+    if (!localData.size) {
+      newErrors.size = 'Size is required';
+    }
+
+    if (!localData.tshirtName.trim()) {
+      newErrors.tshirtName = 'T-shirt name is required';
+    }
+
+    if (!localData.photo) {
+      newErrors.photo = 'Photo is required';
+    }
+
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
   };
 
   const handleSave = (): void => {
-    updateFormData(localData);
-    if (onSubmit) onSubmit();
+    if (validateForm()) {
+      updateFormData(localData);
+      if (onSubmit) onSubmit();
+    } else {
+      Toast.show({
+        type: ALERT_TYPE.DANGER,
+        title: "Validation Error",
+        textBody: "Please check the form for errors",
+        autoClose: 3000,
+      });
+    }
   };
 
   return (
@@ -454,25 +836,33 @@ function Step3Form({ formData, updateFormData, onBack, onSubmit }: StepProps): J
           value={localData.salary}
           onChangeText={(text) => handleChange('salary', text)}
           keyboardType="numeric"
+          error={errors.salary}
+          required={true}
         />
 
         <DropdownInput
           label="Size (*)"
           value={localData.size}
           onChange={(value) => handleChange('size', value)}
-          options={['Small', 'Medium', 'Large', 'XL']}
+          options={['S', 'M', 'L', 'XL']}
+          error={errors.size}
+          required={true}
         />
 
         <FormInput
           label="Name you want to wear in the T-shirt (*)"
           value={localData.tshirtName}
           onChangeText={(text) => handleChange('tshirtName', text)}
+          error={errors.tshirtName}
+          required={true}
         />
 
         <ImageUpload
           label="Photo (*)"
           image={localData.photo}
           onImageSelected={(image) => handleChange('photo', image)}
+          error={errors.photo}
+          required={true}
         />
 
         <View style={styles.buttonContainer}>
@@ -489,29 +879,28 @@ function Step3Form({ formData, updateFormData, onBack, onSubmit }: StepProps): J
 }
 
 // Helper Components
-function FormInput({ label, value, onChangeText, keyboardType = 'default' }: FormInputProps): JSX.Element {
+function FormInput({ label, value, onChangeText, keyboardType = 'default', error, required = false }: FormInputProps): JSX.Element {
   return (
-    <ScrollView>
-      <View style={styles.inputContainer}>
-        <Text style={styles.inputLabel}>{label}</Text>
-        <View style={styles.textInputContainer}>
-          <TextInput
-            style={styles.textInput}
-            value={value}
-            onChangeText={onChangeText}
-            keyboardType={keyboardType}
-          />
-        </View>
+    <View style={styles.inputContainer}>
+      <Text style={styles.inputLabel}>{label}</Text>
+      <View style={[styles.textInputContainer, error ? styles.inputError : null]}>
+        <TextInput
+          style={styles.textInput}
+          value={value}
+          onChangeText={onChangeText}
+          keyboardType={keyboardType}
+        />
       </View>
-    </ScrollView>
+      {error && <Text style={styles.errorText}>{error}</Text>}
+    </View>
   );
 }
 
-function DateInput({ label, value, onChangeDate }: DateInputProps): JSX.Element {
+function DateInput({ label, value, onChangeDate, error, required = false }: DateInputProps): JSX.Element {
   const [showDatePicker, setShowDatePicker] = useState(false);
 
   const handleDateChange = (event: any, selectedDate?: Date): void => {
-    setShowDatePicker(false);
+    setShowDatePicker(Platform.OS === 'ios');
     if (selectedDate) {
       onChangeDate(selectedDate.toISOString().split('T')[0]);
     }
@@ -521,12 +910,13 @@ function DateInput({ label, value, onChangeDate }: DateInputProps): JSX.Element 
     <View style={styles.inputContainer}>
       <Text style={styles.inputLabel}>{label}</Text>
       <TouchableOpacity
-        style={styles.textInputContainer}
+        style={[styles.textInputContainer, error ? styles.inputError : null]}
         onPress={() => setShowDatePicker(true)}
       >
-        <Text style={styles.dateText}>{value || 'Select date'}</Text>
+        <Text style={value ? styles.dateText : styles.placeholderText}>{value || 'Select date'}</Text>
         <Text style={styles.dateIcon}>📅</Text>
       </TouchableOpacity>
+      {error && <Text style={styles.errorText}>{error}</Text>}
 
       {showDatePicker && (
         <DateTimePicker
@@ -540,22 +930,21 @@ function DateInput({ label, value, onChangeDate }: DateInputProps): JSX.Element 
   );
 }
 
-function DropdownInput({ label, value, onChange, options }: DropdownInputProps): JSX.Element {
+function DropdownInput({ label, value, onChange, options, error, required = false }: DropdownInputProps): JSX.Element {
   const [isOpen, setIsOpen] = useState(false);
 
   return (
     <View style={styles.inputContainer}>
       <Text style={styles.inputLabel}>{label}</Text>
       <TouchableOpacity
-        style={styles.textInputContainer}
-        onPress={() => setIsOpen(true)}
+        style={[styles.textInputContainer, error ? styles.inputError : null]}
+        onPress={() => setIsOpen(!isOpen)}
       >
         <Text>{value || 'Select an option'}</Text>
         <Text style={styles.dropdownIcon}>▼</Text>
       </TouchableOpacity>
+      {error && <Text style={styles.errorText}>{error}</Text>}
 
-      {/* In a real implementation, you would use a modal or dropdown picker library */}
-      {/* This is simplified for the example */}
       {isOpen && (
         <View style={styles.dropdownMenu}>
           {options.map((option) => (
@@ -576,7 +965,7 @@ function DropdownInput({ label, value, onChange, options }: DropdownInputProps):
   );
 }
 
-function RadioGroup({ label, options, selectedValue, onSelect }: RadioGroupProps): JSX.Element {
+function RadioGroup({ label, options, selectedValue, onSelect, error, required = false }: RadioGroupProps): JSX.Element {
   return (
     <View style={styles.inputContainer}>
       <Text style={styles.inputLabel}>{label}</Text>
@@ -594,36 +983,74 @@ function RadioGroup({ label, options, selectedValue, onSelect }: RadioGroupProps
           </TouchableOpacity>
         ))}
       </View>
+      {error && <Text style={styles.errorText}>{error}</Text>}
     </View>
   );
 }
 
-function ImageUpload({ label, image, onImageSelected }: ImageUploadProps): JSX.Element {
+function ImageUpload({ label, image, onImageSelected, error, required = false }: ImageUploadProps): JSX.Element {
   const pickImage = async (): Promise<void> => {
     try {
-      // You would need to implement image picking using expo-image-picker
-      // For this example we'll just simulate it
-      const mockImage: ImageInfo = { uri: 'https://example.com/image.jpg' };
-      onImageSelected(mockImage);
+      // Request permission to access the media library
+      const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+      
+      if (status !== 'granted') {
+        Toast.show({
+          type: ALERT_TYPE.DANGER,
+          title: "Permission Denied",
+          textBody: "Please allow access to your photo library to upload images",
+          autoClose: 3000,
+        });
+        return;
+      }
+      
+      // Launch image picker
+      const result = await ImagePicker.launchImageLibraryAsync({
+        mediaTypes: ['images'],
+        allowsEditing: true,
+        aspect: [4, 3],
+        quality: 0.8,
+      });
+      
+      if (!result.canceled && result.assets && result.assets.length > 0) {
+        const selectedAsset = result.assets[0];
+        const imageInfo: ImageInfo = {
+          uri: selectedAsset.uri,
+          name: `image-${Date.now()}.jpg`,
+          type: 'image/jpeg',
+        };
+        onImageSelected(imageInfo);
+      }
     } catch (error) {
       console.log('Error picking image:', error);
+      Toast.show({
+        type: ALERT_TYPE.DANGER,
+        title: "Error",
+        textBody: "Failed to select image",
+        autoClose: 3000,
+      });
     }
   };
 
   return (
     <View style={styles.inputContainer}>
       <Text style={styles.inputLabel}>{label}</Text>
-      <TouchableOpacity style={styles.imageUploadContainer} onPress={pickImage}>
+      <TouchableOpacity 
+        style={[styles.imageUploadContainer, error ? styles.inputError : null]} 
+        onPress={pickImage}
+      >
         {image ? (
           <View style={styles.imagePreview}>
             <Text>Image selected</Text>
+            <Text style={styles.imageFilename}>{image.uri.split('/').pop()}</Text>
           </View>
         ) : (
           <View style={styles.imagePlaceholder}>
-            <Text style={styles.imagePlaceholderText}>Upload</Text>
+            <Text style={styles.imagePlaceholderText}>Upload Image</Text>
           </View>
         )}
       </TouchableOpacity>
+      {error && <Text style={styles.errorText}>{error}</Text>}
     </View>
   );
 }
@@ -706,7 +1133,7 @@ const styles = StyleSheet.create({
     marginBottom: 4,
   },
   required: {
-    color: '#e63946',   // rojo discreto para asterisco
+    color: '#e63946',   
   },
   textInputContainer: {
     flexDirection: 'row',
@@ -714,7 +1141,7 @@ const styles = StyleSheet.create({
     height: 50,
     paddingHorizontal: 12,
     borderWidth: 1.5,
-    borderColor: '#3b5998',     // azul similar
+    borderColor: '#3b5998',     
     borderRadius: 8,
     backgroundColor: '#fff',
   },
@@ -831,4 +1258,60 @@ const styles = StyleSheet.create({
     color: '#fff',
     fontWeight: 'bold',
   },
+  errorText: {
+    color: '#dc3545',
+    fontSize: 12,
+    marginTop: 4,
+  },
+  sonsList: {
+    marginVertical: 10,
+    borderWidth: 1,
+    borderColor: '#e0e0e0',
+    borderRadius: 8,
+    padding: 10,
+  },
+  sonItem: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingVertical: 8,
+    borderBottomWidth: 1,
+    borderBottomColor: '#f0f0f0',
+  },
+  removeButton: {
+    color: '#dc3545',
+    fontSize: 12,
+    fontWeight: 'bold',
+  },
+  addSonForm: {
+    marginTop: 15,
+    borderTopWidth: 1,
+    borderTopColor: '#e0e0e0',
+    paddingTop: 15,
+  },
+  subsectionTitle: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#2d3748',
+    marginBottom: 10,
+  },
+  addButton: {
+    backgroundColor: '#28a745',
+    paddingVertical: 10,
+    borderRadius: 6,
+    marginTop: 10,
+    alignItems: 'center',
+  },
+  imageFilename: {
+    fontSize: 12,
+    color: '#666',
+    marginTop: 5,
+  },
+  placeholderText: {
+    color: '#a0aec0',
+    fontSize: 14,
+  },
+  inputError: {
+    borderColor:'red'
+  }
 });
