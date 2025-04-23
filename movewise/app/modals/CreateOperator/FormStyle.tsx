@@ -4,6 +4,7 @@ export const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#f5f5f5',
+    height:'100%'
   },
   header: {
     padding: 16,
@@ -56,6 +57,7 @@ export const styles = StyleSheet.create({
   },
   stepForm: {
     flex: 1,
+    margin:15,
   },
   sectionTitle: {
     fontSize: 16,

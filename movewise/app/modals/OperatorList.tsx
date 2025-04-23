@@ -37,14 +37,18 @@ const OperatorList = () => {
   const [currentPage, setCurrentPage] = useState<number>(1);
 
   useEffect(() => {
-    loadOperators();
-  }, []);
+    if (!isCreating) {
+      loadOperators();
+    }
+  }, [isCreating]);
+
   //open if IsCREATing mode
   useEffect(() => {
-    if (isCreating ) {
+    if (isCreating) {
       setModalVisible(true);
     }
   }, [isCreating]);
+
 
   const loadOperators = async (page = 1, reset = true) => {
     try {
@@ -203,6 +207,12 @@ const OperatorList = () => {
     );
   };
 
+  const handleSuccess = () => {
+    loadOperators(1, true); // Recargar primera página
+    setModalVisible(false);
+    setSelectedOperator(null);
+  };
+  
   return (
     <SafeAreaView style={styles.safeArea}>
       <View style={styles.container}>
@@ -277,17 +287,13 @@ const OperatorList = () => {
           <CreateOperator
             isEditing={!!selectedOperator}
             initialData={selectedOperator ? mapOperatorToFormData(selectedOperator) : undefined}
-            onClose={() => {
-              setModalVisible(false);
-              setSelectedOperator(null);
-              loadOperators(1, true); // Reload first page of operators after closing modal
-            }}
+            onClose={handleSuccess}
           />
         </Modal>
       </View>
     </SafeAreaView>
   );
-};
+}
 
 const styles = StyleSheet.create({
   safeArea: {

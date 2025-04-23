@@ -14,10 +14,31 @@ export const PostOperator = async (formData: FormData) => {
       },
     });
 
-    console.log("Operador creado:", response.data);
+    console.log("Operator Created:", response.data);
     return response.data;
   } catch (error: any) {
-    console.error("Error al crear operador:", error.response?.data || error.message);
+    console.error("error create operator", error.response?.data || error.message);
+    throw error;
+  }
+};
+
+
+export const UpdateOperator = async (id: number, formData: FormData) => {
+  try {
+    const token = await AsyncStorage.getItem("userToken");
+    const response = await axios.patch(
+      `${url}operators/update/${id}/`,
+      formData,
+      {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+          'Authorization': `Bearer ${token}`
+        },
+      }
+    );
+    return response.data;
+  } catch (error: any) {
+    console.error("error Update operator", error.response?.data || error.message);
     throw error;
   }
 };

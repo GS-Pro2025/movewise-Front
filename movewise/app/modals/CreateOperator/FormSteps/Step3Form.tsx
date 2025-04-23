@@ -53,8 +53,11 @@ const Step3Form = ({ formData, updateFormData, onBack, onSubmit, isEditing }: St
 
     const handleSave = (): void => {
         if (validateForm()) {
-            updateFormData(localData);
-            if (onSubmit) onSubmit();
+            updateFormData({
+                ...formData,
+                ...localData
+            });
+            if (onSubmit) onSubmit(); 
         } else {
             Toast.show({
                 type: ALERT_TYPE.DANGER,
@@ -107,7 +110,7 @@ const Step3Form = ({ formData, updateFormData, onBack, onSubmit, isEditing }: St
                         <Text style={styles.buttonText}>Back</Text>
                     </TouchableOpacity>
                     <TouchableOpacity style={styles.nextButton} onPress={handleSave}>
-                        <Text style={styles.buttonText}>Save</Text>
+                        <Text style={styles.buttonText}>{isEditing ? 'Update' : 'Save'}</Text>
                     </TouchableOpacity>
                 </View>
             </View>

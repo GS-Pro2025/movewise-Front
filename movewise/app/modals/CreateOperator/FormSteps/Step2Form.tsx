@@ -6,10 +6,7 @@ import { Son, StepProps } from '../Types';
 import { ALERT_TYPE, Dialog, AlertNotificationRoot, Toast } from 'react-native-alert-notification';
 
 const Step2Form = ({ formData, updateFormData, onNext, onBack, isEditing }: StepProps) => {
-    if (isEditing) {
-        console.log("acccion")
-    }
-
+ 
     const [localData, setLocalData] = useState({
         drivingLicenseNumber: formData.drivingLicenseNumber,
         code: formData.code,
@@ -121,25 +118,25 @@ const Step2Form = ({ formData, updateFormData, onNext, onBack, isEditing }: Step
     const validateForm = (): boolean => {
         const newErrors: Record<string, string> = {};
 
-        if (!localData.drivingLicenseNumber.trim()) {
-            newErrors.drivingLicenseNumber = 'License number is required';
-        }
+        // if (!localData.drivingLicenseNumber.trim()) {
+        //     newErrors.drivingLicenseNumber = 'License number is required';
+        // }
 
-        if (!localData.code.trim()) {
-            newErrors.code = 'Code is required';
-        }
+        // if (!localData.code.trim()) {
+        //     newErrors.code = 'Code is required';
+        // }
 
         if (localData.hasMinors && localData.sons.length === 0) {
             newErrors.sons = 'Please add children information';
         }
 
-        if (!localData.licenseFront) {
-            newErrors.licenseFront = 'License front photo is required';
-        }
+        // if (!localData.licenseFront) {
+        //     newErrors.licenseFront = 'License front photo is required';
+        // }
 
-        if (!localData.licenseBack) {
-            newErrors.licenseBack = 'License back photo is required';
-        }
+        // if (!localData.licenseBack) {
+        //     newErrors.licenseBack = 'License back photo is required';
+        // }
 
         setErrors(newErrors);
         return Object.keys(newErrors).length === 0;

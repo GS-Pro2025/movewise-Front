@@ -1,4 +1,5 @@
 export interface FormData {
+    id_operator?:number;
     // Step 1 - General Data
     firstName: string;
     lastName: string;
