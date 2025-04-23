@@ -129,7 +129,12 @@ const Home: React.FC = () => {
               title={"Collaborator\nRegistration"}
               isDarkMode={isDarkMode}
               iconSource={require("../assets/images/logo.png")}
-              onPress={() => router.push("/modals/CreateOperator1")}
+              onPress={() => 
+                router.push({
+                  pathname: '/modals/OperatorList',
+                  params: { isEdit: 'false'}
+                })
+              }
             />
           </View>
           <View style={styles.row}>
@@ -142,6 +147,12 @@ const Home: React.FC = () => {
               title={"Collaborator\nEdit"}
               isDarkMode={isDarkMode}
               iconSource={require("../assets/images/Pencil.png")}
+              onPress={() => 
+                router.push({
+                  pathname: '/modals/OperatorList',
+                  params: {isEdit: 'true'}
+                })
+              }
             />
           </View>
         </View>
