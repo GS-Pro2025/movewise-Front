@@ -3,7 +3,7 @@ import { ScrollView, View, Text, TouchableOpacity } from 'react-native';
 import { FormInput, ImageUpload, RadioGroup, DateInput, DropdownInput } from '../HelperComponents';
 import { styles } from '../FormStyle';
 import { Son, StepProps } from '../Types';
-import { ALERT_TYPE, Dialog, AlertNotificationRoot, Toast } from 'react-native-alert-notification';
+import { ALERT_TYPE, Toast } from 'react-native-alert-notification';
 
 const Step2Form = ({ formData, updateFormData, onNext, onBack, isEditing }: StepProps) => {
 
@@ -29,7 +29,12 @@ const Step2Form = ({ formData, updateFormData, onNext, onBack, isEditing }: Step
     const [sonErrors, setSonErrors] = useState<Record<string, string>>({});
 
     const handleChange = (field: string, value: any): void => {
-        setLocalData({ ...localData, [field]: value });
+        console.log(`Step2Form - Cambiando ${field} a:`, value);
+
+        setLocalData(prev => ({ ...prev, [field]: value }));
+
+        updateFormData({ [field]: value });
+
         // Clear error
         if (errors[field]) {
             setErrors({ ...errors, [field]: '' });
@@ -73,12 +78,19 @@ const Step2Form = ({ formData, updateFormData, onNext, onBack, isEditing }: Step
     const addSon = (): void => {
         if (validateSon()) {
             const updatedSons = [...localData.sons, currentSon as Son];
-            setLocalData(prev => ({
-                ...prev,
+            const newData = {
+                ...localData,
                 sons: updatedSons,
-                n_children: updatedSons.length // Update n_children here
-            }));
-            
+                n_children: updatedSons.length
+            };
+
+            setLocalData(newData);
+
+            updateFormData({
+                sons: updatedSons,
+                n_children: updatedSons.length
+            });
+
             setCurrentSon({ name: '', birth_date: '', gender: 'M' });
 
             Toast.show({
@@ -92,16 +104,23 @@ const Step2Form = ({ formData, updateFormData, onNext, onBack, isEditing }: Step
 
     const removeSon = (index: number): void => {
         const updatedSons = localData.sons.filter((_, i) => i !== index);
-        setLocalData({
+        const newData = {
             ...localData,
+            sons: updatedSons,
+            n_children: updatedSons.length
+        };
+
+        setLocalData(newData);
+
+        updateFormData({
             sons: updatedSons,
             n_children: updatedSons.length
         });
 
         Toast.show({
             type: ALERT_TYPE.INFO,
-            title: "Child Removed",
-            textBody: "Child information has been removed",
+            title: "Child Deleted",
+            textBody: "Child information has been deleted",
             autoClose: 1500,
         });
     };
@@ -110,25 +129,9 @@ const Step2Form = ({ formData, updateFormData, onNext, onBack, isEditing }: Step
     const validateForm = (): boolean => {
         const newErrors: Record<string, string> = {};
 
-        // if (!localData.drivingLicenseNumber.trim()) {
-        //     newErrors.drivingLicenseNumber = 'License number is required';
-        // }
-
-        // if (!localData.code.trim()) {
-        //     newErrors.code = 'Code is required';
-        // }
-
         if (localData.has_minors && localData.sons.length === 0) {
-            newErrors.sons = 'Please add children information';
+            newErrors.sons = 'Please add information about your children';
         }
-
-        // if (!localData.licenseFront) {
-        //     newErrors.licenseFront = 'License front photo is required';
-        // }
-
-        // if (!localData.licenseBack) {
-        //     newErrors.licenseBack = 'License back photo is required';
-        // }
 
         setErrors(newErrors);
         return Object.keys(newErrors).length === 0;
@@ -136,13 +139,23 @@ const Step2Form = ({ formData, updateFormData, onNext, onBack, isEditing }: Step
 
     const handleNext = (): void => {
         if (validateForm()) {
-            updateFormData(localData);
+            // Synchronize all fields with the parent formData
+            updateFormData({
+                number_licence: localData.number_licence,
+                code: localData.code,
+                has_minors: localData.has_minors,
+                n_children: localData.n_children,
+                sons: localData.sons,
+                license_front: localData.license_front,
+                license_back: localData.license_back,
+            });
+
             if (onNext) onNext();
         } else {
             Toast.show({
                 type: ALERT_TYPE.DANGER,
                 title: "Validation Error",
-                textBody: "Please check the form for errors",
+                textBody: "Please review the errors in the form",
                 autoClose: 3000,
             });
         }
@@ -151,10 +164,10 @@ const Step2Form = ({ formData, updateFormData, onNext, onBack, isEditing }: Step
     return (
         <ScrollView>
             <View style={styles.stepForm}>
-                <Text style={styles.sectionTitle}>Driving License Information</Text>
+                <Text style={styles.sectionTitle}>Driver's License Information</Text>
 
                 <FormInput
-                    label="Driving License Number (*)"
+                    label="License Number (*)"
                     value={localData.number_licence}
                     onChangeText={(text) => handleChange('number_licence', text)}
                     error={errors.number_licence}
@@ -170,7 +183,7 @@ const Step2Form = ({ formData, updateFormData, onNext, onBack, isEditing }: Step
                 />
 
                 <ImageUpload
-                    label="License Front Photo (*)"
+                    label="Front License Photo (*)"
                     image={localData.license_front}
                     onImageSelected={(image) => handleChange('license_front', image)}
                     error={errors.license_front}
@@ -178,7 +191,7 @@ const Step2Form = ({ formData, updateFormData, onNext, onBack, isEditing }: Step
                 />
 
                 <ImageUpload
-                    label="License Back Photo (*)"
+                    label="Rear License Photo (*)"
                     image={localData.license_back}
                     onImageSelected={(image) => handleChange('license_back', image)}
                     error={errors.license_back}
@@ -189,25 +202,25 @@ const Step2Form = ({ formData, updateFormData, onNext, onBack, isEditing }: Step
 
                 <RadioGroup
                     label="Do you have minor children? (*)"
-                    options={[{ label: 'Yes', value: true }, { label: 'No', value: false }]}
+                    options={[{ label: 'yes', value: true }, { label: 'No', value: false }]}
                     selectedValue={localData.has_minors}
                     onSelect={(value) => handleChange('has_minors', value)}
                 />
 
                 {localData.has_minors && (
                     <>
-                        <Text style={styles.inputLabel}>Children Count: {localData.n_children}</Text>
+                        <Text style={styles.inputLabel}>Number of Children: {localData.n_children}</Text>
                         {errors.sons && <Text style={styles.errorText}>{errors.sons}</Text>}
 
                         {/* List of added children */}
                         {localData.sons.length > 0 && (
                             <View style={styles.sonsList}>
-                                <Text style={styles.subsectionTitle}>Added Children:</Text>
+                                <Text style={styles.subsectionTitle}>Added children:</Text>
                                 {localData.sons.map((son, index) => (
                                     <View key={index} style={styles.sonItem}>
                                         <Text>{son.name} - {son.birth_date} - {son.gender === 'M' ? 'Male' : 'Female'}</Text>
                                         <TouchableOpacity onPress={() => removeSon(index)}>
-                                            <Text style={styles.removeButton}>Remove</Text>
+                                            <Text style={styles.removeButton}>Eliminar</Text>
                                         </TouchableOpacity>
                                     </View>
                                 ))}
@@ -227,7 +240,7 @@ const Step2Form = ({ formData, updateFormData, onNext, onBack, isEditing }: Step
                             />
 
                             <DateInput
-                                label="Date of Birth (*)"
+                                label="Birthdate (*)"
                                 value={currentSon.birth_date || ''}
                                 onChangeDate={(date) => handleSonChange('birth_date', date)}
                                 error={sonErrors.birth_date}
@@ -238,7 +251,7 @@ const Step2Form = ({ formData, updateFormData, onNext, onBack, isEditing }: Step
                                 label="Gender (*)"
                                 value={currentSon.gender || 'M'}
                                 onChange={(value) => handleSonChange('gender', value)}
-                                options={['M', 'F']}
+                                options={[{ label: 'Male', value: 'M' }, { label: 'Female', value: 'F' }]}
                                 error={sonErrors.gender}
                                 required={true}
                             />

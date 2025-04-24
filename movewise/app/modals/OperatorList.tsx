@@ -219,7 +219,7 @@ const OperatorList = () => {
   };
 
   const handleSuccess = () => {
-    loadOperators(1, true); // Recargar primera página
+    loadOperators(1, true); 
     setModalVisible(false);
     setSelectedOperator(null);
   };

@@ -42,106 +42,82 @@ const CreateOperator: React.FC<CreateOperatorProps> = ({
     status: '',
   };
   
+  const [formData, setFormData] = useState<FormData>(
+    initialData ?? defaultFormData
+  );
+  const [currentStep, setCurrentStep] = useState<number>(1);
+  const [loading, setLoading] = useState<boolean>(false);
+
+  const updateFormData = (patch: Partial<FormData>) => {
+    setFormData(prev => {
+      const updated = { ...prev, ...patch };
+      return updated;
+    });
+  };
 
   const handleSubmit = async (): Promise<void> => {
-    debugger;                             // << pausa la ejecución aquí
-    console.warn('▶ handleSubmit arrancó');
     try {
       setLoading(true);
-      console.warn('1) antes de crear FormData');
+      
       const apiFormData = new FormDataCtor();
-      console.warn('2) FormData creada');
-
-
-      console.warn('2) FormData creada');
-
-      console.warn('3) append first_name', formData.first_name);
-      apiFormData.append('first_name', formData.first_name);
-
-      console.warn('last_name:', formData.last_name);
-      apiFormData.append('last_name', formData.last_name);
-
-      console.warn('birth_date:', formData.birth_date);
-      apiFormData.append('birth_date', formData.birth_date);
-
-      console.warn('type_id:', formData.type_id);
-      apiFormData.append('type_id', formData.type_id);
-
-      console.warn('id_number:', formData.id_number);
-      apiFormData.append('id_number', formData.id_number);
-
-      console.warn('address:', formData.address);
-      apiFormData.append('address', formData.address);
-
-      console.warn('phone:', formData.phone);
-      apiFormData.append('phone', formData.phone);
-
-      if (formData.email) {
-        console.warn('email:', formData.email);
-        apiFormData.append('email', formData.email);
+      
+      if (isEditing && formData.id_operator) {
+        console.log("Updating operator ID:", formData.id_operator);
+        apiFormData.append('id_operator', formData.id_operator.toString());
       }
-
-      console.warn('number_licence:', formData.number_licence);
-      apiFormData.append('number_licence', formData.number_licence);
-
-      console.warn('code:', formData.code);
-      apiFormData.append('code', formData.code);
-
-      console.warn('n_children:', formData.n_children);
-      apiFormData.append('n_children', formData.n_children.toString());
-
-      console.warn('size_t_shift:', formData.size_t_shift);
-      apiFormData.append('size_t_shift', formData.size_t_shift);
-
-      console.warn('name_t_shift:', formData.name_t_shift);
-      apiFormData.append('name_t_shift', formData.name_t_shift);
-
-      console.warn('salary:', formData.salary);
-      apiFormData.append('salary', formData.salary);
-
-      console.warn('status:', formData.status);
-      apiFormData.append('status', formData.status);
-
-      // Manejo de hijos
-      if (formData.sons.length > 0) {
-        console.warn('sons:', formData.sons);
-        apiFormData.append('sons', JSON.stringify(formData.sons));
-      }
-
-      // Manejo de imágenes
-      const appendImage = (field: string, image: ImageInfo | null) => {
-        console.log(`${field}:`, image);
-        if (image && !image.uri.startsWith('http')) {
-          const file = {
-            uri: Platform.OS === 'android' ? image.uri : image.uri.replace('file://', ''),
-            name: image.name || `${field}_${Date.now()}.jpg`,
-            type: 'image/jpeg'
-          };
-          apiFormData.append(field, file as any);
+      
+      // Iterar y añadir todos los campos de texto
+      Object.keys(formData).forEach(key => {
+        if (formData[key] !== undefined && formData[key] !== null) {
+          // Manejar casos especiales
+          if (key === 'sons' && Array.isArray(formData[key]) && formData[key].length > 0) {
+            console.log('Añadiendo sons:', formData[key]);
+            apiFormData.append('sons', JSON.stringify(formData[key]));
+          } 
+          // Manejar imágenes
+          else if (key === 'photo' || key === 'license_front' || key === 'license_back') {
+            const image = formData[key] as ImageInfo | null;
+            if (image) {
+              console.log(`Procesando ${key}:`, image);
+              if (!image.uri.startsWith('http')) {
+                // New image or updated image
+                const file = {
+                  uri: Platform.OS === 'android' ? image.uri : image.uri.replace('file://', ''),
+                  name: image.name || `${key}_${Date.now()}.jpg`,
+                  type: 'image/jpeg'
+                };
+                apiFormData.append(key, file as any);
+              } else {
+                console.log(`${key} is an existing URL:`, image.uri);
+              }
+            }
+          } 
+          // Manejar otros tipos de datos
+          else if (typeof formData[key] !== 'object') {
+            console.log(`adding ${key}:`, formData[key]);
+            apiFormData.append(key, formData[key].toString());
+          }
         }
-      };
-
-      appendImage('photo', formData.photo);
-      appendImage('license_front', formData.license_front);
-      appendImage('license_back', formData.license_back);
-
-      // Mostrar contenido del FormData
-      console.log('FormData entries:');
-      for (const [key, value] of (apiFormData as any)._parts) {
-        console.log(key, value);
-      }
-      console.warn('N) antes de la petición API');
-      console.log("ID EN OPERATOR UPDATE OR CREATE: " + formData.id_operator)
+      });
+      
+      
       const response = isEditing
         ? await UpdateOperator(formData.id_operator!, apiFormData)
         : await PostOperator(apiFormData);
-
-      console.log('API Response:', response);
-
+      
+      
+      // Mostrar mensaje de éxito
+      Toast.show({
+        type: ALERT_TYPE.SUCCESS,
+        title: isEditing ? "Successful Update" : "Successful Registration",
+        textBody: isEditing ? "The operator has been updated successfully" : "The operator has been registered successfully",
+        autoClose: 2000
+      });
+      
       if (onClose) onClose();
-
+      
     } catch (error: any) {
-      console.error('Error completo:', error.response?.data?.message || error.errors);
+      console.error('Complete error:', error.response?.data?.message || error.message);
       const errorMessage = error.response?.data?.message || error.message;
       Toast.show({
         type: ALERT_TYPE.DANGER,
@@ -154,23 +130,12 @@ const CreateOperator: React.FC<CreateOperatorProps> = ({
     }
   };
 
-  const [formData, setFormData] = useState<FormData>(
-    initialData ?? defaultFormData
-  );
-  const [currentStep, setCurrentStep] = useState<number>(1);
-  const [loading, setLoading] = useState<boolean>(false);
-
-  const updateFormData = (patch: Partial<FormData>) => {
-    setFormData(prev => ({ ...prev, ...patch }));
-  };
-
   const onNext = () => setCurrentStep(s => s + 1);
   const onBack = () => setCurrentStep(s => s - 1);
 
   return (
     <AlertNotificationRoot>
       <SafeAreaView style={styles.container}>
-
         {loading && <ActivityIndicator size="large" />}
 
         {currentStep === 1 && (

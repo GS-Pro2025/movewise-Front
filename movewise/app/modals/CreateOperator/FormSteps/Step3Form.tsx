@@ -6,31 +6,25 @@ import { StepProps } from '../Types';
 import { ALERT_TYPE, Toast } from 'react-native-alert-notification';
 
 const Step3Form = ({ formData, updateFormData, onBack, onSubmit, isEditing }: StepProps) => {
-    console.log("Initial photo in Step3Form:", formData.photo);
-
-    useEffect(() => {
-        setLocalData({
-            salary: formData.salary,
-            size_t_shift: formData.size_t_shift,
-            name_t_shift: formData.name_t_shift,
-            photo: formData.photo,
-            status: formData.status
-        });
-    }, [formData]);
 
     const [localData, setLocalData] = useState({
         salary: formData.salary,
         size_t_shift: formData.size_t_shift,
         name_t_shift: formData.name_t_shift,
         photo: formData.photo,
-        status: formData.status
+        status: formData.status || 'active' 
     });
 
     // Validation errors
     const [errors, setErrors] = useState<Record<string, string>>({});
 
     const handleChange = (field: string, value: any): void => {
-        setLocalData({ ...localData, [field]: value });
+
+        setLocalData(prev => ({ ...prev, [field]: value }));
+
+        // update the parent formData immediately
+        updateFormData({ [field]: value });
+
         // Clear error
         if (errors[field]) {
             setErrors({ ...errors, [field]: '' });
@@ -40,22 +34,22 @@ const Step3Form = ({ formData, updateFormData, onBack, onSubmit, isEditing }: St
     const validateForm = (): boolean => {
         const newErrors: Record<string, string> = {};
 
-        if (!localData.salary.trim()) {
-            newErrors.salary = 'Salary is required';
+        if (!localData.salary.toString().trim()) {
+            newErrors.salary = 'Salary is mandatory';
         } else if (isNaN(parseFloat(localData.salary)) || parseFloat(localData.salary) <= 0) {
             newErrors.salary = 'Enter a valid salary amount';
         }
 
         if (!localData.size_t_shift) {
-            newErrors.size_t_shift = 'Size is required';
+            newErrors.size_t_shift = 'Size is mandatory';
         }
 
         if (!localData.name_t_shift.trim()) {
-            newErrors.name_t_shift = 'T-shirt name is required';
+            newErrors.name_t_shift = 'The name for the shirt is mandatory';
         }
 
         if (!localData.photo) {
-            newErrors.photo = 'Photo is required';
+            newErrors.photo = 'Photo is mandatory';
         }
 
         setErrors(newErrors);
@@ -64,17 +58,21 @@ const Step3Form = ({ formData, updateFormData, onBack, onSubmit, isEditing }: St
 
     const handleSave = (): void => {
         if (validateForm()) {
+            // Synchronize all fields with the parent formData
             updateFormData({
-                ...localData, // Enviar solo los datos locales actualizados
-                // Mantener datos críticos para operaciones de actualización
-                id_operator: formData.id_operator
+                salary: localData.salary,
+                size_t_shift: localData.size_t_shift,
+                name_t_shift: localData.name_t_shift,
+                photo: localData.photo,
+                status: localData.status
             });
+
             if (onSubmit) onSubmit();
         } else {
             Toast.show({
                 type: ALERT_TYPE.DANGER,
                 title: "Validation Error",
-                textBody: "Please check the form for errors",
+                textBody: "Please check the errors in the form",
                 autoClose: 3000,
             });
         }
@@ -85,7 +83,7 @@ const Step3Form = ({ formData, updateFormData, onBack, onSubmit, isEditing }: St
             <View style={styles.stepForm}>
                 <FormInput
                     label="Salary (*)"
-                    value={localData.salary}
+                    value={localData.salary.toString()}
                     onChangeText={(text) => handleChange('salary', text)}
                     keyboardType="numeric"
                     error={errors.salary}
@@ -102,7 +100,7 @@ const Step3Form = ({ formData, updateFormData, onBack, onSubmit, isEditing }: St
                 />
 
                 <FormInput
-                    label="Name you want to wear in the T-shirt (*)"
+                    label="Name for the t-shirt (*)"
                     value={localData.name_t_shift}
                     onChangeText={(text) => handleChange('name_t_shift', text)}
                     error={errors.name_t_shift}
@@ -117,9 +115,17 @@ const Step3Form = ({ formData, updateFormData, onBack, onSubmit, isEditing }: St
                     required={true}
                 />
 
+                <DropdownInput
+                    label="Status"
+                    value={localData.status}
+                    onChange={(value) => handleChange('status', value)}
+                    options={['active', 'inactive']}
+                    error={errors.status}
+                />
+
                 <View style={styles.buttonContainer}>
                     <TouchableOpacity style={styles.cancelButton} onPress={onBack}>
-                        <Text style={styles.buttonText}>Back</Text>
+                        <Text style={styles.buttonText}>Atrás</Text>
                     </TouchableOpacity>
                     <TouchableOpacity style={styles.nextButton} onPress={handleSave}>
                         <Text style={styles.buttonText}>{isEditing ? 'Update' : 'Save'}</Text>

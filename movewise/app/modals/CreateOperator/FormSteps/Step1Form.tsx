@@ -3,7 +3,7 @@ import { ScrollView, View, Text, TouchableOpacity } from 'react-native';
 import { FormInput, DateInput, DropdownInput } from '../HelperComponents';
 import { styles } from '../FormStyle';
 import { StepProps, Operator } from '../Types';
-import { ALERT_TYPE, Dialog, AlertNotificationRoot, Toast } from 'react-native-alert-notification';
+import { ALERT_TYPE, Toast } from 'react-native-alert-notification';
 import { ListOperators } from '@/hooks/api/Get_listOperator';
 import { router } from 'expo-router';
 
@@ -15,11 +15,10 @@ const Step1Form = ({ formData, updateFormData, onNext, isEditing }: StepProps) =
         last_name: formData.last_name,
         birth_date: formData.birth_date,
         type_id: formData.type_id,
-        identificationNumber: formData.id_number,
+        id_number: formData.id_number,
         address: formData.address,
-        id_number: formData.phone,
-        email: formData.email ?? '',
         phone: formData.phone,
+        email: formData.email ?? '',
     });
     const [operators, setOperators] = useState<Operator[]>([]); 
 
@@ -29,20 +28,23 @@ const Step1Form = ({ formData, updateFormData, onNext, isEditing }: StepProps) =
                 const data: Operator[] = await ListOperators();
                 setOperators(data);
             } catch (error) {
-                console.error('No se pudieron cargar los operadores', error);
+                console.error('Operators could not be loaded', error);
             }
         };
 
         fetchOperators();
     }, []);
 
-
     // Validation errors
     const [errors, setErrors] = useState<Record<string, string>>({});
 
-    // Handle text input changes
     const handleChange = (field: string, value: string): void => {
-        setLocalData({ ...localData, [field]: value });
+        
+        // Actualizar estado local
+        setLocalData(prev => ({ ...prev, [field]: value }));
+        
+        updateFormData({ [field]: value });
+        
         // Clear error when user types
         if (errors[field]) {
             setErrors({ ...errors, [field]: '' });
@@ -98,19 +100,29 @@ const Step1Form = ({ formData, updateFormData, onNext, isEditing }: StepProps) =
         return Object.keys(newErrors).length === 0;
     };
 
-    // Handle next button press
     const handleNext = (): void => {
         if (validateForm()) {
-            // Update parent form data
-            updateFormData(localData);
+            // Synchronize all fields with the parent formData
+            updateFormData({
+                first_name: localData.first_name,
+                last_name: localData.last_name,
+                birth_date: localData.birth_date,
+                type_id: localData.type_id,
+                id_number: localData.id_number,
+                address: localData.address,
+                phone: localData.phone,
+                email: localData.email
+            });
+            
+            
             if (onNext) onNext();
         } else {
             Toast.show({
                 type: ALERT_TYPE.DANGER,
                 title: "Validation Error",
-                textBody: "Please check the form for errors",
+                textBody: "Please review the errors in the form",
                 autoClose: 3000,
-            });
+                });
         }
     };
 
@@ -120,7 +132,7 @@ const Step1Form = ({ formData, updateFormData, onNext, isEditing }: StepProps) =
                 <Text style={styles.sectionTitle}>General Data</Text>
 
                 <FormInput
-                    label="First Name (*)"
+                    label="Name (*)"
                     value={localData.first_name}
                     onChangeText={(text) => handleChange('first_name', text)}
                     error={errors.firstName}
@@ -128,7 +140,7 @@ const Step1Form = ({ formData, updateFormData, onNext, isEditing }: StepProps) =
                 />
 
                 <FormInput
-                    label="Last Name (*)"
+                    label="Last name (*)"
                     value={localData.last_name}
                     onChangeText={(text) => handleChange('last_name', text)}
                     error={errors.lastName}
@@ -136,7 +148,7 @@ const Step1Form = ({ formData, updateFormData, onNext, isEditing }: StepProps) =
                 />
 
                 <DateInput
-                    label="Date of Birth (*)"
+                    label="Birthdate (*)"
                     value={localData.birth_date}
                     onChangeDate={(date) => handleChange('birth_date', date)}
                     error={errors.dateOfBirth}
@@ -144,7 +156,7 @@ const Step1Form = ({ formData, updateFormData, onNext, isEditing }: StepProps) =
                 />
 
                 <DropdownInput
-                    label="Identification type (*)"
+                    label="Identification Type (*)"
                     value={localData.type_id}
                     onChange={(value) => handleChange('type_id', value)}
                     options={['Passport', 'Driver License', 'ID Card']}
@@ -153,7 +165,7 @@ const Step1Form = ({ formData, updateFormData, onNext, isEditing }: StepProps) =
                 />
 
                 <FormInput
-                    label="ID Number (*)"
+                    label="Identification Number (*)"
                     value={localData.id_number}
                     onChangeText={(text) => handleChange('id_number', text)}
                     error={errors.id_number}
@@ -161,7 +173,7 @@ const Step1Form = ({ formData, updateFormData, onNext, isEditing }: StepProps) =
                 />
 
                 <FormInput
-                    label="Address (*)"
+                    label="Adress (*)"
                     value={localData.address}
                     onChangeText={(text) => handleChange('address', text)}
                     error={errors.address}
@@ -169,7 +181,7 @@ const Step1Form = ({ formData, updateFormData, onNext, isEditing }: StepProps) =
                 />
 
                 <FormInput
-                    label="Cell Phone (*)"
+                    label="Phone (*)"
                     value={localData.phone}
                     onChangeText={(text) => handleChange('phone', text)}
                     keyboardType="phone-pad"
