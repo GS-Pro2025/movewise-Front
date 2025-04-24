@@ -1,6 +1,7 @@
 import axios from "axios";
 import { url } from "./apiClient";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import { createIconSetFromFontello } from "@expo/vector-icons";
 
 export const PostOperator = async (formData: FormData) => {
   try {
@@ -24,6 +25,7 @@ export const PostOperator = async (formData: FormData) => {
 
 
 export const UpdateOperator = async (id: number, formData: FormData) => {
+  console.log('opeartor to edit: '+ formData)
   try {
     const token = await AsyncStorage.getItem("userToken");
     const response = await axios.patch(
@@ -38,7 +40,7 @@ export const UpdateOperator = async (id: number, formData: FormData) => {
     );
     return response.data;
   } catch (error: any) {
-    console.error("error Update operator", error.response?.data || error.message);
+    console.error("error Update operator");
     throw error;
   }
 };

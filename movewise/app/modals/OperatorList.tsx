@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { View, Text, FlatList, TouchableOpacity, StyleSheet, Modal, Image, ActivityIndicator, SafeAreaView } from 'react-native';
 import { GestureHandlerRootView, Swipeable } from "react-native-gesture-handler";
-import { createIconSetFromFontello, Ionicons } from '@expo/vector-icons';
+import { Ionicons } from '@expo/vector-icons';
 import { ListOperators } from '@/hooks/api/Get_listOperator';
 import CreateOperator from './CreateOperator';
 import { Operator, FormData } from './CreateOperator/Types';
@@ -114,30 +114,41 @@ const OperatorList = () => {
 
   // Function to map Operator to FormData
   const mapOperatorToFormData = (op: Operator): FormData => ({
-    firstName: op.first_name || '',
-    lastName: op.last_name || '',
-    dateOfBirth: op.birth_date || '',
-    identificationType: op.type_id || '',
-    identificationNumber: op.id_number ? String(op.id_number) : '',
-    address: op.address || '',
-    cellPhone: op.phone || '',
-    email: op.email || '',
-    drivingLicenseNumber: op.number_licence || '',
-    code: op.code || '',
-    hasMinors: op.sons && op.sons.length > 0,
-    minorCount: op.n_children || 0,
-    sons: op.sons && Array.isArray(op.sons) ? op.sons.map(son => ({
-      name: son.name || '',
-      birth_date: son.birth_date || '',
-      gender: son.gender || '',
-    })) : [],
-    salary: op.salary || '',
-    size: op.size_t_shift || '',
-    tshirtName: op.name_t_shift || '',
-    photo: op.photo ? { uri: op.photo, name: '', type: '' } : null,
-    licenseFront: op.license_front ? { uri: op.license_front, name: '', type: '' } : null,
-    licenseBack: op.license_back ? { uri: op.license_back, name: '', type: '' } : null,
-    status: op.status || '',
+    id_operator: op.id_operator ?? 0,
+    first_name: op.first_name ?? '',
+    last_name: op.last_name ?? '',
+    birth_date: op.birth_date ?? '',
+    type_id: op.type_id ?? '',
+    id_number: op.id_number != null
+      ? String(op.id_number)
+      : '',
+    address: op.address ?? '',
+    phone: op.phone ?? '',
+    email: op.email ?? '',
+    number_licence: op.number_licence ?? '',
+    code: op.code ?? '',
+    has_minors: Array.isArray(op.sons) && op.sons.length > 0,
+    n_children: op.n_children ?? 0,
+    sons: Array.isArray(op.sons)
+      ? op.sons.map(son => ({
+        name: son.name ?? '',
+        birth_date: son.birth_date ?? '',
+        gender: son.gender ?? 'M',
+      }))
+      : [],
+    salary: op.salary ?? '',
+    size_t_shift: op.size_t_shift ?? '',
+    name_t_shift: op.name_t_shift ?? '',
+    photo: op.photo
+      ? { uri: op.photo, name: '', type: '' }
+      : null,
+    license_front: op.license_front
+      ? { uri: op.license_front, name: '', type: '' }
+      : null,
+    license_back: op.license_back
+      ? { uri: op.license_back, name: '', type: '' }
+      : null,
+    status: op.status ?? '',
   });
 
   const renderLeftActions = (operator: Operator) => (
@@ -212,7 +223,7 @@ const OperatorList = () => {
     setModalVisible(false);
     setSelectedOperator(null);
   };
-  
+
   return (
     <SafeAreaView style={styles.safeArea}>
       <View style={styles.container}>

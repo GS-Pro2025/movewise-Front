@@ -1,45 +1,46 @@
-export interface FormData {
-    id_operator?:number;
-    // Step 1 - General Data
-    firstName: string;
-    lastName: string;
-    dateOfBirth: string;
-    identificationType: string;
-    identificationNumber: string;
-    address: string;
-    cellPhone: string;
-    email: string;
-  
-    // Step 2 - Driving License
-    drivingLicenseNumber: string;
-    code: string;
-    hasMinors: boolean;
-    minorCount: number;
-    sons: Son[];
-  
-    // Step 3 - Final Info
-    salary: string;
-    size: string;
-    tshirtName: string;
-    photo: ImageInfo | null;
-    licenseFront: ImageInfo | null;
-    licenseBack: ImageInfo | null;
-    status: string;
-  }
-
 export interface Son {
     name: string;
     birth_date: string;
-    gender: string;
-}
-
-// Type for image data
-export interface ImageInfo {
+    gender: 'M' | 'F';
+  }
+  
+  export interface ImageInfo {
     uri: string;
     name?: string;
     type?: string;
-}
-
+  }
+  
+  export interface FormData {
+    //edit mod3
+    id_operator?: number;
+  
+    // ─── step 1: General Data ──────────────────────────────────────
+    first_name: string;
+    last_name: string;
+    birth_date: string;
+    type_id: string;
+    id_number: string;
+    address: string;
+    phone: string;
+    email?: string;
+  
+    // ─── step 2: driven licence and childs ────────────────────────
+    number_licence: string;
+    code: string;
+    has_minors: boolean;
+    n_children: number;
+    sons: Son[];
+  
+    // ─── step 3: end info ───────────────────────────────────
+    salary: string;
+    size_t_shift: string;
+    name_t_shift: string;
+    photo: ImageInfo | null;
+    license_front: ImageInfo | null;
+    license_back: ImageInfo | null;
+    status: string;
+  }
+  
 // Props for step components
 export interface StepProps {
     formData: FormData;

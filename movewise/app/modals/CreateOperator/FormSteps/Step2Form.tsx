@@ -6,15 +6,15 @@ import { Son, StepProps } from '../Types';
 import { ALERT_TYPE, Dialog, AlertNotificationRoot, Toast } from 'react-native-alert-notification';
 
 const Step2Form = ({ formData, updateFormData, onNext, onBack, isEditing }: StepProps) => {
- 
+
     const [localData, setLocalData] = useState({
-        drivingLicenseNumber: formData.drivingLicenseNumber,
+        number_licence: formData.number_licence,
         code: formData.code,
-        hasMinors: formData.hasMinors,
-        minorCount: formData.minorCount,
+        has_minors: formData.has_minors,
+        n_children: formData.sons.length || formData.n_children || 0,
         sons: formData.sons.length > 0 ? [...formData.sons] : [],
-        licenseFront: formData.licenseFront,
-        licenseBack: formData.licenseBack,
+        license_front: formData.license_front,
+        license_back: formData.license_back,
     });
 
     // State for the current son being added
@@ -72,22 +72,14 @@ const Step2Form = ({ formData, updateFormData, onNext, onBack, isEditing }: Step
 
     const addSon = (): void => {
         if (validateSon()) {
-            // Add the current son to the sons list
             const updatedSons = [...localData.sons, currentSon as Son];
-            setLocalData({ ...localData, sons: updatedSons });
-
-            // Reset current son form
-            setCurrentSon({
-                name: '',
-                birth_date: '',
-                gender: 'M'
-            });
-
-            // Update minor count
             setLocalData(prev => ({
                 ...prev,
-                minorCount: updatedSons.length
+                sons: updatedSons,
+                n_children: updatedSons.length // Update n_children here
             }));
+            
+            setCurrentSon({ name: '', birth_date: '', gender: 'M' });
 
             Toast.show({
                 type: ALERT_TYPE.SUCCESS,
@@ -103,7 +95,7 @@ const Step2Form = ({ formData, updateFormData, onNext, onBack, isEditing }: Step
         setLocalData({
             ...localData,
             sons: updatedSons,
-            minorCount: updatedSons.length
+            n_children: updatedSons.length
         });
 
         Toast.show({
@@ -126,7 +118,7 @@ const Step2Form = ({ formData, updateFormData, onNext, onBack, isEditing }: Step
         //     newErrors.code = 'Code is required';
         // }
 
-        if (localData.hasMinors && localData.sons.length === 0) {
+        if (localData.has_minors && localData.sons.length === 0) {
             newErrors.sons = 'Please add children information';
         }
 
@@ -163,9 +155,9 @@ const Step2Form = ({ formData, updateFormData, onNext, onBack, isEditing }: Step
 
                 <FormInput
                     label="Driving License Number (*)"
-                    value={localData.drivingLicenseNumber}
-                    onChangeText={(text) => handleChange('drivingLicenseNumber', text)}
-                    error={errors.drivingLicenseNumber}
+                    value={localData.number_licence}
+                    onChangeText={(text) => handleChange('number_licence', text)}
+                    error={errors.number_licence}
                     required={true}
                 />
 
@@ -179,17 +171,17 @@ const Step2Form = ({ formData, updateFormData, onNext, onBack, isEditing }: Step
 
                 <ImageUpload
                     label="License Front Photo (*)"
-                    image={localData.licenseFront}
-                    onImageSelected={(image) => handleChange('licenseFront', image)}
-                    error={errors.licenseFront}
+                    image={localData.license_front}
+                    onImageSelected={(image) => handleChange('license_front', image)}
+                    error={errors.license_front}
                     required={true}
                 />
 
                 <ImageUpload
                     label="License Back Photo (*)"
-                    image={localData.licenseBack}
-                    onImageSelected={(image) => handleChange('licenseBack', image)}
-                    error={errors.licenseBack}
+                    image={localData.license_back}
+                    onImageSelected={(image) => handleChange('license_back', image)}
+                    error={errors.license_back}
                     required={true}
                 />
 
@@ -198,13 +190,13 @@ const Step2Form = ({ formData, updateFormData, onNext, onBack, isEditing }: Step
                 <RadioGroup
                     label="Do you have minor children? (*)"
                     options={[{ label: 'Yes', value: true }, { label: 'No', value: false }]}
-                    selectedValue={localData.hasMinors}
-                    onSelect={(value) => handleChange('hasMinors', value)}
+                    selectedValue={localData.has_minors}
+                    onSelect={(value) => handleChange('has_minors', value)}
                 />
 
-                {localData.hasMinors && (
+                {localData.has_minors && (
                     <>
-                        <Text style={styles.inputLabel}>Children Count: {localData.minorCount}</Text>
+                        <Text style={styles.inputLabel}>Children Count: {localData.n_children}</Text>
                         {errors.sons && <Text style={styles.errorText}>{errors.sons}</Text>}
 
                         {/* List of added children */}

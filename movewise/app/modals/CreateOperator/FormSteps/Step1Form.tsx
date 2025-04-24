@@ -10,14 +10,16 @@ import { router } from 'expo-router';
 const Step1Form = ({ formData, updateFormData, onNext, isEditing }: StepProps) => {
     // Local state to track form values
     const [localData, setLocalData] = useState({
-        firstName: formData.firstName,
-        lastName: formData.lastName,
-        dateOfBirth: formData.dateOfBirth,
-        identificationType: formData.identificationType,
-        identificationNumber: formData.identificationNumber,
+        id_operator: formData.id_operator || 0,
+        first_name: formData.first_name,
+        last_name: formData.last_name,
+        birth_date: formData.birth_date,
+        type_id: formData.type_id,
+        identificationNumber: formData.id_number,
         address: formData.address,
-        cellPhone: formData.cellPhone,
-        email: formData.email,
+        id_number: formData.phone,
+        email: formData.email ?? '',
+        phone: formData.phone,
     });
     const [operators, setOperators] = useState<Operator[]>([]); 
 
@@ -33,7 +35,6 @@ const Step1Form = ({ formData, updateFormData, onNext, isEditing }: StepProps) =
 
         fetchOperators();
     }, []);
-
 
 
     // Validation errors
@@ -52,41 +53,41 @@ const Step1Form = ({ formData, updateFormData, onNext, isEditing }: StepProps) =
     const validateForm = (): boolean => {
         const newErrors: Record<string, string> = {};
 
-        if (!localData.firstName.trim()) {
-            newErrors.firstName = 'First name is required';
+        if (!localData.first_name.trim()) {
+            newErrors.first_name = 'First name is required';
         }
 
-        if (!localData.lastName.trim()) {
-            newErrors.lastName = 'Last name is required';
+        if (!localData.last_name.trim()) {
+            newErrors.last_name = 'Last name is required';
         }
 
-        if (!localData.dateOfBirth) {
-            newErrors.dateOfBirth = 'Date of birth is required';
+        if (!localData.birth_date) {
+            newErrors.birth_date = 'Date of birth is required';
         } else {
             const today = new Date();
-            const dob = new Date(localData.dateOfBirth);
+            const dob = new Date(localData.birth_date);
             const age = today.getFullYear() - dob.getFullYear();
             if (age < 18) {
-                newErrors.dateOfBirth = 'Operator must be at least 18 years old';
+                newErrors.birth_date = 'Operator must be at least 18 years old';
             }
         }
 
-        if (!localData.identificationType) {
-            newErrors.identificationType = 'Identification type is required';
+        if (!localData.type_id) {
+            newErrors.type_id = 'Identification type is required';
         }
 
-        if (!localData.identificationNumber.trim()) {
-            newErrors.identificationNumber = 'ID number is required';
+        if (!localData.id_number.trim()) {
+            newErrors.id_number = 'ID number is required';
         }
 
         if (!localData.address.trim()) {
             newErrors.address = 'Address is required';
         }
 
-        if (!localData.cellPhone.trim()) {
-            newErrors.cellPhone = 'Phone number is required';
-        } else if (!/^\+?[0-9]{10,15}$/.test(localData.cellPhone)) {
-            newErrors.cellPhone = 'Enter a valid phone number';
+        if (!localData.phone.trim()) {
+            newErrors.phone = 'Phone number is required';
+        } else if (!/^\+?[0-9]{10,15}$/.test(localData.phone)) {
+            newErrors.phone = 'Enter a valid phone number';
         }
 
         if (localData.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(localData.email)) {
@@ -120,32 +121,32 @@ const Step1Form = ({ formData, updateFormData, onNext, isEditing }: StepProps) =
 
                 <FormInput
                     label="First Name (*)"
-                    value={localData.firstName}
-                    onChangeText={(text) => handleChange('firstName', text)}
+                    value={localData.first_name}
+                    onChangeText={(text) => handleChange('first_name', text)}
                     error={errors.firstName}
                     required={true}
                 />
 
                 <FormInput
                     label="Last Name (*)"
-                    value={localData.lastName}
-                    onChangeText={(text) => handleChange('lastName', text)}
+                    value={localData.last_name}
+                    onChangeText={(text) => handleChange('last_name', text)}
                     error={errors.lastName}
                     required={true}
                 />
 
                 <DateInput
                     label="Date of Birth (*)"
-                    value={localData.dateOfBirth}
-                    onChangeDate={(date) => handleChange('dateOfBirth', date)}
+                    value={localData.birth_date}
+                    onChangeDate={(date) => handleChange('birth_date', date)}
                     error={errors.dateOfBirth}
                     required={true}
                 />
 
                 <DropdownInput
                     label="Identification type (*)"
-                    value={localData.identificationType}
-                    onChange={(value) => handleChange('identificationType', value)}
+                    value={localData.type_id}
+                    onChange={(value) => handleChange('type_id', value)}
                     options={['Passport', 'Driver License', 'ID Card']}
                     error={errors.identificationType}
                     required={true}
@@ -153,9 +154,9 @@ const Step1Form = ({ formData, updateFormData, onNext, isEditing }: StepProps) =
 
                 <FormInput
                     label="ID Number (*)"
-                    value={localData.identificationNumber}
-                    onChangeText={(text) => handleChange('identificationNumber', text)}
-                    error={errors.identificationNumber}
+                    value={localData.id_number}
+                    onChangeText={(text) => handleChange('id_number', text)}
+                    error={errors.id_number}
                     required={true}
                 />
 
@@ -169,10 +170,10 @@ const Step1Form = ({ formData, updateFormData, onNext, isEditing }: StepProps) =
 
                 <FormInput
                     label="Cell Phone (*)"
-                    value={localData.cellPhone}
-                    onChangeText={(text) => handleChange('cellPhone', text)}
+                    value={localData.phone}
+                    onChangeText={(text) => handleChange('phone', text)}
                     keyboardType="phone-pad"
-                    error={errors.cellPhone}
+                    error={errors.phone}
                     required={true}
                 />
 
