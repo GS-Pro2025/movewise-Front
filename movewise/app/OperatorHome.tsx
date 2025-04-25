@@ -13,7 +13,6 @@ import {
 import { useRouter } from "expo-router";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useState, useEffect } from "react";
-import WorkDailyOperator from "./modals/WorkDailyOperator";
 
 interface ActionButtonProps {
     title: string;
