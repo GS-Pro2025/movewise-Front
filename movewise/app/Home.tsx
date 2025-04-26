@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState, } from "react";
 import {
   Image,
   View,
@@ -12,6 +12,16 @@ import {
 } from "react-native";
 import { useRouter } from "expo-router";
 import Toast from 'react-native-toast-message';
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { AnimatedImage } from "react-native-reanimated/lib/typescript/component/Image";
+interface Admin {
+  id: number;
+  first_name: string;
+  last_name: string;
+  status: string;
+  id_number: string;
+}
+
 interface ActionButtonProps {
   title: string;
   iconSource?: any;
@@ -19,12 +29,23 @@ interface ActionButtonProps {
   onPress?: () => void;
 }
 
+
+
 const Home: React.FC = () => {
   const router = useRouter();
   const theme = useColorScheme();
   const isDarkMode = theme === "dark";
+  const [Admin, setAdmin] = useState<Admin | null>(null);
 
-    return (
+  useEffect(() => {
+    const loadAdmin = async () => {
+      const adminData = await AsyncStorage.getItem("currentUser");
+      setAdmin(JSON.parse(adminData || "{}"));
+    };
+    loadAdmin();
+  }, []);
+
+  return (
     <SafeAreaView
       style={[styles.container, isDarkMode ? styles.darkBackground : styles.lightBackground]}
     >
@@ -41,14 +62,14 @@ const Home: React.FC = () => {
               />
             </View>
             <View style={styles.userTextContainer}>
-            <Text
-             style={[styles.userName,{ color: isDarkMode ? "#FFFFFF" : "#0458AB" }]}>
-                        User name
-              </Text>
               <Text
-                style={[styles.userName,{ color: isDarkMode ? "#FFFFFF" : "#0458AB" }]}>
-                Level
+                style={[styles.userName, { color: isDarkMode ? "#FFFFFF" : "#0458AB" }]}>
+                {Admin?.first_name} {Admin?.last_name}
               </Text>
+              <Text style={[styles.userName, { color: isDarkMode ? "#FFFFFF" : "#0458AB" }]}>
+                Admin # <Text style={{ fontSize: 14 }}>{Admin?.id_number}</Text>
+              </Text>
+
             </View>
           </View>
           <TouchableOpacity style={styles.shareButton}>
@@ -81,9 +102,6 @@ const Home: React.FC = () => {
               title={"Add Extra cost"}
               isDarkMode={isDarkMode}
               iconSource={require("../assets/images/dolar.png")}
-              
-              onPress={() => router.push("/modals/EditOrder")}
-              
             />
           </View>
           <View style={styles.row}>
@@ -91,7 +109,7 @@ const Home: React.FC = () => {
               title={"Edit\nDaily"}
               isDarkMode={isDarkMode}
               iconSource={require("../assets/images/paquete.png")}
-              onPress={() => router.push("/modals/CreateOperator2")}//aqui estoy trabajando yo
+              onPress={() => console.log("")}
             />
             <ActionButton
               title={"Resume\nOrder"}
@@ -111,6 +129,12 @@ const Home: React.FC = () => {
               title={"Collaborator\nRegistration"}
               isDarkMode={isDarkMode}
               iconSource={require("../assets/images/logo.png")}
+              onPress={() => 
+                router.push({
+                  pathname: '/modals/OperatorList',
+                  params: { isEdit: 'false'}
+                })
+              }
             />
           </View>
           <View style={styles.row}>
@@ -123,6 +147,12 @@ const Home: React.FC = () => {
               title={"Collaborator\nEdit"}
               isDarkMode={isDarkMode}
               iconSource={require("../assets/images/Pencil.png")}
+              onPress={() => 
+                router.push({
+                  pathname: '/modals/OperatorList',
+                  params: {isEdit: 'true'}
+                })
+              }
             />
           </View>
         </View>
@@ -160,13 +190,13 @@ const styles = StyleSheet.create({
   avatarContainer: { width: 40, height: 40, borderRadius: 20, overflow: "hidden" },
   userIcono: { width: 40, height: 40 },
   userTextContainer: { marginLeft: 10 },
-  userName: { fontSize: 18, fontWeight: "bold" , color: "#ffff" },
-  userLevel: { fontSize: 14, opacity: 0.7 ,color: "#ffff"},
+  userName: { fontSize: 18, fontWeight: "bold", color: "#ffff" },
+  userLevel: { fontSize: 14, opacity: 0.7, color: "#ffff" },
   shareButton: { padding: 10 },
   divider: { height: 1, backgroundColor: "#ccc", marginVertical: 10 },
   imageContainer: { alignItems: "center", marginVertical: 10 },
   userLogo: { width: 100, height: 100 },
-  gridContainer: { marginTop: 10,  },
+  gridContainer: { marginTop: 10, },
   row: { flexDirection: "row", justifyContent: "space-between", marginBottom: 10 },
   actionButton: { flex: 1, padding: 15, alignItems: "center", borderRadius: 10, marginHorizontal: 5 },
   darkButton: { backgroundColor: "#FFF" },
