@@ -72,8 +72,8 @@ const OperatorModal: React.FC<OperatorModalProps> = ({ visible, onClose, orderKe
       setLoading(true);
       const token = await AsyncStorage.getItem("userToken");
       if (!token) throw new Error("Authentication required"); 
-  
-      const response = await fetch(`${url}/assigns/order/${orderKey}/operators/`, {
+      //To fix
+      const response = await fetch(`${url}assigns/order/${orderKey}/operators/`, {
         method: 'GET',
         headers: {
           'Authorization': `Bearer ${token}`
