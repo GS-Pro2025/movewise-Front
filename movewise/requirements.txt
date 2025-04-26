@@ -1,3 +1,4 @@
 npx expo install expo-checkbox
 npm install react-native-toast-message
 npm install @react-native-picker/picker
+npm install react-native-get-random-values
