@@ -21,7 +21,7 @@ const AddExtraCostScreen = () => {
       Alert.alert("Success", "Extra cost added successfully!");
   
       // Regresa a ExtraCostScreen y pasa el nuevo WorkCost como parámetro
-      router.push({
+      router.replace({
         pathname: "./ExtraCostScreen",
         params: { newWorkCost: JSON.stringify(newWorkCost), key },
       });

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { View, Text, TouchableOpacity, StyleSheet, FlatList, Image, ActivityIndicator, Alert } from "react-native";
+import { View, Text, TouchableOpacity, StyleSheet, FlatList, Image, ActivityIndicator, Alert, Modal } from "react-native";
 import { SearchParams, useRouter } from "expo-router"; // Importa useRouter para la navegación
 import WorkCost, { ListWorkCostByOrder } from "@/hooks/api/WorkCostListByOrder";
 import { useSearchParams } from "expo-router/build/hooks";
@@ -7,6 +7,7 @@ import { BulkCreateWorkCost } from "@/hooks/api/WorkCostBulkCreate";
 const ExtraCostScreen = () => {
   const router = useRouter();
   const searchParams = useSearchParams();
+  const [isCancelModalVisible, setIsCancelModalVisible] = useState(false); 
   const key = searchParams.get("key");
   const newWorkCost = searchParams.get("newWorkCost"); // Obtén el nuevo WorkCost (si existe)
 
@@ -14,6 +15,23 @@ const ExtraCostScreen = () => {
   const [newWorkCosts, setNewWorkCosts] = useState<WorkCost[]>([]); // Lista de nuevos costos
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
+
+  const handleCancel = () => {
+    if (newWorkCosts.length > 0) {
+      setIsCancelModalVisible(true); // Muestra el modal si hay nuevos costos
+    } else {
+      router.back(); // Regresa directamente si no hay nuevos costos
+    }
+  };
+
+  const confirmCancel = () => {
+    setIsCancelModalVisible(false); // Cierra el modal
+    router.back(); // Regresa a la pantalla anterior
+  };
+
+  const cancelModal = () => {
+    setIsCancelModalVisible(false); // Cierra el modal sin cancelar
+  };
 
   // Función para obtener los costos extra existentes
   const fetchWorkCosts = async () => {
@@ -105,13 +123,30 @@ const ExtraCostScreen = () => {
 
       {/* Botones de guardar y cancelar */}
       <View style={styles.buttonContainer}>
-        <TouchableOpacity style={styles.cancelButton} onPress={() => router.canGoBack()}>
+        <TouchableOpacity style={styles.cancelButton} onPress={handleCancel}>
           <Text style={styles.cancelButtonText}>Cancel</Text>
         </TouchableOpacity>
         <TouchableOpacity style={styles.saveButton} onPress={handleSave}>
           <Text style={styles.saveButtonText}>Save</Text>
         </TouchableOpacity>
       </View>
+      {/* Modal de confirmación */}
+      <Modal visible={isCancelModalVisible} animationType="fade" transparent={true}>
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalContainer}>
+            <Text style={styles.modalTitle}>Cancel Changes?</Text>
+            <Text style={styles.modalMessage}>You have unsaved new costs. Are you sure you want to cancel?</Text>
+            <View style={styles.modalButtonContainer}>
+              <TouchableOpacity style={styles.modalCancelButton} onPress={cancelModal}>
+                <Text style={styles.modalCancelButtonText}>No</Text>
+              </TouchableOpacity>
+              <TouchableOpacity style={styles.modalConfirmButton} onPress={confirmCancel}>
+                <Text style={styles.modalConfirmButtonText}>Yes</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      </Modal>
     </View>
   );
 };
@@ -174,6 +209,36 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: "600",
   },
+  modalOverlay: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: "rgba(0, 0, 0, 0.5)",
+  },
+  modalContainer: {
+    width: "80%",
+    backgroundColor: "#fff",
+    borderRadius: 10,
+    padding: 20,
+    alignItems: "center",
+  },
+  modalTitle: { fontSize: 18, fontWeight: "bold", marginBottom: 10, color: "#004080" },
+  modalMessage: { fontSize: 14, textAlign: "center", marginBottom: 20, color: "#333" },
+  modalButtonContainer: { flexDirection: "row", justifyContent: "space-between", width: "100%" },
+  modalCancelButton: {
+    backgroundColor: "#FF5C5C",
+    paddingVertical: 10,
+    paddingHorizontal: 20,
+    borderRadius: 10,
+  },
+  modalCancelButtonText: { color: "#fff", fontSize: 16, fontWeight: "600" },
+  modalConfirmButton: {
+    backgroundColor: "#5AA2E7",
+    paddingVertical: 10,
+    paddingHorizontal: 20,
+    borderRadius: 10,
+  },
+  modalConfirmButtonText: { color: "#fff", fontSize: 16, fontWeight: "600" },
 });
 
 export default ExtraCostScreen;
