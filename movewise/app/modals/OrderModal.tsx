@@ -9,7 +9,8 @@ import { getOrders } from "../../hooks/api/GetOrders";
 import { GestureHandlerRootView, Swipeable } from "react-native-gesture-handler";
 import { TouchableHighlight } from "react-native";
 import colors from "../Colors";
-
+import Toast from "react-native-toast-message";
+import { DeleteOrder } from "@/hooks/api/DeleteOrder";
 interface OrderModalProps {
   visible: boolean;
   onClose: () => void;
@@ -22,6 +23,7 @@ interface OrderPerson {
 }
 
 interface Order {
+  key : string;
   key_ref: string;
   date: string | null;
   distance: number | null;
@@ -122,15 +124,39 @@ const OrderModal: React.FC<OrderModalProps> = ({ visible, onClose }) => {
     }
   };
 
-  const handleDeleteOrder = (keyRef: string) => {
+  const handleDeleteOrder = (Key: string) => {
     Alert.alert(
-      "Confirm Delete",
+      "Delete Order",
       "Are you sure you want to delete this order?",
       [
-        { text: "Cancel", style: "cancel" },
         {
-          text: "Delete", onPress: () => {
-            setOrders(prev => prev.filter(order => order.key_ref !== keyRef));
+          text: "Cancel",
+          style: "cancel"
+        },
+        {
+          text: "Delete",
+          onPress: async () => {
+            try {
+              const response = await DeleteOrder(Key);
+              if (response) {
+                Toast.show({
+                  type: 'success',
+                  text1: 'Order deleted successfully!',
+                });
+                loadOrders();
+              } else {
+                Toast.show({
+                  type: 'error',
+                  text1: 'Failed to delete order.',
+                });
+              }
+            } catch (error) {
+              console.error("Error deleting order:", error);
+              Toast.show({
+                type: 'error',
+                text1: 'Failed to delete order.',
+              });
+            }
           }
         }
       ]
@@ -154,7 +180,7 @@ const OrderModal: React.FC<OrderModalProps> = ({ visible, onClose }) => {
       <View style={styles.rightSwipeActions}>
         <TouchableOpacity
           style={[styles.deleteAction, { backgroundColor: colors.swipeDelete }]}
-          onPress={() => handleDeleteOrder(item.key_ref)}
+          onPress={() => handleDeleteOrder(item.key)}
         >
           <Ionicons name="trash-outline" size={24} color={colors.darkText} />
           <Text style={styles.actionText}>Delete</Text>
