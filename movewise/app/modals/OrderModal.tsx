@@ -8,6 +8,8 @@ import UpdateOrder from "./UpdateOrder";
 import { getOrders } from "../../hooks/api/GetOrders";
 import { GestureHandlerRootView, Swipeable } from "react-native-gesture-handler";
 import { TouchableHighlight } from "react-native";
+import Toast from "react-native-toast-message";
+import { DeleteOrder } from "@/hooks/api/DeleteOrder";
 
 interface OrderModalProps {
   visible: boolean;
@@ -21,6 +23,7 @@ interface OrderPerson {
 }
 
 interface Order {
+  key: string;
   key_ref: string;
   date: string | null; // Changed to allow null date
   distance: number | null;
@@ -126,22 +129,45 @@ const OrderModal: React.FC<OrderModalProps> = ({ visible, onClose }) => {
       Alert.alert("Error", "Selected order data is null or undefined.");
     }
   };
-
-  const handleDeleteOrder = (keyRef: string) => {
+  const handleDeleteOrder = (key: string) => {
     Alert.alert(
       "Confirm Delete",
       "Are you sure you want to delete this order?",
       [
         { text: "Cancel", style: "cancel" },
         {
-          text: "Delete", onPress: () => {
-            setOrders(prev => prev.filter(order => order.key_ref !== keyRef));
-          }
-        }
+          text: "Delete",
+          onPress: async () => {
+            try {
+              console.log("Deleting order with key:", key);
+              // Call the delete API
+              await DeleteOrder(key);
+  
+              // Update the orders state
+              setOrders((prev) => prev.filter((order) => order.key !== key));
+  
+              // Show success toast
+              Toast.show({
+                type: "success",
+                text1: "Order Deleted",
+                text2: "The order has been successfully deleted.",
+              });
+  
+              // Reload orders
+              loadOrders();
+            } catch (error) {
+              console.error("Error deleting order:", error);
+              Toast.show({
+                type: "error",
+                text1: "Order could not be deleted",
+                text2: "The order is not able to be deleted.",
+              });
+            }
+          },
+        },
       ]
     );
   };
-
   const renderItem = ({ item }: { item: Order }) => {
     const renderLeftActions = () => (
       <View style={styles.leftSwipeActions}>
@@ -159,7 +185,7 @@ const OrderModal: React.FC<OrderModalProps> = ({ visible, onClose }) => {
       <View style={styles.rightSwipeActions}>
         <TouchableOpacity
           style={[styles.deleteAction, { backgroundColor: '#e74c3c' }]}
-          onPress={() => handleDeleteOrder(item.key_ref)}
+          onPress={() => handleDeleteOrder(item.key)}
         >
           <Ionicons name="trash-outline" size={24} color="#FFFFFF" />
           <Text style={styles.actionText}>Delete</Text>
@@ -350,6 +376,7 @@ const OrderModal: React.FC<OrderModalProps> = ({ visible, onClose }) => {
       {/* Here we control the visibility of the AddOrderForm and UpdateOrder modals */}
       <AddOrderForm visible={addOrderVisible} onClose={() => setAddOrderVisible(false)} />
       <UpdateOrder visible={updateOrderVisible} onClose={() => setUpdateOrderVisible(false)} orderData={selectedOrder || {}} />
+      <Toast/>
     </Modal>
   );
 };

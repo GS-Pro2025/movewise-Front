@@ -128,7 +128,7 @@ const SummaryCostCard: React.FC= ({}) => {
           <Text style={[styles.tableCell, styles.flex1]}>{summary?.driverSalaries || "N/A"}</Text>
         </View>
         <View style={styles.tableRow}>
-          <Text style={[styles.tableCell, styles.flex1]}>Other Salaries</Text>
+          <Text style={[styles.tableCell, styles.flex1]}>Operators</Text>
           <Text style={[styles.tableCell, styles.flex1]}>{summary?.otherSalaries || "N/A"}</Text>
         </View>
         <View style={styles.tableRow}>
