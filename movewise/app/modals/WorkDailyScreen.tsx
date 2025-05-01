@@ -213,7 +213,7 @@ const styles = StyleSheet.create({
   container: { flex: 1, paddingHorizontal: 20, paddingTop: 0 },
   title: { fontSize: 20, fontWeight: "bold", textAlign: "center", marginBottom: 10 },
   dateContainer: { flexDirection: "row", alignItems: "center", marginBottom: 10 },
-  selectDateText: { fontSize: 16, fontWeight: "600", marginRight: 10 },
+  selectDateText: { fontSize: 16, fontWeight: "600", marginRight: 10, paddingHorizontal: 10 },
   datePickerButton: {
     flexDirection: "row",
     alignItems: "center",
@@ -231,13 +231,14 @@ const styles = StyleSheet.create({
     marginBottom: 10,
     borderRadius: 10,
     overflow: "hidden",
-    marginRight: 30
+    marginRight: 10,
+    paddingHorizontal: 10,
   },
   itemContainer: {
     flexDirection: "row",
     alignItems: "center",
     paddingVertical: 10,
-    paddingHorizontal: 10,
+    paddingHorizontal: 0,
     borderRadius: 10,
   },
   iconContainer: {
