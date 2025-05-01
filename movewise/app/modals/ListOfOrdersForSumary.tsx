@@ -16,6 +16,7 @@ import { getOrders } from "../../hooks/api/GetOrders";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { Ionicons } from "@expo/vector-icons";
 import DateTimePicker, { DateTimePickerEvent } from "@react-native-community/datetimepicker";
+import { useTranslation } from "react-i18next";
 
 interface OrderPerson {
   email: string;
@@ -37,8 +38,8 @@ interface Order {
   person: OrderPerson;
   job: number;
 }
-
 const ListOfOrdersForSummary: React.FC = () => {
+  const { t } = useTranslation(); // Hook para traducción
   const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
@@ -46,10 +47,10 @@ const ListOfOrdersForSummary: React.FC = () => {
   const [endDate, setEndDate] = useState<Date | null>(null);
   const [showStartDatePicker, setShowStartDatePicker] = useState(false);
   const [showEndDatePicker, setShowEndDatePicker] = useState(false);
-  const [searchText, setSearchText] = useState(""); 
+  const [searchText, setSearchText] = useState("");
   const router = useRouter();
 
-  // Function to load orders
+  // Función para cargar órdenes
   const loadOrders = useCallback(async () => {
     setLoading(true);
     setRefreshing(true);
@@ -58,27 +59,26 @@ const ListOfOrdersForSummary: React.FC = () => {
       const ordersData = Array.isArray(response) ? response : response?.data || [];
       setOrders(ordersData);
     } catch (error) {
-      console.error("Error loading orders:", error);
-      Alert.alert("Error", "Could not load orders");
+      console.error(t("error_loading_orders"), error);
+      Alert.alert(t("error"), t("could_not_load_orders"));
     } finally {
       setLoading(false);
       setRefreshing(false);
     }
-  }, []);
+  }, [t]);
 
   useEffect(() => {
     loadOrders();
   }, [loadOrders]);
 
-  // Normalize dates for comparison
- // Normalize dates for comparison
+  // Normalizar fechas para comparación
   const normalizeDate = (date: Date) => {
     const d = new Date(date);
     d.setHours(0, 0, 0, 0);
     return d;
   };
 
-  // Filter orders based on date range
+  // Filtrar órdenes según rango de fechas y búsqueda
   const filteredOrders = orders.filter((order) => {
     const orderDate = order.date ? normalizeDate(new Date(order.date)) : null;
 
@@ -88,7 +88,7 @@ const ListOfOrdersForSummary: React.FC = () => {
       (orderDate && startDate && !endDate && orderDate >= startDate) ||
       (orderDate && !startDate && endDate && orderDate <= endDate);
 
-      const isSearchMatch =
+    const isSearchMatch =
       order.key_ref.toLowerCase().includes(searchText.toLowerCase()) ||
       `${order.person.first_name || ""} ${order.person.last_name || ""}`
         .toLowerCase()
@@ -113,8 +113,8 @@ const ListOfOrdersForSummary: React.FC = () => {
 
   const renderItem = ({ item }: { item: Order }) => {
     const formatDate = (dateString: string | null) => {
-      if (!dateString) return "mm/dd/yy";
-      return new Date(dateString).toLocaleDateString("en-US", {
+      if (!dateString) return t("date_placeholder");
+      return new Date(dateString).toLocaleDateString("es-ES", {
         year: "2-digit",
         month: "2-digit",
         day: "2-digit",
@@ -154,15 +154,15 @@ const ListOfOrdersForSummary: React.FC = () => {
                   styles.statusText,
                   {
                     color:
-                      item.status === "Pending"
+                      item.status === t("pending")
                         ? "#f39c12"
-                        : item.status === "Completed"
+                        : item.status === t("completed")
                         ? "#48dc33"
                         : "#48dc33",
                   },
                 ]}
               >
-                {item.status}
+                {t(item.status.toLowerCase())}
               </Text>
               <Text style={styles.dateText}>{formatDate(item.date)}</Text>
             </View>
@@ -175,25 +175,25 @@ const ListOfOrdersForSummary: React.FC = () => {
   return (
     <SafeAreaView style={{ flex: 1 }}>
       <View style={styles.header}>
-        <Text style={styles.title}>Orders</Text>
+        <Text style={styles.title}>{t("orders")}</Text>
       </View>
-    {/* Search Bar */}
-    <View style={styles.searchContainer}>
+      {/* Barra de búsqueda */}
+      <View style={styles.searchContainer}>
         <TextInput
           style={styles.searchInput}
-          placeholder="Search by customer name or key_ref"
+          placeholder={t("search_placeholder")}
           value={searchText}
           onChangeText={setSearchText}
         />
       </View>
-      {/* Date Filters */}
+      {/* Filtros de fecha */}
       <View style={styles.datePickerContainer}>
         <TouchableOpacity
           style={styles.datePickerButton}
           onPress={() => setShowStartDatePicker(true)}
         >
           <Text style={styles.datePickerText}>
-            {startDate ? startDate.toLocaleDateString() : "Start Date"}
+            {startDate ? startDate.toLocaleDateString() : t("start_date")}
           </Text>
           <Ionicons name="calendar" size={20} color="#0458AB" />
         </TouchableOpacity>
@@ -210,7 +210,7 @@ const ListOfOrdersForSummary: React.FC = () => {
           onPress={() => setShowEndDatePicker(true)}
         >
           <Text style={styles.datePickerText}>
-            {endDate ? endDate.toLocaleDateString() : "End Date"}
+            {endDate ? endDate.toLocaleDateString() : t("end_date")}
           </Text>
           <Ionicons name="calendar" size={20} color="#0458AB" />
         </TouchableOpacity>
@@ -239,7 +239,7 @@ const ListOfOrdersForSummary: React.FC = () => {
           ListEmptyComponent={
             <View style={styles.emptyContainer}>
               <Text style={styles.emptyText}>
-                {orders.length === 0 ? "No orders available" : "No matching orders found"}
+                {orders.length === 0 ? t("no_orders_available") : t("no_matching_orders")}
               </Text>
             </View>
           }

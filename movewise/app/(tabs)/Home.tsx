@@ -1,4 +1,4 @@
-import React, {  } from "react"; // Importar React y useState correctamente
+import React from "react";
 import {
   Image,
   View,
@@ -10,23 +10,25 @@ import {
   useColorScheme,
   Platform,
   ScrollView,
-} from "react-native"
+} from "react-native";
+import { useTranslation } from "react-i18next";
 
 interface HomeProps {
-  onOpenModal: () => void
-  onOpenOperatorModal: () => void;  
+  onOpenModal: () => void;
+  onOpenOperatorModal: () => void;
 }
 
 interface ActionButtonProps {
-  title: string
-  iconSource?: any
-  isDarkMode: boolean
-  onPress?: () => void
+  title: string;
+  iconSource?: any;
+  isDarkMode: boolean;
+  onPress?: () => void;
 }
 
-const Home: React.FC<HomeProps> = ({ onOpenModal, onOpenOperatorModal}) => {  
-  const theme = useColorScheme()  
-  const isDarkMode = theme === "dark"
+const Home: React.FC<HomeProps> = ({ onOpenModal, onOpenOperatorModal }) => {
+  const { t } = useTranslation();
+  const theme = useColorScheme();
+  const isDarkMode = theme === "dark";
 
   return (
     <SafeAreaView style={[styles.container, isDarkMode ? styles.darkBackground : styles.lightBackground]}>
@@ -44,9 +46,11 @@ const Home: React.FC<HomeProps> = ({ onOpenModal, onOpenOperatorModal}) => {
             </View>
             <View style={styles.userTextContainer}>
               <Text style={[styles.userName, isDarkMode ? styles.darkUserText : styles.lightPrimaryText]}>
-                User name
+                {t("user_name")}
               </Text>
-              <Text style={[styles.userLevel, isDarkMode ? styles.darkSubText : styles.lightPrimaryText]}>Level</Text>
+              <Text style={[styles.userLevel, isDarkMode ? styles.darkSubText : styles.lightPrimaryText]}>
+                {t("user_level")}
+              </Text>
             </View>
           </View>
           <TouchableOpacity style={styles.shareButton}>
@@ -70,49 +74,49 @@ const Home: React.FC<HomeProps> = ({ onOpenModal, onOpenOperatorModal}) => {
         <View style={styles.gridContainer}>
           <View style={styles.row}>
             <ActionButton
-              title={"Create\nDaily"}
+              title={t("create_daily")}
               isDarkMode={isDarkMode}
               iconSource={require("../../assets/images/paquete.png")}
               onPress={onOpenModal}
             />
             <ActionButton
-              title={"Add Extra cost"}
+              title={t("add_extra_cost")}
               isDarkMode={isDarkMode}
               iconSource={require("../../assets/images/dolar.png")}
             />
           </View>
           <View style={styles.row}>
             <ActionButton
-              title={"Edit\nDaily"}
+              title={t("edit_daily")}
               isDarkMode={isDarkMode}
               iconSource={require("../../assets/images/paquete.png")}
             />
             <ActionButton
-              title={"Resume\nOrder"}
+              title={t("resume_order")}
               isDarkMode={isDarkMode}
               iconSource={require("../../assets/images/paper.png")}
             />
           </View>
           <View style={styles.row}>
             <ActionButton
-              title={"Create\nTruck"}
+              title={t("create_truck")}
               isDarkMode={isDarkMode}
               iconSource={require("../../assets/images/truck.png")}
             />
             <ActionButton
-              title={"Collaborator\nRegistration"}
+              title={t("collaborator_registration")}
               isDarkMode={isDarkMode}
               iconSource={require("../../assets/images/logo.png")}
             />
           </View>
           <View style={styles.row}>
             <ActionButton
-              title={"Collaborator\nUnlink"}
+              title={t("collaborator_unlink")}
               isDarkMode={isDarkMode}
               iconSource={require("../../assets/images/personx.png")}
             />
             <ActionButton
-              title={"Collaborator\nEdit"}
+              title={t("collaborator_edit")}
               isDarkMode={isDarkMode}
               iconSource={require("../../assets/images/Pencil.png")}
             />
@@ -120,8 +124,8 @@ const Home: React.FC<HomeProps> = ({ onOpenModal, onOpenOperatorModal}) => {
         </View>
       </ScrollView>
     </SafeAreaView>
-  )
-}
+  );
+};
 
 const ActionButton: React.FC<ActionButtonProps> = ({ title, iconSource, isDarkMode, onPress }) => {
   return (
@@ -137,9 +141,8 @@ const ActionButton: React.FC<ActionButtonProps> = ({ title, iconSource, isDarkMo
       ) : null}
       <Text style={[styles.actionButtonText, isDarkMode ? styles.darkText : styles.lightText]}>{title}</Text>
     </TouchableOpacity>
-  )
-}
-
+  );
+};
 const styles = StyleSheet.create({
   container: {
     flex: 1,

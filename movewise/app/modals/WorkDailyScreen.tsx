@@ -6,8 +6,11 @@ import Order, { getOrders } from '../../hooks/api/GetOrders'; // Import the API 
 import Toast from 'react-native-toast-message';
 import { useRouter } from 'expo-router';
 import colors from '../Colors';
+import { useTranslation } from 'react-i18next';
 
 const WorkDailyScreen = () => {
+    
+  const { t } = useTranslation(); // Hook para traducción
   const router = useRouter();
   const theme = useColorScheme(); // Detect the current theme
   const isDarkMode = theme === 'dark'; // Determine if dark mode is active
@@ -18,19 +21,19 @@ const WorkDailyScreen = () => {
   const [currentPage, setCurrentPage] = useState<number>(1); // Current page
   const [nextPage, setNextPage] = useState<string | null>(null); // URL for the next page
   const [isLoadingMore, setIsLoadingMore] = useState<boolean>(false); // State for loading more data
-
   // Estados para el selector de fecha
   const [isDatePickerVisible, setDatePickerVisibility] = useState(false); // Estado para la visibilidad del selector de fecha
   const [selectedDate, setSelectedDate] = useState<Date>(new Date()); // Estado para la fecha seleccionada
 
-  // Fetch orders data
+
+  // Obtener datos de las órdenes
   const fetchOrdersData = async (page: number = 1) => {
     if (page === 1) setLoading(true);
     setError(null);
     try {
-      const response = await getOrders(); // Fetch orders
-      console.log("API Response:", response);
-
+      const response = await getOrders(); // Obtener órdenes
+      console.log(t("api_response"), response);
+      
       if (page === 1) {
         // Replace data for the first page
         setOrders(response);
@@ -38,23 +41,21 @@ const WorkDailyScreen = () => {
         // Append data for subsequent pages
         setOrders((prev) => [...prev, ...response]);
       }
-
-      // Update the next page URL (if applicable)
-      setNextPage(null); // Assuming pagination is not implemented yet
+      // Actualizar la URL de la siguiente página (si aplica)
+      setNextPage(null); // Suponiendo que la paginación no está implementada aún
     } catch (err) {
-      console.error("Error fetching orders:", err);
-
-      // Handle invalid page error
+      console.error(t("error_fetching_orders"), err);
+       // Manejar error de página inválida
       if ((err as any)?.response?.status === 404) {
         Toast.show({
           type: "info",
-          text1: "No More Data",
-          text2: "There is no more orders to load.",
+          text1: t("no_more_data"),
+          text2: t("no_more_orders_to_load"),
         });
-        setNextPage(null); // Stop further pagination
+        setNextPage(null); // Detener más paginación
       } else {
-        setError("Failed to load orders.");
-        Alert.alert("Error", "Could not load orders.");
+        setError(t("failed_to_load_orders"));
+        Alert.alert(t("error"), t("could_not_load_orders"));
       }
     } finally {
       if (page === 1) setLoading(false);
@@ -66,8 +67,8 @@ const WorkDailyScreen = () => {
     if (!nextPage) {
       Toast.show({
         type: "info",
-        text1: "No More Data",
-        text2: "There is no more orders to load.",
+        text1: t("no_more_data"),
+        text2: t("no_more_orders_to_load"),
       });
       return;
     }
@@ -80,23 +81,24 @@ const WorkDailyScreen = () => {
   };
 
   useEffect(() => {
-    fetchOrdersData(1); // Load the first page on mount
+    fetchOrdersData(1); // Cargar la primera página al montar
   }, []);
 
   const handleConfirmDate = (date: Date) => {
-    setSelectedDate(date); // Actualiza la fecha seleccionada
-    setDatePickerVisibility(false); // Oculta el selector de fecha
+    setSelectedDate(date); // Actualizar la fecha seleccionada
+    setDatePickerVisibility(false); // Ocultar el selector de fecha
   };
 
   const handleItemPress = (item: Order) => {
-    console.log("Pressed item:", item);
+    console.log(t("pressed_item"), item);
     router.push({
       pathname: "./ExtraCostScreen", // Ruta de la pantalla de destino
       params: {
-        key: item.key, // Pasa el parámetro key
+        key: item.key, // Pasar el parámetro key
       },
     });
   };
+
   const renderItem = ({ item }: { item: Order }) => (
     <View style={[styles.itemWrapper, { backgroundColor: colors.third }]}>
       <TouchableOpacity
@@ -147,16 +149,15 @@ const WorkDailyScreen = () => {
     );
   }
 
-  
 return (
   <>
     {/* Header and Date Picker */}
     <View style={[styles.header, { backgroundColor: isDarkMode ? colors.header : colors.lightBackground }]}>
-      <Text style={[styles.title, { color: isDarkMode ? colors.darkText : colors.primary }]}>Orders</Text>
+      <Text style={[styles.title, { color: isDarkMode ? colors.darkText : colors.primary }]}>{t("orders")}</Text>
 
       <View style={styles.dateContainer}>
         <Text style={[styles.selectDateText, { color: isDarkMode ? colors.darkText : colors.primary }]}>
-          Select Date
+          {t("select_date")}
         </Text>
         <TouchableOpacity
           style={[
@@ -188,8 +189,8 @@ return (
         keyExtractor={(item) => item.key.toString()} // Usa 'key' como clave única
         renderItem={renderItem}
         contentContainerStyle={styles.list}
-        onEndReached={loadMoreData} // Trigger loadMoreData when reaching the end
-        onEndReachedThreshold={0.5} // Trigger when 50% of the list is visible
+        onEndReached={loadMoreData} // Activar loadMoreData al llegar al final
+        onEndReachedThreshold={0.5} // Activar cuando el 50% de la lista sea visible
         ListFooterComponent={
           isLoadingMore ? (
             <ActivityIndicator size="small" color={isDarkMode ? colors.secondary : colors.primary} />

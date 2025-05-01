@@ -1,7 +1,7 @@
-// components/operator/EmptyList.tsx
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
-import { Ionicons } from '@expo/vector-icons'; 
+import { Ionicons } from '@expo/vector-icons';
+import { useTranslation } from 'react-i18next';
 
 interface EmptyListProps {
   message: string;
@@ -10,6 +10,8 @@ interface EmptyListProps {
 }
 
 const EmptyList: React.FC<EmptyListProps> = ({ message, date, isDarkMode }) => {
+  const { t } = useTranslation();
+
   return (
     <View style={styles.emptyContainer}>
       <Ionicons 
@@ -18,11 +20,12 @@ const EmptyList: React.FC<EmptyListProps> = ({ message, date, isDarkMode }) => {
         color={isDarkMode ? '#FFFFFF80' : '#0458AB80'} 
       />
       <Text style={[styles.emptyText, { color: isDarkMode ? '#FFFFFF' : '#666666' }]}>
-        {message} para {date.toLocaleDateString()}
+        {t(message)} {t('for_date')} {date.toLocaleDateString()}
       </Text>
     </View>
   );
 };
+
 const styles = StyleSheet.create({
   emptyContainer: {
     flex: 1,

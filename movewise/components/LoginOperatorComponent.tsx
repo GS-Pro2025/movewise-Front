@@ -1,6 +1,7 @@
 import { loginUser } from "@/hooks/api/OperatorLoginClient";
 import { router } from "expo-router";
 import React, { useState } from "react";
+import { useTranslation } from "react-i18next";
 import {
   View,
   Text,
@@ -11,55 +12,54 @@ import {
   StatusBar,
 } from "react-native";
 import Toast from "react-native-toast-message";
-
 const IdLoginScreen: React.FC = () => {
+  const { t } = useTranslation();
   const [id_number, setIdNumber] = useState("");
 
   const handleLogin = async () => {
-    console.log("ID ingresado:", id_number);
-    // Auth logic
-    if(!id_number) {
-      console.log("Por favor, ingresa un número de identificación válido.");
+    console.log(t("id_entered"), id_number);
+    // Lógica de autenticación
+    if (!id_number) {
+      console.log(t("enter_valid_id"));
       Toast.show({
-              type: "error",
-              text1: "Campos incompletos",
-              text2: "Por favor, completa todos los campos.",
-            });
+        type: "error",
+        text1: t("incomplete_fields"),
+        text2: t("complete_all_fields"),
+      });
       return;
     }
     try {
-        const response = await loginUser({ id_number: id_number});
-        Toast.show({
-          type: "success",
-          text1: "Login exitoso",
-          text2: `Bienvenido/a ${response.name ?? "usuario"}`,
-        });
-  
-        router.push("/Home");
-  
-      } catch (error: any) {
-        Toast.show({
-          type: "error",
-          text1: "Error de autenticación",
-          text2: error.message || "Login fallido",
-        });
-      }
+      const response = await loginUser({ id_number: id_number });
+      Toast.show({
+        type: "success",
+        text1: t("login_successful"),
+        text2: `${t("welcome")} ${response.name ?? t("user")}`,
+      });
+
+      router.push("/Home");
+    } catch (error: any) {
+      Toast.show({
+        type: "error",
+        text1: t("auth_error"),
+        text2: error.message || t("login_failed"),
+      });
+    }
   };
 
   return (
     <ImageBackground
-      source={require("../assets/images/bg_login.jpg")} 
+      source={require("../assets/images/bg_login.jpg")}
       style={styles.background}
       resizeMode="cover"
     >
       <StatusBar barStyle="light-content" />
       <View style={styles.container}>
-        <Text style={styles.title}>Welcome to{"\n"}Movewise</Text>
+        <Text style={styles.title}>{t("welcome_to")}{"\n"}Movewise</Text>
 
-        <Text style={styles.label}>IDENTIFICATION NUMBER</Text>
+        <Text style={styles.label}>{t("identification_number")}</Text>
         <TextInput
           style={styles.input}
-          placeholder="0192333213123"
+          placeholder={t("id_placeholder")}
           placeholderTextColor="#666"
           keyboardType="numeric"
           value={id_number}
@@ -67,7 +67,7 @@ const IdLoginScreen: React.FC = () => {
         />
 
         <TouchableOpacity style={styles.button} onPress={handleLogin}>
-          <Text style={styles.buttonText}>LOGIN</Text>
+          <Text style={styles.buttonText}>{t("login_button")}</Text>
         </TouchableOpacity>
       </View>
     </ImageBackground>

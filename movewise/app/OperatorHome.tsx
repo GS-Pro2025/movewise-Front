@@ -13,6 +13,7 @@ import {
 import { useRouter } from "expo-router";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useState, useEffect } from "react";
+import { useTranslation } from "react-i18next";
 
 interface ActionButtonProps {
     title: string;
@@ -30,10 +31,12 @@ interface Operator {
 }
 
 const Home: React.FC = () => {
+    const { t } = useTranslation();
     const router = useRouter();
     const theme = useColorScheme();
     const isDarkMode = theme === "dark";
     const [operator, setOperator] = useState<Operator | null>(null);
+
     useEffect(() => {
         const loadOperator = async () => {
             const operatorData = await AsyncStorage.getItem("currentUser");
@@ -63,7 +66,7 @@ const Home: React.FC = () => {
                                 {operator?.first_name} {operator?.last_name}
                             </Text>
                             <Text style={[styles.userName, { color: isDarkMode ? "#FFFFFF" : "#0458AB" }]}>
-                                Level
+                                {t("user_level")}
                             </Text>
                         </View>
                     </View>
@@ -88,7 +91,7 @@ const Home: React.FC = () => {
                 <View style={styles.gridContainer}>
                     <View style={styles.row}>
                         <ActionButton
-                            title={"Work\nDaily"}
+                            title={t("operator_work_daily")}
                             isDarkMode={isDarkMode}
                             iconSource={require("../assets/images/workDailyIcon.png")}
                             onPress={() => router.push({
@@ -100,7 +103,7 @@ const Home: React.FC = () => {
                             })}
                         />
                         <ActionButton
-                            title={"Truck\nDaily"}
+                            title={t("operator_truck_daily")}
                             isDarkMode={isDarkMode}
                             iconSource={require("../assets/images/truck.png")}
                             onPress={() => router.push({
@@ -114,10 +117,9 @@ const Home: React.FC = () => {
                     </View>
                     <View style={styles.row}>
                         <ActionButton
-                            title={"Work\nHistory"}
+                            title={t("operator_work_history")}
                             isDarkMode={isDarkMode}
                             iconSource={require("../assets/images/historyIcon.png")}
-                        //   onPress={() => router.push("/modals/HistoryModal")}
                         />
                     </View>
                 </View>
@@ -144,7 +146,6 @@ const ActionButton: React.FC<ActionButtonProps> = ({ title, iconSource, isDarkMo
         </TouchableOpacity>
     );
 };
-
 const styles = StyleSheet.create({
     container: { flex: 1 },
     darkBackground: { backgroundColor: "#112A4A" },

@@ -13,6 +13,7 @@ import { useRouter } from "expo-router";
 import Toast from "react-native-toast-message";
 import { UpdateTruck } from "@/hooks/api/TruckClient";
 import Truck from "@/hooks/api/TruckClient";
+import { useTranslation } from "react-i18next";
 
 type UpdateTruckModalProps = {
   visible: boolean;
@@ -28,6 +29,7 @@ const UpdateTruckModal = ({ visible, truck, onClose, onSuccess }: UpdateTruckMod
   const [category, setCategory] = useState("");
   const [loading, setLoading] = useState(false);
   const router = useRouter();
+  const { t } = useTranslation();
 
   useEffect(() => {
     if (truck) {
@@ -42,8 +44,8 @@ const UpdateTruckModal = ({ visible, truck, onClose, onSuccess }: UpdateTruckMod
     if (!number || !type || !name || !category) {
       Toast.show({
         type: "error",
-        text1: "Mandatory fields",
-        text2: "Some fields are required, please complete them",
+        text1: t("mandatory_fields"),
+        text2: t("complete_required_fields"),
       });
       return;
     }
@@ -60,21 +62,21 @@ const UpdateTruckModal = ({ visible, truck, onClose, onSuccess }: UpdateTruckMod
 
         Toast.show({
           type: "success",
-          text1: "Truck updated",
-          text2: "Truck has been succesfully updated",
+          text1: t("truck_updated"),
+          text2: t("truck_updated_successfully"),
         });
 
         onSuccess?.();
         onClose();
       } else {
-        throw new Error("Truck data is missing.");
+        throw new Error(t("truck_data_missing"));
       }
     } catch (error) {
-      console.error("Error actualizando camión:", error);
+      console.error(t("error_updating_truck"), error);
       Toast.show({
         type: "error",
-        text1: "Error",
-        text2: "No se pudo actualizar el camión.",
+        text1: t("error"),
+        text2: t("truck_update_failed"),
       });
     } finally {
       setLoading(false);
@@ -84,25 +86,25 @@ const UpdateTruckModal = ({ visible, truck, onClose, onSuccess }: UpdateTruckMod
   return (
     <Modal visible={visible} animationType="slide" onRequestClose={onClose}>
       <View style={styles.container}>
-        <Text style={styles.title}>Actualizar Camión</Text>
-        <Text style={styles.labelInput}>Type</Text>
+        <Text style={styles.title}>{t("update_truck")}</Text>
+        <Text style={styles.labelInput}>{t("type")}</Text>
         <TextInput
           style={styles.input}
-          placeholder="Type"
+          placeholder={t("type_placeholder")}
           value={type}
           onChangeText={setType}
         />
-        <Text style={styles.labelInput}>Name</Text>
+        <Text style={styles.labelInput}>{t("name")}</Text>
         <TextInput
           style={styles.input}
-          placeholder="Name"
+          placeholder={t("name_placeholder")}
           value={name}
           onChangeText={setName}
         />
-        <Text style={styles.labelInput}>Category</Text>
+        <Text style={styles.labelInput}>{t("category")}</Text>
         <TextInput
           style={styles.input}
-          placeholder="Category"
+          placeholder={t("category_placeholder")}
           value={category}
           onChangeText={setCategory}
         />
@@ -111,7 +113,7 @@ const UpdateTruckModal = ({ visible, truck, onClose, onSuccess }: UpdateTruckMod
           {loading ? (
             <ActivityIndicator color="#fff" />
           ) : (
-            <Text style={styles.saveText}>Guardar Cambios</Text>
+            <Text style={styles.saveText}>{t("save_changes")}</Text>
           )}
         </TouchableOpacity>
 

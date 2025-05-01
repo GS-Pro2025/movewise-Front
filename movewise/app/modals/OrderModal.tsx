@@ -11,6 +11,8 @@ import { TouchableHighlight } from "react-native";
 import colors from "../Colors";
 import Toast from "react-native-toast-message";
 import { DeleteOrder } from "@/hooks/api/DeleteOrder";
+import { useTranslation } from "react-i18next";
+
 interface OrderModalProps {
   visible: boolean;
   onClose: () => void;
@@ -38,6 +40,8 @@ interface Order {
 }
 
 const OrderModal: React.FC<OrderModalProps> = ({ visible, onClose }) => {
+
+  const { t } = useTranslation(); // Hook para traducción
   const [addOrderVisible, setAddOrderVisible] = useState(false);
   const [updateOrderVisible, setUpdateOrderVisible] = useState(false);
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
@@ -61,8 +65,9 @@ const OrderModal: React.FC<OrderModalProps> = ({ visible, onClose }) => {
       const ordersData = Array.isArray(response) ? response : response?.data || [];
       setOrders(ordersData);
     } catch (error) {
-      console.error("Error loading orders:", error);
-      Alert.alert("Error", "Could not load orders");
+      console.error(t("error_loading_orders"), error);
+      Alert.alert(t("error"), t("could_not_load_orders"));
+      //router.back();
     } finally {
       setLoading(false);
       setRefreshing(false);
@@ -120,41 +125,35 @@ const OrderModal: React.FC<OrderModalProps> = ({ visible, onClose }) => {
       setSelectedOrder(order);
       setUpdateOrderVisible(true);
     } else {
-      Alert.alert("Error", "Selected order data is null or undefined.");
+      Alert.alert(t("error"), t("selected_order_null"));
     }
   };
 
   const handleDeleteOrder = (Key: string) => {
     Alert.alert(
-      "Delete Order",
-      "Are you sure you want to delete this order?",
+      t("confirm_delete"),
+      t("delete_order_confirmation"),
       [
+        { text: t("cancel"), style: "cancel" },
         {
-          text: "Cancel",
-          style: "cancel"
-        },
-        {
-          text: "Delete",
+          text: t("delete"),
           onPress: async () => {
             try {
-              const response = await DeleteOrder(Key);
-              if (response) {
-                Toast.show({
-                  type: 'success',
-                  text1: 'Order deleted successfully!',
-                });
-                loadOrders();
-              } else {
-                Toast.show({
-                  type: 'error',
-                  text1: 'Failed to delete order.',
-                });
-              }
-            } catch (error) {
-              console.error("Error deleting order:", error);
+              console.log(t("deleting_order"), key);
+              await DeleteOrder(key);
+              setOrders((prev) => prev.filter((order) => order.key !== key));
               Toast.show({
-                type: 'error',
-                text1: 'Failed to delete order.',
+                type: "success",
+                text1: t("order_deleted"),
+                text2: t("order_deleted_successfully"),
+              });
+              loadOrders();
+            } catch (error) {
+              console.error(t("error_deleting_order"), error);
+              Toast.show({
+                type: "error",
+                text1: t("order_not_deleted"),
+                text2: t("order_could_not_be_deleted"),
               });
             }
           }
@@ -229,7 +228,7 @@ const OrderModal: React.FC<OrderModalProps> = ({ visible, onClose }) => {
                   color: item.status === 'Pending' ? colors.pendingStatus :
                     item.status === 'Completed' ? colors.completedStatus : colors.completedStatus
                 }]}>
-                  {item.status}
+                  {t(item.status.toLowerCase())} {/* Traducción del estado */}
                 </Text>
                 <Text style={[styles.dateText, { color: isDarkMode ? colors.placeholderDark : colors.placeholderLight }]}>
                   {formatDate(item.date)}
@@ -245,8 +244,10 @@ const OrderModal: React.FC<OrderModalProps> = ({ visible, onClose }) => {
   return (
     <Modal animationType="slide" transparent={false} visible={visible} onRequestClose={onClose}>
       <SafeAreaView style={{ flex: 1 }}>
+
+        {/* Encabezado */}
         <View style={[styles.header, { backgroundColor: isDarkMode ? colors.third : colors.lightBackground, borderBottomColor: isDarkMode ? colors.borderDark : colors.borderLight }]}>
-          <Text style={[styles.title, { color: isDarkMode ? colors.darkText : colors.primary }]}>Create Order</Text>
+          <Text style={[styles.title, { color: isDarkMode ? colors.darkText : colors.primary }]}>{t("create_order")}</Text>
           <TouchableOpacity
             style={[styles.addButton, { backgroundColor: isDarkMode ? colors.lightBackground : colors.primary }]}
             onPress={() => setAddOrderVisible(true)}
@@ -255,15 +256,17 @@ const OrderModal: React.FC<OrderModalProps> = ({ visible, onClose }) => {
           </TouchableOpacity>
         </View>
 
+
         {/* Date Pickers for Start and End Dates */}
 
         <View style={[styles.datePickerContainer, { flexDirection: 'row', justifyContent: 'space-between', backgroundColor: isDarkMode ? colors.third : colors.highlightLight, borderRadius: 0, padding: 10 }]}>
+
           <TouchableOpacity
             style={[styles.datePickerButton, { borderWidth: 1, borderColor: isDarkMode ? colors.secondary : colors.primary, borderRadius: 8, padding: 10, flex: 1, marginRight: 5 }]}
             onPress={() => setShowStartDatePicker(true)}
           >
             <Text style={{ color: isDarkMode ? colors.darkText : colors.lightText, fontSize: 16 }}>
-              {startDate ? startDate.toLocaleDateString() : 'start date'} {/* Handle null date */}
+              {startDate ? startDate.toLocaleDateString() : t("start_date")} {/* Handle null date */}
             </Text>
             <Ionicons name="calendar" size={20} color={isDarkMode ? colors.secondary : colors.primary} />
           </TouchableOpacity>
@@ -278,13 +281,13 @@ const OrderModal: React.FC<OrderModalProps> = ({ visible, onClose }) => {
           <TouchableOpacity onPress={() => { setStartDate(null); setShowStartDatePicker(false); }}>
             <Ionicons name="close-circle" size={18} color={isDarkMode ? colors.secondary : colors.primary} />
           </TouchableOpacity>
-
+  
           <TouchableOpacity
             style={[styles.datePickerButton, { borderWidth: 1, borderColor: isDarkMode ? colors.secondary : colors.primary, borderRadius: 8, padding: 10, flex: 1, marginLeft: 5 }]}
             onPress={() => setShowEndDatePicker(true)}
           >
             <Text style={{ color: isDarkMode ? colors.darkText : colors.lightText, fontSize: 16 }}>
-              {endDate ? endDate.toLocaleDateString() : 'End date'} {/* Handle null date */}
+              {endDate ? endDate.toLocaleDateString() : t("end_date")} {/* Handle null date */}
             </Text>
             <Ionicons name="calendar" size={20} color={isDarkMode ? colors.secondary : colors.primary} />
           </TouchableOpacity>
@@ -308,7 +311,7 @@ const OrderModal: React.FC<OrderModalProps> = ({ visible, onClose }) => {
             <Ionicons name="search" size={20} color={isDarkMode ? colors.secondary : colors.primary} />
             <TextInput
               style={[styles.searchInput, { color: isDarkMode ? colors.darkText : colors.lightText }]}
-              placeholder="Search reference or client"
+              placeholder={t("search_placeholder")}
               placeholderTextColor={isDarkMode ? colors.placeholderDark : colors.placeholderLight}
               value={searchText}
               onChangeText={setSearchText}
@@ -320,6 +323,8 @@ const OrderModal: React.FC<OrderModalProps> = ({ visible, onClose }) => {
             )}
           </View>
         </View>
+
+        {/* Lista de órdenes */}
 
         {loading ? (
           <View style={styles.loadingContainer}>
@@ -341,7 +346,7 @@ const OrderModal: React.FC<OrderModalProps> = ({ visible, onClose }) => {
             ListEmptyComponent={
               <View style={styles.emptyContainer}>
                 <Text style={[styles.emptyText, { color: isDarkMode ? colors.emptyTextDark : colors.emptyTextLight }]}>
-                  {orders.length === 0 ? "No orders available" : "No matching orders found"}
+                  {orders.length === 0 ? t("no_orders_available") : t("no_matching_orders")}
                 </Text>
               </View>
             }
@@ -358,14 +363,14 @@ const OrderModal: React.FC<OrderModalProps> = ({ visible, onClose }) => {
                 onPress={() => router.back()}
               >
                 <Text style={[styles.backButtonText, { color: isDarkMode ? colors.darkText : colors.blackText, textAlign: 'center' }]}>
-                  Back
+                  {t("back")}
                 </Text>
               </TouchableOpacity>
               <TouchableOpacity
                 style={[styles.saveButton, { backgroundColor: isDarkMode ? colors.lightBackground : colors.primary, width: 120, height: 50, alignItems: 'center', justifyContent: 'center' }]}
               >
                 <Text style={[styles.saveButtonText, { color: isDarkMode ? colors.primary : colors.lightBackground, textAlign: 'center' }]}>
-                  Save
+                  {t("save")}
                 </Text>
               </TouchableOpacity>
             </View>
@@ -373,8 +378,10 @@ const OrderModal: React.FC<OrderModalProps> = ({ visible, onClose }) => {
         )}
         {/* End of Back and Save Buttons */}
       </SafeAreaView>
+      {/* Aquí controlamos la visibilidad de los modales AddOrderForm y UpdateOrder */}
       <AddOrderForm visible={addOrderVisible} onClose={() => setAddOrderVisible(false)} />
       <UpdateOrder visible={updateOrderVisible} onClose={() => setUpdateOrderVisible(false)} orderData={selectedOrder || {}} />
+      <Toast />
     </Modal>
   );
 };

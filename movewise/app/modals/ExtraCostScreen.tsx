@@ -4,33 +4,36 @@ import { SearchParams, useRouter } from "expo-router"; // Importa useRouter para
 import WorkCost, { ListWorkCostByOrder } from "@/hooks/api/WorkCostListByOrder";
 import { useSearchParams } from "expo-router/build/hooks";
 import { BulkCreateWorkCost } from "@/hooks/api/WorkCostBulkCreate";
+import { useTranslation } from "react-i18next";
+
 const ExtraCostScreen = () => {
+  const { t } = useTranslation(); // Hook para traducción
   const router = useRouter();
   const searchParams = useSearchParams();
-  const [isCancelModalVisible, setIsCancelModalVisible] = useState(false); 
+  const [isCancelModalVisible, setIsCancelModalVisible] = useState(false);
   const key = searchParams.get("key");
-  const newWorkCost = searchParams.get("newWorkCost"); // Obtén el nuevo WorkCost (si existe)
+  const newWorkCost = searchParams.get("newWorkCost");
 
-  const [existingWorkCosts, setExistingWorkCosts] = useState<WorkCost[]>([]); // Lista de costos existentes
-  const [newWorkCosts, setNewWorkCosts] = useState<WorkCost[]>([]); // Lista de nuevos costos
+  const [existingWorkCosts, setExistingWorkCosts] = useState<WorkCost[]>([]);
+  const [newWorkCosts, setNewWorkCosts] = useState<WorkCost[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
 
   const handleCancel = () => {
     if (newWorkCosts.length > 0) {
-      setIsCancelModalVisible(true); // Muestra el modal si hay nuevos costos
+      setIsCancelModalVisible(true);
     } else {
-      router.back(); // Regresa directamente si no hay nuevos costos
+      router.back();
     }
   };
 
   const confirmCancel = () => {
-    setIsCancelModalVisible(false); // Cierra el modal
-    router.back(); // Regresa a la pantalla anterior
+    setIsCancelModalVisible(false);
+    router.back();
   };
 
   const cancelModal = () => {
-    setIsCancelModalVisible(false); // Cierra el modal sin cancelar
+    setIsCancelModalVisible(false);
   };
 
   // Función para obtener los costos extra existentes
@@ -39,17 +42,17 @@ const ExtraCostScreen = () => {
     setError(null);
     try {
       const response = await ListWorkCostByOrder(key || "");
-      setExistingWorkCosts(response); // Guarda los costos existentes
+      setExistingWorkCosts(response);
     } catch (err) {
-      console.error("Error fetching work costs:", err);
-      setError("Failed to load work costs.");
+      console.error(t("error_fetching_costs"), err);
+      setError(t("error_fetching_costs"));
     } finally {
       setLoading(false);
     }
   };
 
   useEffect(() => {
-    fetchWorkCosts(); // Carga los costos al montar el componente
+    fetchWorkCosts();
   }, [key]);
 
   useEffect(() => {
@@ -62,14 +65,14 @@ const ExtraCostScreen = () => {
 
   const handleSave = async () => {
     try {
-      console.log("Saving New WorkCosts:", newWorkCosts);
-      const response = await BulkCreateWorkCost(newWorkCosts); // Guarda solo los nuevos costos
-      console.log("Response from BulkCreateWorkCost:", response);
-      Alert.alert("Success", "New work costs saved successfully!");
-      setNewWorkCosts([]); // Limpia la lista de nuevos costos después de guardar
+      console.log(t("saving_new_costs"), newWorkCosts);
+      const response = await BulkCreateWorkCost(newWorkCosts);
+      console.log(t("save_response"), response);
+      Alert.alert(t("success"), t("new_costs_saved"));
+      setNewWorkCosts([]);
     } catch (err) {
-      console.error("Error saving work costs:", err);
-      Alert.alert("Error", "Failed to save new work costs.");
+      console.error(t("error_saving_costs"), err);
+      Alert.alert(t("error"), t("error_saving_costs"));
     }
   };
 
@@ -78,9 +81,9 @@ const ExtraCostScreen = () => {
       <View style={styles.iconContainer}>
         <Image source={require("../../assets/images/dollar.png")} style={styles.icon} />
       </View>
-      <Text style={styles.labelText}>Name: {item.name}</Text>
-      <Text style={styles.labelText}>Cost: ${item.cost}</Text>
-      <Text style={styles.labelText}>Type: {item.type}</Text>
+      <Text style={styles.labelText}>{t("name")}: {item.name}</Text>
+      <Text style={styles.labelText}>{t("cost")}: ${item.cost}</Text>
+      <Text style={styles.labelText}>{t("type")}: {item.type}</Text>
     </View>
   );
 
@@ -102,9 +105,9 @@ const ExtraCostScreen = () => {
 
   return (
     <View style={styles.container}>
-      {/* Header */}
+      {/* Encabezado */}
       <View style={styles.header}>
-        <Text style={styles.title}>Extra Costs</Text>
+        <Text style={styles.title}>{t("extra_costs")}</Text>
         <TouchableOpacity
           style={styles.addButton}
           onPress={() => router.push({ pathname: "./AddExtraCostForm", params: { key } })}
@@ -115,8 +118,8 @@ const ExtraCostScreen = () => {
 
       {/* Lista de costos */}
       <FlatList
-        data={[...existingWorkCosts.map((item) => ({ ...item, isNew: false })), ...newWorkCosts.map((item) => ({ ...item, isNew: true }))]} // Combina ambas listas
-        keyExtractor={(item) => item.id_workCost?.toString() || item.name} // Usa name si id_workCost no está disponible
+        data={[...existingWorkCosts.map((item) => ({ ...item, isNew: false })), ...newWorkCosts.map((item) => ({ ...item, isNew: true }))]}
+        keyExtractor={(item) => item.id_workCost?.toString() || item.name}
         renderItem={({ item }) => renderItem({ item, isNew: item.isNew })}
         contentContainerStyle={styles.list}
       />
@@ -124,24 +127,25 @@ const ExtraCostScreen = () => {
       {/* Botones de guardar y cancelar */}
       <View style={styles.buttonContainer}>
         <TouchableOpacity style={styles.cancelButton} onPress={handleCancel}>
-          <Text style={styles.cancelButtonText}>Cancel</Text>
+          <Text style={styles.cancelButtonText}>{t("cancel")}</Text>
         </TouchableOpacity>
         <TouchableOpacity style={styles.saveButton} onPress={handleSave}>
-          <Text style={styles.saveButtonText}>Save</Text>
+          <Text style={styles.saveButtonText}>{t("save")}</Text>
         </TouchableOpacity>
       </View>
+
       {/* Modal de confirmación */}
       <Modal visible={isCancelModalVisible} animationType="fade" transparent={true}>
         <View style={styles.modalOverlay}>
           <View style={styles.modalContainer}>
-            <Text style={styles.modalTitle}>Cancel Changes?</Text>
-            <Text style={styles.modalMessage}>You have unsaved new costs. Are you sure you want to cancel?</Text>
+            <Text style={styles.modalTitle}>{t("cancel_changes")}</Text>
+            <Text style={styles.modalMessage}>{t("unsaved_costs_message")}</Text>
             <View style={styles.modalButtonContainer}>
               <TouchableOpacity style={styles.modalCancelButton} onPress={cancelModal}>
-                <Text style={styles.modalCancelButtonText}>No</Text>
+                <Text style={styles.modalCancelButtonText}>{t("no")}</Text>
               </TouchableOpacity>
               <TouchableOpacity style={styles.modalConfirmButton} onPress={confirmCancel}>
-                <Text style={styles.modalConfirmButtonText}>Yes</Text>
+                <Text style={styles.modalConfirmButtonText}>{t("yes")}</Text>
               </TouchableOpacity>
             </View>
           </View>

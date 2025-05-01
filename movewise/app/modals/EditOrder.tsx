@@ -13,6 +13,7 @@ import { job } from '@/models/ModelJob';
 import { ListJobs } from '@/hooks/api/JobClient';
 import { ListCompanies } from '@/hooks/api/CompanyClient';
 import { ListStates } from '@/hooks/api/StatesClient';
+import { useTranslation } from 'react-i18next';
 
 interface AddOrderModalProps {
   visible: boolean;
@@ -20,6 +21,7 @@ interface AddOrderModalProps {
 }
 
 export default function AddOrderModal({ visible, onClose }: AddOrderModalProps) {
+  const { t } = useTranslation();
   const [open, setOpen] = useState(false);
   const [state, setState] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState<string>(''); // State for search term
@@ -40,14 +42,13 @@ export default function AddOrderModal({ visible, onClose }: AddOrderModalProps) 
   const [jobList, setJobList] = useState<job[]>([]);
   const [companyList, setCompanyList] = useState<any[]>([]);
   const [stateList, setStateList] = useState<any[]>([]);
-
   const router = useRouter();
   const { saveOrder, isLoading, error } = AddOrderformApi();
-
+  
   const handleSave = async () => {
     if (!validateFields()) return;
     const orderData: AddOrderForm = {
-      status: "Pending",
+      status: t("pending"),
       date: date || "",
       key_ref: keyReference,
       address: address,
@@ -57,78 +58,78 @@ export default function AddOrderModal({ visible, onClose }: AddOrderModalProps) 
         first_name: customerName,
         last_name: customerLastName,
         address: address,
-        email: email
+        email: email,
       },
       weight: weight,
       job: job || "",
-      company: company || ""
+      company: company || "",
     };
-
+  
     try {
       const savedOrder = await saveOrder(orderData);
-      console.log('info', savedOrder);
+      console.log("info", savedOrder);
       if (savedOrder) {
-        console.log('Order saved successfully!', saveOrder);
-        alert("Order saved successfully!");
+        console.log(t("order_saved_successfully"), saveOrder);
+        alert(t("order_saved_successfully"));
         setTimeout(() => {
           onClose();
           router.push("/modals/OperatorModal");
-        }, 3000); 
+        }, 3000);
       }
-      console.log("Saving order...", orderData);
+      console.log(t("saving_order"), orderData);
     } catch (error) {
-      console.error("Error saving order:", error);
+      console.error(t("error_saving_order"), error);
     }
   };
-
+  
   const fetchStates = async () => {
     try {
       const states = await ListStates();
       setStateList(states);
     } catch (error) {
-      console.error('Error fetching states:', error);
+      console.error(t("error_fetching_states"), error);
     }
   };
-
+  
   const fetchJobs = async () => {
     try {
       const jobs = await ListJobs();
       setJobList(jobs);
     } catch (error) {
-      console.error('Error fetching jobs:', error);
+      console.error(t("error_fetching_jobs"), error);
     }
   };
-
+  
   const fetchCompanies = async () => {
     try {
       const companies = await ListCompanies();
       setCompanyList(companies);
     } catch (error) {
-      console.error('Error fetching companies:', error);
+      console.error(t("error_fetching_companies"), error);
     }
   };
-
+  
   useEffect(() => {
     fetchJobs();
     fetchCompanies();
     fetchStates();
   }, []);
-
+  
   const validateFields = () => {
     let newErrors: { [key: string]: string } = {};
-    if (!state) newErrors.state = "State is required";
-    if (!date) newErrors.date = "Date is required";
-    if (!keyReference) newErrors.keyReference = "Key/Reference is required";
-    if (!customerName) newErrors.customerName = "Customer Name is required";
-    if (!customerLastName) newErrors.customerLastName = "Customer Last Name is required";
-    if (!weight) newErrors.weight = "Weight is required";
-    if (!job) newErrors.job = "Job is required";
-    if (!company) newErrors.company = "Company is required";
-
+    if (!state) newErrors.state = t("state_required");
+    if (!date) newErrors.date = t("date_required");
+    if (!keyReference) newErrors.keyReference = t("key_reference_required");
+    if (!customerName) newErrors.customerName = t("customer_name_required");
+    if (!customerLastName) newErrors.customerLastName = t("customer_last_name_required");
+    if (!weight) newErrors.weight = t("weight_required");
+    if (!job) newErrors.job = t("job_required");
+    if (!company) newErrors.company = t("company_required");
+  
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
-
+  
   const colorScheme = useColorScheme();
   const imageSource = colorScheme === "dark"
     ? require("../../assets/images/PNG_blanco.png")
@@ -214,6 +215,7 @@ export default function AddOrderModal({ visible, onClose }: AddOrderModalProps) 
 
   return (
     <Modal visible={visible} transparent animationType="slide">
+      
       <SafeAreaView style={{ flex: 1, backgroundColor: colorScheme === 'dark' ? '#112A4A' : '#FFFFFF' }}>
         <KeyboardAvoidingView behavior={Platform.OS === "ios" ? "padding" : "height"} style={{ flex: 1 }}>
           <ScrollView
@@ -223,19 +225,19 @@ export default function AddOrderModal({ visible, onClose }: AddOrderModalProps) 
           >
             <View style={styles.header}>
               <Image source={imageSource} style={styles.image} />
-              <Text style={styles.textLarge}>Add Order</Text>
+              <Text style={styles.textLarge}>{t('add_order')}</Text>
             </View>
-
+  
             <ThemedView style={styles.container}>
               <View style={{ zIndex: 3000 }}>
-                <Text style={styles.text}>State <Text style={styles.required}>(*)</Text></Text>
+                <Text style={styles.text}>{t('state')} <Text style={styles.required}>(*)</Text></Text>
                 <DropDownPicker
                   open={open}
                   value={state || ""}
                   items={stateList.map((stateItem) => ({
                     label: `${stateItem.name} (${stateItem.code})`,
                     value: stateItem.code,
-                    key: stateItem.code // Aseguramos que cada item tiene una key única
+                    key: stateItem.code
                   }))}
                   setOpen={setOpen}
                   // Cambiamos la función setValue a una más simple
@@ -252,17 +254,17 @@ export default function AddOrderModal({ visible, onClose }: AddOrderModalProps) 
                     }
                   }}
                   setItems={() => { }}
-                  placeholder="Select State"
+                  placeholder={t('select_state')}
                   placeholderStyle={{ color: '#9ca3af' }}
                   style={[styles.input, { borderColor: errors.state ? "red" : "#0458AB" }]}
                   listMode="MODAL"
-                  modalTitle="Select a State"
+                  modalTitle={t('select_state')}
                   modalProps={{
                     animationType: "slide"
                   }}
                   searchable={true}
-                  searchablePlaceholder="Search..."
-                  searchablePlaceholderTextColor="#9ca3af"
+                  searchPlaceholder={t('search')}
+                  searchPlaceholderTextColor="#9ca3af"
                   onSearchTextChange={text => setSearchTerm(text)}
                   scrollViewProps={{
                     nestedScrollEnabled: true,
@@ -270,14 +272,14 @@ export default function AddOrderModal({ visible, onClose }: AddOrderModalProps) 
                   dropDownContainerStyle={{ maxHeight: 500 }}
                 />
               </View>
-
+  
               <View style={{ zIndex: 2000, marginTop: 16 }}>
-                <Text style={styles.text}>Date <Text style={styles.required}>(*)</Text></Text>
+                <Text style={styles.text}>{t('date')} <Text style={styles.required}>(*)</Text></Text>
                 <TouchableOpacity onPress={() => setDatePickerVisibility(true)} style={[styles.input, { flexDirection: "row", alignItems: "center", justifyContent: "space-between" }]}>
-                  <Text style={{ color: date ? "#000" : "#9ca3af" }}>{date ? date : "Select a date"}</Text>
+                  <Text style={{ color: date ? "#000" : "#9ca3af" }}>{date ? date : t('select_date')}</Text>
                   <MaterialIcons name="calendar-today" size={20} color="#9ca3af" />
                 </TouchableOpacity>
-
+  
                 <DateTimePickerModal
                   isVisible={isDatePickerVisible} mode="date"
                   onConfirm={(selectedDate) => {
@@ -287,27 +289,27 @@ export default function AddOrderModal({ visible, onClose }: AddOrderModalProps) 
                   onCancel={() => setDatePickerVisibility(false)}
                 />
               </View>
-
+  
               <View style={{ zIndex: 2000, marginTop: 16 }}>
-                <Text style={styles.text}>Company customer <Text style={styles.required}>(*)</Text></Text>
+                <Text style={styles.text}>{t('company_customer')} <Text style={styles.required}>(*)</Text></Text>
                 <DropDownPicker
                   open={openCompany} value={company || ""}
                   items={Array.isArray(companyList) ? companyList.map((companyItem) => ({ label: companyItem.name, value: companyItem.id })) : []}
                   setOpen={setOpenCompany} setValue={setCompany} setItems={() => []}
-                  placeholder="Select Company"
+                  placeholder={t('select_company')}
                   placeholderStyle={{ color: '#9ca3af' }}
                   style={[styles.input, { borderColor: errors.company ? "red" : "#0458AB" }]}
                   listMode="SCROLLVIEW"
-                  dropDownContainerStyle={{ maxHeight: 200 }} // Set max height for dropdown
+                  dropDownContainerStyle={{ maxHeight: 200 }}
                 />
               </View>
-
-              <Text style={styles.textLarge}>General Data</Text>
-
+  
+              <Text style={styles.textLarge}>{t('general_data')}</Text>
+  
               {[
-                { label: "Key/Reference", state: keyReference, setState: setKeyReference, keyboardType: "default" },
-                { label: "Customer Name", state: customerName, setState: setCustomerName, keyboardType: "default" },
-                { label: "Customer Last Name", state: customerLastName, setState: setCustomerLastName, keyboardType: "default" },
+                { label: t('key_reference'), state: keyReference, setState: setKeyReference, keyboardType: "default" },
+                { label: t('customer_name'), state: customerName, setState: setCustomerName, keyboardType: "default" },
+                { label: t('customer_last_name'), state: customerLastName, setState: setCustomerLastName, keyboardType: "default" },
               ].map((input, index) => (
                 <View key={index}>
                   <Text style={styles.text}>{input.label} <Text style={styles.required}>(*)</Text></Text>
@@ -321,65 +323,65 @@ export default function AddOrderModal({ visible, onClose }: AddOrderModalProps) 
                   />
                 </View>
               ))}
-
-              <Text style={styles.text}>Cell Phone Number</Text>
+  
+              <Text style={styles.text}>{t('cell_phone')}</Text>
               <TextInput
                 style={styles.input}
-                placeholder="Cell Phone Number"
+                placeholder={t('cell_phone')}
                 placeholderTextColor="#9ca3af"
                 value={cellPhone}
                 onChangeText={setCellPhone}
                 keyboardType="numeric"
               />
-
-              <Text style={styles.text}>Address</Text>
+  
+              <Text style={styles.text}>{t('address')}</Text>
               <TextInput
                 style={styles.input}
-                placeholder="Address"
+                placeholder={t('address')}
                 placeholderTextColor="#9ca3af"
                 value={address}
                 onChangeText={setAddress}
               />
-
-              <Text style={styles.text}>Email</Text>
+  
+              <Text style={styles.text}>{t('email')}</Text>
               <TextInput
                 style={styles.input}
-                placeholder="Email"
+                placeholder={t('email')}
                 placeholderTextColor="#9ca3af"
                 value={email}
                 onChangeText={setEmail}
               />
-
-              <Text style={styles.text}>Weight (kg) <Text style={styles.required}>(*)</Text></Text>
+  
+              <Text style={styles.text}>{t('weight')} (kg) <Text style={styles.required}>(*)</Text></Text>
               <TextInput
                 style={styles.input}
-                placeholder="Weight (kg)"
+                placeholder={t('weight')}
                 placeholderTextColor="#9ca3af"
                 value={weight}
                 onChangeText={setWeight}
                 keyboardType="numeric"
               />
-
+  
               <View style={{ zIndex: 1000 }}>
-                <Text style={styles.text}>Job <Text style={styles.required}>(*)</Text></Text>
+                <Text style={styles.text}>{t('job')} <Text style={styles.required}>(*)</Text></Text>
                 <DropDownPicker
                   open={openJob} value={job || ""}
                   items={jobList.map((jobItem) => ({ label: jobItem.name, value: jobItem.id }))}
                   setOpen={setOpenJob} setValue={setJob} setItems={() => { }}
-                  placeholder="Select Job"
+                  placeholder={t('select_job')}
                   placeholderStyle={{ color: '#9ca3af' }}
                   style={[styles.input, { borderColor: errors.job ? "red" : "#0458AB" }]}
                   listMode="SCROLLVIEW"
-                  dropDownContainerStyle={{ maxHeight: 200 }} // Set max height for dropdown
+                  dropDownContainerStyle={{ maxHeight: 200 }}
                 />
               </View>
-
+  
               <View style={styles.buttonContainer}>
                 <TouchableOpacity style={styles.buttonCancel} onPress={onClose}>
-                  <Text style={styles.buttonTextCancel}>Cancel</Text>
+                  <Text style={styles.buttonTextCancel}>{t('cancel')}</Text>
                 </TouchableOpacity>
                 <TouchableOpacity style={styles.buttonSave} onPress={handleSave}>
-                  <Text style={styles.buttonTextSave}>Save</Text>
+                  <Text style={styles.buttonTextSave}>{t('save')}</Text>
                 </TouchableOpacity>
               </View>
             </ThemedView>
