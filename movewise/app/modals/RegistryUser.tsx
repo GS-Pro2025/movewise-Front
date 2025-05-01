@@ -12,7 +12,7 @@ import { useLocalSearchParams, useRouter } from "expo-router";
 import Toast from "react-native-toast-message";
 import { CreateCompany } from "../../hooks/api/CompanyClient";
 import { registerUser } from "../../hooks/api/RegistryClient";
-import HeaderWithDivider from "@/components/HeaderWithDivider";
+import HeaderWithDividerCreateTruck from "@/components/HeaderWithDividerCreateTruck";
 import DropDownPicker from "react-native-dropdown-picker";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import DateTimePickerModal from "react-native-modal-datetime-picker";

@@ -9,7 +9,7 @@ import 'react-native-reanimated';
 import { AlertNotificationRoot } from "react-native-alert-notification";
 import { useColorScheme } from '@/hooks/useColorScheme';
 import Toast from 'react-native-toast-message';
-
+import '../languages/i18n'; // Importa la configuración de i18n
 // Evita que la pantalla de carga desaparezca antes de que se carguen los assets
 SplashScreen.preventAutoHideAsync();
 

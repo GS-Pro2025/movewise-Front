@@ -14,8 +14,10 @@ import Checkbox from "expo-checkbox";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { loginUser } from "../hooks/api/loginClient";
 import Toast from "react-native-toast-message";
+import { useTranslation } from "react-i18next";
 
 const LoginComponent: React.FC = () => {
+  const { t } = useTranslation();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [remember, setRemember] = useState(false);
@@ -47,20 +49,20 @@ const LoginComponent: React.FC = () => {
     const newErrors: { email?: string; password?: string } = {};
 
     if (!email.trim()) {
-      newErrors.email = "Email is required.";
+      newErrors.email = t("email_required");
     } else if (!/\S+@\S+\.\S+/.test(email)) {
-      newErrors.email = "Invalid email format.";
+      newErrors.email = t("email_invalid");
     }
 
     if (!password.trim()) {
-      newErrors.password = "Password is required.";
+      newErrors.password = t("password_required");
     } else if (password.length < 6) {
-      newErrors.password = "Password must be at least 6 characters long.";
+      newErrors.password = t("password_length");
     }
 
     setErrors(newErrors);
 
-    return Object.keys(newErrors).length === 0; // Return true if no errors
+    return Object.keys(newErrors).length === 0;
   };
 
   const handleLogin = async () => {
@@ -68,8 +70,8 @@ const LoginComponent: React.FC = () => {
       // Show error toast if validation fails
       Toast.show({
         type: "error",
-        text1: "Validation Error",
-        text2: "Please fix the errors before submitting.",
+        text1: t("validation_error"),
+        text2: t("fix_errors"),
       });
       return;
     }
@@ -94,16 +96,16 @@ const LoginComponent: React.FC = () => {
 
       Toast.show({
         type: "success",
-        text1: "Login Successful",
-        text2: `Welcome ${response.name ?? "user"}`,
+        text1: t("login_success"),
+        text2: t("welcome_user", { name: response.name ?? t("user") }),
       });
 
       router.push("/Home");
     } catch (error: any) {
       Toast.show({
         type: "error",
-        text1: "Authentication Error",
-        text2: error.message || "Login failed",
+        text1: t("auth_error"),
+        text2: error.message || t("login_failed"),
       });
     }
   };
@@ -116,10 +118,10 @@ const LoginComponent: React.FC = () => {
     >
       <StatusBar barStyle="light-content" />
       <View style={styles.container}>
-        <Text style={styles.title}>Welcome to{"\n"}Movewise</Text>
+        <Text style={styles.title}>{t("welcome_title")}</Text>
         <TextInput
           style={[styles.input, errors.email && styles.inputError]}
-          placeholder="Email"
+          placeholder={t("email_placeholder")}
           placeholderTextColor="#333"
           value={email}
           onChangeText={setEmail}
@@ -128,7 +130,7 @@ const LoginComponent: React.FC = () => {
 
         <TextInput
           style={[styles.input, errors.password && styles.inputError]}
-          placeholder="Password"
+          placeholder={t("password_placeholder")}
           placeholderTextColor="#333"
           secureTextEntry
           value={password}
@@ -139,24 +141,24 @@ const LoginComponent: React.FC = () => {
         <View style={styles.row}>
           <View style={styles.checkboxContainer}>
             <Checkbox value={remember} onValueChange={setRemember} color="#0458AB" />
-            <Text style={styles.checkboxText}> Remember me.</Text>
+            <Text style={styles.checkboxText}>{t("remember_me")}</Text>
           </View>
           <TouchableOpacity>
-            <Text style={styles.forgotText}>Forgot password?</Text>
+            <Text style={styles.forgotText}>{t("forgot_password")}</Text>
           </TouchableOpacity>
         </View>
         <TouchableOpacity style={styles.button} onPress={handleLogin}>
-          <Text style={styles.buttonText}>LOGIN</Text>
+          <Text style={styles.buttonText}>{t("login_button")}</Text>
         </TouchableOpacity>
         <TouchableOpacity style={styles.button} onPress={() => router.push("/OperatorLogin")}>
-          <Text style={styles.buttonText}>OPERATOR DAILY WORK</Text>
+          <Text style={styles.buttonText}>{t("operator_daily_work")}</Text>
         </TouchableOpacity>
-        <Text style={styles.bottomText}>Don't have a company?</Text>
+        <Text style={styles.bottomText}>{t("no_company")}</Text>
         <TouchableOpacity
           style={styles.button}
           onPress={() => router.push("/CompanyRegister")}
         >
-          <Text style={styles.buttonText}>REGISTER COMPANY</Text>
+          <Text style={styles.buttonText}>{t("register_company")}</Text>
         </TouchableOpacity>
       </View>
 
