@@ -5,9 +5,10 @@ import * as ImagePicker from 'expo-image-picker';
 import { ALERT_TYPE, Toast } from 'react-native-alert-notification';
 import { FormInputProps, DateInputProps, DropdownInputProps, RadioGroupProps, ImageUploadProps, ImageInfo } from './Types';
 import { styles } from './FormStyle';
-
-// Helper Components
+import { useTranslation } from 'react-i18next';
+// Componentes de Ayuda
 export function FormInput({ label, value, onChangeText, keyboardType = 'default', error, required = false }: FormInputProps): JSX.Element {
+  
   return (
     <View style={styles.inputContainer}>
       <Text style={styles.inputLabel}>{label}</Text>
@@ -26,7 +27,7 @@ export function FormInput({ label, value, onChangeText, keyboardType = 'default'
 
 export function DateInput({ label, value, onChangeDate, error, required = false }: DateInputProps): JSX.Element {
   const [showDatePicker, setShowDatePicker] = useState(false);
-
+  const { t } = useTranslation();
   const handleDateChange = (event: any, selectedDate?: Date): void => {
     setShowDatePicker(Platform.OS === 'ios');
     if (selectedDate) {
@@ -41,7 +42,7 @@ export function DateInput({ label, value, onChangeDate, error, required = false 
         style={[styles.textInputContainer, error ? styles.inputError : null]}
         onPress={() => setShowDatePicker(true)}
       >
-        <Text style={value ? styles.dateText : styles.placeholderText}>{value || 'Select date'}</Text>
+        <Text style={value ? styles.dateText : styles.placeholderText}>{value || t("select_date")}</Text>
         <Text style={styles.dateIcon}>📅</Text>
       </TouchableOpacity>
       {error && <Text style={styles.errorText}>{error}</Text>}
@@ -60,7 +61,7 @@ export function DateInput({ label, value, onChangeDate, error, required = false 
 
 export function DropdownInput({ label, value, onChange, options, error, required = false }: DropdownInputProps): JSX.Element {
   const [isOpen, setIsOpen] = useState(false);
-
+  const { t } = useTranslation();
   return (
     <View style={styles.inputContainer}>
       <Text style={styles.inputLabel}>{label}</Text>
@@ -68,7 +69,7 @@ export function DropdownInput({ label, value, onChange, options, error, required
         style={[styles.textInputContainer, error ? styles.inputError : null]}
         onPress={() => setIsOpen(!isOpen)}
       >
-        <Text>{value || 'Select an option'}</Text>
+        <Text>{value || t("select_option")}</Text>
         <Text style={styles.dropdownIcon}>▼</Text>
       </TouchableOpacity>
       {error && <Text style={styles.errorText}>{error}</Text>}
@@ -94,6 +95,7 @@ export function DropdownInput({ label, value, onChange, options, error, required
 }
 
 export function RadioGroup({ label, options, selectedValue, onSelect, error, required = false }: RadioGroupProps): JSX.Element {
+  const { t } = useTranslation();
   return (
     <View style={styles.inputContainer}>
       <Text style={styles.inputLabel}>{label}</Text>
@@ -117,21 +119,22 @@ export function RadioGroup({ label, options, selectedValue, onSelect, error, req
 }
 
 export function ImageUpload({ label, image, onImageSelected, error, required = false }: ImageUploadProps): JSX.Element {
+  const { t } = useTranslation();
   const pickImage = async (): Promise<void> => {
     try {
-      // Request permission to access the media library
+      // Solicitar permiso para acceder a la galería
       const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
 
       if (status !== 'granted') {
         Toast.show({
           type: ALERT_TYPE.DANGER,
-          title: "Permission Denied",
-          textBody: "Please allow access to your photo library to upload images",
+          title: t("permission_denied"),
+          textBody: t("allow_photo_access"),
           autoClose: 3000,
         });
         return;
       }
-      // Launch image picker
+      // Abrir selector de imágenes
       const result = await ImagePicker.launchImageLibraryAsync({
         mediaTypes: ['images'],
         allowsEditing: true,
@@ -142,22 +145,22 @@ export function ImageUpload({ label, image, onImageSelected, error, required = f
       if (!result.canceled && result.assets && result.assets.length > 0) {
         const selectedAsset = result.assets[0];
 
-        // Enhanced image info with clearer data
+        // Información mejorada de la imagen
         const imageInfo: ImageInfo = {
           uri: selectedAsset.uri,
           name: `image_${Date.now()}.jpg`,
           type: 'image/jpeg',
         };
 
-        console.log(`Selected image for ${label}:`, imageInfo);
+        console.log(`Imagen seleccionada para ${label}:`, imageInfo);
         onImageSelected(imageInfo);
       }
     } catch (error) {
-      console.log('Error picking image:', error);
+      console.log(t("error_picking_image"), error);
       Toast.show({
         type: ALERT_TYPE.DANGER,
-        title: "Error",
-        textBody: "Failed to select image: " + error,
+        title: t("error"),
+        textBody: `${t("failed_to_select_image")}: ${error}`,
         autoClose: 3000,
       });
     }
@@ -172,12 +175,12 @@ export function ImageUpload({ label, image, onImageSelected, error, required = f
       >
         {image ? (
           <View style={styles.imagePreview}>
-            <Text>Image selected</Text>
+            <Text>{t("image_selected")}</Text>
             <Text style={styles.imageFilename}>{image.uri.split('/').pop()}</Text>
           </View>
         ) : (
           <View style={styles.imagePlaceholder}>
-            <Text style={styles.imagePlaceholderText}>Upload Image</Text>
+            <Text style={styles.imagePlaceholderText}>{t("upload_image")}</Text>
           </View>
         )}
       </TouchableOpacity>

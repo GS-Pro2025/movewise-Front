@@ -11,6 +11,7 @@ import {
   SafeAreaView,
   StatusBar,
 } from 'react-native';
+import { useTranslation } from 'react-i18next';
 
 interface TruckData {
   id: number;
@@ -27,6 +28,7 @@ interface AddOperatorScreenProps {
 }
 
 const TruckModal: React.FC<AddOperatorScreenProps> = ({ visible, onClose, orderKey }) => {
+  const { t } = useTranslation();
   if (!orderKey) {
     return null;
   }
@@ -168,7 +170,7 @@ const TruckModal: React.FC<AddOperatorScreenProps> = ({ visible, onClose, orderK
       padding: 12,
     },
   });
-
+  
   const handleSearch = async () => {
     const truckData = await getTruckById(TruckData.id);
     if (truckData) {
@@ -188,14 +190,14 @@ const TruckModal: React.FC<AddOperatorScreenProps> = ({ visible, onClose, orderK
         type: '', // Campo vacío
       });
       Toast.show({
-        text1: "Error: " + (truckData?.sms || "truck not found"),
+        text1: t("error") + ": " + (truckData?.sms || t("truck_not_found")),
         type: 'error',
       });
     }
   };
 
   const handleSave = () => {
-    console.log('Saving operator data:', TruckData);
+    console.log(t("saving_operator_data"), TruckData);
   };
 
   return (
@@ -203,19 +205,19 @@ const TruckModal: React.FC<AddOperatorScreenProps> = ({ visible, onClose, orderK
       <SafeAreaView style={styles.modalContainer}>
         <StatusBar backgroundColor={isDarkMode ? '#112A4A' : '#0458AB'} barStyle={isDarkMode ? 'light-content' : 'dark-content'} />
 
-        {/* Header */}
+        {/* Encabezado */}
         <View style={styles.header}>
           <Image
             source={require('../../assets/images/LOGOPNG.png')}
             style={{ width: 40, height: 40, tintColor: isDarkMode ? '#ffffff' : '#0458AB' }}
           />
-          <Text style={styles.headerTitle}>Agregar Camión</Text>
+          <Text style={styles.headerTitle}>{t("add_truck")}</Text>
           <TouchableOpacity onPress={onClose} style={styles.closeButton}>
           </TouchableOpacity>
         </View>
 
-        {/* Inputs */}
-        <Text style={styles.searchLabel}>Search Truck Id</Text>
+        {/* Entradas */}
+        <Text style={styles.searchLabel}>{t("search_truck_id")}</Text>
         <View style={styles.searchInputContainer}>
           <TextInput
             style={styles.searchInput}
@@ -236,13 +238,13 @@ const TruckModal: React.FC<AddOperatorScreenProps> = ({ visible, onClose, orderK
           </TouchableOpacity>
         </View>
 
-        {/* Other inputs */}
+        {/* Otras entradas */}
         {['name', 'number', 'category', 'type'].map((field) => (
           <View key={field}>
-            <Text style={styles.inputLabel}>{field.charAt(0).toUpperCase() + field.slice(1)}</Text>
+            <Text style={styles.inputLabel}>{t(field)}</Text>
             <TextInput
               style={styles.input}
-              placeholder={field.charAt(0).toUpperCase() + field.slice(1)}
+              placeholder={t(field)}
               placeholderTextColor={isDarkMode ? '#a0a0a0' : '#606060'}
               value={TruckData[field as keyof TruckData]}
               onChangeText={(text) => setTruckData({ ...TruckData, [field]: text })}
@@ -251,13 +253,13 @@ const TruckModal: React.FC<AddOperatorScreenProps> = ({ visible, onClose, orderK
           </View>
         ))}
 
-        {/* Buttons */}
+        {/* Botones */}
         <View style={styles.buttonContainer}>
           <TouchableOpacity style={styles.cancelButton} onPress={onClose}>
-            <Text style={styles.cancelButtonText}>Cancelar</Text>
+            <Text style={styles.cancelButtonText}>{t("cancel_button")}</Text>
           </TouchableOpacity>
           <TouchableOpacity style={styles.saveButton} onPress={handleSave}>
-            <Text style={styles.saveButtonText}>Guardar</Text>
+            <Text style={styles.saveButtonText}>{t("save_button")}</Text>
           </TouchableOpacity>
         </View>
       </SafeAreaView>

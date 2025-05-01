@@ -14,6 +14,7 @@ import {
   Platform,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import { useTranslation } from 'react-i18next';
 
 // Custom hook for theme management (simplified without toggle)
 const useColorScheme = () => {
@@ -39,6 +40,7 @@ interface Operator {
 type RoleType = 'Driver' | 'Team leader';
 
 const OperatorsScreen = () => {
+  const { t } = useTranslation();
   const [modalVisible, setModalVisible] = useState(false);
   const [selectedOperator, setSelectedOperator] = useState<Operator | null>(null);
   const { theme } = useColorScheme();
@@ -58,7 +60,7 @@ const OperatorsScreen = () => {
 
   const assignRole = (role: RoleType) => {
     if (selectedOperator) {
-      console.log(`Assigned ${role} to ${selectedOperator.name}`);
+      console.log(t('assigned_role', { role, name: selectedOperator.name }));
     }
     setModalVisible(false);
   };
@@ -98,11 +100,11 @@ const OperatorsScreen = () => {
               source={require('../assets/images/LOGOPNG.png')} 
               style={[
                 styles.userIcono, 
-                { tintColor: theme === 'dark' ? '#FFFFFF' : '#112A4A' } //ocuro & claro  
+                { tintColor: theme === 'dark' ? '#FFFFFF' : '#112A4A' }
               ]} 
             />
             <Text style={[styles.headerTitle, theme === 'dark' && styles.textDark]}>
-              Operators
+              {t('operators')}
             </Text>
           </View>
           <TouchableOpacity style={[styles.addButton, theme === 'dark' && styles.addButtonDark]}>
@@ -122,7 +124,6 @@ const OperatorsScreen = () => {
           />
         </View>
       </SafeAreaView>
-      
       <Modal
         animationType="slide"
         transparent={true}
@@ -133,7 +134,7 @@ const OperatorsScreen = () => {
           <View style={[styles.modalContent, theme === 'dark' && styles.modalContentDark]}>
             <View style={[styles.modalHeader, theme === 'dark' && styles.modalHeaderDark]}>
               <Text style={[styles.modalTitle, theme === 'dark' && styles.textDark]}>
-                {selectedOperator ? selectedOperator.name : 'Name Operator'}
+                {selectedOperator ? selectedOperator.name : t('name_operator')}
               </Text>
               <TouchableOpacity 
                 style={styles.closeButton}
@@ -151,13 +152,13 @@ const OperatorsScreen = () => {
                 style={[styles.roleButton, theme === 'dark' && styles.roleButtonDark]}
                 onPress={() => assignRole('Driver')}
               >
-                <Text style={styles.roleButtonText}>Driver</Text>
+                <Text style={styles.roleButtonText}>{t('driver')}</Text>
               </TouchableOpacity>
               <TouchableOpacity 
                 style={[styles.roleButton, theme === 'dark' && styles.roleButtonDark]}
                 onPress={() => assignRole('Team leader')}
               >
-                <Text style={styles.roleButtonText}>Team leader</Text>
+                <Text style={styles.roleButtonText}>{t('team_leader')}</Text>
               </TouchableOpacity>
             </View>
           </View>

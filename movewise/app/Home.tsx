@@ -1,4 +1,4 @@
-import React, { useEffect, useState, } from "react";
+import React, { useEffect, useState } from "react";
 import {
   Image,
   View,
@@ -11,9 +11,10 @@ import {
   ScrollView,
 } from "react-native";
 import { useRouter } from "expo-router";
-import Toast from 'react-native-toast-message';
+import Toast from "react-native-toast-message";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { AnimatedImage } from "react-native-reanimated/lib/typescript/component/Image";
+import { useTranslation } from "react-i18next";
+
 interface Admin {
   id: number;
   first_name: string;
@@ -29,9 +30,8 @@ interface ActionButtonProps {
   onPress?: () => void;
 }
 
-
-
 const Home: React.FC = () => {
+  const { t } = useTranslation();
   const router = useRouter();
   const theme = useColorScheme();
   const isDarkMode = theme === "dark";
@@ -63,13 +63,13 @@ const Home: React.FC = () => {
             </View>
             <View style={styles.userTextContainer}>
               <Text
-                style={[styles.userName, { color: isDarkMode ? "#FFFFFF" : "#0458AB" }]}>
+                style={[styles.userName, { color: isDarkMode ? "#FFFFFF" : "#0458AB" }]}
+              >
                 {Admin?.first_name} {Admin?.last_name}
               </Text>
               <Text style={[styles.userName, { color: isDarkMode ? "#FFFFFF" : "#0458AB" }]}>
-                Admin # <Text style={{ fontSize: 14 }}>{Admin?.id_number}</Text>
+                {t("admin_id")} <Text style={{ fontSize: 14 }}>{Admin?.id_number}</Text>
               </Text>
-
             </View>
           </View>
           <TouchableOpacity style={styles.shareButton}>
@@ -93,13 +93,13 @@ const Home: React.FC = () => {
         <View style={styles.gridContainer}>
           <View style={styles.row}>
             <ActionButton
-              title={"Create\nDaily"}
+              title={t("create_daily")}
               isDarkMode={isDarkMode}
               iconSource={require("../assets/images/paquete.png")}
               onPress={() => router.push("/modals/OrderModal")}
             />
             <ActionButton
-              title={"Add Extra cost"}
+              title={t("add_extra_cost")}
               isDarkMode={isDarkMode}
               iconSource={require("../assets/images/dolar.png")}
               onPress={() => router.push("/modals/WorkDailyScreen")}
@@ -107,51 +107,51 @@ const Home: React.FC = () => {
           </View>
           <View style={styles.row}>
             <ActionButton
-              title={"Edit\nDaily"}
+              title={t("edit_daily")}
               isDarkMode={isDarkMode}
               iconSource={require("../assets/images/paquete.png")}
               onPress={() => console.log("")}
             />
             <ActionButton
-              title={"Resume\nOrder"}
+              title={t("resume_order")}
               isDarkMode={isDarkMode}
               iconSource={require("../assets/images/paper.png")}
-              onPress={()=> router.push("/modals/ListOfOrdersForSumary")}
+              onPress={() => router.push("/modals/ListOfOrdersForSumary")}
             />
           </View>
           <View style={styles.row}>
             <ActionButton
-              title={"Create\nTruck"}
+              title={t("create_truck")}
               isDarkMode={isDarkMode}
               iconSource={require("../assets/images/truck.png")}
               onPress={() => router.push("/modals/ListTruckScreen")}
             />
             <ActionButton
-              title={"Collaborator\nRegistration"}
+              title={t("collaborator_registration")}
               isDarkMode={isDarkMode}
               iconSource={require("../assets/images/logo.png")}
-              onPress={() => 
+              onPress={() =>
                 router.push({
-                  pathname: '/modals/OperatorList',
-                  params: { isEdit: 'false'}
+                  pathname: "/modals/OperatorList",
+                  params: { isEdit: "false" },
                 })
               }
             />
           </View>
           <View style={styles.row}>
             <ActionButton
-              title={"Collaborator\nUnlink"}
+              title={t("collaborator_unlink")}
               isDarkMode={isDarkMode}
               iconSource={require("../assets/images/personx.png")}
             />
             <ActionButton
-              title={"Collaborator\nEdit"}
+              title={t("collaborator_edit")}
               isDarkMode={isDarkMode}
               iconSource={require("../assets/images/Pencil.png")}
-              onPress={() => 
+              onPress={() =>
                 router.push({
-                  pathname: '/modals/OperatorList',
-                  params: {isEdit: 'true'}
+                  pathname: "/modals/OperatorList",
+                  params: { isEdit: "true" },
                 })
               }
             />

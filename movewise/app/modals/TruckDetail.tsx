@@ -15,6 +15,7 @@ import apiClient from "@/hooks/api/apiClient";
 import { Assignment } from "@/components/operator/BaseOperator";
 import { ALERT_TYPE, Dialog, AlertNotificationRoot, Toast } from 'react-native-alert-notification';
 import { ToastAndroid, Platform } from 'react-native';
+import { useTranslation } from "react-i18next";
 
 interface Props {
     visible: boolean;
@@ -40,35 +41,35 @@ const TruckDetailModal: React.FC<Props> = ({ visible, onClose, assignment }) => 
     const [initialOdometer, setInitialOdometer] = useState("");
     const [finalOdometer, setFinalOdometer] = useState("");
     const [distance, setDistance] = useState("");
-
-    // Validate individual field
+    const { t } = useTranslation();
+    // Validar campo individual
     const validateField = (name: keyof Errors, value: string) => {
         let error = "";
         
         switch(name) {
             case 'name':
-                if (!value.trim()) error = 'Name is required';
+                if (!value.trim()) error = t('name_required');
                 break;
             case 'costFuel':
-                if (!value) error = 'Fuel cost is required';
-                else if (!/^\d+(\.\d{1,2})?$/.test(value)) error = 'Invalid currency format';
+                if (!value) error = t('fuel_cost_required');
+                else if (!/^\d+(\.\d{1,2})?$/.test(value)) error = t('invalid_currency_format');
                 break;
             case 'costPerGL':
-                if (!value) error = 'Cost per GL is required';
-                else if (parseFloat(value) <= 0) error = 'Must be greater than 0';
+                if (!value) error = t('cost_per_gl_required');
+                else if (parseFloat(value) <= 0) error = t('must_be_greater_than_zero');
                 break;
             case 'fuelQty':
-                if (!value) error = 'Fuel quantity is required';
-                else if (parseFloat(value) <= 0) error = 'Must be greater than 0';
+                if (!value) error = t('fuel_quantity_required');
+                else if (parseFloat(value) <= 0) error = t('must_be_greater_than_zero');
                 break;
             case 'initialOdometer':
-                if (!value) error = 'Initial odometer is required';
-                else if (parseFloat(value) < 0) error = 'Cannot be negative';
+                if (!value) error = t('initial_odometer_required');
+                else if (parseFloat(value) < 0) error = t('cannot_be_negative');
                 break;
             case 'finalOdometer':
-                if (!value) error = 'Final odometer is required';
+                if (!value) error = t('final_odometer_required');
                 else if (parseFloat(value) < parseFloat(initialOdometer)) {
-                    error = 'Must be greater than the initial odometer';
+                    error = t('must_be_greater_than_initial_odometer');
                 }
                 break;
         }
@@ -77,7 +78,7 @@ const TruckDetailModal: React.FC<Props> = ({ visible, onClose, assignment }) => 
         return !error;
     };
 
-    // Validate the entire form
+    // Validar todo el formulario
     const validateForm = () => {
         const fields = [
             { name: 'name', value: name },
@@ -91,7 +92,7 @@ const TruckDetailModal: React.FC<Props> = ({ visible, onClose, assignment }) => 
         return fields.every(field => validateField(field.name as keyof Errors, field.value));
     };
 
-    // Handle save action
+    // Manejar acción de guardar
     const handleSave = async () => {
         if (!validateForm()) return;
 
@@ -114,19 +115,19 @@ const TruckDetailModal: React.FC<Props> = ({ visible, onClose, assignment }) => 
                     Authorization: `Bearer ${token}`,
                 },
             });
-            console.log('Response:', response.data);
+            console.log(t('response'), response.data);
             Toast.show({
                 type: response.data.status === "success" ? ALERT_TYPE.SUCCESS : ALERT_TYPE.DANGER,
-                title: response.data.status === "success" ? "Success" : "Error",
+                title: response.data.status === "success" ? t("success") : t("error"),
                 textBody: response.data.messDev,
                 autoClose: 3000,
             });
         } catch (error) {
-            console.error('Error al enviar los datos:', error);
+            console.error(t('error_sending_data'), error);
             Toast.show({
                 type: ALERT_TYPE.DANGER,
-                title: "Error",
-                textBody: "Error al enviar los datos",
+                title: t("error"),
+                textBody: t("error_sending_data"),
                 autoClose: 3000,
             });
         }
@@ -152,13 +153,13 @@ const TruckDetailModal: React.FC<Props> = ({ visible, onClose, assignment }) => 
                         <TouchableOpacity style={styles.closeButton} onPress={onClose}>
                             <Ionicons name="arrow-back" size={24} color="#FFFFFF" />
                         </TouchableOpacity>
-                        <Text style={styles.headerTitle}>Truck Reference</Text>
+                        <Text style={styles.headerTitle}>{t("truck_reference")}</Text>
                         <View style={styles.headerRight} />
                     </View>
-
+    
                     <View style={styles.content}>
                         <View style={styles.formGroup}>
-                            <Text style={styles.label}>Name (*)</Text>
+                            <Text style={styles.label}>{t("name_label")} (*)</Text>
                             <TextInput
                                 style={[styles.input, errors.name && styles.inputError]}
                                 value={name}
@@ -166,14 +167,14 @@ const TruckDetailModal: React.FC<Props> = ({ visible, onClose, assignment }) => 
                                     setName(text);
                                     validateField('name', text);
                                 }}
-                                placeholder="Enter name"
+                                placeholder={t("enter_name_placeholder")}
                                 placeholderTextColor="#999"
                             />
                             {errors.name && <Text style={styles.errorText}>{errors.name}</Text>}
                         </View>
-
+    
                         <View style={styles.formGroup}>
-                            <Text style={styles.label}>Fuel Cost (USD) (*)</Text>
+                            <Text style={styles.label}>{t("fuel_cost_label")} (USD) (*)</Text>
                             <TextInput
                                 style={[styles.input, errors.costFuel && styles.inputError]}
                                 value={costFuel}
@@ -182,14 +183,14 @@ const TruckDetailModal: React.FC<Props> = ({ visible, onClose, assignment }) => 
                                     validateField('costFuel', text);
                                 }}
                                 keyboardType="numeric"
-                                placeholder="Enter fuel cost"
+                                placeholder={t("enter_fuel_cost_placeholder")}
                                 placeholderTextColor="#999"
                             />
                             {errors.costFuel && <Text style={styles.errorText}>{errors.costFuel}</Text>}
                         </View>
-
+    
                         <View style={styles.formGroup}>
-                            <Text style={styles.label}>Cost (USD/GL) (*)</Text>
+                            <Text style={styles.label}>{t("cost_per_gl_label")} (USD/GL) (*)</Text>
                             <TextInput
                                 style={[styles.input, errors.costPerGL && styles.inputError]}
                                 value={costPerGL}
@@ -198,14 +199,14 @@ const TruckDetailModal: React.FC<Props> = ({ visible, onClose, assignment }) => 
                                     validateField('costPerGL', text);
                                 }}
                                 keyboardType="numeric"
-                                placeholder="Enter cost per GL"
+                                placeholder={t("enter_cost_per_gl_placeholder")}
                                 placeholderTextColor="#999"
                             />
                             {errors.costPerGL && <Text style={styles.errorText}>{errors.costPerGL}</Text>}
                         </View>
-
+    
                         <View style={styles.formGroup}>
-                            <Text style={styles.label}>Fuel Quantity (GL) (*)</Text>
+                            <Text style={styles.label}>{t("fuel_quantity_label")} (GL) (*)</Text>
                             <TextInput
                                 style={[styles.input, errors.fuelQty && styles.inputError]}
                                 value={fuelQty}
@@ -214,15 +215,15 @@ const TruckDetailModal: React.FC<Props> = ({ visible, onClose, assignment }) => 
                                     validateField('fuelQty', text);
                                 }}
                                 keyboardType="numeric"
-                                placeholder="Enter fuel quantity"
+                                placeholder={t("enter_fuel_quantity_placeholder")}
                                 placeholderTextColor="#999"
                             />
                             {errors.fuelQty && <Text style={styles.errorText}>{errors.fuelQty}</Text>}
                         </View>
-
+    
                         <View style={styles.row}>
                             <View style={[styles.formGroup, styles.halfWidth]}>
-                                <Text style={styles.label}>Initial Odometer (ml) (*)</Text>
+                                <Text style={styles.label}>{t("initial_odometer_label")} (ml) (*)</Text>
                                 <TextInput
                                     style={[styles.input, errors.initialOdometer && styles.inputError]}
                                     value={initialOdometer}
@@ -231,13 +232,13 @@ const TruckDetailModal: React.FC<Props> = ({ visible, onClose, assignment }) => 
                                         validateField('initialOdometer', text);
                                     }}
                                     keyboardType="numeric"
-                                    placeholder="Enter initial odometer"
+                                    placeholder={t("enter_initial_odometer_placeholder")}
                                     placeholderTextColor="#999"
                                 />
                                 {errors.initialOdometer && <Text style={styles.errorText}>{errors.initialOdometer}</Text>}
                             </View>
                             <View style={[styles.formGroup, styles.halfWidth]}>
-                                <Text style={styles.label}>Final Odometer (ml) (*)</Text>
+                                <Text style={styles.label}>{t("final_odometer_label")} (ml) (*)</Text>
                                 <TextInput
                                     style={[styles.input, errors.finalOdometer && styles.inputError]}
                                     value={finalOdometer}
@@ -246,15 +247,15 @@ const TruckDetailModal: React.FC<Props> = ({ visible, onClose, assignment }) => 
                                         validateField('finalOdometer', text);
                                     }}
                                     keyboardType="numeric"
-                                    placeholder="Enter final odometer"
+                                    placeholder={t("enter_final_odometer_placeholder")}
                                     placeholderTextColor="#999"
                                 />
                                 {errors.finalOdometer && <Text style={styles.errorText}>{errors.finalOdometer}</Text>}
                             </View>
                         </View>
-
+    
                         <View style={styles.formGroup}>
-                            <Text style={styles.label}>Distance (ml) (*)</Text>
+                            <Text style={styles.label}>{t("distance_label")} (ml) (*)</Text>
                             <TextInput
                                 style={styles.input}
                                 value={String(parseFloat(finalOdometer) - parseFloat(initialOdometer))}
@@ -263,19 +264,19 @@ const TruckDetailModal: React.FC<Props> = ({ visible, onClose, assignment }) => 
                                 placeholderTextColor="#999"
                             />
                         </View>
-
+    
                         <View style={styles.buttonContainer}>
                             <TouchableOpacity
                                 style={[styles.button, styles.cancelButton]}
                                 onPress={onClose}
                             >
-                                <Text style={styles.cancelButtonText}>Cancel</Text>
+                                <Text style={styles.cancelButtonText}>{t("cancel_button")}</Text>
                             </TouchableOpacity>
                             <TouchableOpacity
                                 style={[styles.button, styles.saveButton]}
                                 onPress={handleSave}
                             >
-                                <Text style={styles.saveButtonText}>Save</Text>
+                                <Text style={styles.saveButtonText}>{t("save_button")}</Text>
                             </TouchableOpacity>
                         </View>
                     </View> 

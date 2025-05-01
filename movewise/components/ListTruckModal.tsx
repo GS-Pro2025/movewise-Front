@@ -9,13 +9,15 @@ import UpdateTruckModal from "../app/modals/UpdateTruckModal"; // Modal for upda
 import CreateTruckModal from "../app/modals/CreateTruck";
 import Toast from "react-native-toast-message";
 import Truck from "@/hooks/api/TruckClient"
+import { useTranslation } from "react-i18next";
 
 interface ListTruckModalProps {
   visible: boolean;
   onClose: () => void;
 }
 
-const   ListTruckModal: React.FC<ListTruckModalProps> = ({ visible, onClose }) => {
+const ListTruckModal: React.FC<ListTruckModalProps> = ({ visible, onClose }) => {
+  const { t } = useTranslation(); // Hook para traducción
   const [addTruckVisible, setAddTruckVisible] = useState(false);
   const [updateTruckVisible, setUpdateTruckVisible] = useState(false);
   const [selectedTruck, setSelectedTruck] = useState<Truck | null>(null);
@@ -33,13 +35,13 @@ const   ListTruckModal: React.FC<ListTruckModalProps> = ({ visible, onClose }) =
       const response = await ListTruck();
       setTrucks(response.data || []);
     } catch (error) {
-      console.error("Error loading trucks:", error);
-      Alert.alert("Error", "Could not load trucks");
+      console.error(t("error_loading_trucks"), error);
+      Alert.alert(t("error"), t("could_not_load_trucks"));
     } finally {
       setLoading(false);
       setRefreshing(false);
     }
-  }, []);
+  }, [t]);
 
   useEffect(() => {
     if (visible) {
@@ -68,25 +70,25 @@ const   ListTruckModal: React.FC<ListTruckModalProps> = ({ visible, onClose }) =
 
   const handleDeleteTruck = async (id_truck: string) => {
     Alert.alert(
-      "Confirm Delete",
-      "Are you sure you want to delete this truck?",
+      t("confirm_delete"),
+      t("delete_truck_confirmation"),
       [
-        { text: "Cancel", style: "cancel" },
+        { text: t("cancel"), style: "cancel" },
         {
-          text: "Delete",
+          text: t("delete"),
           onPress: async () => {
             try {
               await UpdateTruckStatus(id_truck, 'False');
               setTrucks(prev => prev.filter(truck => truck.id_truck !== id_truck));
               Toast.show({
-                      type: "success",
-                      text1: "Truck eliminated",
-                      text2: "Truck has been sucessfully eliminated"
-                    });
-                    loadTrucks();
+                type: "success",
+                text1: t("truck_deleted"),
+                text2: t("truck_deleted_successfully")
+              });
+              loadTrucks();
             } catch (error) {
-              console.error("Error deleting truck:", error);
-              Alert.alert("Error", "Could not delete truck");
+              console.error(t("error_deleting_truck"), error);
+              Alert.alert(t("error"), t("could_not_delete_truck"));
             }
           }
         }
@@ -102,7 +104,7 @@ const   ListTruckModal: React.FC<ListTruckModalProps> = ({ visible, onClose }) =
           onPress={() => handleEditTruck(item)}
         >
           <Ionicons name="create-outline" size={24} color="#FFFFFF" />
-          <Text style={styles.actionText}>Edit</Text>
+          <Text style={styles.actionText}>{t("edit")}</Text>
         </TouchableOpacity>
       </View>
     );
@@ -114,7 +116,7 @@ const   ListTruckModal: React.FC<ListTruckModalProps> = ({ visible, onClose }) =
           onPress={() => handleDeleteTruck(item.id_truck)}
         >
           <Ionicons name="trash-outline" size={24} color="#FFFFFF" />
-          <Text style={styles.actionText}>Delete</Text>
+          <Text style={styles.actionText}>{t("delete")}</Text>
         </TouchableOpacity>
       </View>
     );
@@ -135,10 +137,10 @@ const   ListTruckModal: React.FC<ListTruckModalProps> = ({ visible, onClose }) =
                   {item.number_truck}
                 </Text>
                 <Text style={[styles.truckModel, { color: isDarkMode ? '#CCCCCC' : '#333333' }]}>
-                  category: {item.category}
+                  {t("category")}: {item.category}
                 </Text>
                 <Text style={[styles.truckModel, { color: isDarkMode ? '#CCCCCC' : '#333333' }]}>
-                  type: {item.type}
+                  {t("type")}: {item.type}
                 </Text>
               </View>
             </View>
@@ -152,7 +154,7 @@ const   ListTruckModal: React.FC<ListTruckModalProps> = ({ visible, onClose }) =
     <Modal animationType="slide" transparent={false} visible={visible} onRequestClose={onClose}>
       <SafeAreaView style={{ flex: 1 }}>
         <View style={[styles.header, { backgroundColor: isDarkMode ? "#112A4A" : "#ffffff" }]}>
-          <Text style={[styles.title, { color: isDarkMode ? "#FFFFFF" : "#0458AB" }]}>Trucks</Text>
+          <Text style={[styles.title, { color: isDarkMode ? "#FFFFFF" : "#0458AB" }]}>{t("trucks")}</Text>
           <TouchableOpacity
             style={[styles.addButton, { backgroundColor: isDarkMode ? "#FFF" : "#0458AB" }]}
             onPress={() => setAddTruckVisible(true)}
@@ -165,7 +167,7 @@ const   ListTruckModal: React.FC<ListTruckModalProps> = ({ visible, onClose }) =
           <Ionicons name="search" size={20} color={isDarkMode ? "#A1C6EA" : "#0458AB"} />
           <TextInput
             style={[styles.searchInput, { color: isDarkMode ? '#FFFFFF' : '#333333' }]}
-            placeholder="Search by number or category"
+            placeholder={t("search_placeholder_truck")}
             placeholderTextColor={isDarkMode ? '#AAAAAA' : '#999999'}
             value={searchText}
             onChangeText={setSearchText}
@@ -176,7 +178,7 @@ const   ListTruckModal: React.FC<ListTruckModalProps> = ({ visible, onClose }) =
             </TouchableOpacity>
           )}
         </View>
-        {/* Truck list */}
+        {/* Lista de camiones */}
         {loading ? (
           <View style={styles.loadingContainer}>
             <ActivityIndicator size="large" color="#0458AB" />
@@ -197,7 +199,7 @@ const   ListTruckModal: React.FC<ListTruckModalProps> = ({ visible, onClose }) =
             ListEmptyComponent={
               <View style={styles.emptyContainer}>
                 <Text style={[styles.emptyText, { color: isDarkMode ? '#0458AB' : '#666666' }]}>
-                  No trucks available
+                  {t("no_trucks_available")}
                 </Text>
               </View>
             }

@@ -1,16 +1,16 @@
 import React from "react";
 import { View, Text, StyleSheet } from "react-native";
-
-const HeaderWithDivider = () => {
+import { t } from "i18next"; // Importa la función t desde i18next
+const HeaderWithDividerCreateTruck = () => {
   return (
     <View style={styles.headerContainer}>
-      <Text style={styles.headerText}>Create Truck</Text>
+      <Text style={styles.headerText}>{t("Create_truck")}</Text>
       <View style={styles.divider} />
     </View>
   );
 };
 
-export default HeaderWithDivider;
+export default HeaderWithDividerCreateTruck;
 
 const styles = StyleSheet.create({
   headerContainer: {

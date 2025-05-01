@@ -9,8 +9,8 @@ import BaseOperatorView, { Assignment } from "../../components/operator/BaseOper
 import AssignmentItem from "../../components/operator/AssignmentItem";
 import AssignmentDetails from "./assignmentDetails";
 import TruckDetail from "./TruckDetail"; // Importar el componente TruckDetail
-
 const OperatorView = () => {
+    const { t } = useTranslation(); // Hook para traducción
     const params = useLocalSearchParams();
     const router = useRouter();
     const type = params.type as string;
@@ -24,12 +24,12 @@ const OperatorView = () => {
     const [selected, setSelected] = useState<Assignment | null>(null);
     const isTruckView = type === 'truck';
     const filterRole = isTruckView 
-    ? (role: string) => role.toLowerCase() === 'driver' 
-    : (role: string) => role.toLowerCase() !== 'driver' && !role.toLowerCase().includes('driver');
+        ? (role: string) => role.toLowerCase() === 'driver' 
+        : (role: string) => role.toLowerCase() !== 'driver' && !role.toLowerCase().includes('driver');
     const emptyMessage = isTruckView
-        ? "No truck assignments available"
-        : "No work assignments available";
-    const screenTitle = isTruckView ? 'Truck Daily' : 'Work Daily';
+        ? t("no_truck_assignments_available")
+        : t("no_work_assignments_available");
+    const screenTitle = isTruckView ? t("truck_daily") : t("work_daily");
 
     const handleAssignmentPress = useCallback((item: Assignment) => {
         setSelected(item);
@@ -46,7 +46,7 @@ const OperatorView = () => {
             styles.container,
             { backgroundColor: isDarkMode ? '#112A4A' : '#FFFFFF' }
         ]}>
-            {/* Header */}
+            {/* Encabezado */}
             <View style={[
                 styles.header,
                 { backgroundColor: isDarkMode ? '#0A1C30' : '#0458AB' },
@@ -58,7 +58,7 @@ const OperatorView = () => {
                 <Text style={[styles.headerTitle, { marginLeft: 10 }]}>{screenTitle}</Text>
             </View>
 
-            {/* list of assignments */}
+            {/* Lista de asignaciones */}
 
             <BaseOperatorView
                 isDarkMode={isDarkMode}
@@ -78,7 +78,7 @@ const OperatorView = () => {
                 )}
             />
 
-            {/* aquí renderizar el modal */}
+            {/* Renderizar el modal */}
             {selected && (
                 isTruckView ? (
                     <TruckDetail

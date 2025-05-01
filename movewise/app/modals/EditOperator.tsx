@@ -2,7 +2,7 @@ import { Modal, SafeAreaView, ScrollView, View, Text, TextInput, TouchableOpacit
 import { useState } from 'react';
 import { ThemedView } from '../../components/ThemedView';
 import { useRouter } from 'expo-router';
-
+import { useTranslation } from 'react-i18next';
 
 interface AddOperatorFormProps {
   visible: boolean;
@@ -11,6 +11,7 @@ interface AddOperatorFormProps {
 }
 
 export default function AddOperatorForm({ visible, onClose, onAddOperator }: AddOperatorFormProps) {
+  const { t } = useTranslation();
   const [operatorId, setOperatorId] = useState('');
   const [name, setName] = useState('');
   const [cost, setCost] = useState('');
@@ -96,35 +97,60 @@ export default function AddOperatorForm({ visible, onClose, onAddOperator }: Add
       fontWeight: 'bold',
     },
   });
-
+  
   return (
     <Modal visible={visible} transparent animationType="slide">
       <SafeAreaView style={{ flex: 1, backgroundColor: colorScheme === 'dark' ? '#112A4A' : '#FFFFFF' }}>
         <ScrollView contentContainerStyle={{ flexGrow: 1 }}>
           <View style={styles.header}>
-            <Text style={styles.textLarge}>Edit Operator</Text>
+            <Text style={styles.textLarge}>{t('edit_operator')}</Text>
           </View>
-
+  
           <ThemedView style={styles.container}>
-            <Text style={styles.text}>Search Operator ID</Text>
-            <TextInput style={styles.input} placeholder="Operator ID" placeholderTextColor="#9ca3af" value={operatorId} onChangeText={setOperatorId} />
-
-            <Text style={styles.text}>Name</Text>
-            <TextInput style={styles.input} placeholder="Name" placeholderTextColor="#9ca3af" value={name} onChangeText={setName} />
-
-            <Text style={styles.text}>Cost (USD)</Text>
-            <TextInput style={styles.input} placeholder="0.0" placeholderTextColor="#9ca3af" value={cost} onChangeText={setCost} keyboardType="numeric" />
-
-            <Text style={styles.text}>Additional Cost (USD)</Text>
-            <TextInput style={styles.input} placeholder="0.0" placeholderTextColor="#9ca3af" value={additionalCost} onChangeText={setAdditionalCost} keyboardType="numeric" />
-
+            <Text style={styles.text}>{t('search_operator_id')}</Text>
+            <TextInput
+              style={styles.input}
+              placeholder={t('operator_id')}
+              placeholderTextColor="#9ca3af"
+              value={operatorId}
+              onChangeText={setOperatorId}
+            />
+  
+            <Text style={styles.text}>{t('name')}</Text>
+            <TextInput
+              style={styles.input}
+              placeholder={t('name_placeholder')}
+              placeholderTextColor="#9ca3af"
+              value={name}
+              onChangeText={setName}
+            />
+  
+            <Text style={styles.text}>{t('cost_usd')}</Text>
+            <TextInput
+              style={styles.input}
+              placeholder="0.0"
+              placeholderTextColor="#9ca3af"
+              value={cost}
+              onChangeText={setCost}
+              keyboardType="numeric"
+            />
+  
+            <Text style={styles.text}>{t('additional_cost_usd')}</Text>
+            <TextInput
+              style={styles.input}
+              placeholder="0.0"
+              placeholderTextColor="#9ca3af"
+              value={additionalCost}
+              onChangeText={setAdditionalCost}
+              keyboardType="numeric"
+            />
+  
             <View style={styles.buttonContainer}>
               <TouchableOpacity style={styles.buttonCancel} onPress={() => router.back()}>
-
-                <Text style={styles.buttonTextCancel}>Cancel</Text>
+                <Text style={styles.buttonTextCancel}>{t('cancel')}</Text>
               </TouchableOpacity>
               <TouchableOpacity style={styles.buttonSave} onPress={handleSubmit}>
-                <Text style={styles.buttonTextSave}>Add</Text>
+                <Text style={styles.buttonTextSave}>{t('add')}</Text>
               </TouchableOpacity>
             </View>
           </ThemedView>

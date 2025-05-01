@@ -1,2 +1,4 @@
 npx expo install expo-checkbox
 npm install react-native-toast-message
+npm install i18next react-i18next
+npm install expo-localization
