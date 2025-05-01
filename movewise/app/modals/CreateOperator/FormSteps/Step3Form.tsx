@@ -4,9 +4,10 @@ import { FormInput, ImageUpload, DropdownInput } from '../HelperComponents';
 import { styles } from '../FormStyle';
 import { StepProps } from '../Types';
 import { ALERT_TYPE, Toast } from 'react-native-alert-notification';
+import { useTranslation } from 'react-i18next';
 
 const Step3Form = ({ formData, updateFormData, onBack, onSubmit, isEditing }: StepProps) => {
-
+    const { t } = useTranslation();
     const [localData, setLocalData] = useState({
         salary: formData.salary,
         size_t_shift: formData.size_t_shift,
@@ -15,17 +16,17 @@ const Step3Form = ({ formData, updateFormData, onBack, onSubmit, isEditing }: St
         status: formData.status || 'active' 
     });
 
-    // Validation errors
+    // Errores de validación
     const [errors, setErrors] = useState<Record<string, string>>({});
 
     const handleChange = (field: string, value: any): void => {
 
         setLocalData(prev => ({ ...prev, [field]: value }));
 
-        // update the parent formData immediately
+        // Actualizar el formData principal inmediatamente
         updateFormData({ [field]: value });
 
-        // Clear error
+        // Limpiar error
         if (errors[field]) {
             setErrors({ ...errors, [field]: '' });
         }
@@ -35,21 +36,21 @@ const Step3Form = ({ formData, updateFormData, onBack, onSubmit, isEditing }: St
         const newErrors: Record<string, string> = {};
 
         if (!localData.salary.toString().trim()) {
-            newErrors.salary = 'Salary is mandatory';
+            newErrors.salary = t("salary_required");
         } else if (isNaN(parseFloat(localData.salary)) || parseFloat(localData.salary) <= 0) {
-            newErrors.salary = 'Enter a valid salary amount';
+            newErrors.salary = t("salary_invalid");
         }
 
         if (!localData.size_t_shift) {
-            newErrors.size_t_shift = 'Size is mandatory';
+            newErrors.size_t_shift = t("size_required");
         }
 
         if (!localData.name_t_shift.trim()) {
-            newErrors.name_t_shift = 'The name for the shirt is mandatory';
+            newErrors.name_t_shift = t("shirt_name_required");
         }
 
         if (!localData.photo) {
-            newErrors.photo = 'Photo is mandatory';
+            newErrors.photo = t("photo_required");
         }
 
         setErrors(newErrors);
@@ -58,7 +59,7 @@ const Step3Form = ({ formData, updateFormData, onBack, onSubmit, isEditing }: St
 
     const handleSave = (): void => {
         if (validateForm()) {
-            // Synchronize all fields with the parent formData
+            // Sincronizar todos los campos con el formData principal
             updateFormData({
                 salary: localData.salary,
                 size_t_shift: localData.size_t_shift,
@@ -71,8 +72,8 @@ const Step3Form = ({ formData, updateFormData, onBack, onSubmit, isEditing }: St
         } else {
             Toast.show({
                 type: ALERT_TYPE.DANGER,
-                title: "Validation Error",
-                textBody: "Please check the errors in the form",
+                title: t("validation_error"),
+                textBody: t("review_form_errors"),
                 autoClose: 3000,
             });
         }
@@ -82,7 +83,7 @@ const Step3Form = ({ formData, updateFormData, onBack, onSubmit, isEditing }: St
         <ScrollView>
             <View style={styles.stepForm}>
                 <FormInput
-                    label="Salary (*)"
+                    label={`${t("salary")} (*)`}
                     value={localData.salary.toString()}
                     onChangeText={(text) => handleChange('salary', text)}
                     keyboardType="numeric"
@@ -91,7 +92,7 @@ const Step3Form = ({ formData, updateFormData, onBack, onSubmit, isEditing }: St
                 />
 
                 <DropdownInput
-                    label="Size (*)"
+                    label={`${t("size")} (*)`}
                     value={localData.size_t_shift}
                     onChange={(value) => handleChange('size_t_shift', value)}
                     options={['S', 'M', 'L', 'XL']}
@@ -100,7 +101,7 @@ const Step3Form = ({ formData, updateFormData, onBack, onSubmit, isEditing }: St
                 />
 
                 <FormInput
-                    label="Name for the t-shirt (*)"
+                    label={`${t("shirt_name")} (*)`}
                     value={localData.name_t_shift}
                     onChangeText={(text) => handleChange('name_t_shift', text)}
                     error={errors.name_t_shift}
@@ -108,7 +109,7 @@ const Step3Form = ({ formData, updateFormData, onBack, onSubmit, isEditing }: St
                 />
 
                 <ImageUpload
-                    label="Photo (*)"
+                    label={`${t("photo")} (*)`}
                     image={localData.photo}
                     onImageSelected={(image) => handleChange('photo', image)}
                     error={errors.photo}
@@ -116,19 +117,19 @@ const Step3Form = ({ formData, updateFormData, onBack, onSubmit, isEditing }: St
                 />
 
                 <DropdownInput
-                    label="Status"
+                    label={t("status")}
                     value={localData.status}
                     onChange={(value) => handleChange('status', value)}
-                    options={['active', 'inactive']}
+                    options={[t("active"), t("inactive")]}
                     error={errors.status}
                 />
 
                 <View style={styles.buttonContainer}>
                     <TouchableOpacity style={styles.cancelButton} onPress={onBack}>
-                        <Text style={styles.buttonText}>Atrás</Text>
+                        <Text style={styles.buttonText}>{t("back")}</Text>
                     </TouchableOpacity>
                     <TouchableOpacity style={styles.nextButton} onPress={handleSave}>
-                        <Text style={styles.buttonText}>{isEditing ? 'Update' : 'Save'}</Text>
+                        <Text style={styles.buttonText}>{isEditing ? t("update") : t("save")}</Text>
                     </TouchableOpacity>
                 </View>
             </View>

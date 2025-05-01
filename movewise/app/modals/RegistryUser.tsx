@@ -19,8 +19,11 @@ import DateTimePickerModal from "react-native-modal-datetime-picker";
 import { ListStates } from "@/hooks/api/StatesClient";
 import ModelState from "@/models/ModelState";
 import { ModelCompany } from "@/models/ModelCompany";
+import { useTranslation } from "react-i18next";
 
 const RegistryUser = () => {
+  const { t } = useTranslation();
+
   const router = useRouter();
   const { license, company_name, address, zip_code } = useLocalSearchParams();
 
@@ -67,9 +70,6 @@ const RegistryUser = () => {
   }>({});
 
 
-
-  
-
   const validateFields = () => {
     const newErrors: {
       email?: string;
@@ -88,93 +88,93 @@ const RegistryUser = () => {
     } = {};
 
     if (!email.trim()) {
-      newErrors.email = "Email is required.";
+      newErrors.email = t("email_required");
     } else if (!/\S+@\S+\.\S+/.test(email)) {
-      newErrors.email = "Invalid email format.";
+      newErrors.email = t("email_invalid_format");
     }
 
     if (!password.trim()) {
-      newErrors.password = "Password is required.";
+      newErrors.password = t("password_required");
     } else if (password.length < 6) {
-      newErrors.password = "Password must be at least 6 characters long.";
+      newErrors.password = t("password_min_length");
     }
     if (!userName.trim()) {
-      newErrors.userName = "Username is required."; // Add validation message
+      newErrors.userName = t("username_required");
     }
     if (!firstName.trim()) {
-      newErrors.firstName = "First Name is required.";
+      newErrors.firstName = t("first_name_required");
     }
 
     if (!lastName.trim()) {
-      newErrors.lastName = "Last Name is required.";
+      newErrors.lastName = t("last_name_required");
     }
 
     if (!birthDate.trim()) {
-      newErrors.birthDate = "Date of Birth is required.";
+      newErrors.birthDate = t("birth_date_required");
     }
 
     if (!idType.trim()) {
-      newErrors.idType = "Identification Type is required.";
+      newErrors.idType = t("id_type_required");
     }
 
     if (!idNumber.trim()) {
-      newErrors.idNumber = "ID Number is required.";
+      newErrors.idNumber = t("id_number_required");
     }
 
     if (!state.trim()) {
-      newErrors.state = "State is required.";
+      newErrors.state = t("state_required");
     }
 
     if (!city.trim()) {
-      newErrors.city = "City is required.";
+      newErrors.city = t("city_required");
     }
 
     if (!adressPerson.trim()) {
-      newErrors.adressPerson = "Address is required.";
+      newErrors.adressPerson = t("address_required");
     }
 
     if (!phone.trim()) {
-      newErrors.phone = "Phone is required.";
+      newErrors.phone = t("phone_required");
     }
 
     setErrors(newErrors);
 
-    return Object.keys(newErrors).length === 0; // Return true if no errors
+    return Object.keys(newErrors).length === 0; // Devuelve true si no hay errores
   };
 
   const handleRegister = async () => {
     if (!validateFields()) {
       Toast.show({
         type: "error",
-        text1: "Validation Error",
-        text2: "Please fix the errors before submitting.",
+        text1: t("validation_error"),
+        text2: t("fix_errors_before_submitting"),
       });
     }
-      // Step 1: Register the company
+      // Paso 1: Registrar la empresa
       try {
         if (companyData) {
           Toast.show({
             type: "error",
-            text1: "Error",
-            text2: "Company null.",
+            text1: t("error"),
+            text2: t("company_is_null"),
           });
         }
         const companyResponse = await CreateCompany(companyData);
         Toast.show({
           type: "success",
-          text1: "Company Registered",
-          text2: `Company Name: ${companyData.name}, ZIP: ${companyData.zip_code}`, 
+          text1: t("company_registered"),
+          text2: t("company_details", { name: companyData.name, zipCode: companyData.zip_code }),
         });
       } catch (error: any) {
         Toast.show({
           type: "error",
-          text1: "Error",
-          text2: "Company data invalid.",
+          text1: t("error"),
+          text2: t("invalid_company_data"),
         });
       }
       
 
-      // Step 2: Register the user for the company
+      // Paso 2: Registrar el usuario para la empresa
       const userData = {
         user_name: userName,
         password: password,
@@ -196,23 +196,24 @@ const RegistryUser = () => {
 
       Toast.show({
         type: "success",
-        text1: "Success",
-        text2: "Company and user registered successfully!",
+        text1: t("success"),
+        text2: t("company_and_user_registered"),
       });
 
-      router.push("/"); // Navigate back to the home screen or another route
+      router.push("/"); // Navegar de vuelta a la pantalla de inicio u otra ruta
     } catch (error: any) {
       Toast.show({
         type: "error",
-        text1: "Registration Error",
-        text2: error.message || "Registration failed.",
+        text1: t("registration_error"),
+        text2: error.message || t("registration_failed"),
       });
     }
   };
+
   useEffect(() => {
     const fetchStates = async () => {
       try {
-        const states: ModelState[] = await ListStates(); // Define states as ModelState[]
+        const states: ModelState[] = await ListStates(); // Definir estados como ModelState[]
         setStateList(
           states.map((state) => ({
             label: String(state.name), 
@@ -220,7 +221,7 @@ const RegistryUser = () => {
           }))
         );
       } catch (error) {
-        console.error("Error fetching states:", error);
+        console.error(t("fetch_states_error"), error);
       }
     };
 
@@ -232,192 +233,189 @@ const RegistryUser = () => {
       style={styles.background}
       resizeMode="cover"
     >
-    <ScrollView contentContainerStyle={styles.container}>
-      <Text style={styles.title}>Register User admin for {companyData?.name}</Text>
-
-      {/* Sección de credenciales */}
-      <View style={styles.separator} />
-      <View style={styles.section}>
-        
-        <Text style={styles.textUserFields}>User admin credentials</Text>
-        {errors.email && <Text style={styles.errorText}>{errors.email}</Text>}
-        <TextInput
-          style={[styles.input, errors.email && styles.inputError]}
-          placeholder="Email"
-          placeholderTextColor="#888"
-          value={email}
-          onChangeText={setEmail}
-          keyboardType="email-address"
-          autoCapitalize="none"
-        />
-        {errors.userName && <Text style={styles.errorText}>{errors.userName}</Text>}
-        <TextInput
-          style={[styles.input, errors.userName && styles.inputError]}
-          placeholder="Username"
-          placeholderTextColor="#888"
-          value={userName}
-          onChangeText={setUserName}
-        />
-        {errors.password && <Text style={styles.errorText}>{errors.password}</Text>}
-        <TextInput
-          style={[styles.input, errors.password && styles.inputError]}
-          placeholder="Password"
-          placeholderTextColor="#888"
-          value={password}
-          onChangeText={setPassword}
-          secureTextEntry
-        />
-        
-      </View>
-      <View style={styles.separator} />
-      {/* Resto de campos */}
-      {errors.firstName && <Text style={styles.errorText}>{errors.firstName}</Text>}
-      <View style={styles.section}>
-        <TextInput
-          style={[styles.input, errors.firstName && styles.inputError]}
-          placeholder="First Name"
-          placeholderTextColor="#888"
-          value={firstName}
-          onChangeText={setFirstName}
-        />
-
-        {errors.lastName && <Text style={styles.errorText}>{errors.lastName}</Text>}
-        <TextInput
-          style={[styles.input, errors.lastName && styles.inputError]}
-          placeholder="Last Name"
-          placeholderTextColor="#888"
-          value={lastName}
-          onChangeText={setLastName}
-        />
-        
-
-        {/* Fecha de nacimiento */}
-        {errors.birthDate && <Text style={styles.errorText}>{errors.birthDate}</Text>}
-        <View style={{ zIndex: 1000, marginTop: 16 }}>
-          <TouchableOpacity onPress={() => setDatePickerVisibility(true)} style={[styles.input, { flexDirection: "row", justifyContent: "space-between" }]}>
-            <Text style={{ color: birthDate ? "#000" : "#9ca3af" }}>{birthDate ? birthDate : "Birthdate"}</Text>
-            <MaterialIcons name="calendar-today" size={20} color="#9ca3af" />
-          </TouchableOpacity>
-          <DateTimePickerModal
-            isVisible={isDatePickerVisible}
-            mode="date"
-            onConfirm={(selectedDate) => {
-              setDatePickerVisibility(false);
-              setBirthDate(selectedDate.toISOString().split('T')[0]);
-            }}
-            onCancel={() => setDatePickerVisibility(false)}
+      <ScrollView contentContainerStyle={styles.container}>
+        <Text style={styles.title}>{t("register_user_admin", { companyName: companyData?.name })}</Text>
+  
+        {/* Sección de credenciales */}
+        <View style={styles.separator} />
+        <View style={styles.section}>
+          <Text style={styles.textUserFields}>{t("user_admin_credentials")}</Text>
+          {errors.email && <Text style={styles.errorText}>{errors.email}</Text>}
+          <TextInput
+            style={[styles.input, errors.email && styles.inputError]}
+            placeholder={t("email_placeholder")}
+            placeholderTextColor="#888"
+            value={email}
+            onChangeText={setEmail}
+            keyboardType="email-address"
+            autoCapitalize="none"
+          />
+          {errors.userName && <Text style={styles.errorText}>{errors.userName}</Text>}
+          <TextInput
+            style={[styles.input, errors.userName && styles.inputError]}
+            placeholder={t("username_placeholder")}
+            placeholderTextColor="#888"
+            value={userName}
+            onChangeText={setUserName}
+          />
+          {errors.password && <Text style={styles.errorText}>{errors.password}</Text>}
+          <TextInput
+            style={[styles.input, errors.password && styles.inputError]}
+            placeholder={t("password_placeholder")}
+            placeholderTextColor="#888"
+            value={password}
+            onChangeText={setPassword}
+            secureTextEntry
           />
         </View>
-
-        {errors.idType && <Text style={styles.errorText}>{errors.idType}</Text>}
-        <DropDownPicker
-          open={openIdType}
-          value={idType}
-          items={[
-            { label: 'Driver’s License', value: 'DL' },
-            { label: 'State ID', value: 'SI' },
-            { label: 'Green Card', value: 'GC' },
-            { label: 'Passport', value: 'PA' },
-          ]}
-          setOpen={setOpenIdType}
-          setValue={setIdType}
-          setItems={() => {}}
-          placeholder="Select ID type"
-          placeholderStyle={{ color: '#9ca3af' }}
-          style={[styles.input, { borderColor: errors.idType ? "red" : "#0458AB" }]}
-          listMode="MODAL"
-          modalTitle="Select ID type"
-          modalProps={{
-            animationType: "slide"
-          }}
-          searchable={true}
-          searchPlaceholder="Search..."
-          searchPlaceholderTextColor="#9ca3af"
-          onChangeSearchText={text => setSearchTerm(text)}
-          scrollViewProps={{
-            nestedScrollEnabled: true,
-          }}
-        />
-
-        {errors.idNumber && <Text style={styles.errorText}>{errors.idNumber}</Text>}
-        <TextInput
-          style={[styles.input, errors.idNumber && styles.inputError]}
-          placeholder="ID Number"
-          placeholderTextColor="#888"
-          value={idNumber}
-          keyboardType="numeric"
-          onChangeText={setIdNumber}
-        />
-
-
-        {errors.state && <Text style={styles.errorText}>{errors.state}</Text>}
-        <DropDownPicker
-          open={openState}
-          value={state}
-          items={stateList.map(state => ({
-            label: state.label,
-            value: state.value
-          }))}
-          setOpen={setOpenState}
-          setValue={setState}
-          setItems={() => {}}
-          placeholder="Select State"
-          placeholderStyle={{ color: '#9ca3af' }}
-          style={[styles.input, { borderColor: errors.state ? "red" : "#0458AB" }]}
-          dropDownContainerStyle={{ maxHeight: 200 }}
-          listMode="MODAL"
-          modalTitle="Select a State"
-          modalProps={{
-            animationType: "slide"
-          }}
-          searchable={true}
-          searchPlaceholder="Search..."
-          searchPlaceholderTextColor="#9ca3af"
-          searchTextInputProps={{
-            onChangeText: text => setSearchTerm(text),
-          }}
-          scrollViewProps={{
-            nestedScrollEnabled: true,
-          }}
-        />
-
-        
-
-        {errors.zipCode && <Text style={styles.errorText}>{errors.zipCode}</Text>}
-        <TextInput
-          style={[styles.input, errors.city && styles.inputError]}
-          placeholder="City"
-          placeholderTextColor="#888"
-          value={city}
-          onChangeText={setCity}
-        />
-        {errors.city && <Text style={styles.errorText}>{errors.city}</Text>}
-
-        {errors.adressPerson && <Text style={styles.errorText}>{errors.adressPerson}</Text>}
-        <TextInput
-          style={[styles.input, errors.adressPerson && styles.inputError]}
-          placeholder="Address"
-          placeholderTextColor="#888"
-          value={adressPerson}
-          onChangeText={setAddress}
-        />
-        
-
-        {errors.phone && <Text style={styles.errorText}>{errors.phone}</Text>}
-        <TextInput
-          style={[styles.input, errors.phone && styles.inputError]}
-          placeholder="Phone"
-          placeholderTextColor="#888"
-          keyboardType="numeric"
-          value={phone}
-          onChangeText={setPhone}
-        />
-        
-        <TouchableOpacity style={styles.button} onPress={handleRegister}>
-        <Text style={styles.buttonText}>REGISTER USER</Text>
-      </TouchableOpacity>
-      </View>
-    </ScrollView>
+        <View style={styles.separator} />
+        {/* Resto de campos */}
+        {errors.firstName && <Text style={styles.errorText}>{errors.firstName}</Text>}
+        <View style={styles.section}>
+          <TextInput
+            style={[styles.input, errors.firstName && styles.inputError]}
+            placeholder={t("first_name_placeholder")}
+            placeholderTextColor="#888"
+            value={firstName}
+            onChangeText={setFirstName}
+          />
+  
+          {errors.lastName && <Text style={styles.errorText}>{errors.lastName}</Text>}
+          <TextInput
+            style={[styles.input, errors.lastName && styles.inputError]}
+            placeholder={t("last_name_placeholder")}
+            placeholderTextColor="#888"
+            value={lastName}
+            onChangeText={setLastName}
+          />
+  
+          {/* Fecha de nacimiento */}
+          {errors.birthDate && <Text style={styles.errorText}>{errors.birthDate}</Text>}
+          <View style={{ zIndex: 1000, marginTop: 16 }}>
+            <TouchableOpacity
+              onPress={() => setDatePickerVisibility(true)}
+              style={[styles.input, { flexDirection: "row", justifyContent: "space-between" }]}
+            >
+              <Text style={{ color: birthDate ? "#000" : "#9ca3af" }}>
+                {birthDate ? birthDate : t("birthdate_placeholder")}
+              </Text>
+              <MaterialIcons name="calendar-today" size={20} color="#9ca3af" />
+            </TouchableOpacity>
+            <DateTimePickerModal
+              isVisible={isDatePickerVisible}
+              mode="date"
+              onConfirm={(selectedDate) => {
+                setDatePickerVisibility(false);
+                setBirthDate(selectedDate.toISOString().split("T")[0]);
+              }}
+              onCancel={() => setDatePickerVisibility(false)}
+            />
+          </View>
+  
+          {errors.idType && <Text style={styles.errorText}>{errors.idType}</Text>}
+          <DropDownPicker
+            open={openIdType}
+            value={idType}
+            items={[
+              { label: t("id_type_drivers_license"), value: "DL" },
+              { label: t("id_type_state_id"), value: "SI" },
+              { label: t("id_type_green_card"), value: "GC" },
+              { label: t("id_type_passport"), value: "PA" },
+            ]}
+            setOpen={setOpenIdType}
+            setValue={setIdType}
+            setItems={() => {}}
+            placeholder={t("select_id_type_placeholder")}
+            placeholderStyle={{ color: "#9ca3af" }}
+            style={[styles.input, { borderColor: errors.idType ? "red" : "#0458AB" }]}
+            listMode="MODAL"
+            modalTitle={t("select_id_type_modal_title")}
+            modalProps={{
+              animationType: "slide",
+            }}
+            searchable={true}
+            searchPlaceholder={t("search_placeholder")}
+            searchPlaceholderTextColor="#9ca3af"
+            onChangeSearchText={(text) => setSearchTerm(text)}
+            scrollViewProps={{
+              nestedScrollEnabled: true,
+            }}
+          />
+  
+          {errors.idNumber && <Text style={styles.errorText}>{errors.idNumber}</Text>}
+          <TextInput
+            style={[styles.input, errors.idNumber && styles.inputError]}
+            placeholder={t("id_number_placeholder")}
+            placeholderTextColor="#888"
+            value={idNumber}
+            keyboardType="numeric"
+            onChangeText={setIdNumber}
+          />
+  
+          {errors.state && <Text style={styles.errorText}>{errors.state}</Text>}
+          <DropDownPicker
+            open={openState}
+            value={state}
+            items={stateList.map((state) => ({
+              label: state.label,
+              value: state.value,
+            }))}
+            setOpen={setOpenState}
+            setValue={setState}
+            setItems={() => {}}
+            placeholder={t("select_state_placeholder")}
+            placeholderStyle={{ color: "#9ca3af" }}
+            style={[styles.input, { borderColor: errors.state ? "red" : "#0458AB" }]}
+            dropDownContainerStyle={{ maxHeight: 200 }}
+            listMode="MODAL"
+            modalTitle={t("select_state_modal_title")}
+            modalProps={{
+              animationType: "slide",
+            }}
+            searchable={true}
+            searchPlaceholder={t("search_placeholder")}
+            searchPlaceholderTextColor="#9ca3af"
+            searchTextInputProps={{
+              onChangeText: (text) => setSearchTerm(text),
+            }}
+            scrollViewProps={{
+              nestedScrollEnabled: true,
+            }}
+          />
+  
+          {errors.city && <Text style={styles.errorText}>{errors.city}</Text>}
+          <TextInput
+            style={[styles.input, errors.city && styles.inputError]}
+            placeholder={t("city_placeholder")}
+            placeholderTextColor="#888"
+            value={city}
+            onChangeText={setCity}
+          />
+  
+          {errors.adressPerson && <Text style={styles.errorText}>{errors.adressPerson}</Text>}
+          <TextInput
+            style={[styles.input, errors.adressPerson && styles.inputError]}
+            placeholder={t("address_placeholder")}
+            placeholderTextColor="#888"
+            value={adressPerson}
+            onChangeText={setAddress}
+          />
+  
+          {errors.phone && <Text style={styles.errorText}>{errors.phone}</Text>}
+          <TextInput
+            style={[styles.input, errors.phone && styles.inputError]}
+            placeholder={t("phone_placeholder")}
+            placeholderTextColor="#888"
+            keyboardType="numeric"
+            value={phone}
+            onChangeText={setPhone}
+          />
+  
+          <TouchableOpacity style={styles.button} onPress={handleRegister}>
+            <Text style={styles.buttonText}>{t("register_user_button")}</Text>
+          </TouchableOpacity>
+        </View>
+      </ScrollView>
       <Toast />
     </ImageBackground>
   );
