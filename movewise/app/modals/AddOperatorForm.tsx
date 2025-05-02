@@ -58,7 +58,9 @@ export default function AddOperatorForm({ visible, onClose, onAddOperator, order
             // Actualiza estos accesos
             setName(`${data.first_name} ${data.last_name}`);
             setCost(data.salary ? data.salary.toString() : '');
-            setFetchedOperatorId(data.id); // Usar id_operator directo
+            console.log("Id del operador en la empresa:", data.id_operator);
+            console.log("Id del operador en la API:", data.id_number);  
+            setFetchedOperatorId(data.id_number); // Usar id_operator directo
 
           } else {
             resetForm();
@@ -81,16 +83,17 @@ export default function AddOperatorForm({ visible, onClose, onAddOperator, order
   };
 
   const handleSubmit = () => {
+    console.log("Submitting operator data: ",fetchedOperatorId)
     if (!fetchedOperatorId) {
       notifyMessage("Busque un operador válido primero");
       return;
     }
 
     const newOperator: Operator = {
-      id: fetchedOperatorId,
-      name: name,
-      additionalCosts: additionalCost.trim() !== '' ? parseFloat(additionalCost) : 0,
+      id_operator: fetchedOperatorId,
+      first_name: name.split(' ')[0],
       role: "operator", // Valor por defecto
+      additionalCosts: additionalCost.trim() !== '' ? parseFloat(additionalCost) : 0,
     };
 
     if (onAddOperator) {

@@ -36,7 +36,7 @@ const IdLoginScreen: React.FC = () => {
         text2: `${t("welcome")} ${response.name ?? t("user")}`,
       });
 
-      router.push("/Home");
+      router.push("/OperatorHome");
     } catch (error: any) {
       Toast.show({
         type: "error",

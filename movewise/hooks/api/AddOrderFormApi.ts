@@ -14,7 +14,7 @@ const AddOrderformApi = () => {
 
     try {
       const token = await AsyncStorage.getItem("userToken"); // Obtener el token de AsyncStorage
-      const response = await fetch(url + '/orders/', {
+      const response = await fetch(url + 'orders/', {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`,
