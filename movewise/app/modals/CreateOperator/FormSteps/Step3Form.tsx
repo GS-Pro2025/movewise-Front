@@ -9,6 +9,7 @@ import { useTranslation } from 'react-i18next';
 const Step3Form = ({ formData, updateFormData, onBack, onSubmit, isEditing }: StepProps) => {
     const { t } = useTranslation();
     const [localData, setLocalData] = useState({
+        code: formData.code || '',
         salary: formData.salary,
         size_t_shift: formData.size_t_shift,
         name_t_shift: formData.name_t_shift,
@@ -35,18 +36,24 @@ const Step3Form = ({ formData, updateFormData, onBack, onSubmit, isEditing }: St
     const validateForm = (): boolean => {
         const newErrors: Record<string, string> = {};
 
+        if (!localData.code.trim()) {
+            newErrors.code = t("operator_code_required");
+        } else if (localData.code.length < 3) {
+            newErrors.code = t("operator_code_length");
+        }
+
         if (!localData.salary.toString().trim()) {
             newErrors.salary = t("salary_required");
         } else if (isNaN(parseFloat(localData.salary)) || parseFloat(localData.salary) <= 0) {
-            newErrors.salary = t("salary_invalid");
+            newErrors.salary = t("salary_amount_invalid");
         }
 
         if (!localData.size_t_shift) {
-            newErrors.size_t_shift = t("size_required");
+            newErrors.size_t_shift = t("tshirt_size_required");
         }
 
         if (!localData.name_t_shift.trim()) {
-            newErrors.name_t_shift = t("shirt_name_required");
+            newErrors.name_t_shift = t("tshirt_name_required");
         }
 
         if (!localData.photo) {
@@ -61,6 +68,7 @@ const Step3Form = ({ formData, updateFormData, onBack, onSubmit, isEditing }: St
         if (validateForm()) {
             // Sincronizar todos los campos con el formData principal
             updateFormData({
+                code: localData.code,
                 salary: localData.salary,
                 size_t_shift: localData.size_t_shift,
                 name_t_shift: localData.name_t_shift,
@@ -83,6 +91,14 @@ const Step3Form = ({ formData, updateFormData, onBack, onSubmit, isEditing }: St
         <ScrollView>
             <View style={styles.stepForm}>
                 <FormInput
+                    label={`${t("operator_code")} (*)`}
+                    value={localData.code}
+                    onChangeText={(text) => handleChange('code', text)}
+                    error={errors.code}
+                    required={true}
+                />
+
+                <FormInput
                     label={`${t("salary")} (*)`}
                     value={localData.salary.toString()}
                     onChangeText={(text) => handleChange('salary', text)}
@@ -92,7 +108,7 @@ const Step3Form = ({ formData, updateFormData, onBack, onSubmit, isEditing }: St
                 />
 
                 <DropdownInput
-                    label={`${t("size")} (*)`}
+                    label={`${t("tshirt_size")} (*)`}
                     value={localData.size_t_shift}
                     onChange={(value) => handleChange('size_t_shift', value)}
                     options={['S', 'M', 'L', 'XL']}
@@ -101,7 +117,7 @@ const Step3Form = ({ formData, updateFormData, onBack, onSubmit, isEditing }: St
                 />
 
                 <FormInput
-                    label={`${t("shirt_name")} (*)`}
+                    label={`${t("tshirt_name")} (*)`}
                     value={localData.name_t_shift}
                     onChangeText={(text) => handleChange('name_t_shift', text)}
                     error={errors.name_t_shift}
@@ -109,7 +125,7 @@ const Step3Form = ({ formData, updateFormData, onBack, onSubmit, isEditing }: St
                 />
 
                 <ImageUpload
-                    label={`${t("photo")} (*)`}
+                    label={`${t("operator_photo")} (*)`}
                     image={localData.photo}
                     onImageSelected={(image) => handleChange('photo', image)}
                     error={errors.photo}

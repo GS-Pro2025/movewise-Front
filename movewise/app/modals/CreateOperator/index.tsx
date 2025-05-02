@@ -66,19 +66,20 @@ const CreateOperator: React.FC<CreateOperatorProps> = ({
         apiFormData.append('id_operator', formData.id_operator.toString());
       }
       
-      // Iterar y añadir todos los campos de texto
-      Object.keys(formData).forEach(key => {
-        if (formData[key] !== undefined && formData[key] !== null) {
-          // Manejar casos especiales
-          if (key === 'sons' && Array.isArray(formData[key]) && formData[key].length > 0) {
-            console.log('Añadiendo sons:', formData[key]);
-            apiFormData.append('sons', JSON.stringify(formData[key]));
+      // Iterate and add all text fields
+      (Object.keys(formData) as Array<keyof typeof formData>).forEach(key => {
+        const value = formData[key];
+        if (value !== undefined && value !== null) {
+          // Handle special cases
+          if (key === 'sons' && Array.isArray(value) && value.length > 0) {
+            console.log('Adding sons:', value);
+            apiFormData.append('sons', JSON.stringify(value));
           } 
-          // Manejar imágenes
+          // Handle images
           else if (key === 'photo' || key === 'license_front' || key === 'license_back') {
-            const image = formData[key] as ImageInfo | null;
+            const image = value as ImageInfo | null;
             if (image) {
-              console.log(`Procesando ${key}:`, image);
+              console.log(`Processing ${key}:`, image);
               if (!image.uri.startsWith('http')) {
                 // New image or updated image
                 const file = {
@@ -92,38 +93,50 @@ const CreateOperator: React.FC<CreateOperatorProps> = ({
               }
             }
           } 
-          // Manejar otros tipos de datos
-          else if (typeof formData[key] !== 'object') {
-            console.log(`adding ${key}:`, formData[key]);
-            apiFormData.append(key, formData[key].toString());
+          // Handle other data types
+          else if (typeof value !== 'object') {
+            console.log(`adding ${key}:`, value);
+            apiFormData.append(key, value.toString());
           }
         }
       });
-      
-      
-      const response = isEditing
-        ? await UpdateOperator(formData.id_operator!, apiFormData)
-        : await PostOperator(apiFormData);
-      
-      
-      // Mostrar mensaje de éxito
-      Toast.show({
-        type: ALERT_TYPE.SUCCESS,
-        title: isEditing ? "Successful Update" : "Successful Registration",
-        textBody: isEditing ? "The operator has been updated successfully" : "The operator has been registered successfully",
-        autoClose: 2000
-      });
-      
+
+      if (isEditing) {
+        await UpdateOperator(formData.id_operator!, apiFormData);
+        Toast.show({
+          type: ALERT_TYPE.SUCCESS,
+          title: 'Success',
+          textBody: 'Operator updated successfully',
+          autoClose: 2000,
+        });
+      } else {
+        await PostOperator(apiFormData);
+        Toast.show({
+          type: ALERT_TYPE.SUCCESS,
+          title: 'Success',
+          textBody: 'Operator created successfully',
+          autoClose: 2000,
+        });
+      }
+
       if (onClose) onClose();
-      
     } catch (error: any) {
-      console.error('Complete error:', error.response?.data?.message || error.message);
-      const errorMessage = error.response?.data?.message || error.message;
-      Toast.show({
+      console.error('Error in form submission:', error);
+      
+      // Format the error message for better readability
+      let errorMessage = error.message || 'An error occurred while saving the operator';
+      
+      // If the error message contains bullet points, preserve the formatting
+      if (errorMessage.includes('•')) {
+        errorMessage = errorMessage.split('\n').map((line: string) => line.trim()).join('\n');
+      }
+
+      Dialog.show({
         type: ALERT_TYPE.DANGER,
-        title: 'Error',
+        title: 'Validation Error',
         textBody: errorMessage,
-        autoClose: 5000
+        button: 'Close',
+        autoClose: false
       });
     } finally {
       setLoading(false);

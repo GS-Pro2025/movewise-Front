@@ -26,12 +26,13 @@ export interface Son {
   
     // ─── step 2: driven licence and childs ────────────────────────
     number_licence: string;
-    code: string;
+    zipcode?: string;
     has_minors: boolean;
     n_children: number;
     sons: Son[];
   
     // ─── step 3: end info ───────────────────────────────────
+    code: string;
     salary: string;
     size_t_shift: string;
     name_t_shift: string;
@@ -55,6 +56,7 @@ export interface Operator {
     id_operator: number;
     number_licence: string;
     code: string;
+    zipcode: string;
     n_children: number;
     size_t_shift: string;
     name_t_shift: string;
