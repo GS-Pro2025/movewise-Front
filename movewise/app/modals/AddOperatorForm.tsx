@@ -50,6 +50,7 @@ export default function AddOperatorForm({ visible, onClose, onAddOperator, order
   const handleSearch = () => {
     if (operatorId.length > 0) {
       try {
+        console.log("Buscando operador con ID:", operatorId);
         getOperatorByNumberId(Number(operatorId)).then(data => {
           if (data) {
             console.log("Datos recibidos:", data);
@@ -58,10 +59,9 @@ export default function AddOperatorForm({ visible, onClose, onAddOperator, order
             // Actualiza estos accesos
             setName(`${data.first_name} ${data.last_name}`);
             setCost(data.salary ? data.salary.toString() : '');
-            console.log("Id del operador en la empresa:", data.id_operator);
-            console.log("Id del operador en la API:", data.id_number);  
-            setFetchedOperatorId(data.id_number); // Usar id_operator directo
-
+            console.log("Id del operador en la empresa:", data.id_number);
+            console.log("Id del operador en la API:", data.id_operator);  
+            setFetchedOperatorId(data.id_operator); // Usar id_operator directo
           } else {
             resetForm();
           }

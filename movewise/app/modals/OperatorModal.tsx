@@ -88,7 +88,7 @@ const OperatorModal: React.FC<OperatorModalProps> = ({ visible, onClose, orderKe
       const data = await response.json();
       console.log(t("assigned_operators"), data); // Para debug
 
-      const formattedData = data.map((operator: AssignedOperator) => ({
+      const formattedData = data.map(operator => ({
         ...operator,
         role: operator.role || t("operator") // Valor por defecto
       }));
@@ -109,12 +109,8 @@ const OperatorModal: React.FC<OperatorModalProps> = ({ visible, onClose, orderKe
   }
 
   const handleAddOperator = (newOperator: Operator) => {
-      if (!newOperator.id || !newOperator.name) {
-          console.error("Invalid operator: Missing required properties 'id' or 'name'");
-          return;
-      }
-      setOperators(prev => [...prev, newOperator]);
-      setAddOperatorVisible(false);
+    setOperators(prev => [...prev, newOperator]);
+    setAddOperatorVisible(false);
   };
 
   const handleDeleteOperator = (index: number) => {
@@ -182,7 +178,7 @@ const OperatorModal: React.FC<OperatorModalProps> = ({ visible, onClose, orderKe
       if (!response.ok) {
         if (response.status === 207) {
           const conflictMessages = responseData.data.conflicts
-            .map((c: { operator_id: string; message: string }) => `${t("operator")} ${c.operator_id}: ${c.message}`)
+            .map((c) => `${t("operator")} ${c.operator_id}: ${c.message}`)
             .join('\n');
 
           const successMessage = responseData.data.created.length > 0
@@ -200,7 +196,7 @@ const OperatorModal: React.FC<OperatorModalProps> = ({ visible, onClose, orderKe
           return;
         } else if (response.status === 400) {
           const errorMessages = responseData.data
-            .map((e: { operator_id?: string; index?: number; message?: string; errors?: any }) => `${t("operator")} ${e.operator_id || `#${(e.index ?? -1) + 1}`}: ${e.message || JSON.stringify(e.errors)}`)
+            .map((e) => `${t("operator")} ${e.operator_id || `#${e.index + 1}`}: ${e.message || JSON.stringify(e.errors)}`)
             .join('\n');
 
           Alert.alert(
@@ -222,13 +218,13 @@ const OperatorModal: React.FC<OperatorModalProps> = ({ visible, onClose, orderKe
       console.error(t("error"), error);
       Alert.alert(
         t("error"),
-          (error instanceof Error ? error.message : t("unknown_error")) || t("could_not_save_assignments"),
+          error.message || t("could_not_save_assignments"),
         [{ text: t("ok") }]
       );
     }
   };
 
-  const updateOperatorsWithConflicts = (conflicts: { operator_id: number }[]) => {
+  const updateOperatorsWithConflicts = (conflicts) => {
     const conflictOperatorIds = conflicts.map(c => c.operator_id);
     setOperators(prevOperators =>
       prevOperators.filter(op => conflictOperatorIds.includes(op.id))
@@ -435,7 +431,7 @@ const OperatorModal: React.FC<OperatorModalProps> = ({ visible, onClose, orderKe
                       <Text style={styles.operatorItem}>
                         {op.id} - {op.name}
                         {op.role ? ` (${op.role})` : ''}
-                        {op.additionalCosts && op.additionalCosts > 0 ? ` - ${t("cost")}: $${op.additionalCosts}` : ''}
+                        {op.additionalCosts > 0 ? ` - ${t("cost")}: $${op.additionalCosts}` : ''}
                         {op.truckId ? ` - ${t("truck_id")}: ${op.truckId}` : ''}
                       </Text>
                     </TouchableOpacity>
