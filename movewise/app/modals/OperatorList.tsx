@@ -60,6 +60,7 @@ const OperatorList = () => {
 
       // Assuming your API supports page parameter
       const response = await ListOperators(page);
+
       // console.log("API Response:", JSON.stringify(response, null, 2));
 
       // Handle different response structures
@@ -122,6 +123,7 @@ const OperatorList = () => {
     id_number: op.id_number != null
       ? String(op.id_number)
       : '',
+    zipcode: op.zipcode ?? '',
     address: op.address ?? '',
     phone: op.phone ?? '',
     email: op.email ?? '',

@@ -57,10 +57,14 @@ const Step1Form = ({ formData, updateFormData, onNext, isEditing }: StepProps) =
 
         if (!localData.first_name.trim()) {
             newErrors.first_name = 'First name is required';
+        } else if (localData.first_name.length < 2) {
+            newErrors.first_name = 'First name must be at least 2 characters long';
         }
 
         if (!localData.last_name.trim()) {
             newErrors.last_name = 'Last name is required';
+        } else if (localData.last_name.length < 2) {
+            newErrors.last_name = 'Last name must be at least 2 characters long';
         }
 
         if (!localData.birth_date) {
@@ -80,6 +84,10 @@ const Step1Form = ({ formData, updateFormData, onNext, isEditing }: StepProps) =
 
         if (!localData.id_number.trim()) {
             newErrors.id_number = 'ID number is required';
+        } else if (localData.id_number.length < 5) {
+            newErrors.id_number = 'ID number must be at least 5 characters long';
+        } else if (!/^\d+$/.test(localData.id_number)) {
+            newErrors.id_number = 'ID number must contain only numbers';
         }
 
         if (!localData.address.trim()) {
@@ -89,11 +97,11 @@ const Step1Form = ({ formData, updateFormData, onNext, isEditing }: StepProps) =
         if (!localData.phone.trim()) {
             newErrors.phone = 'Phone number is required';
         } else if (!/^\+?[0-9]{10,15}$/.test(localData.phone)) {
-            newErrors.phone = 'Enter a valid phone number';
+            newErrors.phone = 'Please enter a valid phone number (10-15 digits)';
         }
 
         if (localData.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(localData.email)) {
-            newErrors.email = 'Enter a valid email address';
+            newErrors.email = 'Please enter a valid email address';
         }
 
         setErrors(newErrors);
@@ -169,6 +177,7 @@ const Step1Form = ({ formData, updateFormData, onNext, isEditing }: StepProps) =
                     value={localData.id_number}
                     onChangeText={(text) => handleChange('id_number', text)}
                     error={errors.id_number}
+                    keyboardType="numeric"
                     required={true}
                 />
 

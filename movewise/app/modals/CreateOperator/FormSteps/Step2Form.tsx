@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { ScrollView, View, Text, TouchableOpacity } from 'react-native';
 import { FormInput, ImageUpload, RadioGroup, DateInput, DropdownInput } from '../HelperComponents';
 import { styles } from '../FormStyle';
@@ -8,14 +8,28 @@ import { ALERT_TYPE, Toast } from 'react-native-alert-notification';
 const Step2Form = ({ formData, updateFormData, onNext, onBack, isEditing }: StepProps) => {
 
     const [localData, setLocalData] = useState({
-        number_licence: formData.number_licence,
-        code: formData.code,
-        has_minors: formData.has_minors,
-        n_children: formData.sons.length || formData.n_children || 0,
-        sons: formData.sons.length > 0 ? [...formData.sons] : [],
-        license_front: formData.license_front,
-        license_back: formData.license_back,
+        number_licence: formData.number_licence || '',
+        zipcode: formData.zipcode || '',
+        has_minors: formData.has_minors || false,
+        n_children: formData.sons?.length || formData.n_children || 0,
+        sons: formData.sons?.length > 0 ? [...formData.sons] : [],
+        license_front: formData.license_front || null,
+        license_back: formData.license_back || null,
     });
+
+    useEffect(() => {
+        // Update local data when formData changes (important for edit mode)
+        setLocalData(prev => ({
+            ...prev,
+            number_licence: formData.number_licence || prev.number_licence,
+            zipcode: formData.zipcode || prev.zipcode,
+            has_minors: formData.has_minors ?? prev.has_minors,
+            n_children: formData.sons?.length || formData.n_children || prev.n_children,
+            sons: formData.sons?.length > 0 ? [...formData.sons] : prev.sons,
+            license_front: formData.license_front || prev.license_front,
+            license_back: formData.license_back || prev.license_back,
+        }));
+    }, [formData]);
 
     // State for the current son being added
     const [currentSon, setCurrentSon] = useState<Partial<Son>>({
@@ -29,10 +43,9 @@ const Step2Form = ({ formData, updateFormData, onNext, onBack, isEditing }: Step
     const [sonErrors, setSonErrors] = useState<Record<string, string>>({});
 
     const handleChange = (field: string, value: any): void => {
-        console.log(`Step2Form - Cambiando ${field} a:`, value);
+        console.log(`Step2Form - Changing ${field} to:`, value);
 
         setLocalData(prev => ({ ...prev, [field]: value }));
-
         updateFormData({ [field]: value });
 
         // Clear error
@@ -54,6 +67,8 @@ const Step2Form = ({ formData, updateFormData, onNext, onBack, isEditing }: Step
 
         if (!currentSon.name?.trim()) {
             newErrors.name = 'Child name is required';
+        } else if (currentSon.name.length < 2) {
+            newErrors.name = 'Child name must be at least 2 characters long';
         }
 
         if (!currentSon.birth_date) {
@@ -129,8 +144,24 @@ const Step2Form = ({ formData, updateFormData, onNext, onBack, isEditing }: Step
     const validateForm = (): boolean => {
         const newErrors: Record<string, string> = {};
 
+        if (!localData.number_licence?.trim()) {
+            newErrors.number_licence = 'License number is required';
+        }
+
+        if (localData.zipcode && !/^\d{5}(-\d{4})?$/.test(localData.zipcode)) {
+            newErrors.zipcode = 'Please enter a valid ZIP code (e.g., 12345 or 12345-6789)';
+        }
+
+        // if (!localData.license_front) {
+        //     newErrors.license_front = 'Front license photo is required';
+        // }
+
+        // if (!localData.license_back) {
+        //     newErrors.license_back = 'Back license photo is required';
+        // }
+
         if (localData.has_minors && localData.sons.length === 0) {
-            newErrors.sons = 'Please add information about your children';
+            newErrors.sons = 'Please add at least one child';
         }
 
         setErrors(newErrors);
@@ -142,7 +173,7 @@ const Step2Form = ({ formData, updateFormData, onNext, onBack, isEditing }: Step
             // Synchronize all fields with the parent formData
             updateFormData({
                 number_licence: localData.number_licence,
-                code: localData.code,
+                zipcode: localData.zipcode,
                 has_minors: localData.has_minors,
                 n_children: localData.n_children,
                 sons: localData.sons,
@@ -175,11 +206,12 @@ const Step2Form = ({ formData, updateFormData, onNext, onBack, isEditing }: Step
                 />
 
                 <FormInput
-                    label="Code (*)"
-                    value={localData.code}
-                    onChangeText={(text) => handleChange('code', text)}
-                    error={errors.code}
-                    required={true}
+                    label="ZIP Code"
+                    value={localData.zipcode}
+                    onChangeText={(text) => handleChange('zipcode', text)}
+                    keyboardType="numeric"
+                    error={errors.zipcode}
+                    required={false}
                 />
 
                 <ImageUpload
@@ -191,7 +223,7 @@ const Step2Form = ({ formData, updateFormData, onNext, onBack, isEditing }: Step
                 />
 
                 <ImageUpload
-                    label="Rear License Photo (*)"
+                    label="Back License Photo (*)"
                     image={localData.license_back}
                     onImageSelected={(image) => handleChange('license_back', image)}
                     error={errors.license_back}
@@ -202,9 +234,14 @@ const Step2Form = ({ formData, updateFormData, onNext, onBack, isEditing }: Step
 
                 <RadioGroup
                     label="Do you have minor children? (*)"
-                    options={[{ label: 'yes', value: true }, { label: 'No', value: false }]}
+                    options={[
+                        { label: 'Yes', value: true },
+                        { label: 'No', value: false }
+                    ]}
                     selectedValue={localData.has_minors}
                     onSelect={(value) => handleChange('has_minors', value)}
+                    error={errors.has_minors}
+                    required={true}
                 />
 
                 {localData.has_minors && (
