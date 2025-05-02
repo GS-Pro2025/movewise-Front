@@ -8,6 +8,7 @@ import UpdateOrder from "./UpdateOrder";
 import { getOrders } from "../../hooks/api/GetOrders";
 import { GestureHandlerRootView, Swipeable } from "react-native-gesture-handler";
 import { TouchableHighlight } from "react-native";
+import colors from "../Colors";
 import Toast from "react-native-toast-message";
 import { DeleteOrder } from "@/hooks/api/DeleteOrder";
 import { useTranslation } from "react-i18next";
@@ -24,9 +25,9 @@ interface OrderPerson {
 }
 
 interface Order {
-  key: string;
+  key : string;
   key_ref: string;
-  date: string | null; // Changed to allow null date
+  date: string | null;
   distance: number | null;
   expense: string | null;
   income: string | null;
@@ -39,8 +40,8 @@ interface Order {
 }
 
 const OrderModal: React.FC<OrderModalProps> = ({ visible, onClose }) => {
-  const { t } = useTranslation(); // Hook para traducción
 
+  const { t } = useTranslation(); // Hook para traducción
   const [addOrderVisible, setAddOrderVisible] = useState(false);
   const [updateOrderVisible, setUpdateOrderVisible] = useState(false);
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
@@ -56,14 +57,11 @@ const OrderModal: React.FC<OrderModalProps> = ({ visible, onClose }) => {
   const isDarkMode = colorScheme === "dark";
   const router = useRouter();
 
-  // Function to load orders
   const loadOrders = useCallback(async () => {
     setLoading(true);
     setRefreshing(true);
     try {
       const response = await getOrders();
-      console.log(response)
-      // Check response structure
       const ordersData = Array.isArray(response) ? response : response?.data || [];
       setOrders(ordersData);
     } catch (error) {
@@ -84,7 +82,6 @@ const OrderModal: React.FC<OrderModalProps> = ({ visible, onClose }) => {
     loadOrders();
   }, [loadOrders]);
 
-  // Normalize dates for comparison
   const normalizeDate = (date: Date) => {
     const d = new Date(date);
     d.setHours(0, 0, 0, 0);
@@ -92,7 +89,7 @@ const OrderModal: React.FC<OrderModalProps> = ({ visible, onClose }) => {
   };
 
   const filteredOrders = orders.filter(order => {
-    const orderDate = order.date ? normalizeDate(new Date(order.date)) : null; // Handle null date
+    const orderDate = order.date ? normalizeDate(new Date(order.date)) : null;
 
     const isDateMatch = (!startDate && !endDate) ||
       (orderDate && startDate && endDate && orderDate >= startDate && orderDate <= endDate) ||
@@ -131,7 +128,8 @@ const OrderModal: React.FC<OrderModalProps> = ({ visible, onClose }) => {
       Alert.alert(t("error"), t("selected_order_null"));
     }
   };
-  const handleDeleteOrder = (key: string) => {
+
+  const handleDeleteOrder = (Key: string) => {
     Alert.alert(
       t("confirm_delete"),
       t("delete_order_confirmation"),
@@ -158,19 +156,20 @@ const OrderModal: React.FC<OrderModalProps> = ({ visible, onClose }) => {
                 text2: t("order_could_not_be_deleted"),
               });
             }
-          },
-        },
+          }
+        }
       ]
     );
   };
+
   const renderItem = ({ item }: { item: Order }) => {
     const renderLeftActions = () => (
       <View style={styles.leftSwipeActions}>
         <TouchableOpacity
-          style={[styles.editAction, { backgroundColor: '#3498db' }]}
+          style={[styles.editAction, { backgroundColor: colors.swipeEdit }]}
           onPress={() => handleEditOrder(item)}
         >
-          <Ionicons name="create-outline" size={24} color="#FFFFFF" />
+          <Ionicons name="create-outline" size={24} color={colors.darkText} />
           <Text style={styles.actionText}>Edit</Text>
         </TouchableOpacity>
       </View>
@@ -179,17 +178,17 @@ const OrderModal: React.FC<OrderModalProps> = ({ visible, onClose }) => {
     const renderRightActions = () => (
       <View style={styles.rightSwipeActions}>
         <TouchableOpacity
-          style={[styles.deleteAction, { backgroundColor: '#e74c3c' }]}
+          style={[styles.deleteAction, { backgroundColor: colors.swipeDelete }]}
           onPress={() => handleDeleteOrder(item.key)}
         >
-          <Ionicons name="trash-outline" size={24} color="#FFFFFF" />
+          <Ionicons name="trash-outline" size={24} color={colors.darkText} />
           <Text style={styles.actionText}>Delete</Text>
         </TouchableOpacity>
       </View>
     );
 
     const formatDate = (dateString: string | null) => {
-      if (!dateString) return ''; // Handle null case
+      if (!dateString) return '';
       return new Date(dateString).toLocaleDateString('en-US', {
         year: 'numeric',
         month: '2-digit',
@@ -205,33 +204,33 @@ const OrderModal: React.FC<OrderModalProps> = ({ visible, onClose }) => {
           renderLeftActions={renderLeftActions}
         >
           <TouchableHighlight
-            underlayColor={isDarkMode ? '#f0f0f0' : '#e0e0e0'}
+            underlayColor={isDarkMode ? colors.highlightDark : colors.highlightLight}
             onPress={() => handleEditOrder(item)}
           >
-            <View style={[styles.orderItem, { backgroundColor: isDarkMode ? '#1E3A5F' : '#f5f5f5' }]}>
+            <View style={[styles.orderItem, { backgroundColor: isDarkMode ? colors.third : colors.lightBackground }]}>
               <View style={styles.orderIconContainer}>
                 <Ionicons
                   name="cube-outline"
                   size={24}
-                  color={isDarkMode ? "#A1C6EA" : "#0458AB"}
+                  color={isDarkMode ? colors.secondary : colors.primary}
                 />
               </View>
               <View style={styles.orderDetails}>
-                <Text style={[styles.orderRef, { color: isDarkMode ? '#FFFFFF' : '#0458AB' }]}>
+                <Text style={[styles.orderRef, { color: isDarkMode ? colors.darkText : colors.primary }]}>
                   {item.key_ref}
                 </Text>
-                <Text style={[styles.customerName, { color: isDarkMode ? '#CCCCCC' : '#333333' }]}>
+                <Text style={[styles.customerName, { color: isDarkMode ? colors.placeholderDark : colors.lightText }]}>
                   {`${item.person?.first_name || ''} ${item.person?.last_name || ''}`}
                 </Text>
               </View>
               <View style={styles.orderStatus}>
                 <Text style={[styles.statusText, {
-                  color: item.status === 'Pending' ? '#f39c12' :
-                    item.status === 'Completed' ? '#48dc33' : '#48dc33' // Cambiado a verde para completado
+                  color: item.status === 'Pending' ? colors.pendingStatus :
+                    item.status === 'Completed' ? colors.completedStatus : colors.completedStatus
                 }]}>
                   {t(item.status.toLowerCase())} {/* Traducción del estado */}
                 </Text>
-                <Text style={[styles.dateText, { color: isDarkMode ? '#CCCCCC' : '#666666' }]}>
+                <Text style={[styles.dateText, { color: isDarkMode ? colors.placeholderDark : colors.placeholderLight }]}>
                   {formatDate(item.date)}
                 </Text>
               </View>
@@ -245,28 +244,31 @@ const OrderModal: React.FC<OrderModalProps> = ({ visible, onClose }) => {
   return (
     <Modal animationType="slide" transparent={false} visible={visible} onRequestClose={onClose}>
       <SafeAreaView style={{ flex: 1 }}>
+
         {/* Encabezado */}
-        <View style={[styles.header, { backgroundColor: isDarkMode ? "#112A4A" : "#ffffff", borderBottomColor: isDarkMode ? 'rgba(0, 0, 0, 0.2)' : 'rgba(0, 0, 0, 0.1)' }]}>
-          <Text style={[styles.title, { color: isDarkMode ? "#FFFFFF" : "#0458AB" }]}>{t("create_order")}</Text>
+        <View style={[styles.header, { backgroundColor: isDarkMode ? colors.third : colors.lightBackground, borderBottomColor: isDarkMode ? colors.borderDark : colors.borderLight }]}>
+          <Text style={[styles.title, { color: isDarkMode ? colors.darkText : colors.primary }]}>{t("create_order")}</Text>
           <TouchableOpacity
-            style={[styles.addButton, { backgroundColor: isDarkMode ? "#FFF" : "#0458AB" }]}
-            onPress={() => setAddOrderVisible(true)} // Mostrar el modal AddOrderForm
+            style={[styles.addButton, { backgroundColor: isDarkMode ? colors.lightBackground : colors.primary }]}
+            onPress={() => setAddOrderVisible(true)}
           >
-            <Text style={[styles.plus, { color: isDarkMode ? "#0458AB" : "#FFF" }]}>+</Text>
+            <Text style={[styles.plus, { color: isDarkMode ? colors.primary : colors.lightBackground }]}>+</Text>
           </TouchableOpacity>
         </View>
-  
-        {/* Filtros */}
-        {/* FECHAS */}
-        <View style={[styles.datePickerContainer, { flexDirection: 'row', justifyContent: 'space-between', backgroundColor: isDarkMode ? '#1E3A5F' : '#f0f0f0', borderRadius: 0, padding: 10 }]}>
+
+
+        {/* Date Pickers for Start and End Dates */}
+
+        <View style={[styles.datePickerContainer, { flexDirection: 'row', justifyContent: 'space-between', backgroundColor: isDarkMode ? colors.third : colors.highlightLight, borderRadius: 0, padding: 10 }]}>
+
           <TouchableOpacity
-            style={[styles.datePickerButton, { borderWidth: 1, borderColor: isDarkMode ? '#A1C6EA' : '#0458AB', borderRadius: 8, padding: 10, flex: 1, marginRight: 5 }]}
+            style={[styles.datePickerButton, { borderWidth: 1, borderColor: isDarkMode ? colors.secondary : colors.primary, borderRadius: 8, padding: 10, flex: 1, marginRight: 5 }]}
             onPress={() => setShowStartDatePicker(true)}
           >
-            <Text style={{ color: isDarkMode ? '#FFFFFF' : '#333333', fontSize: 16 }}>
-              {startDate ? startDate.toLocaleDateString() : t("start_date")} {/* Manejar fecha nula */}
+            <Text style={{ color: isDarkMode ? colors.darkText : colors.lightText, fontSize: 16 }}>
+              {startDate ? startDate.toLocaleDateString() : t("start_date")} {/* Handle null date */}
             </Text>
-            <Ionicons name="calendar" size={20} color={isDarkMode ? "#A1C6EA" : "#0458AB"} />
+            <Ionicons name="calendar" size={20} color={isDarkMode ? colors.secondary : colors.primary} />
           </TouchableOpacity>
           {showStartDatePicker && (
             <DateTimePicker
@@ -277,17 +279,17 @@ const OrderModal: React.FC<OrderModalProps> = ({ visible, onClose }) => {
             />
           )}
           <TouchableOpacity onPress={() => { setStartDate(null); setShowStartDatePicker(false); }}>
-            <Ionicons name="close-circle" size={18} color={isDarkMode ? "#A1C6EA" : "#0458AB"} />
+            <Ionicons name="close-circle" size={18} color={isDarkMode ? colors.secondary : colors.primary} />
           </TouchableOpacity>
   
           <TouchableOpacity
-            style={[styles.datePickerButton, { borderWidth: 1, borderColor: isDarkMode ? '#A1C6EA' : '#0458AB', borderRadius: 8, padding: 10, flex: 1, marginLeft: 5 }]}
+            style={[styles.datePickerButton, { borderWidth: 1, borderColor: isDarkMode ? colors.secondary : colors.primary, borderRadius: 8, padding: 10, flex: 1, marginLeft: 5 }]}
             onPress={() => setShowEndDatePicker(true)}
           >
-            <Text style={{ color: isDarkMode ? '#FFFFFF' : '#333333', fontSize: 16 }}>
-              {endDate ? endDate.toLocaleDateString() : t("end_date")} {/* Manejar fecha nula */}
+            <Text style={{ color: isDarkMode ? colors.darkText : colors.lightText, fontSize: 16 }}>
+              {endDate ? endDate.toLocaleDateString() : t("end_date")} {/* Handle null date */}
             </Text>
-            <Ionicons name="calendar" size={20} color={isDarkMode ? "#A1C6EA" : "#0458AB"} />
+            <Ionicons name="calendar" size={20} color={isDarkMode ? colors.secondary : colors.primary} />
           </TouchableOpacity>
           {showEndDatePicker && (
             <DateTimePicker
@@ -298,36 +300,38 @@ const OrderModal: React.FC<OrderModalProps> = ({ visible, onClose }) => {
             />
           )}
           <TouchableOpacity onPress={() => { setEndDate(null); setShowEndDatePicker(false); }}>
-            <Ionicons name="close-circle" size={18} color={isDarkMode ? "#A1C6EA" : "#0458AB"} />
+            <Ionicons name="close-circle" size={18} color={isDarkMode ? colors.secondary : colors.primary} />
           </TouchableOpacity>
         </View>
-        {/* FECHAS */}
-  
-        <View style={[styles.filtersContainer, { backgroundColor: isDarkMode ? "#112A4A" : "#ffffff", borderRadius: 8, padding: 10 }]}>
+
+        {/* Search Bar */}
+
+        <View style={[styles.filtersContainer, { backgroundColor: isDarkMode ? colors.third : colors.lightBackground }]}>
           <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-            <Ionicons name="search" size={20} color={isDarkMode ? "#A1C6EA" : "#0458AB"} />
+            <Ionicons name="search" size={20} color={isDarkMode ? colors.secondary : colors.primary} />
             <TextInput
-              style={[styles.searchInput, { color: isDarkMode ? '#FFFFFF' : '#333333', flex: 1, marginLeft: 10, borderWidth: 1, borderColor: isDarkMode ? '#A1C6EA' : '#0458AB', borderRadius: 8, padding: 10 }]}
+              style={[styles.searchInput, { color: isDarkMode ? colors.darkText : colors.lightText }]}
               placeholder={t("search_placeholder")}
-              placeholderTextColor={isDarkMode ? '#AAAAAA' : '#999999'}
+              placeholderTextColor={isDarkMode ? colors.placeholderDark : colors.placeholderLight}
               value={searchText}
               onChangeText={setSearchText}
             />
             {searchText.length > 0 && (
               <TouchableOpacity onPress={() => setSearchText('')}>
-                <Ionicons name="close-circle" size={18} color={isDarkMode ? "#A1C6EA" : "#0458AB"} />
+                <Ionicons name="close-circle" size={18} color={isDarkMode ? colors.secondary : colors.primary} />
               </TouchableOpacity>
             )}
           </View>
         </View>
-  
+
         {/* Lista de órdenes */}
+
         {loading ? (
           <View style={styles.loadingContainer}>
-            <ActivityIndicator size="large" color="#0458AB" />
+            <ActivityIndicator size="large" color={colors.primary} />
           </View>
         ) : (
-          <FlatList
+          <FlatList style={{ backgroundColor: isDarkMode ? colors.darkBackground : colors.lightBackground }}
             data={filteredOrders}
             keyExtractor={(item, index) => `${item.key_ref}-${index}`}
             renderItem={renderItem}
@@ -336,37 +340,43 @@ const OrderModal: React.FC<OrderModalProps> = ({ visible, onClose }) => {
               <RefreshControl
                 refreshing={refreshing}
                 onRefresh={onRefresh}
-                colors={["#0458AB"]}
+                colors={[colors.primary]}
               />
             }
             ListEmptyComponent={
               <View style={styles.emptyContainer}>
-                <Text style={[styles.emptyText, { color: isDarkMode ? '#FFFFFF' : '#666666' }]}>
+                <Text style={[styles.emptyText, { color: isDarkMode ? colors.emptyTextDark : colors.emptyTextLight }]}>
                   {orders.length === 0 ? t("no_orders_available") : t("no_matching_orders")}
                 </Text>
               </View>
             }
           />
         )}
+
+        {/* Back and Save Buttons */}
+
         {loading ? null : (
-          <View style={[styles.container, { backgroundColor: isDarkMode ? "#112A4A" : "#ffffff" }]}>
+          <View style={[styles.container, { backgroundColor: isDarkMode ? colors.third : colors.lightBackground }]}>
             <View style={[styles.buttonContainer, { justifyContent: 'center', alignItems: 'flex-end' }]}>
               <TouchableOpacity
-                style={[styles.backButton, { backgroundColor: isDarkMode ? "#0458AB" : "#545257", width: 120, height: 50, alignItems: 'center', justifyContent: 'center' }]}
+                style={[styles.backButton, { backgroundColor: isDarkMode ? colors.primary : colors.neutralGray, width: 120, height: 50, alignItems: 'center', justifyContent: 'center' }]}
                 onPress={() => router.back()}
               >
-                <Text style={[styles.backButtonText, { color: isDarkMode ? "#FFFFFF" : "#000000", textAlign: 'center' }]}>{t("back")}</Text>
+                <Text style={[styles.backButtonText, { color: isDarkMode ? colors.darkText : colors.blackText, textAlign: 'center' }]}>
+                  {t("back")}
+                </Text>
               </TouchableOpacity>
               <TouchableOpacity
-                style={[styles.saveButton, { backgroundColor: isDarkMode ? "#FFFFFF" : "#0458AB", width: 120, height: 50, alignItems: 'center', justifyContent: 'center' }]}
+                style={[styles.saveButton, { backgroundColor: isDarkMode ? colors.lightBackground : colors.primary, width: 120, height: 50, alignItems: 'center', justifyContent: 'center' }]}
               >
-                <Text style={[styles.saveButtonText, { color: isDarkMode ? "#0458AB" : "#FFFFFF", textAlign: 'center' }]}>
+                <Text style={[styles.saveButtonText, { color: isDarkMode ? colors.primary : colors.lightBackground, textAlign: 'center' }]}>
                   {t("save")}
                 </Text>
               </TouchableOpacity>
             </View>
           </View>
         )}
+        {/* End of Back and Save Buttons */}
       </SafeAreaView>
       {/* Aquí controlamos la visibilidad de los modales AddOrderForm y UpdateOrder */}
       <AddOrderForm visible={addOrderVisible} onClose={() => setAddOrderVisible(false)} />
@@ -377,7 +387,7 @@ const OrderModal: React.FC<OrderModalProps> = ({ visible, onClose }) => {
 };
 
 const styles = StyleSheet.create({
-  container: { flex: 1, padding: 80 },
+  container: { flex: 1, padding: 50 },
   header: {
     flexDirection: "row",
     alignItems: "center",
