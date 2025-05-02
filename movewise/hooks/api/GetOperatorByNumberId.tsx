@@ -1,7 +1,7 @@
 import apiClient from "./apiClient";
 
 export const getOperatorByNumberId = async (number_id: number) => {
-    try {
+    try { 
         const response = await apiClient.get("/operators/" + number_id);
         if (response.status === 404) {
             return {
