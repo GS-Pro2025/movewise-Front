@@ -1,4 +1,4 @@
-import React, { useEffect, useState, } from "react";
+import React, { useEffect, useState } from "react";
 import {
   Image,
   View,
@@ -11,9 +11,13 @@ import {
   ScrollView,
 } from "react-native";
 import { useRouter } from "expo-router";
-import Toast from 'react-native-toast-message';
+
+import colors from "./Colors";
+import Toast from "react-native-toast-message";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { AnimatedImage } from "react-native-reanimated/lib/typescript/component/Image";
+import { useTranslation } from "react-i18next";
+
+
 interface Admin {
   id: number;
   first_name: string;
@@ -29,9 +33,8 @@ interface ActionButtonProps {
   onPress?: () => void;
 }
 
-
-
 const Home: React.FC = () => {
+  const { t } = useTranslation();
   const router = useRouter();
   const theme = useColorScheme();
   const isDarkMode = theme === "dark";
@@ -47,7 +50,7 @@ const Home: React.FC = () => {
 
   return (
     <SafeAreaView
-      style={[styles.container, isDarkMode ? styles.darkBackground : styles.lightBackground]}
+      style={[styles.container, { backgroundColor: isDarkMode ? colors.third : colors.lightBackground }]}
     >
       <StatusBar barStyle={isDarkMode ? "light-content" : "dark-content"} />
 
@@ -58,24 +61,24 @@ const Home: React.FC = () => {
             <View style={styles.avatarContainer}>
               <Image
                 source={require("../assets/images/logo.png")}
-                style={[styles.userIcono, { tintColor: isDarkMode ? "#fff" : "#0458AB" }]}
+                style={[styles.userIcono, { tintColor: isDarkMode ? colors.darkText : colors.primary }]}
               />
             </View>
             <View style={styles.userTextContainer}>
               <Text
-                style={[styles.userName, { color: isDarkMode ? "#FFFFFF" : "#0458AB" }]}>
+                style={[styles.userName, { color: isDarkMode ? "#FFFFFF" : "#0458AB" }]}
+              >
                 {Admin?.first_name} {Admin?.last_name}
               </Text>
               <Text style={[styles.userName, { color: isDarkMode ? "#FFFFFF" : "#0458AB" }]}>
-                Admin # <Text style={{ fontSize: 14 }}>{Admin?.id_number}</Text>
+                {t("admin_id")} <Text style={{ fontSize: 14 }}>{Admin?.id_number}</Text>
               </Text>
-
             </View>
           </View>
           <TouchableOpacity style={styles.shareButton}>
             <Image
               source={require("../assets/images/exit.png")}
-              style={[styles.userIcono, { tintColor: isDarkMode ? "#FFFFFF" : "#0458AB" }]}
+              style={[styles.userIcono, { tintColor: isDarkMode ? colors.darkText : colors.primary }]}
             />
           </TouchableOpacity>
         </View>
@@ -85,7 +88,7 @@ const Home: React.FC = () => {
         <View style={styles.imageContainer}>
           <Image
             source={require("../assets/images/LOGOPNG.png")}
-            style={[styles.userLogo, { tintColor: isDarkMode ? "#FFFFFF" : "#0458AB" }]}
+            style={[styles.userLogo, { tintColor: isDarkMode ? colors.darkText : colors.primary }]}
           />
         </View>
 
@@ -93,64 +96,65 @@ const Home: React.FC = () => {
         <View style={styles.gridContainer}>
           <View style={styles.row}>
             <ActionButton
-              title={"Create\nDaily"}
+              title={t("create_daily")}
               isDarkMode={isDarkMode}
               iconSource={require("../assets/images/paquete.png")}
               onPress={() => router.push("/modals/OrderModal")}
             />
             <ActionButton
-              title={"Add Extra cost"}
+              title={t("add_extra_cost")}
               isDarkMode={isDarkMode}
               iconSource={require("../assets/images/dolar.png")}
+              onPress={() => router.push("/modals/WorkDailyScreen")}
             />
           </View>
           <View style={styles.row}>
             <ActionButton
-              title={"Edit\nDaily"}
+              title={t("edit_daily")}
               isDarkMode={isDarkMode}
               iconSource={require("../assets/images/paquete.png")}
               onPress={() => console.log("")}
             />
             <ActionButton
-              title={"Resume\nOrder"}
+              title={t("resume_order")}
               isDarkMode={isDarkMode}
               iconSource={require("../assets/images/paper.png")}
-              onPress={()=> router.push("/modals/ListOfOrdersForSumary")}
+              onPress={() => router.push("/modals/ListOfOrdersForSumary")}
             />
           </View>
           <View style={styles.row}>
             <ActionButton
-              title={"Create\nTruck"}
+              title={t("create_truck")}
               isDarkMode={isDarkMode}
               iconSource={require("../assets/images/truck.png")}
               onPress={() => router.push("/modals/ListTruckScreen")}
             />
             <ActionButton
-              title={"Collaborator\nRegistration"}
+              title={t("collaborator_registration")}
               isDarkMode={isDarkMode}
               iconSource={require("../assets/images/logo.png")}
-              onPress={() => 
+              onPress={() =>
                 router.push({
-                  pathname: '/modals/OperatorList',
-                  params: { isEdit: 'false'}
+                  pathname: "/modals/OperatorList",
+                  params: { isEdit: "false" },
                 })
               }
             />
           </View>
           <View style={styles.row}>
             <ActionButton
-              title={"Collaborator\nUnlink"}
+              title={t("collaborator_unlink")}
               isDarkMode={isDarkMode}
               iconSource={require("../assets/images/personx.png")}
             />
             <ActionButton
-              title={"Collaborator\nEdit"}
+              title={t("collaborator_edit")}
               isDarkMode={isDarkMode}
               iconSource={require("../assets/images/Pencil.png")}
-              onPress={() => 
+              onPress={() =>
                 router.push({
-                  pathname: '/modals/OperatorList',
-                  params: {isEdit: 'true'}
+                  pathname: "/modals/OperatorList",
+                  params: { isEdit: "true" },
                 })
               }
             />
@@ -164,16 +168,16 @@ const Home: React.FC = () => {
 const ActionButton: React.FC<ActionButtonProps> = ({ title, iconSource, isDarkMode, onPress }) => {
   return (
     <TouchableOpacity
-      style={[styles.actionButton, isDarkMode ? styles.darkButton : styles.lightButton]}
+      style={[styles.actionButton, { backgroundColor: isDarkMode ? colors.lightBackground : colors.primary }]}
       onPress={onPress}
     >
       {iconSource ? (
         <Image
           source={iconSource}
-          style={[styles.actionButtonIcon, { tintColor: isDarkMode ? "#112A4A" : "#FFFFFF" }]}
+          style={[styles.actionButtonIcon, { tintColor: isDarkMode ? colors.third : colors.lightBackground }]}
         />
       ) : null}
-      <Text style={[styles.actionButtonText, isDarkMode ? styles.darkText : styles.lightText]}>
+      <Text style={[styles.actionButtonText, { color: isDarkMode ? colors.third : colors.lightBackground }]}>
         {title}
       </Text>
     </TouchableOpacity>
@@ -182,30 +186,22 @@ const ActionButton: React.FC<ActionButtonProps> = ({ title, iconSource, isDarkMo
 
 const styles = StyleSheet.create({
   container: { flex: 1 },
-  darkBackground: { backgroundColor: "#112A4A" },
-  lightBackground: { backgroundColor: "#FFF" },
   scrollContent: { flexGrow: 1, padding: 20 },
   header: { flexDirection: "row", justifyContent: "space-between", alignItems: "center" },
   userInfo: { flexDirection: "row", alignItems: "center" },
   avatarContainer: { width: 40, height: 40, borderRadius: 20, overflow: "hidden" },
   userIcono: { width: 40, height: 40 },
   userTextContainer: { marginLeft: 10 },
-  userName: { fontSize: 18, fontWeight: "bold", color: "#ffff" },
-  userLevel: { fontSize: 14, opacity: 0.7, color: "#ffff" },
+  userName: { fontSize: 18, fontWeight: "bold" },
   shareButton: { padding: 10 },
-  divider: { height: 1, backgroundColor: "#ccc", marginVertical: 10 },
+  divider: { height: 1, backgroundColor: colors.placeholderLight, marginVertical: 10 },
   imageContainer: { alignItems: "center", marginVertical: 10 },
   userLogo: { width: 100, height: 100 },
-  gridContainer: { marginTop: 10, },
+  gridContainer: { marginTop: 10 },
   row: { flexDirection: "row", justifyContent: "space-between", marginBottom: 10 },
   actionButton: { flex: 1, padding: 15, alignItems: "center", borderRadius: 10, marginHorizontal: 5 },
-  darkButton: { backgroundColor: "#FFF" },
-  lightButton: { backgroundColor: "#0458AB" },
   actionButtonIcon: { width: 40, height: 40, marginBottom: 5 },
   actionButtonText: { fontSize: 14, textAlign: "center" },
-  darkText: { color: "#112A4A" },
-  lightText: { color: "#ffff" },
-
 });
 
 export default Home;

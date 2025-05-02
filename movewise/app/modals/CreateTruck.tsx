@@ -9,11 +9,12 @@ import {
   Modal,
 } from "react-native";
 import { useNavigation } from "@react-navigation/native";
-import HeaderWithDivider from "@/components/HeaderWithDivider";
+import HeaderWithDividerCreateTruck from "@/components/HeaderWithDividerCreateTruck";
 import DropDownPicker from "react-native-dropdown-picker";
 import Toast from "react-native-toast-message";
 import CreateTruckModel  from "@/models/ModelCreateTruck"
 import { CreateTruck } from "@/hooks/api/TruckClient";
+import { useTranslation } from "react-i18next";
 
 type CreateTruckScreenProps = {
   visible: boolean;
@@ -23,6 +24,7 @@ type CreateTruckScreenProps = {
 // Reemplaza el contenido de tu componente actual por este
 const CreateTruckScreen = ({ visible, onClose, onSuccess }: CreateTruckScreenProps) => {
   const navigation = useNavigation();
+  const { t } = useTranslation(); // Importar el hook de traducción
   const [type, setType] = useState("");
   const [category, setCategory] = useState("");
   const [name, setName] = useState("");
@@ -33,14 +35,14 @@ const CreateTruckScreen = ({ visible, onClose, onSuccess }: CreateTruckScreenPro
   const [openCategory, setOpenCategory] = useState(false);
 
   const typeOptions = [
-    { label: "Carga ligera", value: "Carga ligera" },
-    { label: "Carga mediana", value: "Carga mediana" },
-    { label: "Carga pesada", value: "Carga pesada" },
+    { label: t("light_load"), value: "Carga ligera" },
+    { label: t("medium_load"), value: "Carga mediana" },
+    { label: t("heavy_load"), value: "Carga pesada" },
   ];
 
   const categoryOptions = [
-    { label: "Categoría A", value: "a" },
-    { label: "Categoría B", value: "b" },
+    { label: t("category_a"), value: "a" },
+    { label: t("category_b"), value: "b" },
   ];
 
   const [errors, setErrors] = useState({
@@ -85,16 +87,16 @@ const CreateTruckScreen = ({ visible, onClose, onSuccess }: CreateTruckScreenPro
       }
       Toast.show({
         type: "success",
-        text1: "Truck created",
-        text2: "Truck created and added to the list"
+        text1: t("truck_created"),
+        text2: t("truck_added"),
       });
     } catch (error) {
-      console.error("Error on the truck creation:", error);
+      console.error(t("truck_creation_error"), error);
       setLoading(false);
       Toast.show({
         type: "error",
-        text1: "Error",
-        text2: "Error on the truck creation",
+        text1: t("error"),
+        text2: t("truck_creation_error"),
       });
     }
   };
@@ -102,13 +104,13 @@ const CreateTruckScreen = ({ visible, onClose, onSuccess }: CreateTruckScreenPro
   return (
     <Modal visible={visible} animationType="slide" onRequestClose={onClose}>
       <View style={styles.container}>
-        <HeaderWithDivider />
+        <HeaderWithDividerCreateTruck />
 
         <View style={styles.form}>
-          {/* Type */}
+          {/* Tipo */}
           <View style={{ zIndex: 1000 }}>
             <Text style={styles.label}>
-              Truck Type <Text style={styles.required}>*</Text>
+              {t("truck_type")} <Text style={styles.required}>*</Text>
             </Text>
             <DropDownPicker
               open={openType}
@@ -117,7 +119,7 @@ const CreateTruckScreen = ({ visible, onClose, onSuccess }: CreateTruckScreenPro
               setOpen={setOpenType}
               setValue={setType}
               setItems={() => {}}
-              placeholder="Select Type"
+              placeholder={t("select_type")}
               placeholderStyle={{ color: "#9ca3af" }}
               style={[styles.input, { borderColor: errors.type ? "red" : "#0458AB" }]}
               listMode="SCROLLVIEW"
@@ -125,9 +127,9 @@ const CreateTruckScreen = ({ visible, onClose, onSuccess }: CreateTruckScreenPro
             />
           </View>
 
-          {/* Category */}
+          {/* Categoría */}
           <View style={{ zIndex: 999 }}>
-            <Text style={styles.label}>Category</Text>
+            <Text style={styles.label}>{t("category")}</Text>
             <DropDownPicker
               open={openCategory}
               value={category}
@@ -135,7 +137,7 @@ const CreateTruckScreen = ({ visible, onClose, onSuccess }: CreateTruckScreenPro
               setOpen={setOpenCategory}
               setValue={setCategory}
               setItems={() => {}}
-              placeholder="(Optional)"
+              placeholder={t("optional")}
               placeholderStyle={{ color: "#9ca3af" }}
               style={styles.input}
               listMode="SCROLLVIEW"
@@ -143,25 +145,25 @@ const CreateTruckScreen = ({ visible, onClose, onSuccess }: CreateTruckScreenPro
             />
           </View>
 
-          {/* Name */}
+          {/* Nombre */}
           <Text style={styles.label}>
-            Name <Text style={styles.required}>*</Text>
+            {t("name")} <Text style={styles.required}>*</Text>
           </Text>
           <TextInput
             style={[styles.input, errors.name && styles.errorBorder]}
-            placeholder="Truck Name"
+            placeholder={t("truck_name")}
             placeholderTextColor="#ccc"
             value={name}
             onChangeText={setName}
           />
 
-          {/* Number */}
+          {/* Número */}
           <Text style={styles.label}>
-            Truck Number <Text style={styles.required}>*</Text>
+            {t("truck_number")} <Text style={styles.required}>*</Text>
           </Text>
           <TextInput
             style={[styles.input, errors.number && styles.errorBorder]}
-            placeholder="DEF456"
+            placeholder={t("truck_number_placeholder")}
             placeholderTextColor="#ccc"
             keyboardType="default"
             value={number}
@@ -173,7 +175,7 @@ const CreateTruckScreen = ({ visible, onClose, onSuccess }: CreateTruckScreenPro
               style={[styles.button, styles.cancelButton]}
               onPress={() => onClose()}
             >
-              <Text style={styles.cancelText}>Cancel</Text>
+              <Text style={styles.cancelText}>{t("cancel")}</Text>
             </TouchableOpacity>
 
             <TouchableOpacity
@@ -182,13 +184,13 @@ const CreateTruckScreen = ({ visible, onClose, onSuccess }: CreateTruckScreenPro
               disabled={loading}
             >
               <Text style={styles.saveText}>
-                {loading ? "Saving..." : "Save"}
+                {loading ? t("saving") : t("save")}
               </Text>
             </TouchableOpacity>
           </View>
         </View>
 
-        {/* Confirm Modal */}
+        {/* Modal de Confirmación */}
         <Modal
           animationType="slide"
           transparent={true}
@@ -197,31 +199,31 @@ const CreateTruckScreen = ({ visible, onClose, onSuccess }: CreateTruckScreenPro
         >
           <View style={styles.modalOverlay}>
             <View style={styles.modalContainer}>
-              <Text style={styles.modalText}>Truck Type: {type}</Text>
-              <Text style={styles.modalText}>Category: {category || "N/A"}</Text>
-              <Text style={styles.modalText}>Name: {name}</Text>
-              <Text style={styles.modalText}>Number: {number}</Text>
+              <Text style={styles.modalText}>{t("truck_type")}: {type}</Text>
+              <Text style={styles.modalText}>{t("category")}: {category || t("not_applicable")}</Text>
+              <Text style={styles.modalText}>{t("name")}: {name}</Text>
+              <Text style={styles.modalText}>{t("number")}: {number}</Text>
 
               <View style={styles.modalButtonRow}>
                 <TouchableOpacity
                   style={[styles.button, styles.cancelButton]}
                   onPress={() => setShowConfirmModal(false)}
                 >
-                  <Text style={styles.cancelText}>Cancel</Text>
+                  <Text style={styles.cancelText}>{t("cancel")}</Text>
                 </TouchableOpacity>
                 <TouchableOpacity
                   style={[styles.button, styles.saveButton]}
                   onPress={handleSave}
                   disabled={loading}
                 >
-                  <Text style={styles.saveText}>{loading ? "..." : "OK"}</Text>
+                  <Text style={styles.saveText}>{loading ? "..." : t("ok")}</Text>
                 </TouchableOpacity>
               </View>
             </View>
           </View>
         </Modal>
       </View>
-      <Toast/>
+      <Toast />
     </Modal>
   );
 };

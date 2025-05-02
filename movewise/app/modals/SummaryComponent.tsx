@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, ActivityIndicator } from 'react-native';
 import { router, useLocalSearchParams } from 'expo-router'; // Cambia a useLocalSearchParams
 import { getSummary } from '../../hooks/api/SumaryClient'; // Ajusta la ruta según sea necesario
+import { useTranslation } from 'react-i18next';
 
 interface Summary {
   expense: string;
@@ -13,30 +14,29 @@ interface Summary {
   totalCost: string;
 }
 
-
-const SummaryCostCard: React.FC= ({}) => {
+const SummaryCostCard: React.FC = ({}) => {
   const { order, key_ref, customerFName, customerLName } = useLocalSearchParams(); // Usa useLocalSearchParams para obtener 'order'
   const [summary, setSummary] = useState<Summary | null>(null);
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
-
+  const { t } = useTranslation(); // Asegúrate de tener el hook de traducción configurado
   // Obtiene los datos del resumen cuando cambia la orden
   useEffect(() => {
     const fetchSummary = async () => {
       setLoading(true);
       setError(null);
-  
+
       try {
         if (!order) {
-          throw new Error("Order reference is missing.");
+          throw new Error(t("order_reference_missing"));
         }
-  
+
         const response = await getSummary(order as string);
-        console.log("API Response:", response);
-  
+        console.log(t("api_response"), response);
+
         // Accede a los datos dentro de la propiedad `data`
         const data = response.data;
-  
+
         // Actualiza el estado con los datos de la API
         setSummary({
           expense: data.expense,
@@ -48,26 +48,26 @@ const SummaryCostCard: React.FC= ({}) => {
           totalCost: data.totalCost,
         });
       } catch (err) {
-        console.error("Error fetching summary:", err);
-        setError("Failed to load summary data.");
+        console.error(t("error_fetching_summary"), err);
+        setError(t("failed_to_load_summary"));
       } finally {
         setLoading(false);
       }
     };
-  
+
     fetchSummary();
   }, [order]);
-  
+
   // Observa los cambios en el estado summary
   useEffect(() => {
-    console.log("Updated summary:", summary);
+    console.log(t("updated_summary"), summary);
   }, [summary]);
 
   if (loading) {
     return (
       <View style={styles.container}>
         <ActivityIndicator size="large" color="#0047AB" />
-        <Text>Loading summary...</Text>
+        <Text>{t("loading_summary")}</Text>
       </View>
     );
   }
@@ -83,63 +83,62 @@ const SummaryCostCard: React.FC= ({}) => {
   if (!summary) {
     return (
       <View style={styles.container}>
-        <Text>No summary data available.</Text>
+        <Text>{t("no_summary_data")}</Text>
       </View>
     );
   }
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Summary</Text>
+      <Text style={styles.title}>{t("summary")}</Text>
 
       <Text style={styles.label}>
-        <Text style={styles.bold}>Order:</Text> {key_ref}
+        <Text style={styles.bold}>{t("order")}:</Text> {key_ref}
       </Text>
 
       <Text style={styles.label}>
-        <Text style={styles.bold}>Customer Name:</Text> {customerFName.toString() + " " + customerLName.toString()}
+        <Text style={styles.bold}>{t("customer_name")}:</Text> {customerFName.toString() + " " + customerLName.toString()}
       </Text>
 
       <View style={styles.table}>
         <View style={styles.tableRow}>
-          <Text style={[styles.tableHeader, styles.flex1]}>Details</Text>
-          <Text style={[styles.tableHeader, styles.flex1]}>Value</Text>
+          <Text style={[styles.tableHeader, styles.flex1]}>{t("details")}</Text>
+          <Text style={[styles.tableHeader, styles.flex1]}>{t("value")}</Text>
         </View>
 
         {/* Renderiza los detalles del resumen */}
         <View style={styles.tableRow}>
-          <Text style={[styles.tableCell, styles.flex1]}>Expense</Text>
-          <Text style={[styles.tableCell, styles.flex1]}>{summary?.expense || "N/A"}</Text>
+          <Text style={[styles.tableCell, styles.flex1]}>{t("expense")}</Text>
+          <Text style={[styles.tableCell, styles.flex1]}>{summary?.expense || t("not_available_summary_part")}</Text>
         </View>
         <View style={styles.tableRow}>
-          <Text style={[styles.tableCell, styles.flex1]}>Renting Cost</Text>
-          <Text style={[styles.tableCell, styles.flex1]}>{summary?.rentingCost || "N/A"}</Text>
+          <Text style={[styles.tableCell, styles.flex1]}>{t("renting_cost")}</Text>
+          <Text style={[styles.tableCell, styles.flex1]}>{summary?.rentingCost || t("not_available_summary_part")}</Text>
         </View>
         <View style={styles.tableRow}>
-          <Text style={[styles.tableCell, styles.flex1]}>Fuel Cost</Text>
-          <Text style={[styles.tableCell, styles.flex1]}>{summary?.fuelCost || "N/A"}</Text>
+          <Text style={[styles.tableCell, styles.flex1]}>{t("fuel_cost")}</Text>
+          <Text style={[styles.tableCell, styles.flex1]}>{summary?.fuelCost || t("not_available_summary_part")}</Text>
         </View>
         <View style={styles.tableRow}>
-          <Text style={[styles.tableCell, styles.flex1]}>Work Cost</Text>
-          <Text style={[styles.tableCell, styles.flex1]}>{summary?.workCost || "N/A"}</Text>
+          <Text style={[styles.tableCell, styles.flex1]}>{t("work_cost")}</Text>
+          <Text style={[styles.tableCell, styles.flex1]}>{summary?.workCost || t("not_available_summary_part")}</Text>
         </View>
         <View style={styles.tableRow}>
-          <Text style={[styles.tableCell, styles.flex1]}>Driver Salaries</Text>
-          <Text style={[styles.tableCell, styles.flex1]}>{summary?.driverSalaries || "N/A"}</Text>
+          <Text style={[styles.tableCell, styles.flex1]}>{t("driver_salaries")}</Text>
+          <Text style={[styles.tableCell, styles.flex1]}>{summary?.driverSalaries || t("not_available_summary_part")}</Text>
         </View>
         <View style={styles.tableRow}>
-          <Text style={[styles.tableCell, styles.flex1]}>Other Salaries</Text>
-          <Text style={[styles.tableCell, styles.flex1]}>{summary?.otherSalaries || "N/A"}</Text>
+          <Text style={[styles.tableCell, styles.flex1]}>{t("operators")}</Text>
+          <Text style={[styles.tableCell, styles.flex1]}>{summary?.otherSalaries || t("not_available_summary_part")}</Text>
         </View>
         <View style={styles.tableRow}>
-          <Text style={[styles.tableHeader, styles.flex1]}>Total Cost</Text>
-          <Text style={[styles.tableHeader, styles.flex1]}>{summary?.totalCost || "N/A"}</Text>
+          <Text style={[styles.tableHeader, styles.flex1]}>{t("total_cost")}</Text>
+          <Text style={[styles.tableHeader, styles.flex1]}>{summary?.totalCost || t("not_available_summary_part")}</Text>
         </View>
         <TouchableOpacity style={styles.backButton} onPress={() => router.back()}>
-          <Text style={styles.backButtonText}>Back to Orders</Text>
+          <Text style={styles.backButtonText}>{t("back_to_orders")}</Text>
         </TouchableOpacity>
       </View>
-
     </View>
   );
 };

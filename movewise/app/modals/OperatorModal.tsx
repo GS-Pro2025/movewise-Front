@@ -6,6 +6,7 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import { url } from "../../hooks/api/apiClient";
 import { ToastAndroid, Platform } from 'react-native';
 import TruckModal from "./TruckModal";
+import { useTranslation } from "react-i18next";
 
 interface Operator {
   id: number;
@@ -47,8 +48,8 @@ interface OperatorModalProps {
   onClose: () => void;
   orderKey: string;
 }
-
 const OperatorModal: React.FC<OperatorModalProps> = ({ visible, onClose, orderKey }) => {
+  const { t } = useTranslation(); // Hook para traducción
   const [operators, setOperators] = useState<Operator[]>([]);
   const [assignedOperators, setAssignedOperators] = useState<AssignedOperator[]>([]);
   const [loading, setLoading] = useState(false);
@@ -60,7 +61,7 @@ const OperatorModal: React.FC<OperatorModalProps> = ({ visible, onClose, orderKe
   const isDarkMode = colorScheme === "dark";
   const router = useRouter();
 
-  // Fetch assigned operators when modal becomes visible
+  // Obtener operadores asignados cuando el modal se hace visible
   useEffect(() => {
     if (visible && orderKey) {
       fetchAssignedOperators();
@@ -71,33 +72,31 @@ const OperatorModal: React.FC<OperatorModalProps> = ({ visible, onClose, orderKe
     try {
       setLoading(true);
       const token = await AsyncStorage.getItem("userToken");
-      if (!token) throw new Error("Authentication required"); 
-  
-      const response = await fetch(`${url}/assigns/order/${orderKey}/operators/`, {
+      if (!token) throw new Error(t("authentication_required"));
+
+      const response = await fetch(`${url}assigns/order/${orderKey}/operators/`, {
         method: 'GET',
         headers: {
           'Authorization': `Bearer ${token}`
         }
       });
-  
+
       if (!response.ok) {
-        throw new Error("Failed to fetch assigned operators");
+        throw new Error(t("failed_to_fetch_assigned_operators"));
       }
-  
+
       const data = await response.json();
-      console.log("Operadores asignados:", data); // Para debug
-      
-      // Si necesitas transformar la data, hazlo aquí
+      console.log(t("assigned_operators"), data); // Para debug
+
       const formattedData = data.map(operator => ({
         ...operator,
-        // Agrega campos adicionales si es necesario
-        role: operator.role || "operator" // Valor por defecto
+        role: operator.role || t("operator") // Valor por defecto
       }));
-      
+
       setAssignedOperators(formattedData);
     } catch (error) {
-      console.error("Error fetching assigned operators:", error);
-      notifyMessage("Failed to load assigned operators");
+      console.error(t("error_fetching_assigned_operators"), error);
+      notifyMessage(t("failed_to_load_assigned_operators"));
     } finally {
       setLoading(false);
     }
@@ -105,7 +104,7 @@ const OperatorModal: React.FC<OperatorModalProps> = ({ visible, onClose, orderKe
 
   function notifyMessage(msg: string) {
     if (Platform.OS === 'android') {
-      ToastAndroid.show(msg, ToastAndroid.SHORT)
+      ToastAndroid.show(msg, ToastAndroid.SHORT);
     }
   }
 
@@ -115,16 +114,20 @@ const OperatorModal: React.FC<OperatorModalProps> = ({ visible, onClose, orderKe
   };
 
   const handleDeleteOperator = (index: number) => {
-    Alert.alert("Confirm deletion", "Are you sure you want to delete this operator?", [
-      { text: "Cancel", style: "cancel" },
-      {
-        text: "Delete",
-        style: "destructive",
-        onPress: () => {
-          setOperators((prev) => prev.filter((_, i) => i !== index));
+    Alert.alert(
+      t("confirm_deletion"),
+      t("delete_operator_confirmation"),
+      [
+        { text: t("cancel"), style: "cancel" },
+        {
+          text: t("delete"),
+          style: "destructive",
+          onPress: () => {
+            setOperators((prev) => prev.filter((_, i) => i !== index));
+          },
         },
-      },
-    ]);
+      ]
+    );
   };
 
   const handleSelectRole = (index: number) => {
@@ -141,7 +144,7 @@ const OperatorModal: React.FC<OperatorModalProps> = ({ visible, onClose, orderKe
     if (selectedOperatorIndex !== null) {
       setOperators((prev) =>
         prev.map((op, i) =>
-          i === selectedOperatorIndex ? { ...op, role: "Team Leader" } : op
+          i === selectedOperatorIndex ? { ...op, role: t("team_leader") } : op
         )
       );
     }
@@ -151,12 +154,12 @@ const OperatorModal: React.FC<OperatorModalProps> = ({ visible, onClose, orderKe
   const handleSave = async () => {
     try {
       const token = await AsyncStorage.getItem("userToken");
-      if (!token) throw new Error("Authentication required");
+      if (!token) throw new Error(t("authentication_required"));
 
       const payload = operators.map(op => ({
         operator: op.id,
         order: orderKey,
-        rol: op.role || "operator",
+        rol: op.role || t("operator"),
         additional_costs: op.additionalCosts || 0,
         truck: op.truckId || null
       }));
@@ -175,48 +178,48 @@ const OperatorModal: React.FC<OperatorModalProps> = ({ visible, onClose, orderKe
       if (!response.ok) {
         if (response.status === 207) {
           const conflictMessages = responseData.data.conflicts
-            .map((c) => `Operator ${c.operator_id}: ${c.message}`)
+            .map((c) => `${t("operator")} ${c.operator_id}: ${c.message}`)
             .join('\n');
 
           const successMessage = responseData.data.created.length > 0
-            ? `${responseData.data.created.length} assignments saved.`
+            ? `${responseData.data.created.length} ${t("assignments_saved")}.`
             : "";
 
           Alert.alert(
-            "Partial Success",
-            `${responseData.messUser}\n\n${successMessage}\n\nConflicts:\n${conflictMessages}`,
-            [{ text: "OK" }]
+            t("partial_success"),
+            `${responseData.messUser}\n\n${successMessage}\n\n${t("conflicts")}:\n${conflictMessages}`,
+            [{ text: t("ok") }]
           );
 
           updateOperatorsWithConflicts(responseData.data.conflicts);
-          fetchAssignedOperators(); // Refresh the list of assigned operators
+          fetchAssignedOperators();
           return;
         } else if (response.status === 400) {
           const errorMessages = responseData.data
-            .map((e) => `Operator ${e.operator_id || `#${e.index + 1}`}: ${e.message || JSON.stringify(e.errors)}`)
+            .map((e) => `${t("operator")} ${e.operator_id || `#${e.index + 1}`}: ${e.message || JSON.stringify(e.errors)}`)
             .join('\n');
 
           Alert.alert(
-            "Validation Error",
-            `${responseData.messUser}\n\nDetails:\n${errorMessages}`,
-            [{ text: "OK" }]
+            t("validation_error"),
+            `${responseData.messUser}\n\n${t("details")}:\n${errorMessages}`,
+            [{ text: t("ok") }]
           );
         } else {
-          throw new Error(responseData.messUser || "Unknown error");
+          throw new Error(responseData.messUser || t("unknown_error"));
         }
         return;
       }
 
       setOperators([]);
-      fetchAssignedOperators(); // Refresh the list of assigned operators
-      notifyMessage(responseData.messUser || "All assignments saved successfully");
+      fetchAssignedOperators();
+      notifyMessage(responseData.messUser || t("all_assignments_saved"));
 
     } catch (error) {
-      console.error('Error:', error);
+      console.error(t("error"), error);
       Alert.alert(
-        "Error",
-        error.message || "Could not save the assignments",
-        [{ text: "OK" }]
+        t("error"),
+          error.message || t("could_not_save_assignments"),
+        [{ text: t("ok") }]
       );
     }
   };
@@ -380,7 +383,7 @@ const OperatorModal: React.FC<OperatorModalProps> = ({ visible, onClose, orderKe
     <Modal animationType="slide" visible={visible} onRequestClose={onClose}>
       <View style={{ flex: 1, backgroundColor: "#A1C6EA" }}>
         <View style={[styles.header, { backgroundColor: isDarkMode ? "#112A4A" : "#ffffff", borderBottomColor: isDarkMode ? 'rgba(0, 0, 0, 0.2)' : 'rgba(0, 0, 0, 0.1)' }]}>
-          <Text style={[styles.title, { color: isDarkMode ? "#FFFFFF" : "#0458AB" }]}>Operators</Text>
+          <Text style={[styles.title, { color: isDarkMode ? "#FFFFFF" : "#0458AB" }]}>{t("operators")}</Text>
           <TouchableOpacity
             style={[styles.addButton, { backgroundColor: isDarkMode ? "#FFF" : "#0458AB" }]}
             onPress={() => setAddOperatorVisible(true)}
@@ -388,14 +391,14 @@ const OperatorModal: React.FC<OperatorModalProps> = ({ visible, onClose, orderKe
             <Text style={[styles.plus, { color: isDarkMode ? "#0458AB" : "#FFF" }]}>+</Text>
           </TouchableOpacity>
         </View>
-
+  
         <ScrollView style={styles.scrollContainer}>
           <View style={[styles.container, { backgroundColor: isDarkMode ? "#112A4A" : "#ffffff" }]}>
-            {/* Assigned operators section */}
+            {/* Sección de operadores asignados */}
             <Text style={[styles.sectionTitle, { color: isDarkMode ? "#FFFFFF" : "#0458AB" }]}>
-              Assigned Operators
+              {t("assigned_operators")}
             </Text>
-
+  
             {loading ? (
               <View style={styles.loadingContainer}>
                 <ActivityIndicator size="large" color="#0458AB" />
@@ -406,30 +409,30 @@ const OperatorModal: React.FC<OperatorModalProps> = ({ visible, onClose, orderKe
                   <Text style={styles.assignedOperatorItem}>
                     {op.id} - {op.first_name ? `${op.first_name} ${op.last_name}` : op.last_name}
                     {op.role ? ` (${op.role})` : ''}
-                    {op.additional_costs > 0 ? ` - Cost: $${op.additional_costs.toFixed(2)}` : ''}
-                    {op.truck?.plate ? ` - Truck: ${op.truck.plate}` : ''}
+                    {op.additional_costs > 0 ? ` - ${t("cost")}: $${op.additional_costs.toFixed(2)}` : ''}
+                    {op.truck?.plate ? ` - ${t("truck")}: ${op.truck.plate}` : ''}
                   </Text>
                 </View>
               ))
             ) : (
-              <Text style={styles.noOperatorsText}>No operators assigned yet</Text>
+              <Text style={styles.noOperatorsText}>{t("no_assigned_operators")}</Text>
             )}
-
-            {/* Unsynchronized operators section */}
+  
+            {/* Sección de operadores no sincronizados */}
             {operators.length > 0 && (
               <>
                 <Text style={[styles.sectionTitle, { color: isDarkMode ? "#FFFFFF" : "#0458AB" }]}>
-                  Unsynchronized Operators
+                  {t("unsynchronized_operators")}
                 </Text>
-
+  
                 {operators.map((op, index) => (
                   <View key={`local-${index}`} style={styles.operatorRow}>
                     <TouchableOpacity onPress={() => handleSelectRole(index)}>
                       <Text style={styles.operatorItem}>
                         {op.id} - {op.name}
                         {op.role ? ` (${op.role})` : ''}
-                        {op.additionalCosts > 0 ? ` - Cost: $${op.additionalCosts}` : ''}
-                        {op.truckId ? ` - Truck ID: ${op.truckId}` : ''}
+                        {op.additionalCosts > 0 ? ` - ${t("cost")}: $${op.additionalCosts}` : ''}
+                        {op.truckId ? ` - ${t("truck_id")}: ${op.truckId}` : ''}
                       </Text>
                     </TouchableOpacity>
                     <TouchableOpacity style={styles.deleteButton} onPress={() => handleDeleteOperator(index)}>
@@ -441,13 +444,13 @@ const OperatorModal: React.FC<OperatorModalProps> = ({ visible, onClose, orderKe
             )}
           </View>
         </ScrollView>
-
+  
         <View style={styles.buttonContainer}>
           <TouchableOpacity
             style={[styles.backButton, { backgroundColor: isDarkMode ? "#0458AB" : "#545257" }]}
             onPress={onClose}
           >
-            <Text style={styles.backButtonText}>Back</Text>
+            <Text style={styles.backButtonText}>{t("back")}</Text>
           </TouchableOpacity>
           <TouchableOpacity
             style={[styles.saveButton, { backgroundColor: isDarkMode ? "#FFFFFF" : "#0458AB" }]}
@@ -455,19 +458,19 @@ const OperatorModal: React.FC<OperatorModalProps> = ({ visible, onClose, orderKe
             disabled={operators.length === 0}
           >
             <Text style={[styles.saveButtonText, { color: isDarkMode ? "#0458AB" : "#FFFFFF" }]}>
-              Save
+              {t("save")}
             </Text>
           </TouchableOpacity>
         </View>
       </View>
-
+  
       <AddOperatorForm
         visible={addOperatorVisible}
         onClose={() => setAddOperatorVisible(false)}
         onAddOperator={handleAddOperator}
         orderKey={orderKey}
       />
-
+  
       <Modal
         animationType="slide"
         transparent
@@ -479,13 +482,13 @@ const OperatorModal: React.FC<OperatorModalProps> = ({ visible, onClose, orderKe
             <Text style={styles.roleTitle}>
               {selectedOperatorIndex !== null && operators[selectedOperatorIndex]
                 ? operators[selectedOperatorIndex].name
-                : "Operator Name"}
+                : t("operator_name")}
             </Text>
             <TouchableOpacity style={styles.roleButton} onPress={assignDriver}>
-              <Text style={styles.roleButtonText}>Driver</Text>
+              <Text style={styles.roleButtonText}>{t("driver")}</Text>
             </TouchableOpacity>
             <TouchableOpacity style={styles.roleButton} onPress={assignTeamLeader}>
-              <Text style={styles.roleButtonText}>Team Leader</Text>
+              <Text style={styles.roleButtonText}>{t("team_leader")}</Text>
             </TouchableOpacity>
             <TouchableOpacity style={styles.closeButton} onPress={() => setRoleSelectorVisible(false)}>
               <Text style={styles.closeButtonText}>✕</Text>

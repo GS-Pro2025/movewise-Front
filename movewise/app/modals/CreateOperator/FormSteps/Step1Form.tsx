@@ -6,9 +6,10 @@ import { StepProps, Operator } from '../Types';
 import { ALERT_TYPE, Toast } from 'react-native-alert-notification';
 import { ListOperators } from '@/hooks/api/Get_listOperator';
 import { router } from 'expo-router';
-
+import { useTranslation } from 'react-i18next';
 const Step1Form = ({ formData, updateFormData, onNext, isEditing }: StepProps) => {
-    // Local state to track form values
+    // Estado local para rastrear los valores del formulario
+    const { t } = useTranslation();
     const [localData, setLocalData] = useState({
         id_operator: formData.id_operator || 0,
         first_name: formData.first_name,
@@ -28,14 +29,14 @@ const Step1Form = ({ formData, updateFormData, onNext, isEditing }: StepProps) =
                 const data: Operator[] = await ListOperators();
                 setOperators(data);
             } catch (error) {
-                console.error('Operators could not be loaded', error);
+                console.error(t("operators_load_error"), error);
             }
         };
 
         fetchOperators();
     }, []);
 
-    // Validation errors
+    // Errores de validación
     const [errors, setErrors] = useState<Record<string, string>>({});
 
     const handleChange = (field: string, value: string): void => {
@@ -45,13 +46,13 @@ const Step1Form = ({ formData, updateFormData, onNext, isEditing }: StepProps) =
         
         updateFormData({ [field]: value });
         
-        // Clear error when user types
+        // Limpiar error cuando el usuario escribe
         if (errors[field]) {
             setErrors({ ...errors, [field]: '' });
         }
     };
 
-    // Validate form
+    // Validar formulario
     const validateForm = (): boolean => {
         const newErrors: Record<string, string> = {};
 
@@ -68,18 +69,18 @@ const Step1Form = ({ formData, updateFormData, onNext, isEditing }: StepProps) =
         }
 
         if (!localData.birth_date) {
-            newErrors.birth_date = 'Date of birth is required';
+            newErrors.birth_date = t("birth_date_required");
         } else {
             const today = new Date();
             const dob = new Date(localData.birth_date);
             const age = today.getFullYear() - dob.getFullYear();
             if (age < 18) {
-                newErrors.birth_date = 'Operator must be at least 18 years old';
+                newErrors.birth_date = t("operator_minimum_age");
             }
         }
 
         if (!localData.type_id) {
-            newErrors.type_id = 'Identification type is required';
+            newErrors.type_id = t("identification_type_required");
         }
 
         if (!localData.id_number.trim()) {
@@ -91,11 +92,11 @@ const Step1Form = ({ formData, updateFormData, onNext, isEditing }: StepProps) =
         }
 
         if (!localData.address.trim()) {
-            newErrors.address = 'Address is required';
+            newErrors.address = t("address_required");
         }
 
         if (!localData.phone.trim()) {
-            newErrors.phone = 'Phone number is required';
+            newErrors.phone = t("phone_required");
         } else if (!/^\+?[0-9]{10,15}$/.test(localData.phone)) {
             newErrors.phone = 'Please enter a valid phone number (10-15 digits)';
         }
@@ -110,7 +111,7 @@ const Step1Form = ({ formData, updateFormData, onNext, isEditing }: StepProps) =
 
     const handleNext = (): void => {
         if (validateForm()) {
-            // Synchronize all fields with the parent formData
+            // Sincronizar todos los campos con el formData principal
             updateFormData({
                 first_name: localData.first_name,
                 last_name: localData.last_name,
@@ -127,53 +128,53 @@ const Step1Form = ({ formData, updateFormData, onNext, isEditing }: StepProps) =
         } else {
             Toast.show({
                 type: ALERT_TYPE.DANGER,
-                title: "Validation Error",
-                textBody: "Please review the errors in the form",
+                title: t("validation_error"),
+                textBody: t("review_form_errors"),
                 autoClose: 3000,
-                });
+            });
         }
     };
 
     return (
         <ScrollView>
             <View style={styles.stepForm}>
-                <Text style={styles.sectionTitle}>General Data</Text>
+                <Text style={styles.sectionTitle}>{t("general_data")}</Text>
 
                 <FormInput
-                    label="Name (*)"
+                    label={`${t("name")} (*)`}
                     value={localData.first_name}
                     onChangeText={(text) => handleChange('first_name', text)}
-                    error={errors.firstName}
+                    error={errors.first_name}
                     required={true}
                 />
 
                 <FormInput
-                    label="Last name (*)"
+                    label={`${t("last_name")} (*)`}
                     value={localData.last_name}
                     onChangeText={(text) => handleChange('last_name', text)}
-                    error={errors.lastName}
+                    error={errors.last_name}
                     required={true}
                 />
 
                 <DateInput
-                    label="Birthdate (*)"
+                    label={`${t("birth_date")} (*)`}
                     value={localData.birth_date}
                     onChangeDate={(date) => handleChange('birth_date', date)}
-                    error={errors.dateOfBirth}
+                    error={errors.birth_date}
                     required={true}
                 />
 
                 <DropdownInput
-                    label="Identification Type (*)"
+                    label={`${t("identification_type")} (*)`}
                     value={localData.type_id}
                     onChange={(value) => handleChange('type_id', value)}
-                    options={['Passport', 'Driver License', 'ID Card']}
-                    error={errors.identificationType}
+                    options={[t("passport"), t("driver_license"), t("id_card")]}
+                    error={errors.type_id}
                     required={true}
                 />
 
                 <FormInput
-                    label="Identification Number (*)"
+                    label={`${t("id_number")} (*)`}
                     value={localData.id_number}
                     onChangeText={(text) => handleChange('id_number', text)}
                     error={errors.id_number}
@@ -182,7 +183,7 @@ const Step1Form = ({ formData, updateFormData, onNext, isEditing }: StepProps) =
                 />
 
                 <FormInput
-                    label="Adress (*)"
+                    label={`${t("address")} (*)`}
                     value={localData.address}
                     onChangeText={(text) => handleChange('address', text)}
                     error={errors.address}
@@ -190,7 +191,7 @@ const Step1Form = ({ formData, updateFormData, onNext, isEditing }: StepProps) =
                 />
 
                 <FormInput
-                    label="Phone (*)"
+                    label={`${t("phone")} (*)`}
                     value={localData.phone}
                     onChangeText={(text) => handleChange('phone', text)}
                     keyboardType="phone-pad"
@@ -199,7 +200,7 @@ const Step1Form = ({ formData, updateFormData, onNext, isEditing }: StepProps) =
                 />
 
                 <FormInput
-                    label="Email"
+                    label={t("email")}
                     value={localData.email}
                     onChangeText={(text) => handleChange('email', text)}
                     keyboardType="email-address"
@@ -208,10 +209,10 @@ const Step1Form = ({ formData, updateFormData, onNext, isEditing }: StepProps) =
 
                 <View style={styles.buttonContainer}>
                     <TouchableOpacity style={styles.cancelButton} onPress={() => router.back()}>
-                        <Text style={styles.buttonText}>Cancel</Text>
+                        <Text style={styles.buttonText}>{t("cancel")}</Text>
                     </TouchableOpacity>
                     <TouchableOpacity style={styles.nextButton} onPress={handleNext}>
-                        <Text style={styles.buttonText}>Next</Text>
+                        <Text style={styles.buttonText}>{t("next")}</Text>
                     </TouchableOpacity>
                 </View>
             </View>

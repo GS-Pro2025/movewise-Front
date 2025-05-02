@@ -4,9 +4,10 @@ import { FormInput, ImageUpload, DropdownInput } from '../HelperComponents';
 import { styles } from '../FormStyle';
 import { StepProps } from '../Types';
 import { ALERT_TYPE, Toast } from 'react-native-alert-notification';
+import { useTranslation } from 'react-i18next';
 
 const Step3Form = ({ formData, updateFormData, onBack, onSubmit, isEditing }: StepProps) => {
-
+    const { t } = useTranslation();
     const [localData, setLocalData] = useState({
         code: formData.code || '',
         salary: formData.salary,
@@ -16,17 +17,17 @@ const Step3Form = ({ formData, updateFormData, onBack, onSubmit, isEditing }: St
         status: formData.status || 'active' 
     });
 
-    // Validation errors
+    // Errores de validación
     const [errors, setErrors] = useState<Record<string, string>>({});
 
     const handleChange = (field: string, value: any): void => {
 
         setLocalData(prev => ({ ...prev, [field]: value }));
 
-        // update the parent formData immediately
+        // Actualizar el formData principal inmediatamente
         updateFormData({ [field]: value });
 
-        // Clear error
+        // Limpiar error
         if (errors[field]) {
             setErrors({ ...errors, [field]: '' });
         }
@@ -36,27 +37,27 @@ const Step3Form = ({ formData, updateFormData, onBack, onSubmit, isEditing }: St
         const newErrors: Record<string, string> = {};
 
         if (!localData.code.trim()) {
-            newErrors.code = 'Operator code is required';
+            newErrors.code = t("operator_code_required");
         } else if (localData.code.length < 3) {
-            newErrors.code = 'Operator code must be at least 3 characters long';
+            newErrors.code = t("operator_code_length");
         }
 
         if (!localData.salary.toString().trim()) {
-            newErrors.salary = 'Salary is required';
+            newErrors.salary = t("salary_required");
         } else if (isNaN(parseFloat(localData.salary)) || parseFloat(localData.salary) <= 0) {
-            newErrors.salary = 'Please enter a valid salary amount (greater than 0)';
+            newErrors.salary = t("salary_amount_invalid");
         }
 
         if (!localData.size_t_shift) {
-            newErrors.size_t_shift = 'T-shirt size is required';
+            newErrors.size_t_shift = t("tshirt_size_required");
         }
 
         if (!localData.name_t_shift.trim()) {
-            newErrors.name_t_shift = 'T-shirt name is required';
+            newErrors.name_t_shift = t("tshirt_name_required");
         }
 
         if (!localData.photo) {
-            newErrors.photo = 'Operator photo is required';
+            newErrors.photo = t("photo_required");
         }
 
         setErrors(newErrors);
@@ -65,7 +66,7 @@ const Step3Form = ({ formData, updateFormData, onBack, onSubmit, isEditing }: St
 
     const handleSave = (): void => {
         if (validateForm()) {
-            // Synchronize all fields with the parent formData
+            // Sincronizar todos los campos con el formData principal
             updateFormData({
                 code: localData.code,
                 salary: localData.salary,
@@ -79,8 +80,8 @@ const Step3Form = ({ formData, updateFormData, onBack, onSubmit, isEditing }: St
         } else {
             Toast.show({
                 type: ALERT_TYPE.DANGER,
-                title: "Validation Error",
-                textBody: "Please check the errors in the form",
+                title: t("validation_error"),
+                textBody: t("review_form_errors"),
                 autoClose: 3000,
             });
         }
@@ -90,7 +91,7 @@ const Step3Form = ({ formData, updateFormData, onBack, onSubmit, isEditing }: St
         <ScrollView>
             <View style={styles.stepForm}>
                 <FormInput
-                    label="Operator Code (*)"
+                    label={`${t("operator_code")} (*)`}
                     value={localData.code}
                     onChangeText={(text) => handleChange('code', text)}
                     error={errors.code}
@@ -98,7 +99,7 @@ const Step3Form = ({ formData, updateFormData, onBack, onSubmit, isEditing }: St
                 />
 
                 <FormInput
-                    label="Salary (*)"
+                    label={`${t("salary")} (*)`}
                     value={localData.salary.toString()}
                     onChangeText={(text) => handleChange('salary', text)}
                     keyboardType="numeric"
@@ -107,7 +108,7 @@ const Step3Form = ({ formData, updateFormData, onBack, onSubmit, isEditing }: St
                 />
 
                 <DropdownInput
-                    label="T-shirt Size (*)"
+                    label={`${t("tshirt_size")} (*)`}
                     value={localData.size_t_shift}
                     onChange={(value) => handleChange('size_t_shift', value)}
                     options={['S', 'M', 'L', 'XL']}
@@ -116,7 +117,7 @@ const Step3Form = ({ formData, updateFormData, onBack, onSubmit, isEditing }: St
                 />
 
                 <FormInput
-                    label="T-shirt Name (*)"
+                    label={`${t("tshirt_name")} (*)`}
                     value={localData.name_t_shift}
                     onChangeText={(text) => handleChange('name_t_shift', text)}
                     error={errors.name_t_shift}
@@ -124,7 +125,7 @@ const Step3Form = ({ formData, updateFormData, onBack, onSubmit, isEditing }: St
                 />
 
                 <ImageUpload
-                    label="Operator Photo (*)"
+                    label={`${t("operator_photo")} (*)`}
                     image={localData.photo}
                     onImageSelected={(image) => handleChange('photo', image)}
                     error={errors.photo}
@@ -132,19 +133,19 @@ const Step3Form = ({ formData, updateFormData, onBack, onSubmit, isEditing }: St
                 />
 
                 <DropdownInput
-                    label="Status"
+                    label={t("status")}
                     value={localData.status}
                     onChange={(value) => handleChange('status', value)}
-                    options={['active', 'inactive']}
+                    options={[t("active"), t("inactive")]}
                     error={errors.status}
                 />
 
                 <View style={styles.buttonContainer}>
                     <TouchableOpacity style={styles.cancelButton} onPress={onBack}>
-                        <Text style={styles.buttonText}>Back</Text>
+                        <Text style={styles.buttonText}>{t("back")}</Text>
                     </TouchableOpacity>
                     <TouchableOpacity style={styles.nextButton} onPress={handleSave}>
-                        <Text style={styles.buttonText}>{isEditing ? 'Update' : 'Save'}</Text>
+                        <Text style={styles.buttonText}>{isEditing ? t("update") : t("save")}</Text>
                     </TouchableOpacity>
                 </View>
             </View>

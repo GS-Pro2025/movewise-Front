@@ -9,8 +9,10 @@ import {
 } from "react-native";
 import { useRouter } from "expo-router";
 import Toast from "react-native-toast-message";
+import { useTranslation } from "react-i18next";
 
 const RegisterCompany = () => {
+  const { t } = useTranslation(); // Import the translation function
   const [license, setLicense] = useState("");
   const [companyName, setCompanyName] = useState("");
   const [address, setAddress] = useState("");
@@ -32,35 +34,35 @@ const RegisterCompany = () => {
     } = {};
 
     if (!license.trim()) {
-      newErrors.license = "License Number is required.";
+      newErrors.license = t("license_required");
     } else if (license.length < 5) {
-      newErrors.license = "License Number must be at least 5 characters long.";
+      newErrors.license = t("license_min_length");
     }
 
     if (!companyName.trim()) {
-      newErrors.companyName = "Name is required.";
+      newErrors.companyName = t("name_required");
     } else if (companyName.length < 3) {
-      newErrors.companyName = "Name must be at least 3 characters long.";
+      newErrors.companyName = t("name_min_length");
     }
 
     if (!address.trim()) {
-      newErrors.address = "Address is required.";
+      newErrors.address = t("address_required");
     }
 
     if (!zipCode.trim()) {
-      newErrors.zipCode = "Zip Code is required.";
+      newErrors.zipCode = t("zip_code_required");
     } else if (isNaN(Number(zipCode))) {
-      newErrors.zipCode = "Zip Code must be a valid number.";
+      newErrors.zipCode = t("zip_code_invalid");
     }
 
     setErrors(newErrors);
 
-    return Object.keys(newErrors).length === 0; // Return true if no errors
+    return Object.keys(newErrors).length === 0; // Retorna true si no hay errores
   };
 
   const handleRegister = () => {
     if (validateFields()) {
-      // Create the company object
+      // Crear el objeto de la compañía
       const companyData = {
         license,
         company_name: companyName,
@@ -70,11 +72,11 @@ const RegisterCompany = () => {
 
       Toast.show({
         type: "success",
-        text1: "Company Data Prepared",
-        text2: "Redirecting to user registration...",
+        text1: t("company_data_prepared"),
+        text2: t("redirecting_to_user_registration"),
       });
 
-      // Navigate to RegistryUser and pass the company object
+      // Navegar a RegistryUser y pasar el objeto de la compañía
       router.push({
         pathname: "/modals/RegistryUser",
         params: {
@@ -84,12 +86,11 @@ const RegisterCompany = () => {
           zip_code: zipCode,
         },
       });
-      
     } else {
       Toast.show({
         type: "error",
-        text1: "Validation Error",
-        text2: "Please fix the errors before submitting.",
+        text1: t("validation_error"),
+        text2: t("fix_errors_before_submitting"),
       });
     }
   };
@@ -102,11 +103,11 @@ const RegisterCompany = () => {
         resizeMode="cover"
       >
         <View style={styles.container}>
-          <Text style={styles.title}>Register Your Company</Text>
+          <Text style={styles.title}>{t("register_your_company")}</Text>
 
           <TextInput
             style={[styles.input, errors.license && styles.inputError]}
-            placeholder="License Number"
+            placeholder={t("license_placeholder")}
             placeholderTextColor="#888"
             value={license}
             onChangeText={setLicense}
@@ -115,7 +116,7 @@ const RegisterCompany = () => {
 
           <TextInput
             style={[styles.input, errors.companyName && styles.inputError]}
-            placeholder="Name"
+            placeholder={t("name_placeholder")}
             placeholderTextColor="#888"
             value={companyName}
             onChangeText={setCompanyName}
@@ -124,7 +125,7 @@ const RegisterCompany = () => {
 
           <TextInput
             style={[styles.input, errors.address && styles.inputError]}
-            placeholder="Address"
+            placeholder={t("address_placeholder")}
             placeholderTextColor="#888"
             value={address}
             onChangeText={setAddress}
@@ -133,7 +134,7 @@ const RegisterCompany = () => {
 
           <TextInput
             style={[styles.input, errors.zipCode && styles.inputError]}
-            placeholder="Zip Code"
+            placeholder={t("zip_code_placeholder")}
             placeholderTextColor="#888"
             value={zipCode}
             onChangeText={setZipCode}
@@ -142,12 +143,12 @@ const RegisterCompany = () => {
           {errors.zipCode && <Text style={styles.errorText}>{errors.zipCode}</Text>}
 
           <TouchableOpacity style={styles.button} onPress={handleRegister}>
-            <Text style={styles.buttonText}>REGISTER COMPANY</Text>
+            <Text style={styles.buttonText}>{t("register_company_button")}</Text>
           </TouchableOpacity>
         </View>
       </ImageBackground>
 
-      {/* Toast Component */}
+      {/* Componente Toast */}
       <Toast />
     </>
   );

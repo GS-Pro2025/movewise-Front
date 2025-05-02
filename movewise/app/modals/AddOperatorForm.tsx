@@ -8,6 +8,7 @@ import { ALERT_TYPE, Dialog, AlertNotificationRoot, Toast } from 'react-native-a
 import { ToastAndroid, Platform } from 'react-native';
 import { token } from '@/hooks/api/apiClient';
 import { url } from '../../hooks/api/apiClient';
+import { useTranslation } from 'react-i18next';
 
 interface Operator {
   id_operator: number;
@@ -25,6 +26,8 @@ interface AddOperatorFormProps {
 }
 
 export default function AddOperatorForm({ visible, onClose, onAddOperator, orderKey }: AddOperatorFormProps) {
+  const { t } = useTranslation();
+
   if (!orderKey) {
     console.error('orderKey is required');
     return null;
@@ -50,7 +53,7 @@ export default function AddOperatorForm({ visible, onClose, onAddOperator, order
         getOperatorByNumberId(Number(operatorId)).then(data => {
           if (data) {
             console.log("Datos recibidos:", data);
-            notifyMessage(`Operador ${data.first_name} ${data.last_name} encontrado`);
+            notifyMessage(`${t('operator')} ${data.first_name} ${data.last_name} ${t('found')}`);
 
             // Actualiza estos accesos
             setName(`${data.first_name} ${data.last_name}`);
@@ -176,16 +179,18 @@ export default function AddOperatorForm({ visible, onClose, onAddOperator, order
       <SafeAreaView style={{ flex: 1, backgroundColor: colorScheme === 'dark' ? '#112A4A' : '#FFFFFF' }}>
         <ScrollView contentContainerStyle={{ flexGrow: 1 }}>
           <View style={styles.header}>
-            <Text style={styles.textLarge}>Add Operator</Text>
+            <Text style={styles.textLarge}>{t('add_operator')}</Text>
           </View>
-          <Text style={[styles.text, { fontSize: 12, textAlign: 'center' }]}>Current order is: #<Text style={{ fontWeight: 'bold', color: colorScheme === 'dark' ? 'green' : '#0458AB' }}>{orderKey}</Text></Text>
+          <Text style={[styles.text, { fontSize: 12, textAlign: 'center' }]}>
+            {t("current_order")} #
+            <Text style={{ fontWeight: 'bold', color: colorScheme === 'dark' ? 'green' : '#0458AB' }}>{orderKey}</Text></Text>
 
           <ThemedView style={styles.container}>
-            <Text style={styles.text}>Search Operator ID</Text>
+            <Text style={styles.text}>{t("search_operator_id")}</Text>
             <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 12 }}>
               <TextInput
                 style={[styles.input, { flex: 0.8, marginRight: 8 }]}
-                placeholder="Operator ID"
+                placeholder={t('operator_id_placeholder')}
                 placeholderTextColor="#9ca3af"
                 value={operatorId}
                 onChangeText={setOperatorId}
@@ -210,30 +215,30 @@ export default function AddOperatorForm({ visible, onClose, onAddOperator, order
               </TouchableOpacity>
             </View>
 
-            <Text style={styles.text}>Name</Text>
+            <Text style={styles.text}>{t('name')}</Text>
             <TextInput
               style={styles.input}
-              placeholder="Name"
+              placeholder={t('name_placeholder')}
               placeholderTextColor="#9ca3af"
               value={name}
               onChangeText={setName}
               editable={false}
             />
-
-            <Text style={styles.text}>Cost (USD)</Text>
+            <Text style={styles.text}>{t('cost')}</Text>
             <TextInput
               style={styles.input}
-              placeholder="0.0"
+              placeholder={t('cost_placeholder')}
               placeholderTextColor="#9ca3af"
               value={cost}
               onChangeText={setCost}
               editable={false}
             />
-
-            <Text style={styles.text}>Additional Cost (USD)</Text>
+            <Text style={styles.text}>
+              {t('additional_cost')}
+            </Text>
             <TextInput
               style={styles.input}
-              placeholder="0.0"
+              placeholder={t('additional_cost_placeholder')}
               placeholderTextColor="#9ca3af"
               value={additionalCost}
               onChangeText={setAdditionalCost}
@@ -242,10 +247,10 @@ export default function AddOperatorForm({ visible, onClose, onAddOperator, order
 
             <View style={styles.buttonContainer}>
               <TouchableOpacity style={styles.buttonCancel} onPress={onClose}>
-                <Text style={styles.buttonTextCancel}>Cancel</Text>
+                <Text style={styles.buttonTextCancel}>{t('cancel')}</Text>
               </TouchableOpacity>
               <TouchableOpacity style={styles.buttonSave} onPress={handleSubmit}>
-                <Text style={styles.buttonTextSave}>Add</Text>
+                <Text style={styles.buttonTextSave}>{t('add')}</Text>
               </TouchableOpacity>
             </View>
           </ThemedView>

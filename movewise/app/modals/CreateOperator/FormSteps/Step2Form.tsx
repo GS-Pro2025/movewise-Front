@@ -4,9 +4,9 @@ import { FormInput, ImageUpload, RadioGroup, DateInput, DropdownInput } from '..
 import { styles } from '../FormStyle';
 import { Son, StepProps } from '../Types';
 import { ALERT_TYPE, Toast } from 'react-native-alert-notification';
-
+import { useTranslation } from 'react-i18next';
 const Step2Form = ({ formData, updateFormData, onNext, onBack, isEditing }: StepProps) => {
-
+    const { t } = useTranslation();
     const [localData, setLocalData] = useState({
         number_licence: formData.number_licence || '',
         zipcode: formData.zipcode || '',
@@ -38,7 +38,7 @@ const Step2Form = ({ formData, updateFormData, onNext, onBack, isEditing }: Step
         gender: 'M'
     });
 
-    // Validation errors
+    // Errores de validación
     const [errors, setErrors] = useState<Record<string, string>>({});
     const [sonErrors, setSonErrors] = useState<Record<string, string>>({});
 
@@ -48,7 +48,7 @@ const Step2Form = ({ formData, updateFormData, onNext, onBack, isEditing }: Step
         setLocalData(prev => ({ ...prev, [field]: value }));
         updateFormData({ [field]: value });
 
-        // Clear error
+        // Limpiar error
         if (errors[field]) {
             setErrors({ ...errors, [field]: '' });
         }
@@ -56,7 +56,7 @@ const Step2Form = ({ formData, updateFormData, onNext, onBack, isEditing }: Step
 
     const handleSonChange = (field: string, value: string): void => {
         setCurrentSon({ ...currentSon, [field]: value });
-        // Clear error
+        // Limpiar error
         if (sonErrors[field]) {
             setSonErrors({ ...sonErrors, [field]: '' });
         }
@@ -72,18 +72,18 @@ const Step2Form = ({ formData, updateFormData, onNext, onBack, isEditing }: Step
         }
 
         if (!currentSon.birth_date) {
-            newErrors.birth_date = 'Birth date is required';
+            newErrors.birth_date = t("birth_date_required");
         } else {
             const today = new Date();
             const dob = new Date(currentSon.birth_date);
             const age = today.getFullYear() - dob.getFullYear();
             if (age >= 18) {
-                newErrors.birth_date = 'Child must be under 18 years old';
+                newErrors.birth_date = t("child_under_18");
             }
         }
 
         if (!currentSon.gender) {
-            newErrors.gender = 'Gender is required';
+            newErrors.gender = t("gender_required");
         }
 
         setSonErrors(newErrors);
@@ -110,8 +110,8 @@ const Step2Form = ({ formData, updateFormData, onNext, onBack, isEditing }: Step
 
             Toast.show({
                 type: ALERT_TYPE.SUCCESS,
-                title: "Child Added",
-                textBody: "Child information has been added",
+                title: t("child_added"),
+                textBody: t("child_added_successfully"),
                 autoClose: 1500,
             });
         }
@@ -134,13 +134,13 @@ const Step2Form = ({ formData, updateFormData, onNext, onBack, isEditing }: Step
 
         Toast.show({
             type: ALERT_TYPE.INFO,
-            title: "Child Deleted",
-            textBody: "Child information has been deleted",
+            title: t("child_deleted"),
+            textBody: t("child_deleted_successfully"),
             autoClose: 1500,
         });
     };
 
-    // Validate the entire form
+    // Validar todo el formulario
     const validateForm = (): boolean => {
         const newErrors: Record<string, string> = {};
 
@@ -170,7 +170,7 @@ const Step2Form = ({ formData, updateFormData, onNext, onBack, isEditing }: Step
 
     const handleNext = (): void => {
         if (validateForm()) {
-            // Synchronize all fields with the parent formData
+            // Sincronizar todos los campos con el formData principal
             updateFormData({
                 number_licence: localData.number_licence,
                 zipcode: localData.zipcode,
@@ -185,8 +185,8 @@ const Step2Form = ({ formData, updateFormData, onNext, onBack, isEditing }: Step
         } else {
             Toast.show({
                 type: ALERT_TYPE.DANGER,
-                title: "Validation Error",
-                textBody: "Please review the errors in the form",
+                title: t("validation_error"),
+                textBody: t("review_form_errors"),
                 autoClose: 3000,
             });
         }
@@ -195,10 +195,10 @@ const Step2Form = ({ formData, updateFormData, onNext, onBack, isEditing }: Step
     return (
         <ScrollView>
             <View style={styles.stepForm}>
-                <Text style={styles.sectionTitle}>Driver's License Information</Text>
+                <Text style={styles.sectionTitle}>{t("license_info")}</Text>
 
                 <FormInput
-                    label="License Number (*)"
+                    label={`${t("license_number")} (*)`}
                     value={localData.number_licence}
                     onChangeText={(text) => handleChange('number_licence', text)}
                     error={errors.number_licence}
@@ -206,7 +206,7 @@ const Step2Form = ({ formData, updateFormData, onNext, onBack, isEditing }: Step
                 />
 
                 <FormInput
-                    label="ZIP Code"
+                    label={`${t("zipcode_label")} (*)`}
                     value={localData.zipcode}
                     onChangeText={(text) => handleChange('zipcode', text)}
                     keyboardType="numeric"
@@ -215,7 +215,7 @@ const Step2Form = ({ formData, updateFormData, onNext, onBack, isEditing }: Step
                 />
 
                 <ImageUpload
-                    label="Front License Photo (*)"
+                    label={`${t("front_license_photo")} (*)`}
                     image={localData.license_front}
                     onImageSelected={(image) => handleChange('license_front', image)}
                     error={errors.license_front}
@@ -223,17 +223,17 @@ const Step2Form = ({ formData, updateFormData, onNext, onBack, isEditing }: Step
                 />
 
                 <ImageUpload
-                    label="Back License Photo (*)"
+                    label={`${t("back_license_photo")} (*)`}
                     image={localData.license_back}
                     onImageSelected={(image) => handleChange('license_back', image)}
                     error={errors.license_back}
                     required={true}
                 />
 
-                <Text style={styles.subSectionTitle}>Children Information</Text>
+                <Text style={styles.subSectionTitle}>{t("children_info")}</Text>
 
                 <RadioGroup
-                    label="Do you have minor children? (*)"
+                    label={`${t("question_children")}`}
                     options={[
                         { label: 'Yes', value: true },
                         { label: 'No', value: false }
@@ -246,30 +246,30 @@ const Step2Form = ({ formData, updateFormData, onNext, onBack, isEditing }: Step
 
                 {localData.has_minors && (
                     <>
-                        <Text style={styles.inputLabel}>Number of Children: {localData.n_children}</Text>
+                        <Text style={styles.inputLabel}>{t("number_of_children")}: {localData.n_children}</Text>
                         {errors.sons && <Text style={styles.errorText}>{errors.sons}</Text>}
 
-                        {/* List of added children */}
+                        {/* Lista de hijos agregados */}
                         {localData.sons.length > 0 && (
                             <View style={styles.sonsList}>
-                                <Text style={styles.subsectionTitle}>Added children:</Text>
+                                <Text style={styles.subsectionTitle}>{t("added_children")}:</Text>
                                 {localData.sons.map((son, index) => (
                                     <View key={index} style={styles.sonItem}>
-                                        <Text>{son.name} - {son.birth_date} - {son.gender === 'M' ? 'Male' : 'Female'}</Text>
+                                        <Text>{son.name} - {son.birth_date} - {son.gender === 'M' ? t("male") : t("female")}</Text>
                                         <TouchableOpacity onPress={() => removeSon(index)}>
-                                            <Text style={styles.removeButton}>Eliminar</Text>
+                                            <Text style={styles.removeButton}>{t("delete")}</Text>
                                         </TouchableOpacity>
                                     </View>
                                 ))}
                             </View>
                         )}
 
-                        {/* Form to add a new child */}
+                        {/* Formulario para agregar un nuevo hijo */}
                         <View style={styles.addSonForm}>
-                            <Text style={styles.subsectionTitle}>Add Child:</Text>
+                            <Text style={styles.subsectionTitle}>{t("add_child")}:</Text>
 
                             <FormInput
-                                label="Name (*)"
+                                label={`${t("name")} (*)`}
                                 value={currentSon.name || ''}
                                 onChangeText={(text) => handleSonChange('name', text)}
                                 error={sonErrors.name}
@@ -277,7 +277,7 @@ const Step2Form = ({ formData, updateFormData, onNext, onBack, isEditing }: Step
                             />
 
                             <DateInput
-                                label="Birthdate (*)"
+                                label={`${t("birth_date")} (*)`}
                                 value={currentSon.birth_date || ''}
                                 onChangeDate={(date) => handleSonChange('birth_date', date)}
                                 error={sonErrors.birth_date}
@@ -285,16 +285,16 @@ const Step2Form = ({ formData, updateFormData, onNext, onBack, isEditing }: Step
                             />
 
                             <DropdownInput
-                                label="Gender (*)"
+                                label={`${t("gender")} (*)`}
                                 value={currentSon.gender || 'M'}
                                 onChange={(value) => handleSonChange('gender', value)}
-                                options={[{ label: 'Male', value: 'M' }, { label: 'Female', value: 'F' }]}
+                                options={[{ label: t("male"), value: 'M' }, { label: t("female"), value: 'F' }]}
                                 error={sonErrors.gender}
                                 required={true}
                             />
 
                             <TouchableOpacity style={styles.addButton} onPress={addSon}>
-                                <Text style={styles.buttonText}>Add Child</Text>
+                                <Text style={styles.buttonText}>{t("add_child")}</Text>
                             </TouchableOpacity>
                         </View>
                     </>
@@ -302,10 +302,10 @@ const Step2Form = ({ formData, updateFormData, onNext, onBack, isEditing }: Step
 
                 <View style={styles.buttonContainer}>
                     <TouchableOpacity style={styles.cancelButton} onPress={onBack}>
-                        <Text style={styles.buttonText}>Back</Text>
+                        <Text style={styles.buttonText}>{t("back")}</Text>
                     </TouchableOpacity>
                     <TouchableOpacity style={styles.nextButton} onPress={handleNext}>
-                        <Text style={styles.buttonText}>Next</Text>
+                        <Text style={styles.buttonText}>{t("next")}</Text>
                     </TouchableOpacity>
                 </View>
             </View>

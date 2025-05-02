@@ -6,6 +6,7 @@ import { ListOperators } from '@/hooks/api/Get_listOperator';
 import CreateOperator from './CreateOperator';
 import { Operator, FormData } from './CreateOperator/Types';
 import { router, useGlobalSearchParams } from 'expo-router';
+import { useTranslation } from 'react-i18next';
 // Interface for pagination response
 interface PaginatedResponse {
   count: number;
@@ -15,9 +16,10 @@ interface PaginatedResponse {
 }
 
 const OperatorList = () => {
+  const { t } = useTranslation(); // Hook para traducción
   const { isEdit } = useGlobalSearchParams<{ isEdit: string }>();
-  const isCreating = isEdit === 'false';  // ahora esto sí funciona
-  console.log(isCreating)
+  const isCreating = isEdit === 'false'; // ahora esto sí funciona
+  console.log(isCreating);
 
   const [operators, setOperators] = useState<Operator[]>([]);
   const [selectedOperator, setSelectedOperator] = useState<Operator | null>(null);
@@ -99,8 +101,8 @@ const OperatorList = () => {
         setError(null);
       }
     } catch (error) {
-      console.error('Error loading operators:', error);
-      setError('Failed to load operators. Please try again.');
+      console.error(t("error_loading_operators"), error);
+      setError(t("could_not_load_operators"));
     } finally {
       setLoading(false);
       setLoadingMore(false);
@@ -120,36 +122,28 @@ const OperatorList = () => {
     last_name: op.last_name ?? '',
     birth_date: op.birth_date ?? '',
     type_id: op.type_id ?? '',
-    id_number: op.id_number != null
-      ? String(op.id_number)
-      : '',
-    zipcode: op.zipcode ?? '',
+    id_number: op.id_number != null ? String(op.id_number) : '',
     address: op.address ?? '',
     phone: op.phone ?? '',
     email: op.email ?? '',
     number_licence: op.number_licence ?? '',
+    zipcode:op.zipcode ?? '', 
     code: op.code ?? '',
     has_minors: Array.isArray(op.sons) && op.sons.length > 0,
     n_children: op.n_children ?? 0,
     sons: Array.isArray(op.sons)
       ? op.sons.map(son => ({
-        name: son.name ?? '',
-        birth_date: son.birth_date ?? '',
-        gender: son.gender ?? 'M',
-      }))
+          name: son.name ?? '',
+          birth_date: son.birth_date ?? '',
+          gender: son.gender ?? 'M',
+        }))
       : [],
     salary: op.salary ?? '',
     size_t_shift: op.size_t_shift ?? '',
     name_t_shift: op.name_t_shift ?? '',
-    photo: op.photo
-      ? { uri: op.photo, name: '', type: '' }
-      : null,
-    license_front: op.license_front
-      ? { uri: op.license_front, name: '', type: '' }
-      : null,
-    license_back: op.license_back
-      ? { uri: op.license_back, name: '', type: '' }
-      : null,
+    photo: op.photo ? { uri: op.photo, name: '', type: '' } : null,
+    license_front: op.license_front ? { uri: op.license_front, name: '', type: '' } : null,
+    license_back: op.license_back ? { uri: op.license_back, name: '', type: '' } : null,
     status: op.status ?? '',
   });
 
@@ -160,7 +154,8 @@ const OperatorList = () => {
         onPress={() => {
           setSelectedOperator(operator);
           setModalVisible(true);
-        }}>
+        }}
+      >
         <Ionicons name="create-outline" size={24} color="#fff" />
       </TouchableOpacity>
     </View>
@@ -201,7 +196,7 @@ const OperatorList = () => {
             </Text>
             <View style={styles.statusContainer}>
               <View style={[styles.statusIndicator, { backgroundColor: item.status === 'activo' ? '#4CAF50' : '#FF9800' }]} />
-              <Text style={styles.statusText}>{item.status || 'N/A'}</Text>
+              <Text style={styles.statusText}>{item.status || t("not_available")}</Text>
             </View>
           </View>
         </TouchableOpacity>
@@ -215,13 +210,13 @@ const OperatorList = () => {
     return (
       <View style={styles.footerLoader}>
         <ActivityIndicator size="small" color="#3498db" />
-        <Text style={styles.footerText}>loading more operators...</Text>
+        <Text style={styles.footerText}>{t("loading_more_operators")}</Text>
       </View>
     );
   };
 
   const handleSuccess = () => {
-    loadOperators(1, true); 
+    loadOperators(1, true);
     setModalVisible(false);
     setSelectedOperator(null);
   };
@@ -234,7 +229,7 @@ const OperatorList = () => {
           <TouchableOpacity style={styles.backButton} onPress={handleBackPress}>
             <Ionicons name="arrow-back" size={24} color="#333" />
           </TouchableOpacity>
-          <Text style={styles.headerTitle}>Operators</Text>
+          <Text style={styles.headerTitle}>{t("operators")}</Text>
           <TouchableOpacity
             style={styles.addButton}
             onPress={() => {
@@ -251,25 +246,25 @@ const OperatorList = () => {
           {loading && operators.length === 0 ? (
             <View style={styles.centerContent}>
               <ActivityIndicator size="large" color="#3498db" />
-              <Text style={styles.loadingText}>Loading Operators...</Text>
+              <Text style={styles.loadingText}>{t("loading_operators")}</Text>
             </View>
           ) : error ? (
             <View style={styles.centerContent}>
               <Ionicons name="alert-circle-outline" size={50} color="#e74c3c" />
               <Text style={styles.errorText}>{error}</Text>
               <TouchableOpacity style={styles.retryButton} onPress={() => loadOperators()}>
-                <Text style={styles.retryText}>Reintentar</Text>
+                <Text style={styles.retryText}>{t("retry")}</Text>
               </TouchableOpacity>
             </View>
           ) : operators.length === 0 ? (
             <View style={styles.centerContent}>
               <Ionicons name="people-outline" size={50} color="#95a5a6" />
-              <Text style={styles.noDataText}>there's no more operators</Text>
+              <Text style={styles.noDataText}>{t("no_operators_available")}</Text>
               <TouchableOpacity
                 style={styles.addFirstButton}
                 onPress={() => setModalVisible(true)}
               >
-                <Text style={styles.addFirstText}>Add Operator</Text>
+                <Text style={styles.addFirstText}>{t("add_operator")}</Text>
               </TouchableOpacity>
             </View>
           ) : (
@@ -288,7 +283,7 @@ const OperatorList = () => {
               {/* Pagination info */}
               <View style={styles.paginationInfo}>
                 <Text style={styles.paginationText}>
-                  show {operators.length} of {pagination.count} Operators
+                  {t("showing")} {operators.length} {t("of")} {pagination.count} {t("operators")}
                 </Text>
               </View>
             </View>
@@ -306,7 +301,7 @@ const OperatorList = () => {
       </View>
     </SafeAreaView>
   );
-}
+};
 
 const styles = StyleSheet.create({
   safeArea: {
