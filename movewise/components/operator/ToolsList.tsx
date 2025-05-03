@@ -7,7 +7,6 @@ import {
   FlatList,
   TouchableOpacity,
   Modal,
-  Alert,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { getToolsList } from '@/hooks/api/GetToolsList';
@@ -15,22 +14,36 @@ import {
   GestureHandlerRootView,
   TouchableHighlight,
   Swipeable
-} from "react-native-gesture-handler";
-import AsyncStorage from "@react-native-async-storage/async-storage";
-import apiClient from "@/hooks/api/apiClient";
+} from 'react-native-gesture-handler';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import apiClient from '@/hooks/api/apiClient';
 import { ALERT_TYPE, Toast } from 'react-native-alert-notification';
 import { GetAssignToolByOrder } from '@/hooks/api/GetAssignToolByOrder';
 
+// Define interfaces
 interface Tool {
   id: number;
   name: string;
   job: number;
 }
 
+interface DataOrder {
+  key: string;
+  key_ref: string;
+  date: string;
+  // ...otros campos si los necesitas
+}
+
+interface Assignment {
+  id: number;
+  data_order: DataOrder;
+  // ...otros campos si los necesitas
+}
+
 interface ToolsManagerProps {
   visible: boolean;
   onClose: () => void;
-  assignment: any;
+  assignment: Assignment;          // Recibe el objeto, no string
   isDarkMode: boolean;
 }
 
@@ -41,8 +54,7 @@ const ToolsManager: React.FC<ToolsManagerProps> = ({
   isDarkMode
 }) => {
   const [selectedTools, setSelectedTools] = useState<Tool[]>([]);
-  const [initialAssignedTools, setInitialAssignedTools] = useState<Tool[]>([]);
-  const [allTools, setAllTools] = useState<Tool[]>([]);
+  const [tools, setTools] = useState<Tool[]>([]);
   const [loading, setLoading] = useState(true);
   const swipeableRefs = useRef<Map<number, Swipeable>>(new Map());
   const [page, setPage] = useState(1);
@@ -50,196 +62,154 @@ const ToolsManager: React.FC<ToolsManagerProps> = ({
   const [hasNextPage, setHasNextPage] = useState(true);
   const [showSelectedModal, setShowSelectedModal] = useState(false);
 
-  // Computed property for filtered tools (tools not yet selected)
-  const filteredTools = allTools.filter(
-    tool => !selectedTools.some(selectedTool => selectedTool.id === tool.id)
-  );
-
+  // Carga las herramientas ya asignadas
   useEffect(() => {
     const loadAssignedTools = async () => {
-      if (visible && assignment?.data_order?.key) {
+      if (visible && assignment.data_order.key) {
         try {
-          setLoading(true);
           const response = await GetAssignToolByOrder(assignment.data_order.key);
-          const assignedTools = response.data.map((tool: any) => ({
+          const assignedTools = response.map((tool: any) => ({
             id: tool.tool.id,
             name: tool.tool.name,
-            job: tool.tool.job
+            job: tool.tool.job,
           }));
-
           setSelectedTools(assignedTools);
-          setInitialAssignedTools(assignedTools);
-
-          await loadTools(1);
         } catch (error) {
           Toast.show({
             type: ALERT_TYPE.DANGER,
-            title: "Error",
-            textBody: "No se pudieron cargar las herramientas asignadas",
+            title: 'Error',
+            textBody: 'No se pudieron cargar las herramientas asignadas',
             autoClose: 3000,
           });
-          await loadTools(1);
-        } finally {
-          setLoading(false);
         }
       }
     };
 
-    if (visible) {
-      setPage(1);
-      setHasNextPage(true);
-      loadAssignedTools();
-    }
-  }, [visible, assignment?.data_order?.key]);
+    if (visible) loadAssignedTools();
+  }, [visible, assignment.data_order.key]);
 
-
-
+  // Carga lista general de herramientas paginadas
   const loadTools = async (pageToLoad: number) => {
-    if (!hasNextPage && pageToLoad > 1) return; // Check if there are more pages to load
-    pageToLoad === 1 ? setLoading(true) : setLoadingMore(true); // Set loading state based on the page
+    if (!hasNextPage && pageToLoad > 1) return;
+    pageToLoad === 1 ? setLoading(true) : setLoadingMore(true);
 
     try {
-      const toolsData = await getToolsList(pageToLoad); // Fetch tools data
-      if (Array.isArray(toolsData)) {
-        // If we are on page 1, replace the entire array
-        if (pageToLoad === 1) {
-          setAllTools(toolsData);
-        } else {
-          // For additional pages, ensure we do not duplicate tools
-          setAllTools(prev => {
-            const newTools = toolsData.filter(
-              newTool => !prev.some(existingTool => existingTool.id === newTool.id) // Filter out existing tools
-            );
-            return [...prev, ...newTools]; // Combine previous tools with new tools
-          });
-        }
-        setHasNextPage(toolsData.length > 0); // Check if there are more tools to load
+      const response = await getToolsList(pageToLoad);
+
+      // Verificar si hay más páginas
+      const hasNext = !!response.next;  // Usar el campo 'next' de la respuesta
+
+      if (Array.isArray(response.results)) {  // <<< Acceder a .results
+        setTools(prev => (
+          pageToLoad === 1 ? response.results : [...prev, ...response.results]
+        ));
+        setHasNextPage(hasNext);
       }
     } catch (e) {
-      console.error("Error loading tools:", e); // Log any errors
+      console.error('Error loading tools:', e);
+      setHasNextPage(false);  // En caso de error, detener paginación
     } finally {
-      setLoading(false); // Reset loading state
-      setLoadingMore(false); // Reset loading more state
+      setLoading(false);
+      setLoadingMore(false);
     }
   };
 
-  // useEffect(() => {
-  //   if (visible) {
-  //     setPage(1);
-  //     setHasNextPage(true);
-  //     loadTools(1);
-  //   }
-  // }, [visible]);
+  useEffect(() => {
+    if (visible) {
+      setPage(1);
+      setHasNextPage(true);
+      loadTools(1);
+    }
+  }, [visible]);
 
   useEffect(() => {
-    if (page > 1) {
-      loadTools(page);
-    }
+    if (page > 1) loadTools(page);
   }, [page]);
 
   const handleToolSelection = (tool: Tool) => {
     setSelectedTools(prev => {
-      //verify if the tool is already selected
-      if (prev.some(selectedTool => selectedTool.id === tool.id)) {
-        return prev; //if the tool is already selected, return the previous state
-      }
-      return [...prev, tool]; 
+      const exists = prev.some(t => t.id === tool.id);
+      return exists ? prev.filter(t => t.id !== tool.id) : [...prev, tool];
     });
   };
 
-  const handleRemoveTool = (toolId: number) => {
-    setSelectedTools(prev => prev.filter(tool => tool.id !== toolId));
-  };
-
+  // Guarda la asignación de herramientas
   const handleSave = async () => {
-    const newlySelectedTools = selectedTools.filter(
-      selectedTool => !initialAssignedTools.some(initialTool => initialTool.id === selectedTool.id)
-    );
-
-    const unselectedTools = initialAssignedTools.filter(
-      initialTool => !selectedTools.some(selectedTool => selectedTool.id === initialTool.id)
-    );
-
-    if (newlySelectedTools.length > 0 || unselectedTools.length > 0) {
-      try {
-        const token = await AsyncStorage.getItem("userToken");
-
-        const payload = newlySelectedTools.map(tool => ({
-          id_tool: tool.id,
-          key: assignment.data_order?.key,
-          date: new Date().toISOString().split('T')[0]
-        }));
-
-        if (payload.length > 0) {
-          const response = await apiClient.post('/assignTools/', payload, {
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
-          });
-
-          if (response.data.status !== "success") {
-            Toast.show({
-              type: ALERT_TYPE.DANGER,
-              title: "Error",
-              textBody: response.data.messDev || "Failed to assign tools",
-              autoClose: 3000,
-            });
-            return;
-          }
-        }
-
-        if (unselectedTools.length > 0) {
-          const unassignPayload = unselectedTools.map(tool => ({
-            id_tool: tool.id,
-            key: assignment.data_order?.key
-          }));
-
-          const unassignResponse = await apiClient.post('/unassignTools/', unassignPayload, {
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
-          });
-
-          if (unassignResponse.data.status !== "success") {
-            Toast.show({
-              type: ALERT_TYPE.DANGER,
-              title: "Error",
-              textBody: unassignResponse.data.messDev || "Failed to unassign tools",
-              autoClose: 3000,
-            });
-            return;
-          }
-        }
-
+    const keyValue = assignment.data_order.key;
+    if (!keyValue) return;
+  
+    const today = new Date().toISOString().split('T')[0];
+  
+    try {
+      // Obtener herramientas ya asignadas (results viene directamente del endpoint paginado)
+      const currentAssignedResponse = await GetAssignToolByOrder(keyValue);
+      const currentAssignedTools = currentAssignedResponse.map((t: any) => t.tool.id);
+  
+      // Filtrar solo herramientas nuevas
+      const newTools = selectedTools.filter(
+        tool => !currentAssignedTools.includes(tool.id)
+      );
+  
+      if (newTools.length === 0) {
         Toast.show({
-          type: ALERT_TYPE.SUCCESS,
-          title: "Success",
-          textBody: "Tools updated successfully",
+          type: ALERT_TYPE.INFO,
+          title: 'Info',
+          textBody: 'No hay herramientas nuevas para asignar',
           autoClose: 3000,
         });
-
-        onClose();
-      } catch (error) {
-        console.error('Error updating tools:', error);
-        Toast.show({
-          type: ALERT_TYPE.DANGER,
-          title: "Error",
-          textBody: "Error updating tools",
-          autoClose: 3000,
-        });
+        return;
       }
-    } else {
+  
+      // Crear payload solo con herramientas nuevas
+      const payload = newTools.map(tool => ({
+        id_tool: tool.id,
+        key: keyValue,
+        date: today,
+      }));
+  
+      const token = await AsyncStorage.getItem('userToken');
+      
+      // Enviar nuevas asignaciones
+      await apiClient.post('/assignTools/', payload, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        },
+      });
+  
+      // Obtener lista actualizada desde el backend
+      const updatedResponse = await GetAssignToolByOrder(keyValue);
+      const updatedTools = updatedResponse.map((tool: any) => ({
+        id: tool.tool.id,
+        name: tool.tool.name,
+        job: tool.tool.job,
+      }));
+  
+      // Actualizar estado y cerrar modal
+      setSelectedTools(updatedTools);
+      onClose();
+  
       Toast.show({
-        type: ALERT_TYPE.INFO,
-        title: "Info",
-        textBody: "No changes were made to tool assignments",
+        type: ALERT_TYPE.SUCCESS,
+        title: 'Success',
+        textBody: `Herramientas asignadas: ${newTools.length}`,
         autoClose: 3000,
       });
-      onClose();
+  
+    } catch (error: any) {
+      console.error('Error sending data:', error);
+      const errorMessage = error.response?.data?.message || 'Error al enviar datos';
+      Toast.show({
+        type: ALERT_TYPE.DANGER,
+        title: 'Error',
+        textBody: errorMessage,
+        autoClose: 3000,
+      });
     }
   };
 
   const renderToolItem = ({ item }: { item: Tool }) => {
+    const isSelected = selectedTools.some(t => t.id === item.id);
     return (
       <GestureHandlerRootView>
         <TouchableHighlight
@@ -247,74 +217,32 @@ const ToolsManager: React.FC<ToolsManagerProps> = ({
           onPress={() => handleToolSelection(item)}
         >
           <Swipeable
-            ref={(ref) => ref && swipeableRefs.current.set(item.id, ref)}
+            ref={ref => ref && swipeableRefs.current.set(item.id, ref)}
             renderLeftActions={() => (
               <View style={[styles.rightSwipeActions, { backgroundColor: '#28a745' }]}>
-                <Text style={styles.checkText}>Select</Text>
+                <Text style={styles.checkText}>{isSelected ? 'Remove' : 'Select'}</Text>
               </View>
             )}
             onSwipeableOpen={() => handleToolSelection(item)}
           >
             <View style={[
               styles.toolItem,
-              {
-                backgroundColor: isDarkMode ? '#1A1A1A' : '#FFF',
-                borderColor: isDarkMode ? '#333' : '#E0E0E0'
-              }
+              { backgroundColor: isDarkMode ? '#1A1A1A' : '#FFF', borderColor: isDarkMode ? '#333' : '#E0E0E0' },
+              isSelected && { backgroundColor: isDarkMode ? '#0458AB' : '#E3F2FD', borderColor: '#0458AB' }
             ]}>
               <View style={styles.toolInfo}>
-                <Text style={[
-                  styles.toolName,
-                  { color: isDarkMode ? '#FFF' : '#333' }
-                ]}>
+                <Text style={[styles.toolName, { color: isSelected ? (isDarkMode ? '#FFF' : '#0458AB') : (isDarkMode ? '#FFF' : '#333') }]}>
                   {item.name}
                 </Text>
-                <Text style={[styles.toolJob, { color: isDarkMode ? '#BDBDBD' : '#757575' }]}>
-                  Job {item.job}
-                </Text>
+                <Text style={[styles.toolJob, { color: isDarkMode ? '#BDBDBD' : '#757575' }]}>Job {item.job}</Text>
               </View>
-              <TouchableOpacity onPress={() => handleToolSelection(item)}>
-                <Ionicons
-                  name="add-circle-outline"
-                  size={24}
-                  color={isDarkMode ? "#FFF" : "#0458AB"}
-                />
-              </TouchableOpacity>
+              {isSelected && <Ionicons name="checkmark-circle" size={24} color={isDarkMode ? '#FFF' : '#0458AB'} />}
             </View>
           </Swipeable>
         </TouchableHighlight>
       </GestureHandlerRootView>
     );
   };
-
-  const renderSelectedToolItem = ({ item }: { item: Tool }) => {
-    return (
-      <View style={[
-        styles.toolItem,
-        {
-          backgroundColor: isDarkMode ? '#1A1A1A' : '#FFF',
-          borderColor: isDarkMode ? '#333' : '#E0E0E0'
-        }
-      ]}>
-        <View style={styles.toolInfo}>
-          <Text style={{ color: isDarkMode ? '#FFF' : '#333' }}>
-            {item.name}
-          </Text>
-          <Text style={{ color: isDarkMode ? '#BDBDBD' : '#757575' }}>
-            Job {item.job}
-          </Text>
-        </View>
-        <TouchableOpacity onPress={() => handleRemoveTool(item.id)}>
-          <Ionicons
-            name="close-circle-outline"
-            size={24}
-            color={isDarkMode ? "#FFF" : "#ff4444"}
-          />
-        </TouchableOpacity>
-      </View>
-    );
-  };
-
   return (
     <Modal
       animationType="slide"
@@ -332,7 +260,7 @@ const ToolsManager: React.FC<ToolsManagerProps> = ({
             styles.toolsModalHeader,
             { backgroundColor: isDarkMode ? '#333' : '#0458AB' }
           ]}>
-            <Text style={styles.toolsModalTitle}>Available Tools</Text>
+            <Text style={styles.toolsModalTitle}>Tools</Text>
             <TouchableOpacity onPress={onClose}>
               <Ionicons name="close" size={24} color="#FFF" />
             </TouchableOpacity>
@@ -343,13 +271,9 @@ const ToolsManager: React.FC<ToolsManagerProps> = ({
             <Text style={[styles.toolsModalSubtitle, { color: isDarkMode ? '#FFF' : '#333' }]}>
               Order #{assignment.id}
             </Text>
-            <TouchableOpacity
-              onPress={() => setShowSelectedModal(true)}
-              style={styles.selectedToolsButton}
-            >
-              <Ionicons name="checkmark-circle" size={16} color={isDarkMode ? "#CCC" : "#0458AB"} />
-              <Text style={[styles.toolsModalSelection, { color: isDarkMode ? '#CCC' : '#0458AB' }]}>
-                Selected Tools ({selectedTools.length})
+            <TouchableOpacity onPress={() => setShowSelectedModal(true)}>
+              <Text style={[styles.toolsModalSelection, { color: isDarkMode ? '#CCC' : '#666' }]}>
+                Show Selected Tools ({selectedTools.length})
               </Text>
             </TouchableOpacity>
           </View>
@@ -361,7 +285,7 @@ const ToolsManager: React.FC<ToolsManagerProps> = ({
             </View>
           ) : (
             <FlatList
-              data={filteredTools}
+              data={tools}
               keyExtractor={item => item.id.toString()}
               renderItem={renderToolItem}
               contentContainerStyle={styles.listContainer}
@@ -371,13 +295,6 @@ const ToolsManager: React.FC<ToolsManagerProps> = ({
                 }
               }}
               onEndReachedThreshold={0.5}
-              ListEmptyComponent={
-                <View style={styles.emptyContainer}>
-                  <Text style={{ color: isDarkMode ? '#FFF' : '#333', textAlign: 'center', marginTop: 20 }}>
-                    No available tools found or all tools are selected
-                  </Text>
-                </View>
-              }
               ListFooterComponent={() =>
                 loadingMore
                   ? <View style={styles.loadingMoreContainer}>
@@ -400,7 +317,7 @@ const ToolsManager: React.FC<ToolsManagerProps> = ({
               style={[styles.toolsModalButton, styles.saveButton]}
               onPress={handleSave}
             >
-              <Text style={{ color: '#FFF' }}>Save</Text>
+              <Text style={{ color: '#000' }}>Save</Text>
             </TouchableOpacity>
           </View>
         </View>
@@ -433,31 +350,45 @@ const ToolsManager: React.FC<ToolsManagerProps> = ({
             <FlatList
               data={selectedTools}
               keyExtractor={item => item.id.toString()}
-              renderItem={renderSelectedToolItem}
+              renderItem={({ item }) => (
+                <View style={[
+                  styles.toolItem,
+                  {
+                    backgroundColor: isDarkMode ? '#1A1A1A' : '#FFF',
+                    borderColor: isDarkMode ? '#333' : '#E0E0E0'
+                  }
+                ]}>
+                  <View style={styles.toolInfo}>
+                    <Text style={{ color: isDarkMode ? '#FFF' : '#333' }}>
+                      {item.name}
+                    </Text>
+                    <Text style={{ color: isDarkMode ? '#BDBDBD' : '#757575' }}>
+                      Job {item.job}
+                    </Text>
+                  </View>
+                  <Ionicons
+                    name="checkmark-circle"
+                    size={24}
+                    color={isDarkMode ? "#FFF" : "#0458AB"}
+                  />
+                </View>
+              )}
               contentContainerStyle={styles.listContainer}
               ListEmptyComponent={
                 <View style={styles.emptyContainer}>
-                  <Text style={{ color: isDarkMode ? '#FFF' : '#333', textAlign: 'center', marginTop: 20 }}>
+                  <Text style={{ color: isDarkMode ? '#FFF' : '#333' }}>
                     No tools selected
                   </Text>
                 </View>
               }
             />
-
-            <View style={styles.toolsModalFooter}>
-              <TouchableOpacity
-                style={[styles.toolsModalButton, styles.saveButton, { flex: 1 }]}
-                onPress={() => setShowSelectedModal(false)}
-              >
-                <Text style={{ color: '#FFF' }}>Done</Text>
-              </TouchableOpacity>
-            </View>
           </View>
         </View>
       </Modal>
     </Modal>
   );
 };
+
 
 const styles = StyleSheet.create({
   emptyContainer: {
@@ -583,10 +514,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
 
-  selectedToolsButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
 
 });
 
