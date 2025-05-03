@@ -32,9 +32,9 @@
     "edit_daily": "Editar\nOrden",
     "resume_order": "Resumen\nPedido",
     "create_truck": "Registrar\nCamión",
-    "collaborator_registration": "Registro de\nColaborador",
-    "collaborator_unlink": "Desvincular\nColaborador",
-    "collaborator_edit": "Editar\nColaborador",
+    "collaborator_registration": "Registro de\nOperador",
+    "collaborator_unlink": "Desvincular\nOperador",
+    "collaborator_edit": "Editar\nOperador",
     "user_level": "Nivel",
     "operator_work_daily": "Trabajo\nDiario",
     "operator_truck_daily": "Camión\nDiario",
@@ -54,8 +54,8 @@
     "adding_extra_cost": "Agregando costo extra:",
     "add_operator": "Agregar Operador",
     "current_order": "La orden actual es:",
-    "search_operator_id": "Buscar ID de Operador",
-    "operator_id_placeholder": "ID del Operador",
+    "search_operator_id": "Buscar ceddula de Operador",
+    "operator_id_placeholder": "cedula del Operador",
     "name": "Nombre",
     "cost": "Costo (USD)",
     "cost_placeholder": "0.0",
@@ -403,6 +403,7 @@
     "active": "Activo",
     "inactive": "Inactivo",
     "update": "Actualizar",
+<<<<<<< HEAD
 
     "license_info": "Información de Licencia",
     "license_number": "Número de Licencia",
@@ -432,4 +433,8 @@
     "tshirt_size_required": "La talla de camiseta es requerida",
     "tshirt_name_required": "El nombre para la camiseta es requerido",
     "salary_amount_invalid": "Por favor ingrese un monto de salario válido (mayor que 0)"
+=======
+    
+    "truck_found": "Camión encontrado"
+>>>>>>> 07cabdeb3e66b15e1a0c9d2cbf24029626481d65
 }

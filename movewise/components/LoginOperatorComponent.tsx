@@ -48,7 +48,11 @@ const IdLoginScreen: React.FC = () => {
         text1: t("login_successful"),
         text2: `${t("welcome")} ${operatorData.first_name ?? t("user")}`,
       });
+<<<<<<< HEAD
   
+=======
+
+>>>>>>> 07cabdeb3e66b15e1a0c9d2cbf24029626481d65
       router.push("/OperatorHome");
     } catch (error: any) {
       console.error("Error en login:", error);

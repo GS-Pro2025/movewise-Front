@@ -61,18 +61,44 @@ const OrderModal: React.FC<OrderModalProps> = ({ visible, onClose }) => {
     setLoading(true);
     setRefreshing(true);
     try {
+<<<<<<< HEAD
       const response = await getOrders();
       const ordersData = Array.isArray(response) ? response : response?.data || [];
       setOrders(ordersData);
+=======
+        const response = await getOrders(); // Ahora devuelve un array
+        console.log("API Response:", response); // Log para verificar los datos
+        // Filtrar las órdenes para excluir las que tienen estado "Inactive"
+        const filteredResponse = response.filter((order: Order) => order.status.toLowerCase() !== 'inactive');
+        // Mapear las órdenes al formato correcto
+        const mappedOrders = filteredResponse.map((order: Order) => ({
+            key: order.key,
+            key_ref: order.key_ref,
+            date: order.date,
+            distance: order.distance,
+            expense: order.expense,
+            income: order.income,
+            weight: order.weight,
+            status: order.status,
+            payStatus: order.payStatus,
+            state_usa: order.state_usa,
+            person: {
+                email: order.person.email,
+                first_name: order.person.first_name || null,
+                last_name: order.person.last_name || null,
+            },
+            job: order.job,
+        }));
+        setOrders(mappedOrders);
+>>>>>>> 07cabdeb3e66b15e1a0c9d2cbf24029626481d65
     } catch (error) {
-      console.error(t("error_loading_orders"), error);
-      Alert.alert(t("error"), t("could_not_load_orders"));
-      //router.back();
+        console.error(t("error_loading_orders"), error);
+        Alert.alert(t("error"), t("could_not_load_orders"));
     } finally {
-      setLoading(false);
-      setRefreshing(false);
+        setLoading(false);
+        setRefreshing(false);
     }
-  }, []);
+}, []);
 
   useEffect(() => {
     loadOrders();

@@ -20,16 +20,14 @@ interface OrderPerson {
     job: number;
   } export default Order;
 
-export const getOrders = async () => {
-    try{
+  export const getOrders = async () => {
+    try {
         const response = await apiClient.get("/orders");
-        console.log(response.data)
-        const data = response.data;
-
-        // Extract the `results` array from the paginated response
-        return data.results || [];
+        console.log("Get orders consumer:", response.data); // Log completo de la respuesta
+        const results = response.data?.data?.results || []; // Extraer resultados
+        return results; // Devolver solo el array de órdenes
     } catch (error) {
-        console.error('Error fetching orders:', error);
-        throw error;
+        console.error("Error fetching orders:", error);
+        throw error; // Lanzar el error para manejarlo en el componente
     }
 };
