@@ -11,8 +11,8 @@ import { url } from '../../hooks/api/apiClient';
 import { useTranslation } from 'react-i18next';
 
 interface Operator {
-  id_operator: number;
-  first_name: string;
+  id_operator: number; // Changed from id_operator to id to match OperatorModal interface
+  name: string; // Changed to name to match what OperatorModal expects
   role?: string;
   additionalCosts?: number;
   truckId?: number;
@@ -44,13 +44,15 @@ export default function AddOperatorForm({ visible, onClose, onAddOperator, order
   const [name, setName] = useState('');
   const [cost, setCost] = useState('');
   const [additionalCost, setAdditionalCost] = useState('');
-  const [fetchedOperatorId, setFetchedOperatorId] = useState<number | null>(null); // Now properly managed as state
+  const [fetchedOperatorId, setFetchedOperatorId] = useState<number | null>(null);
   const colorScheme = useColorScheme();
 
   const handleSearch = () => {
     if (operatorId.length > 0) {
       try {
-        getOperatorByNumberId(Number(operatorId)).then(data => {
+        console.log("Buscando operador con cedula:", operatorId);
+        getOperatorByNumberId(operatorId).then(data => {
+          console.log(data)
           if (data) {
             console.log("Datos recibidos:", data);
             notifyMessage(`${t('operator')} ${data.first_name} ${data.last_name} ${t('found')}`);
@@ -58,8 +60,9 @@ export default function AddOperatorForm({ visible, onClose, onAddOperator, order
             // Actualiza estos accesos
             setName(`${data.first_name} ${data.last_name}`);
             setCost(data.salary ? data.salary.toString() : '');
-            setFetchedOperatorId(data.id); // Usar id_operator directo
-
+            console.log("Id del operador en la empresa:", data.id_number);
+            console.log("Id del operador en la API:", data.id_operator);  
+            setFetchedOperatorId(data.id_operator);
           } else {
             resetForm();
           }
@@ -81,16 +84,18 @@ export default function AddOperatorForm({ visible, onClose, onAddOperator, order
   };
 
   const handleSubmit = () => {
+    console.log("Submitting operator data: ", fetchedOperatorId)
     if (!fetchedOperatorId) {
       notifyMessage("Busque un operador válido primero");
       return;
     }
 
+    // Create new operator with the proper structure to match OperatorModal interface
     const newOperator: Operator = {
-      id: fetchedOperatorId,
-      name: name,
+      id_operator: fetchedOperatorId, // Changed from id_operator to id
+      name: name, // Use the full name, not just first name
+      role: "operator",
       additionalCosts: additionalCost.trim() !== '' ? parseFloat(additionalCost) : 0,
-      role: "operator", // Valor por defecto
     };
 
     if (onAddOperator) {

@@ -1,5 +1,7 @@
 import React, { useState, useCallback } from "react";
 import { useLocalSearchParams, useRouter } from "expo-router";
+import { useTranslation } from "react-i18next";
+
 import {
     View, Text, StyleSheet, TouchableOpacity,
     useColorScheme, SafeAreaView, Platform
@@ -9,6 +11,7 @@ import BaseOperatorView, { Assignment } from "../../components/operator/BaseOper
 import AssignmentItem from "../../components/operator/AssignmentItem";
 import AssignmentDetails from "./assignmentDetails";
 import TruckDetail from "./TruckDetail"; // Importar el componente TruckDetail
+
 const OperatorView = () => {
     const { t } = useTranslation(); // Hook para traducción
     const params = useLocalSearchParams();

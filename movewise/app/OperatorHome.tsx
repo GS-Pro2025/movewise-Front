@@ -23,7 +23,7 @@ interface ActionButtonProps {
 }
 
 interface Operator {
-    id: number;
+    id_operator: number;
     first_name: string;
     last_name: string;
     status: string;
@@ -31,7 +31,7 @@ interface Operator {
 }
 
 const Home: React.FC = () => {
-    const { t } = useTranslation();
+    const { t, i18n } = useTranslation(); 
     const router = useRouter();
     const theme = useColorScheme();
     const isDarkMode = theme === "dark";
@@ -98,7 +98,7 @@ const Home: React.FC = () => {
                                 pathname: "/modals/OperatorView",
                                 params: {
                                     type: "work",
-                                    operatorId: operator?.id
+                                    operatorId: operator?.id_operator
                                 }
                             })}
                         />
@@ -110,7 +110,7 @@ const Home: React.FC = () => {
                                 pathname: "/modals/OperatorView",
                                 params: {
                                     type: "truck",
-                                    operatorId: operator?.id
+                                    operatorId: operator?.id_operator
                                 }
                             })}
                         />

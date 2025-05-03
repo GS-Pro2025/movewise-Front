@@ -244,8 +244,8 @@ export default function AddOrderModal({ visible, onClose }: AddOrderModalProps) 
                   listMode="MODAL"
                   modalTitle={t('select_state')}
                   searchable={true}
-                  searchablePlaceholder={t('search')}
-                  searchablePlaceholderTextColor="#9ca3af"
+                  searchPlaceholder={t('search')}
+                  searchPlaceholderTextColor="#9ca3af"
                   scrollViewProps={{ nestedScrollEnabled: true }}
                   dropDownContainerStyle={{ maxHeight: 500 }}
                 />
@@ -359,7 +359,7 @@ export default function AddOrderModal({ visible, onClose }: AddOrderModalProps) 
                 <DropDownPicker
                   open={openJob}
                   value={job || ""}
-                  items={jobList.map((jobItem) => ({ label: jobItem.name, value: jobItem.id }))}
+                  items={jobList.map((jobItem) => ({ label: jobItem.name, value: jobItem.id.toString() }))}
                   setOpen={setOpenJob}
                   setValue={setJob}
                   placeholder={t('select_job')}
@@ -381,7 +381,7 @@ export default function AddOrderModal({ visible, onClose }: AddOrderModalProps) 
             </ThemedView>
 
             {/* Operator Modal */}
-            <OperatorModal visible={operatorModalVisible} onClose={() => setOperatorModalVisible(false)} orderKey={savedOrderKey} />
+            <OperatorModal visible={operatorModalVisible} onClose={() => setOperatorModalVisible(false)} orderKey={savedOrderKey || 'There is no key'} />
           </ScrollView>
         </KeyboardAvoidingView>
       </SafeAreaView>
