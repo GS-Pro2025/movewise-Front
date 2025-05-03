@@ -11,7 +11,7 @@ import { url } from '../../hooks/api/apiClient';
 import { useTranslation } from 'react-i18next';
 
 interface Operator {
-  id: number; // Changed from id_operator to id to match OperatorModal interface
+  id_operator: number; // Changed from id_operator to id to match OperatorModal interface
   name: string; // Changed to name to match what OperatorModal expects
   role?: string;
   additionalCosts?: number;
@@ -51,7 +51,7 @@ export default function AddOperatorForm({ visible, onClose, onAddOperator, order
     if (operatorId.length > 0) {
       try {
         console.log("Buscando operador con cedula:", operatorId);
-        getOperatorByNumberId(Number(operatorId)).then(data => {
+        getOperatorByNumberId(operatorId).then(data => {
           console.log(data)
           if (data) {
             console.log("Datos recibidos:", data);
@@ -92,7 +92,7 @@ export default function AddOperatorForm({ visible, onClose, onAddOperator, order
 
     // Create new operator with the proper structure to match OperatorModal interface
     const newOperator: Operator = {
-      id: fetchedOperatorId, // Changed from id_operator to id
+      id_operator: fetchedOperatorId, // Changed from id_operator to id
       name: name, // Use the full name, not just first name
       role: "operator",
       additionalCosts: additionalCost.trim() !== '' ? parseFloat(additionalCost) : 0,
@@ -110,6 +110,7 @@ export default function AddOperatorForm({ visible, onClose, onAddOperator, order
     setFetchedOperatorId(null);
     onClose();
   };
+
 
   const styles = StyleSheet.create({
     container: {

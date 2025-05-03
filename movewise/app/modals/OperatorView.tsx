@@ -11,7 +11,6 @@ import BaseOperatorView, { Assignment } from "../../components/operator/BaseOper
 import AssignmentItem from "../../components/operator/AssignmentItem";
 import AssignmentDetails from "./assignmentDetails";
 import TruckDetail from "./TruckDetail"; // Importar el componente TruckDetail
-import { useTranslation } from "react-i18next";
 
 const OperatorView = () => {
     const { t } = useTranslation(); // Hook para traducción

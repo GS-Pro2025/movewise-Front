@@ -12,15 +12,19 @@ import {
   StyleSheet,
   ImageBackground,
   StatusBar,
+  ActivityIndicator,
 } from "react-native";
 import Toast from "react-native-toast-message";
+
 const IdLoginScreen: React.FC = () => {
   const { t } = useTranslation();
   const [id_number, setIdNumber] = useState("");
+  const [loading, setLoading] = useState(false);
+
   const handleLogin = async () => {
-    console.log(t("id_entered"), id_number);
+    console.log("🔍 ID ingresado:", id_number);
   
-    if (!id_number.trim()) {
+    if (!id_number || !id_number.trim()) {
       Toast.show({
         type: "error",
         text1: t("incomplete_fields"),
@@ -29,18 +33,36 @@ const IdLoginScreen: React.FC = () => {
       return;
     }
   
+    setLoading(true);
+  
     try {
-      // Autenticación
-      console.log("Invocando login back");
+      console.log("🔐 Iniciando autenticación...");
       const response = await loginUser({ id_number });
-      
-      // Obtener datos del operador
-      const operatorData = await getOperatorByNumberId(id_number);
-      if (!operatorData || (operatorData as any).error) {
+  
+      if (!response || !response.token) {
+        throw new Error(t("login_failed"));
+      }
+  
+      console.log("✅ Token recibido:", response.token);
+      await AsyncStorage.setItem("userToken", response.token);
+  
+      // Espera corta para asegurar guardado
+      await new Promise(resolve => setTimeout(resolve, 300));
+  
+      const numericId = parseInt(id_number, 10);
+      if (isNaN(numericId)) {
+        throw new Error(t("invalid_id_format"));
+      }
+  
+      console.log("🔎 Buscando operador con ID:", numericId);
+      const operatorData = await getOperatorByNumberId(numericId.toString());
+  
+      if (!operatorData || operatorData.error) {
         throw new Error(t("operator_not_found"));
       }
   
-      // Guardar currentUser
+      console.log("📦 Datos del operador:", JSON.stringify(operatorData).substring(0, 100) + "...");
+  
       await AsyncStorage.setItem("currentUser", JSON.stringify(operatorData));
   
       Toast.show({
@@ -48,21 +70,20 @@ const IdLoginScreen: React.FC = () => {
         text1: t("login_successful"),
         text2: `${t("welcome")} ${operatorData.first_name ?? t("user")}`,
       });
-<<<<<<< HEAD
   
-=======
-
->>>>>>> 07cabdeb3e66b15e1a0c9d2cbf24029626481d65
       router.push("/OperatorHome");
     } catch (error: any) {
-      console.error("Error en login:", error);
+      console.error("❌ Error en login operator:", error);
       Toast.show({
         type: "error",
         text1: t("auth_error"),
         text2: error.message || t("login_failed"),
       });
+    } finally {
+      setLoading(false);
     }
   };
+  
   
   return (
     <ImageBackground
@@ -84,8 +105,16 @@ const IdLoginScreen: React.FC = () => {
           onChangeText={setIdNumber}
         />
 
-        <TouchableOpacity style={styles.button} onPress={handleLogin}>
-          <Text style={styles.buttonText}>{t("login_button")}</Text>
+        <TouchableOpacity 
+          style={styles.button} 
+          onPress={handleLogin}
+          disabled={loading}
+        >
+          {loading ? (
+            <ActivityIndicator color="#fff" />
+          ) : (
+            <Text style={styles.buttonText}>{t("login_button")}</Text>
+          )}
         </TouchableOpacity>
       </View>
     </ImageBackground>

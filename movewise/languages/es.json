@@ -403,8 +403,7 @@
     "active": "Activo",
     "inactive": "Inactivo",
     "update": "Actualizar",
-<<<<<<< HEAD
-
+    "operator_not_found": "no se encontro",
     "license_info": "Información de Licencia",
     "license_number": "Número de Licencia",
     "front_license_photo": "Foto Frontal de Licencia",
@@ -433,8 +432,4 @@
     "tshirt_size_required": "La talla de camiseta es requerida",
     "tshirt_name_required": "El nombre para la camiseta es requerido",
     "salary_amount_invalid": "Por favor ingrese un monto de salario válido (mayor que 0)"
-=======
-    
-    "truck_found": "Camión encontrado"
->>>>>>> 07cabdeb3e66b15e1a0c9d2cbf24029626481d65
 }
