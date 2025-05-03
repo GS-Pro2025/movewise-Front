@@ -1,5 +1,7 @@
 import React, { useState, useCallback } from "react";
 import { useLocalSearchParams, useRouter } from "expo-router";
+import { useTranslation } from "react-i18next";
+
 import {
     View, Text, StyleSheet, TouchableOpacity,
     useColorScheme, SafeAreaView, Platform

@@ -1,4 +1,6 @@
+import { getOperatorByNumberId } from "@/hooks/api/GetOperatorByNumberId";
 import { loginUser } from "@/hooks/api/OperatorLoginClient";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import { router } from "expo-router";
 import React, { useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -15,12 +17,10 @@ import Toast from "react-native-toast-message";
 const IdLoginScreen: React.FC = () => {
   const { t } = useTranslation();
   const [id_number, setIdNumber] = useState("");
-
   const handleLogin = async () => {
     console.log(t("id_entered"), id_number);
-    // Lógica de autenticación
-    if (!id_number) {
-      console.log(t("enter_valid_id"));
+  
+    if (!id_number.trim()) {
       Toast.show({
         type: "error",
         text1: t("incomplete_fields"),
@@ -28,16 +28,30 @@ const IdLoginScreen: React.FC = () => {
       });
       return;
     }
+  
     try {
-      const response = await loginUser({ id_number: id_number });
+      // Autenticación
+      console.log("Invocando login back");
+      const response = await loginUser({ id_number });
+      
+      // Obtener datos del operador
+      const operatorData = await getOperatorByNumberId(id_number);
+      if (!operatorData || (operatorData as any).error) {
+        throw new Error(t("operator_not_found"));
+      }
+  
+      // Guardar currentUser
+      await AsyncStorage.setItem("currentUser", JSON.stringify(operatorData));
+  
       Toast.show({
         type: "success",
         text1: t("login_successful"),
-        text2: `${t("welcome")} ${response.name ?? t("user")}`,
+        text2: `${t("welcome")} ${operatorData.first_name ?? t("user")}`,
       });
-
-      router.push("/Home");
+  
+      router.push("/OperatorHome");
     } catch (error: any) {
+      console.error("Error en login:", error);
       Toast.show({
         type: "error",
         text1: t("auth_error"),
@@ -45,7 +59,7 @@ const IdLoginScreen: React.FC = () => {
       });
     }
   };
-
+  
   return (
     <ImageBackground
       source={require("../assets/images/bg_login.jpg")}

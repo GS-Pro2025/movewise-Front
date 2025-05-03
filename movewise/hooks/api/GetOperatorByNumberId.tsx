@@ -1,6 +1,6 @@
 import apiClient from "./apiClient";
 
-export const getOperatorByNumberId = async (number_id: number) => {
+export const getOperatorByNumberId = async (number_id: string) => {
     try {
         const response = await apiClient.get("/operators/" + number_id);
         if (response.status === 404) {
@@ -8,6 +8,7 @@ export const getOperatorByNumberId = async (number_id: number) => {
                 error: "operator not found"
             }
         }
+        console.log(response.data)
         return response.data;
     } catch {
         return null;
