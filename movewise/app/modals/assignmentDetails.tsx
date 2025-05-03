@@ -15,7 +15,6 @@ import { useLocalSearchParams } from "expo-router";
 import { Ionicons } from '@expo/vector-icons';
 import { Assignment } from "@/components/operator/BaseOperator";
 import ToolsManager from "@/components/operator/ToolsList";
-import { useTranslation } from "react-i18next";
 
 interface Props {
     visible: boolean;
@@ -28,7 +27,6 @@ interface Props {
 const AssignmentDetails: React.FC<Props> = ({
     visible, onClose, assignment, operatorId, type
 }) => {
-    const { t } = useTranslation();
     const [loading, setLoading] = useState(true);
     const [toolsModalVisible, setToolsModalVisible] = useState(false);
     const [actionModalVisible, setActionModalVisible] = useState(false);
@@ -59,7 +57,7 @@ const AssignmentDetails: React.FC<Props> = ({
     };
 
     const completeWorkAction = () => {
-        Alert.alert(t('success'), t('work_marked_as_completed'));
+        Alert.alert("Success", "Work marked as completed");
         setActionModalVisible(false);
         onClose();
     };
@@ -91,7 +89,7 @@ const AssignmentDetails: React.FC<Props> = ({
                 styles.container,
                 { backgroundColor: isDarkMode ? '#112A4A' : '#FFFFFF' }
             ]}>
-                {/* Encabezado */}
+                {/* Header */}
                 <View style={[
                     styles.header,
                     { backgroundColor: isDarkMode ? '#0A1C30' : '#0458AB' }
@@ -102,15 +100,15 @@ const AssignmentDetails: React.FC<Props> = ({
                     >
                         <Ionicons name="arrow-back" size={24} color="#FFFFFF" />
                     </TouchableOpacity>
-    
-                    <Text style={styles.headerTitle}>{t('assignment_details')}</Text>
-    
+
+                    <Text style={styles.headerTitle}>Assignment Details</Text>
+
                     <View style={styles.headerRight} />
                 </View>
-    
-                {/* Contenido */}
+
+                {/* Content */}
                 <ScrollView style={styles.content}>
-                    {/* Encabezado de la Asignación */}
+                    {/* Assignment Header */}
                     <View style={[
                         styles.cardHeader,
                         { backgroundColor: isDarkMode ? '#1C3A5A' : '#F5F5F5' }
@@ -119,9 +117,9 @@ const AssignmentDetails: React.FC<Props> = ({
                             styles.cardTitle,
                             { color: isDarkMode ? '#FFFFFF' : '#0458AB' }
                         ]}>
-                            {assignment?.data_order.key_ref || t('no_reference')}
+                            {assignment?.data_order.key_ref || 'No Reference'}
                         </Text>
-    
+
                         <View style={[
                             styles.roleBadge,
                             { backgroundColor: isDarkMode ? '#0458AB80' : '#0458AB20' }
@@ -130,12 +128,12 @@ const AssignmentDetails: React.FC<Props> = ({
                                 styles.roleText,
                                 { color: isDarkMode ? '#FFFFFF' : '#0458AB' }
                             ]}>
-                                {assignment.rol || t('no_role')}
+                                {assignment.rol || 'No Role'}
                             </Text>
                         </View>
                     </View>
-    
-                    {/* Detalles de la Asignación */}
+
+                    {/* Assignment Details */}
                     <View style={[
                         styles.card,
                         { backgroundColor: isDarkMode ? '#1C3A5A' : '#F5F5F5' }
@@ -150,7 +148,7 @@ const AssignmentDetails: React.FC<Props> = ({
                                 styles.detailLabel,
                                 { color: isDarkMode ? '#FFFFFF80' : '#666666' }
                             ]}>
-                                {t('date')}:
+                                Date:
                             </Text>
                             <Text style={[
                                 styles.detailValue,
@@ -159,7 +157,7 @@ const AssignmentDetails: React.FC<Props> = ({
                                 {formatDate(assignment?.data_order.date || '')}
                             </Text>
                         </View>
-    
+
                         <View style={styles.detailRow}>
                             <Ionicons
                                 name="location-outline"
@@ -170,16 +168,16 @@ const AssignmentDetails: React.FC<Props> = ({
                                 styles.detailLabel,
                                 { color: isDarkMode ? '#FFFFFF80' : '#666666' }
                             ]}>
-                                {t('location')}:
+                                Location:
                             </Text>
                             <Text style={[
                                 styles.detailValue,
                                 { color: isDarkMode ? '#FFFFFF' : '#333333' }
                             ]}>
-                                {assignment?.data_order.state_usa || t('no_location')}
+                                {assignment?.data_order.state_usa || 'No location'}
                             </Text>
                         </View>
-    
+
                         <View style={styles.detailRow}>
                             <Ionicons
                                 name="person-outline"
@@ -190,7 +188,7 @@ const AssignmentDetails: React.FC<Props> = ({
                                 styles.detailLabel,
                                 { color: isDarkMode ? '#FFFFFF80' : '#666666' }
                             ]}>
-                                {t('customer')}:
+                                Customer:
                             </Text>
                             <Text style={[
                                 styles.detailValue,
@@ -199,7 +197,7 @@ const AssignmentDetails: React.FC<Props> = ({
                                 {`${assignment?.data_order.person.first_name} ${assignment?.data_order.person.last_name}`}
                             </Text>
                         </View>
-    
+
                         <View style={styles.detailRow}>
                             <Ionicons
                                 name="mail-outline"
@@ -210,16 +208,16 @@ const AssignmentDetails: React.FC<Props> = ({
                                 styles.detailLabel,
                                 { color: isDarkMode ? '#FFFFFF80' : '#666666' }
                             ]}>
-                                {t('email')}:
+                                Email:
                             </Text>
                             <Text style={[
                                 styles.detailValue,
                                 { color: isDarkMode ? '#FFFFFF' : '#333333' }
                             ]}>
-                                {assignment?.data_order.person.email || t('no_email')}
+                                {assignment?.data_order.person.email || 'No email'}
                             </Text>
                         </View>
-    
+
                         <View style={styles.detailRow}>
                             <Ionicons
                                 name="briefcase-outline"
@@ -230,16 +228,16 @@ const AssignmentDetails: React.FC<Props> = ({
                                 styles.detailLabel,
                                 { color: isDarkMode ? '#FFFFFF80' : '#666666' }
                             ]}>
-                                {t('status')}:
+                                Status:
                             </Text>
                             <Text style={[
                                 styles.detailValue,
                                 { color: isDarkMode ? '#FFFFFF' : '#333333' }
                             ]}>
-                                {assignment?.data_order.status || t('no_status')}
+                                {assignment?.data_order.status || 'No status'}
                             </Text>
                         </View>
-    
+
                         {assignment?.data_order.weight && (
                             <View style={styles.detailRow}>
                                 <Ionicons
@@ -251,7 +249,7 @@ const AssignmentDetails: React.FC<Props> = ({
                                     styles.detailLabel,
                                     { color: isDarkMode ? '#FFFFFF80' : '#666666' }
                                 ]}>
-                                    {t('weight')}:
+                                    Weight:
                                 </Text>
                                 <Text style={[
                                     styles.detailValue,
@@ -261,7 +259,7 @@ const AssignmentDetails: React.FC<Props> = ({
                                 </Text>
                             </View>
                         )}
-    
+
                         {assignment?.data_order.distance && (
                             <View style={styles.detailRow}>
                                 <Ionicons
@@ -273,7 +271,7 @@ const AssignmentDetails: React.FC<Props> = ({
                                     styles.detailLabel,
                                     { color: isDarkMode ? '#FFFFFF80' : '#666666' }
                                 ]}>
-                                    {t('distance')}:
+                                    Distance:
                                 </Text>
                                 <Text style={[
                                     styles.detailValue,
@@ -284,8 +282,8 @@ const AssignmentDetails: React.FC<Props> = ({
                             </View>
                         )}
                     </View>
-    
-                    {/* Sección de Acciones del Líder */}
+
+                    {/* Leader Actions Section */}
                     {assignment?.rol === 'leader' && (
                         <View style={[
                             styles.actionsCard,
@@ -295,9 +293,9 @@ const AssignmentDetails: React.FC<Props> = ({
                                 styles.actionsTitle,
                                 { color: isDarkMode ? '#FFFFFF' : '#0458AB' }
                             ]}>
-                                {t('leader_actions')}
+                                Leader Actions
                             </Text>
-    
+
                             <View style={styles.actionButtonsContainer}>
                                 <TouchableOpacity
                                     style={[
@@ -307,9 +305,9 @@ const AssignmentDetails: React.FC<Props> = ({
                                     onPress={handleCompleteWork}
                                 >
                                     <Ionicons name="checkmark-circle-outline" size={20} color="#FFFFFF" />
-                                    <Text style={styles.actionButtonText}>{t('complete_work')}</Text>
+                                    <Text style={styles.actionButtonText}>Complete Work</Text>
                                 </TouchableOpacity>
-    
+
                                 <TouchableOpacity
                                     style={[
                                         styles.actionButton,
@@ -318,13 +316,13 @@ const AssignmentDetails: React.FC<Props> = ({
                                     onPress={handleOpenToolsList}
                                 >
                                     <Ionicons name="construct-outline" size={20} color="#FFFFFF" />
-                                    <Text style={styles.actionButtonText}>{t('checklist_of_tools')}</Text>
+                                    <Text style={styles.actionButtonText}>Checklist of Tools</Text>
                                 </TouchableOpacity>
                             </View>
                         </View>
                     )}
-    
-                    {/* Mensaje para No Líder */}
+
+                    {/* Non-Leader Message */}
                     {assignment?.rol !== 'leader' && (
                         <View style={[
                             styles.messageCard,
@@ -339,16 +337,86 @@ const AssignmentDetails: React.FC<Props> = ({
                                 styles.messageText,
                                 { color: isDarkMode ? '#FFFFFF' : '#666666' }
                             ]}>
-                                {t('operator_message')}
+                                You are assigned as an operator for this job. Only leaders can assign tools and mark work as complete.
                             </Text>
                         </View>
                     )}
                 </ScrollView>
+
+                {/* Action Modal - Similar to the one in WorkDailyOperator */}
+                {assignment && (
+                    <Modal
+                        animationType="slide"
+                        transparent={true}
+                        visible={actionModalVisible}
+                        onRequestClose={() => setActionModalVisible(false)}
+                    >
+                        <View style={styles.modalOverlay}>
+                            <View style={styles.modalContainer}>
+                                <View style={styles.modalHeader}>
+                                    <Text style={styles.modalTitle}>
+                                        {assignment?.data_order.key_ref} - {assignment?.data_order.person.first_name} {assignment?.data_order.person.last_name}
+                                    </Text>
+                                    <TouchableOpacity onPress={() => setActionModalVisible(false)} style={styles.modalClose}>
+                                        <Ionicons name="close" size={24} color="#FFFFFF" />
+                                    </TouchableOpacity>
+                                </View>
+
+                                <View style={styles.modalContent}>
+                                    <Text style={styles.modalInfoText}>
+                                        Date: {formatDate(assignment?.data_order.date || '')}
+                                    </Text>
+                                    <Text style={styles.modalInfoText}>
+                                        Status: {assignment.data_order.status}
+                                    </Text>
+                                    <Text style={styles.modalInfoText}>
+                                        Role: {assignment.rol === 'leader' ? 'Leader' : 'Operator'}
+                                    </Text>
+                                </View>
+
+                                {assignment.rol === 'leader' && (
+                                    <View style={styles.modalButtonContainer}>
+                                        <TouchableOpacity
+                                            style={styles.modalButton}
+                                            onPress={completeWorkAction}
+                                        >
+                                            <Text style={styles.modalButtonText}>Work completed</Text>
+                                        </TouchableOpacity>
+
+                                        <TouchableOpacity
+                                            style={styles.modalButton}
+                                            onPress={handleOpenToolsList}
+                                        >
+                                            <Text style={styles.modalButtonText}>Checklist of Tools</Text>
+                                        </TouchableOpacity>
+                                    </View>
+                                )}
+
+                                {assignment.rol !== 'leader' && (
+                                    <View style={styles.modalMessageContainer}>
+                                        <Text style={styles.modalMessageText}>
+                                            You do not have leader permissions for this assignment
+                                        </Text>
+                                    </View>
+                                )}
+                            </View>
+                        </View>
+                    </Modal>
+                )}
+
+                {/* Tools Assignment Modal */}
+                {toolsModalVisible && (
+                    <ToolsManager
+                        visible={toolsModalVisible}
+                        onClose={() => setToolsModalVisible(false)}
+                        assignment={assignment}
+                        isDarkMode={isDarkMode}
+                    />
+                )}
             </SafeAreaView>
         </Modal>
     );
 };
-
 
 
 
