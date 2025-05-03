@@ -404,6 +404,8 @@
     "photo": "Photo",
     "active": "Active",
     "inactive": "Inactive",
-    "update": "Update"
+    "update": "Update",
+
+    "truck_found": "Truck found"
 }
     

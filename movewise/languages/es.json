@@ -402,5 +402,7 @@
     "photo": "Foto",
     "active": "Activo",
     "inactive": "Inactivo",
-    "update": "Actualizar"
+    "update": "Actualizar",
+    
+    "truck_found": "Camión encontrado"
 }
