@@ -7,6 +7,9 @@ import { url } from "../../hooks/api/apiClient";
 import { ToastAndroid, Platform } from 'react-native';
 import TruckModal from "./TruckModal";
 import { useTranslation } from "react-i18next";
+import { GestureHandlerRootView, Swipeable } from "react-native-gesture-handler";
+import { TouchableHighlight } from "react-native";
+import { Ionicons } from "@expo/vector-icons";
 
 interface Operator {
   id: number;
@@ -113,7 +116,7 @@ const OperatorModal: React.FC<OperatorModalProps> = ({ visible, onClose, orderKe
     setAddOperatorVisible(false);
   };
 
-  const handleDeleteOperator = (index: number) => {
+  const handleDeleteOperator = (index: number, isAssigned: boolean) => {
     Alert.alert(
       t("confirm_deletion"),
       t("delete_operator_confirmation"),
@@ -123,7 +126,11 @@ const OperatorModal: React.FC<OperatorModalProps> = ({ visible, onClose, orderKe
           text: t("delete"),
           style: "destructive",
           onPress: () => {
-            setOperators((prev) => prev.filter((_, i) => i !== index));
+            if (isAssigned) {
+              setAssignedOperators((prev) => prev.filter((_, i) => i !== index));
+            } else {
+              setOperators((prev) => prev.filter((_, i) => i !== index));
+            }
           },
         },
       ]
@@ -218,20 +225,76 @@ const OperatorModal: React.FC<OperatorModalProps> = ({ visible, onClose, orderKe
       console.error(t("error"), error);
       Alert.alert(
         t("error"),
-          error.message || t("could_not_save_assignments"),
+          (error instanceof Error ? error.message : t("unknown_error")) || t("could_not_save_assignments"),
         [{ text: t("ok") }]
       );
     }
   };
 
-  const updateOperatorsWithConflicts = (conflicts) => {
+  const updateOperatorsWithConflicts = (conflicts: { operator_id: number }[]) => {
     const conflictOperatorIds = conflicts.map(c => c.operator_id);
     setOperators(prevOperators =>
       prevOperators.filter(op => conflictOperatorIds.includes(op.id))
     );
   };
 
-  const styles = StyleSheet.create({
+  const renderOperatorItem = (operator, index, isAssigned = false) => {
+    const renderLeftActions = () => (
+        <View style={styles.leftSwipeActions}>
+            <TouchableOpacity
+                style={[styles.editAction, { backgroundColor: '#3498db' }]}
+                onPress={() => handleEditOperator(operator, index, isAssigned)}
+            >
+                <Ionicons name="create-outline" size={24} color="#FFFFFF" />
+                <Text style={styles.actionText}>{t("edit")}</Text>
+            </TouchableOpacity>
+        </View>
+    );
+
+    const renderRightActions = () => (
+        <View style={styles.rightSwipeActions}>
+            <TouchableOpacity
+                style={[styles.deleteAction, { backgroundColor: '#e74c3c' }]}
+                onPress={() => handleDeleteOperator(index, isAssigned)}
+            >
+                <Ionicons name="trash-outline" size={24} color="#FFFFFF" />
+                <Text style={styles.actionText}>{t("delete")}</Text>
+            </TouchableOpacity>
+        </View>
+    );
+
+    return (
+        <GestureHandlerRootView key={`operator-${index}`}>
+            <Swipeable
+                renderRightActions={renderRightActions}
+                renderLeftActions={renderLeftActions}
+            >
+                <TouchableHighlight
+                    underlayColor={isDarkMode ? '#f0f0f0' : '#e0e0e0'}
+                    onPress={() => handleEditOperator(operator, index, isAssigned)}
+                >
+                    <View style={[styles.operatorItem, { backgroundColor: isDarkMode ? '#1E3A5F' : '#f5f5f5' }]}>
+                        <View style={styles.operatorDetails}>
+                            <Text style={[styles.operatorName, { color: isDarkMode ? '#FFFFFF' : '#0458AB' }]}>
+                                {operator.id} - {operator.first_name || operator.name} {operator.last_name || ""}
+                            </Text>
+                            <Text style={[styles.operatorRole, { color: isDarkMode ? '#CCCCCC' : '#333333' }]}>
+                                {t("role")}: {operator.role || t("operator")}
+                            </Text>
+                            {operator.additionalCosts > 0 && (
+                                <Text style={[styles.operatorCost, { color: isDarkMode ? '#CCCCCC' : '#333333' }]}>
+                                    {t("cost")}: ${operator.additionalCosts.toFixed(2)}
+                                </Text>
+                            )}
+                        </View>
+                    </View>
+                </TouchableHighlight>
+            </Swipeable>
+        </GestureHandlerRootView>
+    );
+};
+
+const styles = StyleSheet.create({
     container: {
       flex: 1,
       padding: 20
@@ -277,9 +340,15 @@ const OperatorModal: React.FC<OperatorModalProps> = ({ visible, onClose, orderKe
       borderBottomColor: "#f0f0f0",
     },
     operatorItem: {
-      fontSize: 16,
-      color: "#0458AB",
-      flex: 1
+        flexDirection: 'row',
+        padding: 16,
+        marginVertical: 8,
+        borderRadius: 8,
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 1 },
+        shadowOpacity: 0.2,
+        shadowRadius: 2,
+        elevation: 2,
     },
     assignedOperatorItem: {
       fontSize: 16,
@@ -365,18 +434,65 @@ const OperatorModal: React.FC<OperatorModalProps> = ({ visible, onClose, orderKe
       color: "#0458AB"
     },
     scrollContainer: {
-      flex: 1
+        flex: 1,
     },
     loadingContainer: {
-      padding: 20,
-      alignItems: "center"
+        padding: 20,
+        alignItems: 'center',
     },
     noOperatorsText: {
-      color: "#666",
-      fontStyle: "italic",
-      textAlign: "center",
-      marginTop: 10
-    }
+        color: "#666",
+        fontStyle: "italic",
+        textAlign: "center",
+        marginTop: 10,
+    },
+    leftSwipeActions: {
+        backgroundColor: '#3498db',
+        justifyContent: 'center',
+        alignItems: 'flex-start',
+        height: '100%',
+        width: 100,
+    },
+    rightSwipeActions: {
+        backgroundColor: '#e74c3c',
+        justifyContent: 'center',
+        alignItems: 'flex-end',
+        height: '100%',
+        width: 100,
+    },
+    editAction: {
+        height: '100%',
+        width: '100%',
+        justifyContent: 'center',
+        alignItems: 'center',
+    },
+    deleteAction: {
+        height: '100%',
+        width: '100%',
+        justifyContent: 'center',
+        alignItems: 'center',
+    },
+    actionText: {
+        color: '#fff',
+        fontWeight: 'bold',
+        fontSize: 16,
+    },
+    operatorDetails: {
+        flex: 1,
+        justifyContent: 'center',
+    },
+    operatorName: {
+        fontSize: 16,
+        fontWeight: 'bold',
+    },
+    operatorRole: {
+        fontSize: 14,
+        marginTop: 4,
+    },
+    operatorCost: {
+        fontSize: 14,
+        marginTop: 4,
+    },
   });
 
   return (
@@ -404,16 +520,7 @@ const OperatorModal: React.FC<OperatorModalProps> = ({ visible, onClose, orderKe
                 <ActivityIndicator size="large" color="#0458AB" />
               </View>
             ) : assignedOperators.length > 0 ? (
-              assignedOperators.map((op, index) => (
-                <View key={`assigned-${index}`} style={styles.operatorRow}>
-                  <Text style={styles.assignedOperatorItem}>
-                    {op.id} - {op.first_name ? `${op.first_name} ${op.last_name}` : op.last_name}
-                    {op.role ? ` (${op.role})` : ''}
-                    {op.additional_costs > 0 ? ` - ${t("cost")}: $${op.additional_costs.toFixed(2)}` : ''}
-                    {op.truck?.plate ? ` - ${t("truck")}: ${op.truck.plate}` : ''}
-                  </Text>
-                </View>
-              ))
+              assignedOperators.map((op, index) => renderOperatorItem(op, index, true))
             ) : (
               <Text style={styles.noOperatorsText}>{t("no_assigned_operators")}</Text>
             )}
@@ -424,22 +531,7 @@ const OperatorModal: React.FC<OperatorModalProps> = ({ visible, onClose, orderKe
                 <Text style={[styles.sectionTitle, { color: isDarkMode ? "#FFFFFF" : "#0458AB" }]}>
                   {t("unsynchronized_operators")}
                 </Text>
-  
-                {operators.map((op, index) => (
-                  <View key={`local-${index}`} style={styles.operatorRow}>
-                    <TouchableOpacity onPress={() => handleSelectRole(index)}>
-                      <Text style={styles.operatorItem}>
-                        {op.id} - {op.name}
-                        {op.role ? ` (${op.role})` : ''}
-                        {op.additionalCosts > 0 ? ` - ${t("cost")}: $${op.additionalCosts}` : ''}
-                        {op.truckId ? ` - ${t("truck_id")}: ${op.truckId}` : ''}
-                      </Text>
-                    </TouchableOpacity>
-                    <TouchableOpacity style={styles.deleteButton} onPress={() => handleDeleteOperator(index)}>
-                      <Text style={styles.deleteText}>X</Text>
-                    </TouchableOpacity>
-                  </View>
-                ))}
+                {operators.map((op, index) => renderOperatorItem(op, index, false))}
               </>
             )}
           </View>

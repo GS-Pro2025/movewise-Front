@@ -159,9 +159,9 @@ const OrderModal: React.FC<OrderModalProps> = ({ visible, onClose }) => {
           text: t("delete"),
           onPress: async () => {
             try {
-              console.log(t("deleting_order"), key);
-              await DeleteOrder(key);
-              setOrders((prev) => prev.filter((order) => order.key !== key));
+              console.log(t("deleting_order"), Key);
+              await DeleteOrder(Key);
+              setOrders((prev) => prev.filter((order) => order.key !== Key));
               Toast.show({
                 type: "success",
                 text1: t("order_deleted"),

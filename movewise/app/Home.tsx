@@ -101,6 +101,14 @@ const Home: React.FC = () => {
               iconSource={require("../assets/images/paquete.png")}
               onPress={() => router.push("/modals/OrderModal")}
             />
+          </View>
+          <View style={styles.row}>
+            <ActionButton
+              title={t("resume_order")}
+              isDarkMode={isDarkMode}
+              iconSource={require("../assets/images/paper.png")}
+              onPress={() => router.push("/modals/ListOfOrdersForSumary")}
+            />
             <ActionButton
               title={t("add_extra_cost")}
               isDarkMode={isDarkMode}
@@ -110,25 +118,24 @@ const Home: React.FC = () => {
           </View>
           <View style={styles.row}>
             <ActionButton
-              title={t("edit_daily")}
-              isDarkMode={isDarkMode}
-              iconSource={require("../assets/images/paquete.png")}
-              onPress={() => console.log("")}
-            />
-            <ActionButton
-              title={t("resume_order")}
-              isDarkMode={isDarkMode}
-              iconSource={require("../assets/images/paper.png")}
-              onPress={() => router.push("/modals/ListOfOrdersForSumary")}
-            />
-          </View>
-          <View style={styles.row}>
-            <ActionButton
               title={t("create_truck")}
               isDarkMode={isDarkMode}
               iconSource={require("../assets/images/truck.png")}
               onPress={() => router.push("/modals/ListTruckScreen")}
             />
+            <ActionButton
+                title={t("collaborator_edit")}
+                isDarkMode={isDarkMode}
+                iconSource={require("../assets/images/Pencil.png")}
+                onPress={() =>
+                  router.push({
+                    pathname: "/modals/OperatorList",
+                    params: { isEdit: "true" },
+                  })
+                }
+              />
+          </View>
+          <View style={styles.row}>
             <ActionButton
               title={t("collaborator_registration")}
               isDarkMode={isDarkMode}
@@ -140,23 +147,10 @@ const Home: React.FC = () => {
                 })
               }
             />
-          </View>
-          <View style={styles.row}>
             <ActionButton
               title={t("collaborator_unlink")}
               isDarkMode={isDarkMode}
               iconSource={require("../assets/images/personx.png")}
-            />
-            <ActionButton
-              title={t("collaborator_edit")}
-              isDarkMode={isDarkMode}
-              iconSource={require("../assets/images/Pencil.png")}
-              onPress={() =>
-                router.push({
-                  pathname: "/modals/OperatorList",
-                  params: { isEdit: "true" },
-                })
-              }
             />
           </View>
         </View>
