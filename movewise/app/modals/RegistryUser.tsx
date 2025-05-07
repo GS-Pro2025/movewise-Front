@@ -7,6 +7,7 @@ import {
   StyleSheet,
   ScrollView,
   ImageBackground,
+  Modal,
 } from "react-native";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import Toast from "react-native-toast-message";
@@ -20,9 +21,13 @@ import { ListStates } from "@/hooks/api/StatesClient";
 import ModelState from "@/models/ModelState";
 import { ModelCompany } from "@/models/ModelCompany";
 import { useTranslation } from "react-i18next";
-import * as Linking from "expo-linking"; // Para manejar enlaces externos
 import CheckBox from "react-native-check-box";
-
+import { registerUserWithCompany } from "@/hooks/api/RegisterUserWIthCompany";
+import { getTerms_and_conditions } from "@/hooks/api/GetTerms_and_conditions";
+import * as FileSystem from "expo-file-system";
+import * as Linking from "expo-linking";
+import * as WebBrowser from "expo-web-browser";
+import { WebView } from "react-native-webview";
 const RegistryUser = () => {
   const { t } = useTranslation();
 
@@ -36,6 +41,8 @@ const RegistryUser = () => {
     address: typeof address === "string" ? address : address?.[0] ?? "",
     zip_code: typeof zip_code === "string" ? zip_code : zip_code?.[0] ?? "",
   };
+  const [termsVisible, setTermsVisible] = useState(false);
+  const [termsHtml, setTermsHtml] = useState("");
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -73,12 +80,25 @@ const RegistryUser = () => {
   }>({});
 
 
-  const handleDownloadTerms = () => {
-    // URL del archivo de términos y condiciones
-    const termsUrl = "https://example.com/terms-and-conditions.pdf";
-    Linking.openURL(termsUrl); // Abrir el enlace en el navegador
+
+
+  const handleDownloadTerms = async () => {
+    try {
+      // Llamar al backend para obtener los términos y condiciones
+      const html = await getTerms_and_conditions();
+      setTermsHtml(html);
+      setTermsVisible(true); // Mostrar el modal con el HTML
+    } catch (error) {
+      console.error("Error al cargar los términos y condiciones:", error);
+      Toast.show({
+        type: "error",
+        text1: "Error",
+        text2: "No se pudieron cargar los términos y condiciones.",
+      });
+    }
   };
 
+  
   const validateFields = () => {
     const newErrors: {
       email?: string;
@@ -178,7 +198,9 @@ const RegistryUser = () => {
           });
           return;
         }
-        const companyResponse = await CreateCompany(companyData);
+        
+        const companyResponse = await registerUserWithCompany(companyData);
+
         Toast.show({
           type: "success",
           text1: t("company_registered"),
@@ -448,6 +470,15 @@ const RegistryUser = () => {
           </TouchableOpacity>
         </View>
       </ScrollView>
+      {/* Modal con WebView */}
+      <Modal visible={termsVisible} onRequestClose={() => setTermsVisible(false)}>
+        <View style={{ flex: 1 }}>
+          <TouchableOpacity onPress={() => setTermsVisible(false)} style={styles.closeButton}>
+            <Text style={styles.closeButtonText}>Cerrar</Text>
+          </TouchableOpacity>
+          <WebView source={{ html: termsHtml }} />
+        </View>
+      </Modal>
       <Toast />
     </ImageBackground>
   );
@@ -530,6 +561,15 @@ const styles = StyleSheet.create({
   link: {
     color: "#002366",
     textDecorationLine: "underline",
+  },
+  closeButton: {
+    padding: 10,
+    backgroundColor: "#002366",
+    alignItems: "center",
+  },
+  closeButtonText: {
+    color: "#FFF",
+    fontWeight: "bold",
   },
 });
 

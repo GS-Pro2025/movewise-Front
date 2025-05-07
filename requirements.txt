@@ -1,6 +1,9 @@
-npx expo install expo-checkbox
-npm install react-native-toast-message
-npm install i18next react-i18next
-npm install expo-localization
-npm install react-native-check-box
-npm install @types/react-native-check-box
+expo-checkbox
+react-native-toast-message
+i18next react-i18next
+expo-localization
+react-native-check-box
+@types/react-native-check-box
+expo-file-system
+expo-web-browser
+react-native-webview
