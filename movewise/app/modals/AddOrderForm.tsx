@@ -14,6 +14,7 @@ import { ListCompanies } from '@/hooks/api/CompanyClient';
 import { ListStates } from '@/hooks/api/StatesClient';
 import OperatorModal from './OperatorModal';
 import { useTranslation } from 'react-i18next';
+import Toast from 'react-native-toast-message';
 
 interface AddOrderModalProps {
   visible: boolean;
@@ -78,7 +79,13 @@ export default function AddOrderModal({ visible, onClose }: AddOrderModalProps) 
       const savedOrder = await saveOrder(orderData);
       console.log(t('order_saved_successfully'), savedOrder);
       if (savedOrder) {
-        alert(t('order_saved_successfully'));
+        Toast.show({
+          text1: t('success'),
+          text2: t('order_saved_successfully'),
+          type: 'success',
+        });
+        //Wait 0.9 seconds before showing the modal
+        await new Promise(resolve => setTimeout(resolve, 900));
         setSavedOrderKey(savedOrder.key); // Store the key from savedOrder
         setOperatorModalVisible(true); // Show OperatorModal instead of pushing to it
       }
@@ -395,6 +402,7 @@ export default function AddOrderModal({ visible, onClose }: AddOrderModalProps) 
           </ScrollView>
         </KeyboardAvoidingView>
       </SafeAreaView>
+      <Toast/>
     </Modal>
   );
 }

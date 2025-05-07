@@ -54,7 +54,7 @@
     "adding_extra_cost": "Agregando costo extra:",
     "add_operator": "Agregar Operador",
     "current_order": "La orden actual es:",
-    "search_operator_id": "Buscar ceddula de Operador",
+    "search_operator_id": "Buscar cedula de Operador",
     "operator_id_placeholder": "cedula del Operador",
     "name": "Nombre",
     "cost": "Costo (USD)",
@@ -431,5 +431,6 @@
     "tshirt_name": "Nombre para la Camiseta",
     "tshirt_size_required": "La talla de camiseta es requerida",
     "tshirt_name_required": "El nombre para la camiseta es requerido",
-    "salary_amount_invalid": "Por favor ingrese un monto de salario válido (mayor que 0)"
+    "salary_amount_invalid": "Por favor ingrese un monto de salario válido (mayor que 0)",
+    "Orders": "Ordenes"
 }

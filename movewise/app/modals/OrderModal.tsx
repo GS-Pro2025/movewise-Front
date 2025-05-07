@@ -267,7 +267,7 @@ const OrderModal: React.FC<OrderModalProps> = ({ visible, onClose }) => {
 
         {/* Encabezado */}
         <View style={[styles.header, { backgroundColor: isDarkMode ? colors.third : colors.lightBackground, borderBottomColor: isDarkMode ? colors.borderDark : colors.borderLight }]}>
-          <Text style={[styles.title, { color: isDarkMode ? colors.darkText : colors.primary }]}>{t("create_order")}</Text>
+          <Text style={[styles.title, { color: isDarkMode ? colors.darkText : colors.primary }]}>{t("Orders")}</Text>
           <TouchableOpacity
             style={[styles.addButton, { backgroundColor: isDarkMode ? colors.lightBackground : colors.primary }]}
             onPress={() => setAddOrderVisible(true)}
@@ -384,13 +384,6 @@ const OrderModal: React.FC<OrderModalProps> = ({ visible, onClose }) => {
               >
                 <Text style={[styles.backButtonText, { color: isDarkMode ? colors.darkText : colors.blackText, textAlign: 'center' }]}>
                   {t("back")}
-                </Text>
-              </TouchableOpacity>
-              <TouchableOpacity
-                style={[styles.saveButton, { backgroundColor: isDarkMode ? colors.lightBackground : colors.primary, width: 120, height: 50, alignItems: 'center', justifyContent: 'center' }]}
-              >
-                <Text style={[styles.saveButtonText, { color: isDarkMode ? colors.primary : colors.lightBackground, textAlign: 'center' }]}>
-                  {t("save")}
                 </Text>
               </TouchableOpacity>
             </View>
