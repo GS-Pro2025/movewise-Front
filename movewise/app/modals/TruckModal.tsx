@@ -24,7 +24,7 @@ interface TruckModalProps {
   visible: boolean;
   onClose: () => void;
   orderKey: string;
-  onTruckSelect: (truck: TruckData) => void; // Nuevo prop para manejar la selección del camión
+  onTruckSelect: (truckId: number) => void; // Nuevo prop para manejar la selección del camión
 }
 interface AddOperatorScreenProps {
   visible: boolean;
@@ -207,46 +207,19 @@ const TruckModal: React.FC<TruckModalProps> = ({ visible, onClose, orderKey, onT
     }
   };
   
-  const handleSave = async () => {
-    Toast.show({
-      text1: t("success"),
-      text2: t("truck_found"),
-      type: 'success'
-    });
-
-    try {
-        // Create a FormData object
-        const formData = new FormData();
-        formData.append("id", TruckData.id.toString());
-        formData.append("name", TruckData.name);
-        formData.append("number", TruckData.number);
-        formData.append("category", TruckData.category);
-        formData.append("type", TruckData.type);
-
-        // Send the PATCH request
-       // const response = await PatchAssign(TruckData.id, formData);
-
-        // Handle success
-        Toast.show({
-            text1: t("success"),
-            text2: t("truck_updated_successfully"),
-            type: 'success',
-        });
-        //console.log(t("saving_operator_data"), response);
-        //Wait 2 seconds before closing the modal
-        await new Promise((resolve) => setTimeout(resolve, 1300));
-        // Close the modal
-        onClose();
-    } catch (error) {
-        // Handle error
-        Toast.show({
-            text1: t("error"),
-            text2: t("could_not_update_truck"),
-            type: 'error',
-        });
-        console.error("Error updating truck:", error);
+  const handleSave = () => {
+    if (TruckData.id) {
+      onTruckSelect(TruckData.id); // Llamar a la función `onTruckSelect` con los datos del camión seleccionado
+      onClose(); // Cerrar el modal
+    } else {
+      Toast.show({
+        text1: t("error"),
+        text2: t("truck_not_selected"),
+        type: 'error',
+      });
     }
-};
+  };
+
   return (
     <Modal visible={visible} animationType="slide" transparent={true}>
       <SafeAreaView style={styles.modalContainer}>

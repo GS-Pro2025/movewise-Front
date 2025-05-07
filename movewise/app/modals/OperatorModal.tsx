@@ -16,9 +16,10 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import { url } from "../../hooks/api/apiClient";
 import { useTranslation } from "react-i18next";
 import TruckModal from "./TruckModal"; // Importar TruckModal
+import Toast from "react-native-toast-message";
 
 interface Operator {
-  id: number;
+  id_operator: number;
   name: string;
   role?: string;
   additionalCosts?: number;
@@ -92,6 +93,90 @@ const OperatorModal: React.FC<OperatorModalProps> = ({ visible, onClose, orderKe
       setLoading(false);
     }
   };
+  const handleSave = async () => {
+    try {
+      const token = await AsyncStorage.getItem("userToken");
+      if (!token) throw new Error(t("authentication_required"));
+      console.log("Operadores antes de construir el payload:", operators);
+      const payload = operators.map(op => ({
+        operator: op.id_operator, // Cambiado de op.id a op.id_operator
+        order: orderKey,
+        rol: op.role || t("operator"),
+        additional_costs: op.additionalCosts || 0,
+        truck: op.truckId || null
+      }));
+      console.log("Payload enviado al backend para la asignación:", payload);
+      const response = await fetch(`${url}/assigns/bulk/`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify(payload)
+      });
+
+      const responseData = await response.json();
+      console.log("Respuesta del backend:", responseData);
+      if (!response.ok) {
+        if (response.status === 207) {
+          const conflictMessages = responseData.data.conflicts
+            .map((c) => `${t("operator")} ${c.operator_id}: ${c.message}`)
+            .join('\n');
+
+          const successMessage = responseData.data.created.length > 0
+            ? `${responseData.data.created.length} ${t("assignments_saved")}.`
+            : "";
+
+          Alert.alert(
+            t("partial_success"),
+            `${responseData.messUser}\n\n${successMessage}\n\n${t("conflicts")}:\n${conflictMessages}`,
+            [{ text: t("ok") }]
+          );
+
+          updateOperatorsWithConflicts(responseData.data.conflicts);
+          fetchAssignedOperators();
+          return;
+        } else if (response.status === 400) {
+          const errorMessages = responseData.data
+            .map((e) => `${t("operator")} ${e.operator_id || `#${e.index + 1}`}: ${e.message || JSON.stringify(e.errors)}`)
+            .join('\n');
+
+          Alert.alert(
+            t("validation_error"),
+            `${responseData.messUser}\n\n${t("details")}:\n${errorMessages}`,
+            [{ text: t("ok") }]
+          );
+        } else {
+          throw new Error(responseData.messUser || t("unknown_error"));
+        }
+        return;
+      }
+
+      setOperators([]);
+      fetchAssignedOperators();
+      Toast.show({
+        type: "success",
+        text1: t("success"),
+        text2: t("assignments_saved"),
+      });
+      onClose(); // Close the modal after saving
+    } catch (error) {
+      console.error(t("error"), error);
+      Alert.alert(
+        t("error"),
+          (error instanceof Error ? error.message : t("unknown_error")) || t("could_not_save_assignments"),
+        [{ text: t("ok") }]
+      );
+    }
+  };
+
+  const updateOperatorsWithConflicts = (conflicts: any) => {
+    const conflictOperatorIds = conflicts.map(c => c.operator_id);
+    setOperators(prevOperators =>
+      prevOperators.filter(op => conflictOperatorIds.includes(op.id_operator))
+    );
+  };
+
 
   const handleDeleteOperator = (index: number, isAssigned: boolean) => {
     Alert.alert(
@@ -237,6 +322,11 @@ const OperatorModal: React.FC<OperatorModalProps> = ({ visible, onClose, orderKe
             )}
           </View>
         </ScrollView>
+        {operators.length > 0 && (
+            <TouchableOpacity style={styles.saveButton} onPress={handleSave}>
+              <Text style={styles.saveButtonText}>{t("save_button")}</Text>
+            </TouchableOpacity>
+          )}
       </View>
 
       <AddOperatorForm
@@ -414,6 +504,19 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: "bold",
     color: "#0458AB",
+  },
+  saveButton: {
+    backgroundColor: "#0458AB",
+    paddingVertical: 15,
+    alignItems: "center",
+    justifyContent: "center",
+    margin: 20,
+    borderRadius: 10,
+  },
+  saveButtonText: {
+    color: "#FFF",
+    fontWeight: "bold",
+    fontSize: 16,
   },
 });
 
