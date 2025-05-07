@@ -42,10 +42,11 @@ interface OperatorModalProps {
   visible: boolean;
   onClose: () => void;
   orderKey: string;
+  onSave: () => void;
 }
 
 
-const OperatorModal: React.FC<OperatorModalProps> = ({ visible, onClose, orderKey }) => {
+const OperatorModal: React.FC<OperatorModalProps> = ({ visible, onClose, orderKey, onSave }) => {
   const { t } = useTranslation();
   const [operators, setOperators] = useState<Operator[]>([]);
   const [assignedOperators, setAssignedOperators] = useState<AssignedOperator[]>([]);
@@ -135,7 +136,7 @@ const OperatorModal: React.FC<OperatorModalProps> = ({ visible, onClose, orderKe
 
           updateOperatorsWithConflicts(responseData.data.conflicts);
           fetchAssignedOperators();
-          return;
+          onSave();
         } else if (response.status === 400) {
           const errorMessages = responseData.data
             .map((e) => `${t("operator")} ${e.operator_id || `#${e.index + 1}`}: ${e.message || JSON.stringify(e.errors)}`)
@@ -159,7 +160,8 @@ const OperatorModal: React.FC<OperatorModalProps> = ({ visible, onClose, orderKe
         text1: t("success"),
         text2: t("assignments_saved"),
       });
-      onClose(); // Close the modal after saving
+      
+      onSave(); // Close the modal after saving
     } catch (error) {
       console.error(t("error"), error);
       Alert.alert(
@@ -171,7 +173,8 @@ const OperatorModal: React.FC<OperatorModalProps> = ({ visible, onClose, orderKe
   };
 
   const updateOperatorsWithConflicts = (conflicts: any) => {
-    const conflictOperatorIds = conflicts.map(c => c.operator_id);
+    const conflictOperatorIds = conflicts.map(
+      c => c.operator_id);
     setOperators(prevOperators =>
       prevOperators.filter(op => conflictOperatorIds.includes(op.id_operator))
     );
