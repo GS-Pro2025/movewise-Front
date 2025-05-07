@@ -412,6 +412,12 @@
     "assignation_deleted":"The assignation has been deleted successfully",
     "operator_registration":"Operator Registration",
     "operator_edit":"Operator Edit",
-    "operator_unlink":"Operator Unlink"
-}
-    
+    "operator_unlink":"Operator Unlink",
+    "operator_not_found":"Operator not found",
+    "operator_not_found_message":"The operator was not found",
+    "operator_found_message":"The operator was found",
+    "accept_terms_to_continue": "Accept the terms and conditions to continue",
+    "terms_and_conditions": "Terms and Conditions",
+    "terms_required": "Terms and conditions are required",
+    "accept_terms": "Accept Terms"
+}    

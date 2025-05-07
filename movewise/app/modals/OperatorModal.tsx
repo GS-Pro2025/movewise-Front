@@ -128,11 +128,11 @@ const OperatorModal: React.FC<OperatorModalProps> = ({ visible, onClose, orderKe
             ? `${responseData.data.created.length} ${t("assignments_saved")}.`
             : "";
 
-          Alert.alert(
-            t("partial_success"),
-            `${responseData.messUser}\n\n${successMessage}\n\n${t("conflicts")}:\n${conflictMessages}`,
-            [{ text: t("ok") }]
-          );
+          Toast.show({
+            type: "info",
+            text1: t("partial_success"),
+            text2: `${successMessage}\n\n${t("conflicts")}: ${conflictMessages}`,
+          });
 
           updateOperatorsWithConflicts(responseData.data.conflicts);
           fetchAssignedOperators();
@@ -143,11 +143,11 @@ const OperatorModal: React.FC<OperatorModalProps> = ({ visible, onClose, orderKe
                `${t("operator")} ${e.operator_id || `#${(e.index ?? -1) + 1}`}: ${e.message || JSON.stringify(e.errors)}`)
             .join('\n');
 
-          Alert.alert(
-            t("validation_error"),
-            `${responseData.messUser}\n\n${t("details")}:\n${errorMessages}`,
-            [{ text: t("ok") }]
-          );
+          Toast.show({
+            type: "error",
+            text1: t("error"),
+            text2: errorMessages,
+          });
         } else {
           throw new Error(responseData.messUser || t("unknown_error"));
         }
@@ -165,11 +165,11 @@ const OperatorModal: React.FC<OperatorModalProps> = ({ visible, onClose, orderKe
       onSave(); // Close the modal after saving
     } catch (error) {
       console.error(t("error"), error);
-      Alert.alert(
-        t("error"),
-          (error instanceof Error ? error.message : t("unknown_error")) || t("could_not_save_assignments"),
-        [{ text: t("ok") }]
-      );
+      Toast.show({
+        type: "error",
+        text1: t("error"),
+        text2: t("could_not_save_assignments"),
+      });
     }
   };
 

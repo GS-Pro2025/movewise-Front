@@ -403,7 +403,6 @@
     "active": "Activo",
     "inactive": "Inactivo",
     "update": "Actualizar",
-    "operator_not_found": "no se encontro",
     "license_info": "Información de Licencia",
     "license_number": "Número de Licencia",
     "front_license_photo": "Foto Frontal de Licencia",
@@ -436,5 +435,13 @@
     "assignation_deleted":"La asignación ha sido eliminada exitosamente",
     "operator_registration":"Registro de Operador",
     "operator_edit":"Editar Operador",
-    "operator_unlink":"Desvincular Operador" 
+    "operator_unlink":"Desvincular Operador",
+
+    "operator_not_found":"Operador no encontrado",
+    "operator_not_found_message":"El operador no fue encontrado",
+    "operator_found_message":"El operador fue encontrado",
+    "accept_terms_to_continue": "Acepta los términos y condiciones para continuar",
+    "terms_and_conditions": "Terminos y condiciones",
+    "terms_required": "Se requiere aceptar los términos y condiciones",
+    "accept_terms": "Aceptar términos y condiciones"
 }

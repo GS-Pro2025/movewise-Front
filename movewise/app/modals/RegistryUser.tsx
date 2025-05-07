@@ -20,6 +20,8 @@ import { ListStates } from "@/hooks/api/StatesClient";
 import ModelState from "@/models/ModelState";
 import { ModelCompany } from "@/models/ModelCompany";
 import { useTranslation } from "react-i18next";
+import * as Linking from "expo-linking"; // Para manejar enlaces externos
+import CheckBox from "react-native-check-box";
 
 const RegistryUser = () => {
   const { t } = useTranslation();
@@ -53,6 +55,7 @@ const RegistryUser = () => {
   const [stateList, setStateList] = useState<{ label: string; value: string }[]>([]);
   const [userName, setUserName] = useState("");
   const [searchTerm, setSearchTerm] = useState(""); // Added state for search term
+  const [isChecked, setIsChecked] = useState(false); // Estado para el checkbox
   const [errors, setErrors] = useState<{
     email?: string;
     password?: string;
@@ -69,6 +72,12 @@ const RegistryUser = () => {
     phone?: string;
   }>({});
 
+
+  const handleDownloadTerms = () => {
+    // URL del archivo de términos y condiciones
+    const termsUrl = "https://example.com/terms-and-conditions.pdf";
+    Linking.openURL(termsUrl); // Abrir el enlace en el navegador
+  };
 
   const validateFields = () => {
     const newErrors: {
@@ -149,6 +158,15 @@ const RegistryUser = () => {
         text1: t("validation_error"),
         text2: t("fix_errors_before_submitting"),
       });
+      return;
+    }
+    if (!isChecked) {
+      Toast.show({
+        type: "error",
+        text1: t("terms_required"),
+        text2: t("accept_terms_to_continue"),
+      });
+      return;
     }
       // Paso 1: Registrar la empresa
       try {
@@ -158,12 +176,13 @@ const RegistryUser = () => {
             text1: t("error"),
             text2: t("company_is_null"),
           });
+          return;
         }
         const companyResponse = await CreateCompany(companyData);
         Toast.show({
           type: "success",
           text1: t("company_registered"),
-          text2: t("company_details", { name: companyData.name, zipCode: companyData.zip_code }),
+          text2: t("company_details", { name: companyResponse.name, zipCode: companyResponse.zip_code }),
         });
       } catch (error: any) {
         Toast.show({
@@ -410,7 +429,20 @@ const RegistryUser = () => {
             value={phone}
             onChangeText={setPhone}
           />
-  
+            {/* Checkbox de Términos y Condiciones */}
+            <View style={styles.termsContainer}>
+            <CheckBox
+              isChecked={isChecked}
+              onClick={() => setIsChecked(!isChecked)}
+              checkBoxColor="#002366"
+            />
+            <Text style={styles.termsText}>
+              {t("accept_terms")}{" "}
+              <Text style={styles.link} onPress={handleDownloadTerms}>
+                {t("terms_and_conditions")}
+              </Text>
+            </Text>
+          </View>
           <TouchableOpacity style={styles.button} onPress={handleRegister}>
             <Text style={styles.buttonText}>{t("register_user_button")}</Text>
           </TouchableOpacity>
@@ -485,6 +517,19 @@ const styles = StyleSheet.create({
     color: "#fff",
     fontSize: 16,
     fontWeight: "bold",
+  },  termsContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginTop: 16,
+  },
+  termsText: {
+    marginLeft: 8,
+    color: "#000",
+    fontSize: 14,
+  },
+  link: {
+    color: "#002366",
+    textDecorationLine: "underline",
   },
 });
 

@@ -4,11 +4,11 @@ import { ThemedView } from '../../components/ThemedView';
 import { getOperatorByNumberId } from '../../hooks/api/GetOperatorByNumberId';
 import { MaterialIcons } from '@expo/vector-icons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { ALERT_TYPE, Dialog, AlertNotificationRoot, Toast } from 'react-native-alert-notification';
 import { ToastAndroid, Platform } from 'react-native';
 import { token } from '@/hooks/api/apiClient';
 import { url } from '../../hooks/api/apiClient';
 import { useTranslation } from 'react-i18next';
+import Toast from 'react-native-toast-message';
 
 interface Operator {
   id_operator: number; // Changed from id_operator to id to match OperatorModal interface
@@ -52,24 +52,33 @@ export default function AddOperatorForm({ visible, onClose, onAddOperator, order
       try {
         console.log("Buscando operador con cedula:", operatorId);
         getOperatorByNumberId(operatorId).then(data => {
-          console.log(data)
-          if (data) {
+          if (data.id_operator) {
             console.log("Datos recibidos:", data);
-            notifyMessage(`${t('operator')} ${data.first_name} ${data.last_name} ${t('found')}`);
-
+            Toast.show({
+              type: "success",
+              text1: t('operator_found'),
+              text2: t('operator_found_message', { name: `${data.first_name} ${data.last_name}` })
+            });
             // Actualiza estos accesos
             setName(`${data.first_name} ${data.last_name}`);
             setCost(data.salary ? data.salary.toString() : '');
-            console.log("Id del operador en la empresa:", data.id_number);
-            console.log("Id del operador en la API:", data.id_operator);  
             setFetchedOperatorId(data.id_operator);
           } else {
+            Toast.show({
+              type: "error",
+              text1: t('operator_not_found'),
+              text2: t('operator_not_found_message')
+            });
             resetForm();
           }
         });
       } catch (error) {
         resetForm();
-        console.error('Error fetching operator:', error);
+        Toast.show({
+          type: "error",
+          text1: t('operator_not_found'),
+          text2: t('operator_not_found_message')
+        });
       }
     } else {
       resetForm();
@@ -180,6 +189,7 @@ export default function AddOperatorForm({ visible, onClose, onAddOperator, order
   });
 
   return (
+    <>
     <Modal visible={visible} transparent animationType="slide">
       <SafeAreaView style={{ flex: 1, backgroundColor: colorScheme === 'dark' ? '#112A4A' : '#FFFFFF' }}>
         <ScrollView contentContainerStyle={{ flexGrow: 1 }}>
@@ -261,6 +271,8 @@ export default function AddOperatorForm({ visible, onClose, onAddOperator, order
           </ThemedView>
         </ScrollView>
       </SafeAreaView>
+      <Toast/>
     </Modal>
+    </>
   );
 }
