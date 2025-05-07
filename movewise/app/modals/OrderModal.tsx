@@ -376,10 +376,10 @@ const OrderModal: React.FC<OrderModalProps> = ({ visible, onClose }) => {
         {/* Back and Save Buttons */}
 
         {loading ? null : (
-          <View style={[styles.container, { backgroundColor: isDarkMode ? colors.third : colors.lightBackground }]}>
-            <View style={[styles.buttonContainer, { justifyContent: 'center', alignItems: 'flex-end' }]}>
+          <View style={[styles.container, { backgroundColor: isDarkMode ? colors.third : colors.lightBackground, paddingVertical: 10 }]}>
+            <View style={[styles.buttonContainer, { justifyContent: 'center', alignItems: 'flex-end', marginHorizontal: 10 }]}>
               <TouchableOpacity
-                style={[styles.backButton, { backgroundColor: isDarkMode ? colors.primary : colors.neutralGray, width: 120, height: 50, alignItems: 'center', justifyContent: 'center' }]}
+                style={[styles.backButton, { backgroundColor: isDarkMode ? colors.primary : colors.neutralGray, width: 100, height: 40, alignItems: 'center', justifyContent: 'center' }]}
                 onPress={() => router.back()}
               >
                 <Text style={[styles.backButtonText, { color: isDarkMode ? colors.darkText : colors.blackText, textAlign: 'center' }]}>
@@ -400,13 +400,17 @@ const OrderModal: React.FC<OrderModalProps> = ({ visible, onClose }) => {
 };
 
 const styles = StyleSheet.create({
-  container: { flex: 1, padding: 50 },
+  container: {
+    flex: 1,
+    padding: 10, 
+  },
   header: {
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
     paddingBottom: 20,
     paddingTop: 30,
+    marginBottom: -5,
     borderBottomWidth: 2,
     width: "100%",
     paddingHorizontal: 20,
@@ -421,7 +425,7 @@ const styles = StyleSheet.create({
   saveButtonText: { fontWeight: "bold" },
   // Additional styles for the list and filters
   datePickerContainer: {
-
+  
   },
   filtersContainer: {
     flexDirection: 'row',
@@ -456,7 +460,7 @@ const styles = StyleSheet.create({
   listContainer: {
     flexGrow: 1,
     paddingHorizontal: 16,
-    paddingVertical: 8,
+    paddingVertical: 24,
   },
   loadingContainer: {
     flex: 1,

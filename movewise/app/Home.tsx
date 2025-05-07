@@ -124,7 +124,7 @@ const Home: React.FC = () => {
               onPress={() => router.push("/modals/ListTruckScreen")}
             />
             <ActionButton
-                title={t("collaborator_edit")}
+                title={t("operator_edit")}
                 isDarkMode={isDarkMode}
                 iconSource={require("../assets/images/Pencil.png")}
                 onPress={() =>
@@ -137,7 +137,7 @@ const Home: React.FC = () => {
           </View>
           <View style={styles.row}>
             <ActionButton
-              title={t("collaborator_registration")}
+              title={t("operator_registration")}
               isDarkMode={isDarkMode}
               iconSource={require("../assets/images/logo.png")}
               onPress={() =>
@@ -148,7 +148,7 @@ const Home: React.FC = () => {
               }
             />
             <ActionButton
-              title={t("collaborator_unlink")}
+              title={t("operator_unlink")}
               isDarkMode={isDarkMode}
               iconSource={require("../assets/images/personx.png")}
             />
