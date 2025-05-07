@@ -47,6 +47,13 @@ export default function AddOrderModal({ visible, onClose }: AddOrderModalProps) 
 
   const { saveOrder, isLoading, error } = AddOrderformApi();
 
+  const handleSaveOperators = () => {
+    console.log("Operators saved successfully! Closing both modals.");
+    setOperatorModalVisible(false); // Cerrar OperatorModal
+    if (onClose) {
+      onClose(); // Cerrar AddOrderForm
+    }
+  };
   const handleSave = async () => {
     if (!validateFields()) return;
     const orderData: AddOrderForm = {
@@ -381,7 +388,10 @@ export default function AddOrderModal({ visible, onClose }: AddOrderModalProps) 
             </ThemedView>
 
             {/* Operator Modal */}
-            <OperatorModal visible={operatorModalVisible} onClose={() => setOperatorModalVisible(false)} orderKey={savedOrderKey || 'There is no key'} />
+            <OperatorModal visible={operatorModalVisible} 
+              onClose={() => setOperatorModalVisible(false)} 
+              orderKey={savedOrderKey || 'There is no key'}
+              onSave={handleSaveOperators} />
           </ScrollView>
         </KeyboardAvoidingView>
       </SafeAreaView>
