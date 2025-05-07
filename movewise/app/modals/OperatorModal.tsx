@@ -17,7 +17,7 @@ import { url } from "../../hooks/api/apiClient";
 import { useTranslation } from "react-i18next";
 import TruckModal from "./TruckModal"; // Importar TruckModal
 import Toast from "react-native-toast-message";
-
+import { deleteAssign } from "@/hooks/api/DeleteAssign";
 interface Operator {
   id_operator: number;
   name: string;
@@ -194,6 +194,21 @@ const OperatorModal: React.FC<OperatorModalProps> = ({ visible, onClose, orderKe
           onPress: () => {
             if (isAssigned) {
               setAssignedOperators((prev) => prev.filter((_, i) => i !== index));
+              //Delete the assignation
+              const operatorId = assignedOperators[index].id;
+              deleteAssign(operatorId).then(() => {
+                Toast.show({
+                  type: "success",
+                  text1: t("success"),
+                  text2: t("assignation_deleted"),
+                });
+                fetchAssignedOperators(); // Refresh the assigned operators list
+              }
+              ).catch((error) => {
+                console.error("Error deleting assignation:", error);
+                Alert.alert(t("error"), t("could_not_delete_assignation"));
+              }
+              );
             } else {
               setOperators((prev) => prev.filter((_, i) => i !== index));
             }

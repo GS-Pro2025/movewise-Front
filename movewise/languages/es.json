@@ -432,5 +432,6 @@
     "tshirt_size_required": "La talla de camiseta es requerida",
     "tshirt_name_required": "El nombre para la camiseta es requerido",
     "salary_amount_invalid": "Por favor ingrese un monto de salario válido (mayor que 0)",
-    "Orders": "Ordenes"
+    "Orders": "Ordenes",
+    "assignation_deleted":"La asignación ha sido eliminada exitosamente" 
 }
