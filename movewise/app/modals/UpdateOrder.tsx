@@ -138,6 +138,14 @@ export default function UpdateOrderModal({ visible = true, onClose, orderData }:
     return Object.keys(newErrors).length === 0;
 };
 
+const handleSaveOperators = () => {
+  console.log("Operators saved successfully! and closing the modal.");
+  setAddOperatorVisible(false); // Cerrar OperatorModal
+  if (onClose) {
+    onClose(); // Cerrar UpdateOrder
+  }
+};
+
 const handleUpdate = async () => {
     if (!validateFields()) return; // Validar campos antes de actualizar
 
@@ -358,8 +366,12 @@ const handleClose = () => {
               <TouchableOpacity style={styles.operatorsButton} onPress={() => setAddOperatorVisible(true)}>
                 <Text style={[styles.operatorsButtonText, { color: isDarkMode ? '#A1C6EA' : '#0458AB' }]}>{t("edit_operators")}</Text>
               </TouchableOpacity>
-              <OperatorModal visible={addOperatorVisible} onClose={() => setAddOperatorVisible(false)} orderKey={orderData.key} />
-  
+              <OperatorModal
+                visible={addOperatorVisible}
+                onClose={() => setAddOperatorVisible(false)}
+                orderKey={orderData.key}
+                onSave={handleSaveOperators} // Pasar la función para cerrar ambos modales
+              />
               <View style={styles.buttonContainer}>
                 <TouchableOpacity
                   style={[styles.cancelButton, { backgroundColor: isDarkMode ? '#545257' : '#777' }]}

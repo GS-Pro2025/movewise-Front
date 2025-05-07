@@ -7,6 +7,7 @@ import {
   StyleSheet,
   ScrollView,
   ImageBackground,
+  Modal,
 } from "react-native";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import Toast from "react-native-toast-message";
@@ -20,7 +21,13 @@ import { ListStates } from "@/hooks/api/StatesClient";
 import ModelState from "@/models/ModelState";
 import { ModelCompany } from "@/models/ModelCompany";
 import { useTranslation } from "react-i18next";
-
+import CheckBox from "react-native-check-box";
+import { registerUserWithCompany } from "@/hooks/api/RegisterUserWIthCompany";
+import { getTerms_and_conditions } from "@/hooks/api/GetTerms_and_conditions";
+import * as FileSystem from "expo-file-system";
+import * as Linking from "expo-linking";
+import * as WebBrowser from "expo-web-browser";
+import { WebView } from "react-native-webview";
 const RegistryUser = () => {
   const { t } = useTranslation();
 
@@ -34,6 +41,8 @@ const RegistryUser = () => {
     address: typeof address === "string" ? address : address?.[0] ?? "",
     zip_code: typeof zip_code === "string" ? zip_code : zip_code?.[0] ?? "",
   };
+  const [termsVisible, setTermsVisible] = useState(false);
+  const [termsHtml, setTermsHtml] = useState("");
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -53,6 +62,7 @@ const RegistryUser = () => {
   const [stateList, setStateList] = useState<{ label: string; value: string }[]>([]);
   const [userName, setUserName] = useState("");
   const [searchTerm, setSearchTerm] = useState(""); // Added state for search term
+  const [isChecked, setIsChecked] = useState(false); // Estado para el checkbox
   const [errors, setErrors] = useState<{
     email?: string;
     password?: string;
@@ -70,6 +80,25 @@ const RegistryUser = () => {
   }>({});
 
 
+
+
+  const handleDownloadTerms = async () => {
+    try {
+      // Llamar al backend para obtener los términos y condiciones
+      const html = await getTerms_and_conditions();
+      setTermsHtml(html);
+      setTermsVisible(true); // Mostrar el modal con el HTML
+    } catch (error) {
+      console.error("Error al cargar los términos y condiciones:", error);
+      Toast.show({
+        type: "error",
+        text1: "Error",
+        text2: "No se pudieron cargar los términos y condiciones.",
+      });
+    }
+  };
+
+  
   const validateFields = () => {
     const newErrors: {
       email?: string;
@@ -149,6 +178,15 @@ const RegistryUser = () => {
         text1: t("validation_error"),
         text2: t("fix_errors_before_submitting"),
       });
+      return;
+    }
+    if (!isChecked) {
+      Toast.show({
+        type: "error",
+        text1: t("terms_required"),
+        text2: t("accept_terms_to_continue"),
+      });
+      return;
     }
       // Paso 1: Registrar la empresa
       try {
@@ -158,12 +196,15 @@ const RegistryUser = () => {
             text1: t("error"),
             text2: t("company_is_null"),
           });
+          return;
         }
-        const companyResponse = await CreateCompany(companyData);
+        
+        const companyResponse = await registerUserWithCompany(companyData);
+
         Toast.show({
           type: "success",
           text1: t("company_registered"),
-          text2: t("company_details", { name: companyData.name, zipCode: companyData.zip_code }),
+          text2: t("company_details", { name: companyResponse.name, zipCode: companyResponse.zip_code }),
         });
       } catch (error: any) {
         Toast.show({
@@ -410,12 +451,34 @@ const RegistryUser = () => {
             value={phone}
             onChangeText={setPhone}
           />
-  
+            {/* Checkbox de Términos y Condiciones */}
+            <View style={styles.termsContainer}>
+            <CheckBox
+              isChecked={isChecked}
+              onClick={() => setIsChecked(!isChecked)}
+              checkBoxColor="#002366"
+            />
+            <Text style={styles.termsText}>
+              {t("accept_terms")}{" "}
+              <Text style={styles.link} onPress={handleDownloadTerms}>
+                {t("terms_and_conditions")}
+              </Text>
+            </Text>
+          </View>
           <TouchableOpacity style={styles.button} onPress={handleRegister}>
             <Text style={styles.buttonText}>{t("register_user_button")}</Text>
           </TouchableOpacity>
         </View>
       </ScrollView>
+      {/* Modal con WebView */}
+      <Modal visible={termsVisible} onRequestClose={() => setTermsVisible(false)}>
+        <View style={{ flex: 1 }}>
+          <TouchableOpacity onPress={() => setTermsVisible(false)} style={styles.closeButton}>
+            <Text style={styles.closeButtonText}>Cerrar</Text>
+          </TouchableOpacity>
+          <WebView source={{ html: termsHtml }} />
+        </View>
+      </Modal>
       <Toast />
     </ImageBackground>
   );
@@ -484,6 +547,28 @@ const styles = StyleSheet.create({
   buttonText: {
     color: "#fff",
     fontSize: 16,
+    fontWeight: "bold",
+  },  termsContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginTop: 16,
+  },
+  termsText: {
+    marginLeft: 8,
+    color: "#000",
+    fontSize: 14,
+  },
+  link: {
+    color: "#002366",
+    textDecorationLine: "underline",
+  },
+  closeButton: {
+    padding: 10,
+    backgroundColor: "#002366",
+    alignItems: "center",
+  },
+  closeButtonText: {
+    color: "#FFF",
     fontWeight: "bold",
   },
 });

@@ -54,7 +54,7 @@
     "adding_extra_cost": "Agregando costo extra:",
     "add_operator": "Agregar Operador",
     "current_order": "La orden actual es:",
-    "search_operator_id": "Buscar ceddula de Operador",
+    "search_operator_id": "Buscar cedula de Operador",
     "operator_id_placeholder": "cedula del Operador",
     "name": "Nombre",
     "cost": "Costo (USD)",
@@ -403,7 +403,6 @@
     "active": "Activo",
     "inactive": "Inactivo",
     "update": "Actualizar",
-    "operator_not_found": "no se encontro",
     "license_info": "Información de Licencia",
     "license_number": "Número de Licencia",
     "front_license_photo": "Foto Frontal de Licencia",
@@ -431,5 +430,18 @@
     "tshirt_name": "Nombre para la Camiseta",
     "tshirt_size_required": "La talla de camiseta es requerida",
     "tshirt_name_required": "El nombre para la camiseta es requerido",
-    "salary_amount_invalid": "Por favor ingrese un monto de salario válido (mayor que 0)"
+    "salary_amount_invalid": "Por favor ingrese un monto de salario válido (mayor que 0)",
+    "Orders": "Ordenes",
+    "assignation_deleted":"La asignación ha sido eliminada exitosamente",
+    "operator_registration":"Registro de Operador",
+    "operator_edit":"Editar Operador",
+    "operator_unlink":"Desvincular Operador",
+
+    "operator_not_found":"Operador no encontrado",
+    "operator_not_found_message":"El operador no fue encontrado",
+    "operator_found_message":"El operador fue encontrado",
+    "accept_terms_to_continue": "Acepta los términos y condiciones para continuar",
+    "terms_and_conditions": "Terminos y condiciones",
+    "terms_required": "Se requiere aceptar los términos y condiciones",
+    "accept_terms": "Aceptar términos y condiciones"
 }
