@@ -12,7 +12,6 @@ import {
   StatusBar,
 } from 'react-native';
 import { useTranslation } from 'react-i18next';
-import { PatchAssign } from '@/hooks/api/patchAssign';
 
 interface TruckData {
   id: number;
@@ -21,14 +20,19 @@ interface TruckData {
   category: string;
   type: string;
 }
-
+interface TruckModalProps {
+  visible: boolean;
+  onClose: () => void;
+  orderKey: string;
+  onTruckSelect: (truck: TruckData) => void; // Nuevo prop para manejar la selección del camión
+}
 interface AddOperatorScreenProps {
   visible: boolean;
   onClose: () => void;
   orderKey: string;
 }
 
-const TruckModal: React.FC<AddOperatorScreenProps> = ({ visible, onClose, orderKey }) => {
+const TruckModal: React.FC<TruckModalProps> = ({ visible, onClose, orderKey, onTruckSelect }) => {
   const { t } = useTranslation();
   if (!orderKey) {
     return null;
