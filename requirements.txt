@@ -7,3 +7,4 @@ react-native-check-box
 expo-file-system
 expo-web-browser
 react-native-webview
+react-native-vector-icons

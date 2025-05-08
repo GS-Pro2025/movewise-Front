@@ -15,11 +15,13 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import { loginUser } from "../hooks/api/loginClient";
 import Toast from "react-native-toast-message";
 import { useTranslation } from "react-i18next";
+import Icon from "react-native-vector-icons/MaterialIcons";
 
 const LoginComponent: React.FC = () => {
   const { t } = useTranslation();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [passwordVisible, setPasswordVisible] = useState(false); // Estado para controlar la visibilidad de la contraseña
   const [remember, setRemember] = useState(false);
   const [errors, setErrors] = useState<{ email?: string; password?: string }>({});
   const theme = useColorScheme();
@@ -128,14 +130,26 @@ const LoginComponent: React.FC = () => {
         />
         {errors.email && <Text style={styles.errorText}>{errors.email}</Text>}
 
-        <TextInput
-          style={[styles.input, errors.password && styles.inputError]}
-          placeholder={t("password_placeholder")}
-          placeholderTextColor="#333"
-          secureTextEntry
-          value={password}
-          onChangeText={setPassword}
-        />
+        <View style={styles.inputContainer}>
+          <TextInput
+            style={[styles.input, errors.password && styles.inputError]}
+            placeholder={t("password_placeholder")}
+            placeholderTextColor="#333"
+            secureTextEntry={!passwordVisible} // Cambiar visibilidad según el estado
+            value={password}
+            onChangeText={setPassword}
+          />
+          <TouchableOpacity
+            style={styles.eyeIcon}
+            onPress={() => setPasswordVisible(!passwordVisible)} // Alternar visibilidad
+          >
+            <Icon
+              name={passwordVisible ? "visibility" : "visibility-off"} // Cambiar ícono según el estado
+              size={24}
+              color="#333"
+            />
+          </TouchableOpacity>
+        </View>
         {errors.password && <Text style={styles.errorText}>{errors.password}</Text>}
 
         <View style={styles.row}>
@@ -240,6 +254,15 @@ const styles = StyleSheet.create({
     textAlign: "center",
     color: "#002366",
     fontSize: 14,
+    marginBottom: 8,
+  },
+  eyeIcon: {
+    position: "absolute",
+    right: 16, 
+    top: 13, 
+  },
+  inputContainer: {
+    position: "relative",
     marginBottom: 8,
   },
 });

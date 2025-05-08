@@ -1,6 +1,6 @@
 import axios, { AxiosInstance } from "axios";
 
-export const  url = 'http://192.168.1.8:8000/'
+export const  url = 'http://142.93.190.199/'
 
 
 import AsyncStorage from "@react-native-async-storage/async-storage";

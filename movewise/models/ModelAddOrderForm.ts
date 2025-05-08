@@ -16,4 +16,5 @@ export interface AddOrderForm {
   weight: string;
   job: string;
   company?: string;
+  dispatch_ticket?: string | null;
 }

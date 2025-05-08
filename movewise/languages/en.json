@@ -419,5 +419,9 @@
     "accept_terms_to_continue": "Accept the terms and conditions to continue",
     "terms_and_conditions": "Terms and Conditions",
     "terms_required": "Terms and conditions are required",
-    "accept_terms": "Accept Terms"
+    "accept_terms": "Accept Terms",
+    "dispatch_ticket": "Dispatch Ticket",
+    "upload_dispatch_ticket": "Upload Dispatch Ticket",
+    "dispatch_ticket_required": "Dispatch ticket is required",
+    "dispatch_ticket_size_exceeded": "Dispatch ticket size exceeded, max 5mb"
 }    
