@@ -64,9 +64,9 @@ const RegisterCompany = () => {
     if (validateFields()) {
       // Crear el objeto de la compañía
       const companyData = {
-        license,
+        license: license,
         company_name: companyName,
-        address,
+        address: address,
         zip_code: zipCode,
       };
 

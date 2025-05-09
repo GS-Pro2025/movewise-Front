@@ -16,7 +16,8 @@ import { loginUser } from "../hooks/api/loginClient";
 import Toast from "react-native-toast-message";
 import { useTranslation } from "react-i18next";
 import Icon from "react-native-vector-icons/MaterialIcons";
-
+import ForgotPasswordModal from "./ForgotPasswordModal";
+import { useLocalSearchParams } from "expo-router";
 const LoginComponent: React.FC = () => {
   const { t } = useTranslation();
   const [email, setEmail] = useState("");
@@ -26,6 +27,10 @@ const LoginComponent: React.FC = () => {
   const [errors, setErrors] = useState<{ email?: string; password?: string }>({});
   const theme = useColorScheme();
   const router = useRouter();
+  const [forgotPasswordVisible, setForgotPasswordVisible] = useState(false); // Estado para controlar el modal
+  
+  // Obtener el mensaje de éxito de los parámetros
+  const { toastMessage } = useLocalSearchParams();
 
   // Load saved credentials from cache
   useEffect(() => {
@@ -45,7 +50,15 @@ const LoginComponent: React.FC = () => {
     };
 
     loadStoredCredentials();
-  }, []);
+    // Mostrar el mensaje de éxito si existe
+    if (toastMessage) {
+      Toast.show({
+        type: "success",
+        text1: t("success"),
+        text2: toastMessage as string,
+      });
+    }
+  }, [toastMessage]);
 
   const validateFields = () => {
     const newErrors: { email?: string; password?: string } = {};
@@ -113,6 +126,7 @@ const LoginComponent: React.FC = () => {
   };
 
   return (
+    <>
     <ImageBackground
       source={require("../assets/images/bg_login.jpg")}
       style={styles.background}
@@ -157,7 +171,7 @@ const LoginComponent: React.FC = () => {
             <Checkbox value={remember} onValueChange={setRemember} color="#0458AB" />
             <Text style={styles.checkboxText}>{t("remember_me")}</Text>
           </View>
-          <TouchableOpacity>
+          <TouchableOpacity onPress={() => setForgotPasswordVisible(true)}> 
             <Text style={styles.forgotText}>{t("forgot_password")}</Text>
           </TouchableOpacity>
         </View>
@@ -179,6 +193,12 @@ const LoginComponent: React.FC = () => {
       {/* Toast Component */}
       <Toast />
     </ImageBackground>
+    {/* Forgot Password Modal */}
+    <ForgotPasswordModal
+    visible={forgotPasswordVisible}
+    onClose={() => setForgotPasswordVisible(false)}
+    />
+    </>
   );
 };
 
