@@ -15,15 +15,22 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import { loginUser } from "../hooks/api/loginClient";
 import Toast from "react-native-toast-message";
 import { useTranslation } from "react-i18next";
-
+import Icon from "react-native-vector-icons/MaterialIcons";
+import ForgotPasswordModal from "./ForgotPasswordModal";
+import { useLocalSearchParams } from "expo-router";
 const LoginComponent: React.FC = () => {
   const { t } = useTranslation();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [passwordVisible, setPasswordVisible] = useState(false); // Estado para controlar la visibilidad de la contraseña
   const [remember, setRemember] = useState(false);
   const [errors, setErrors] = useState<{ email?: string; password?: string }>({});
   const theme = useColorScheme();
   const router = useRouter();
+  const [forgotPasswordVisible, setForgotPasswordVisible] = useState(false); // Estado para controlar el modal
+  
+  // Obtener el mensaje de éxito de los parámetros
+  const { toastMessage } = useLocalSearchParams();
 
   // Load saved credentials from cache
   useEffect(() => {
@@ -43,7 +50,15 @@ const LoginComponent: React.FC = () => {
     };
 
     loadStoredCredentials();
-  }, []);
+    // Mostrar el mensaje de éxito si existe
+    if (toastMessage) {
+      Toast.show({
+        type: "success",
+        text1: t("success"),
+        text2: toastMessage as string,
+      });
+    }
+  }, [toastMessage]);
 
   const validateFields = () => {
     const newErrors: { email?: string; password?: string } = {};
@@ -111,6 +126,7 @@ const LoginComponent: React.FC = () => {
   };
 
   return (
+    <>
     <ImageBackground
       source={require("../assets/images/bg_login.jpg")}
       style={styles.background}
@@ -128,14 +144,26 @@ const LoginComponent: React.FC = () => {
         />
         {errors.email && <Text style={styles.errorText}>{errors.email}</Text>}
 
-        <TextInput
-          style={[styles.input, errors.password && styles.inputError]}
-          placeholder={t("password_placeholder")}
-          placeholderTextColor="#333"
-          secureTextEntry
-          value={password}
-          onChangeText={setPassword}
-        />
+        <View style={styles.inputContainer}>
+          <TextInput
+            style={[styles.input, errors.password && styles.inputError]}
+            placeholder={t("password_placeholder")}
+            placeholderTextColor="#333"
+            secureTextEntry={!passwordVisible} // Cambiar visibilidad según el estado
+            value={password}
+            onChangeText={setPassword}
+          />
+          <TouchableOpacity
+            style={styles.eyeIcon}
+            onPress={() => setPasswordVisible(!passwordVisible)} // Alternar visibilidad
+          >
+            <Icon
+              name={passwordVisible ? "visibility" : "visibility-off"} // Cambiar ícono según el estado
+              size={24}
+              color="#333"
+            />
+          </TouchableOpacity>
+        </View>
         {errors.password && <Text style={styles.errorText}>{errors.password}</Text>}
 
         <View style={styles.row}>
@@ -143,7 +171,7 @@ const LoginComponent: React.FC = () => {
             <Checkbox value={remember} onValueChange={setRemember} color="#0458AB" />
             <Text style={styles.checkboxText}>{t("remember_me")}</Text>
           </View>
-          <TouchableOpacity>
+          <TouchableOpacity onPress={() => setForgotPasswordVisible(true)}> 
             <Text style={styles.forgotText}>{t("forgot_password")}</Text>
           </TouchableOpacity>
         </View>
@@ -165,6 +193,12 @@ const LoginComponent: React.FC = () => {
       {/* Toast Component */}
       <Toast />
     </ImageBackground>
+    {/* Forgot Password Modal */}
+    <ForgotPasswordModal
+    visible={forgotPasswordVisible}
+    onClose={() => setForgotPasswordVisible(false)}
+    />
+    </>
   );
 };
 
@@ -240,6 +274,15 @@ const styles = StyleSheet.create({
     textAlign: "center",
     color: "#002366",
     fontSize: 14,
+    marginBottom: 8,
+  },
+  eyeIcon: {
+    position: "absolute",
+    right: 16, 
+    top: 13, 
+  },
+  inputContainer: {
+    position: "relative",
     marginBottom: 8,
   },
 });

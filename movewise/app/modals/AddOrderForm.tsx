@@ -15,7 +15,9 @@ import { ListStates } from '@/hooks/api/StatesClient';
 import OperatorModal from './OperatorModal';
 import { useTranslation } from 'react-i18next';
 import Toast from 'react-native-toast-message';
-
+import { ImageUpload } from './CreateOperator/HelperComponents';
+import { ImageInfo } from 'expo-image-picker';
+import * as FileSystem from 'expo-file-system';
 interface AddOrderModalProps {
   visible: boolean;
   onClose: () => void;
@@ -45,7 +47,7 @@ export default function AddOrderModal({ visible, onClose }: AddOrderModalProps) 
   const [stateList, setStateList] = useState<any[]>([]);
   const [operatorModalVisible, setOperatorModalVisible] = useState(false); // State for OperatorModal visibility
   const [savedOrderKey, setSavedOrderKey] = useState<string | null>(null); // State to store saved order key
-
+  const [dispatchTicket, setDispatchTicket] = useState<ImageInfo | null>(null); // Estado para el dispatch_Ticket// Estado para el dispatch_Ticket
   const { saveOrder, isLoading, error } = AddOrderformApi();
 
   const handleSaveOperators = () => {
@@ -57,6 +59,15 @@ export default function AddOrderModal({ visible, onClose }: AddOrderModalProps) 
   };
   const handleSave = async () => {
     if (!validateFields()) return;
+
+    let base64Image = null;
+    if (dispatchTicket) {
+      base64Image = await FileSystem.readAsStringAsync(dispatchTicket.uri, {
+        encoding: FileSystem.EncodingType.Base64,
+      });
+      base64Image = `data:image/jpeg;base64,${base64Image}`; // Asegúrate de incluir el prefijo
+    }
+
     const orderData: AddOrderForm = {
       status: "Pending",
       date: date || "",
@@ -68,11 +79,12 @@ export default function AddOrderModal({ visible, onClose }: AddOrderModalProps) 
         first_name: customerName,
         last_name: customerLastName,
         address: address,
-        email: email
+        email: email,
       },
       weight: weight,
       job: job || "",
-      company: company || ""
+      company: company || "",
+      dispatch_ticket: base64Image, // Enviar la imagen codificada en Base64
     };
 
     try {
@@ -127,7 +139,22 @@ export default function AddOrderModal({ visible, onClose }: AddOrderModalProps) 
     fetchStates();
   }, []);
 
-  const validateFields = () => {
+  const handleChange = (field: string, value: any): void => {
+    console.log(`AddOrderForm - Changing ${field} to:`, value);
+  
+    // Actualizar el estado dinámicamente
+    if (field === "dispatch_ticket") {
+      setDispatchTicket(value);
+    } else {
+      console.warn(`Unhandled field: ${field}`);
+    }
+  
+    // Limpiar error si existe
+    if (errors[field]) {
+      setErrors(prevErrors => ({ ...prevErrors, [field]: '' }));
+    }
+  };
+  const validateFields = async () => {
     let newErrors: { [key: string]: string } = {};
     if (!state) newErrors.state = t('state_required');
     if (!date) newErrors.date = t('date_required');
@@ -137,6 +164,28 @@ export default function AddOrderModal({ visible, onClose }: AddOrderModalProps) 
     if (!weight) newErrors.weight = t('weight_required');
     if (!job) newErrors.job = t('job_required');
     if (!company) newErrors.company = t('company_required');
+    if (!dispatchTicket) newErrors.dispatchTicket = t('dispatch_ticket_required'); 
+    //validamos el tamaño del dispatch ticket 5mb
+    if (!dispatchTicket) {
+      newErrors.dispatchTicket = t('dispatch_ticket_required');
+    } else {
+      const fileInfo = await FileSystem.getInfoAsync(dispatchTicket.uri);
+      if (fileInfo.exists && fileInfo.size && fileInfo.size > 5 * 1024 * 1024) { // Verificar si el archivo existe y tiene tamaño
+        newErrors.dispatchTicket = t('dispatch_ticket_size_exceeded');
+        Toast.show({
+          type: 'error',
+          text1: t('error'),
+          text2: t('dispatch_ticket_size_exceeded'),
+        });
+      } else if (!fileInfo.exists) {
+        newErrors.dispatchTicket = t('dispatch_ticket_not_found');
+        Toast.show({
+          type: 'error',
+          text1: t('error'),
+          text2: t('dispatch_ticket_not_found'),
+        });
+      }
+    }
 
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
@@ -358,16 +407,6 @@ export default function AddOrderModal({ visible, onClose }: AddOrderModalProps) 
                 onChangeText={setEmail}
               />
 
-              <Text style={styles.text}>{t('weight')} (kg) <Text style={styles.required}>(*)</Text></Text>
-              <TextInput
-                style={styles.input}
-                placeholder={t('weight')}
-                placeholderTextColor="#9ca3af"
-                value={weight}
-                onChangeText={setWeight}
-                keyboardType="numeric"
-              />
-
               <View style={{ zIndex: 1000 }}>
                 <Text style={styles.text}>{t('job')} <Text style={styles.required}>(*)</Text></Text>
                 <DropDownPicker
@@ -384,6 +423,26 @@ export default function AddOrderModal({ visible, onClose }: AddOrderModalProps) 
                 />
               </View>
 
+              <Text style={styles.text}>{t('weight')} (kg) <Text style={styles.required}>(*)</Text></Text>
+              <TextInput
+                style={styles.input}
+                placeholder={t('weight')}
+                placeholderTextColor="#9ca3af"
+                value={weight}
+                onChangeText={setWeight}
+                keyboardType="numeric"
+              />
+
+              <View style={{ zIndex: 50, marginTop: 16 }}>
+                <Text style={styles.text}>{t('dispatch_ticket')} <Text style={styles.required}>(*)</Text></Text>
+                <ImageUpload
+                  label={t("upload_dispatch_ticket")}
+                  image={dispatchTicket || null}
+                  onImageSelected={(image) => handleChange("dispatch_ticket", image)} // Usar handleChange para actualizar el estado
+                  error={errors.dispatchTicket}
+                  required={true}
+                />
+              </View>
               <View style={styles.buttonContainer}>
                 <TouchableOpacity style={styles.buttonCancel} onPress={onClose}>
                   <Text style={styles.buttonTextCancel}>{t('cancel')}</Text>
@@ -399,6 +458,7 @@ export default function AddOrderModal({ visible, onClose }: AddOrderModalProps) 
               onClose={() => setOperatorModalVisible(false)} 
               orderKey={savedOrderKey || 'There is no key'}
               onSave={handleSaveOperators} />
+            
           </ScrollView>
         </KeyboardAvoidingView>
       </SafeAreaView>

@@ -15,7 +15,11 @@
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/adaptive-icon.png",
         "backgroundColor": "#ffffff"
-      }
+      },
+      "permissions": [
+        "android.permission.RECORD_AUDIO"
+      ],
+      "package": "com.julian_munoz.movewise"
     },
     "web": {
       "bundler": "metro",
@@ -38,13 +42,21 @@
         {
           "photosPermission": "The app accesses your photos to let you share them with your friends."
         }
-      ]
-      
+      ],
+      "expo-localization"
     ],
     "experiments": {
       "typedRoutes": true
-    }
-    
+    },
+    "extra": {
+      "router": {
+        "origin": false
+      },
+      "eas": {
+        "projectId": "a00c7327-6e6d-44d9-911c-0a13f9bf11d1"
+      }
+    },
+    "owner": "julian_munoz"
   },
   "assets": [
     {

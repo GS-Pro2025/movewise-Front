@@ -33,14 +33,16 @@ const RegistryUser = () => {
 
   const router = useRouter();
   const { license, company_name, address, zip_code } = useLocalSearchParams();
-
+  console.log("Company Data:", license, company_name, address, zip_code);
   // Asegúrate de que sean strings, y si no, convierte o valida
   const companyData: ModelCompany = {
+    company_id: 0,//To review
     license_number: typeof license === "string" ? license : license?.[0] ?? "",
     name: typeof company_name === "string" ? company_name : company_name?.[0] ?? "",
     address: typeof address === "string" ? address : address?.[0] ?? "",
     zip_code: typeof zip_code === "string" ? zip_code : zip_code?.[0] ?? "",
   };
+  console.log("Company Data:", companyData);
   const [termsVisible, setTermsVisible] = useState(false);
   const [termsHtml, setTermsHtml] = useState("");
 
@@ -180,6 +182,7 @@ const RegistryUser = () => {
       });
       return;
     }
+  
     if (!isChecked) {
       Toast.show({
         type: "error",
@@ -188,60 +191,48 @@ const RegistryUser = () => {
       });
       return;
     }
-      // Paso 1: Registrar la empresa
-      try {
-        if (companyData) {
-          Toast.show({
-            type: "error",
-            text1: t("error"),
-            text2: t("company_is_null"),
-          });
-          return;
-        }
-        
-        const companyResponse = await registerUserWithCompany(companyData);
-
-        Toast.show({
-          type: "success",
-          text1: t("company_registered"),
-          text2: t("company_details", { name: companyResponse.name, zipCode: companyResponse.zip_code }),
-        });
-      } catch (error: any) {
-        Toast.show({
-          type: "error",
-          text1: t("error"),
-          text2: t("invalid_company_data"),
-        });
-      }
-      
-
-      // Paso 2: Registrar el usuario para la empresa
-      const userData = {
-        user_name: userName,
-        password: password,
-        person: {
-          email: email,
-          first_name: firstName,
-          last_name: lastName,
-          birth_date: birthDate,
-          phone: phone,
-          address: adressPerson,
-          id_number: idNumber,
-          type_id: idType,
-          state: state,
-          city: city,
+  
+    try {
+      // Construir el objeto con el formato solicitado
+      const payload = {
+        company: {
+          license_number: companyData.license_number,
+          name: companyData.name,
+          address: companyData.address,
+          zip_code: companyData.zip_code,
+        },
+        user: {
+          user_name: userName,
+          password: password,
+          person: {
+            email: email,
+            first_name: firstName,
+            last_name: lastName,
+            birth_date: birthDate,
+            phone: phone,
+            address: adressPerson,
+            id_number: idNumber,
+            type_id: idType,
+            state: state,
+            city: city,
+          },
         },
       };
-    try {
-      await registerUser(userData);
-
+  
+      // Enviar la petición al backend
+      const response = await registerUserWithCompany(payload);
+  
       Toast.show({
         type: "success",
         text1: t("success"),
         text2: t("company_and_user_registered"),
       });
-
-      router.push("/"); // Navegar de vuelta a la pantalla de inicio u otra ruta
+  
+      // Navegar a la pantalla de inicio con un mensaje de éxito
+      router.push({
+        pathname: "/Home",
+        params: { toastMessage: t("company_and_user_registered") },
+      });
     } catch (error: any) {
       Toast.show({
         type: "error",
