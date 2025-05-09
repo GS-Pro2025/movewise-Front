@@ -35,14 +35,14 @@ const CreateTruckScreen = ({ visible, onClose, onSuccess }: CreateTruckScreenPro
   const [openCategory, setOpenCategory] = useState(false);
 
   const typeOptions = [
-    { label: t("light_load"), value: "Carga ligera" },
-    { label: t("medium_load"), value: "Carga mediana" },
-    { label: t("heavy_load"), value: "Carga pesada" },
+    { label: t("rented"), value: "rented" },
+    { label: t("owned"), value: "owned" }
   ];
 
   const categoryOptions = [
-    { label: t("category_a"), value: "a" },
-    { label: t("category_b"), value: "b" },
+    { label: t("vans"), value: "vans" },
+    { label: t("Truck_26"), value: "truck_26" },
+    { label: t("Trailer"), value: "trailer" },
   ];
 
   const [errors, setErrors] = useState({

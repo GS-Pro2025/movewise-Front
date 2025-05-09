@@ -447,5 +447,12 @@
     "dispatch_ticket": "Ticket de Despacho",
     "upload_dispatch_ticket": "Cargar imagen del Ticket de Despacho",
     "dispatch_ticket_required": "Ticket de Despacho es requerido",
-    "dispatch_ticket_size_exceeded": "El tamaño del Ticket de Despacho no debe exceder 5MB"
+    "dispatch_ticket_size_exceeded": "El tamaño del Ticket de Despacho no debe exceder 5MB",
+
+    "rented": "Alquilado",
+    "owned": "Propio",
+
+    "vans": "vans" ,
+    "Truck_26": "truck_26" ,
+    "Trailer": "trailer" 
 }
