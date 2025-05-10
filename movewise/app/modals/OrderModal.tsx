@@ -25,7 +25,7 @@ interface OrderPerson {
 }
 
 interface Order {
-  key : string;
+  key: string;
   key_ref: string;
   date: string | null;
   distance: number | null;
@@ -56,44 +56,54 @@ const OrderModal: React.FC<OrderModalProps> = ({ visible, onClose }) => {
   const colorScheme = useColorScheme();
   const isDarkMode = colorScheme === "dark";
   const router = useRouter();
-
   const loadOrders = useCallback(async () => {
     setLoading(true);
     setRefreshing(true);
     try {
-        const response = await getOrders(); // Ahora devuelve un array
-        console.log("API Response:", response); // Log para verificar los datos
-        // Filtrar las órdenes para excluir las que tienen estado "Inactive"
-        const filteredResponse = response.filter((order: Order) => order.status.toLowerCase() !== 'inactive');
-        // Mapear las órdenes al formato correcto
-        const mappedOrders = filteredResponse.map((order: Order) => ({
-            key: order.key,
-            key_ref: order.key_ref,
-            date: order.date,
-            distance: order.distance,
-            expense: order.expense,
-            income: order.income,
-            weight: order.weight,
-            status: order.status,
-            payStatus: order.payStatus,
-            state_usa: order.state_usa,
-            person: {
-                email: order.person.email,
-                first_name: order.person.first_name || null,
-                last_name: order.person.last_name || null,
-            },
-            job: order.job,
-        }));
-        setOrders(mappedOrders);
-    } catch (error) {
-        console.error(t("error_loading_orders"), error);
-        Alert.alert(t("error"), t("could_not_load_orders"));
-    } finally {
-        setLoading(false);
-        setRefreshing(false);
-    }
-}, []);
+      const response = await getOrders();
+      console.log("API Response:", response);
 
+      // Asegurarse de que response es un array antes de usar filter/map
+      if (!Array.isArray(response)) {
+        console.error("La respuesta no es un array:", response);
+        setOrders([]);
+        return;
+      }
+
+      const filteredResponse = response.filter((order: Order) =>
+        order.status && order.status.toLowerCase() !== 'inactive'
+      );
+
+      const mappedOrders = filteredResponse.map((order: Order) => ({
+        key: order.key,
+        key_ref: order.key_ref,
+        date: order.date,
+        distance: order.distance,
+        expense: order.expense,
+        income: order.income,
+        weight: order.weight,
+        status: order.status,
+        payStatus: order.payStatus,
+        state_usa: order.state_usa,
+        person: {
+          email: order.person?.email || '',
+          first_name: order.person?.first_name || null,
+          last_name: order.person?.last_name || null,
+        },
+        job: order.job,
+      }));
+
+      setOrders(mappedOrders);
+    } catch (error) {
+      console.error(t("error_loading_orders"), error);
+      Alert.alert(t("error"), t("could_not_load_orders"));
+      setOrders([]); // Asegurar que orders es un array vacío en caso de error
+    } finally {
+      setLoading(false);
+      setRefreshing(false);
+    }
+  }, []);
+  
   useEffect(() => {
     loadOrders();
   }, [visible, loadOrders]);
@@ -301,7 +311,7 @@ const OrderModal: React.FC<OrderModalProps> = ({ visible, onClose }) => {
           <TouchableOpacity onPress={() => { setStartDate(null); setShowStartDatePicker(false); }}>
             <Ionicons name="close-circle" size={18} color={isDarkMode ? colors.secondary : colors.primary} />
           </TouchableOpacity>
-  
+
           <TouchableOpacity
             style={[styles.datePickerButton, { borderWidth: 1, borderColor: isDarkMode ? colors.secondary : colors.primary, borderRadius: 8, padding: 10, flex: 1, marginLeft: 5 }]}
             onPress={() => setShowEndDatePicker(true)}
@@ -402,7 +412,7 @@ const OrderModal: React.FC<OrderModalProps> = ({ visible, onClose }) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    padding: 10, 
+    padding: 10,
   },
   header: {
     flexDirection: "row",
@@ -425,7 +435,7 @@ const styles = StyleSheet.create({
   saveButtonText: { fontWeight: "bold" },
   // Additional styles for the list and filters
   datePickerContainer: {
-  
+
   },
   filtersContainer: {
     flexDirection: 'row',

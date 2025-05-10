@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { ScrollView, View, Text, TouchableOpacity } from 'react-native';
+import { ScrollView, Platform, View, Text, TouchableOpacity } from 'react-native';
 import { FormInput, DateInput, DropdownInput } from '../HelperComponents';
 import { styles } from '../FormStyle';
 import { StepProps, Operator } from '../Types';
@@ -21,7 +21,7 @@ const Step1Form = ({ formData, updateFormData, onNext, isEditing }: StepProps) =
         phone: formData.phone,
         email: formData.email ?? '',
     });
-    const [operators, setOperators] = useState<Operator[]>([]); 
+    const [operators, setOperators] = useState<Operator[]>([]);
 
     useEffect(() => {
         const fetchOperators = async () => {
@@ -40,12 +40,12 @@ const Step1Form = ({ formData, updateFormData, onNext, isEditing }: StepProps) =
     const [errors, setErrors] = useState<Record<string, string>>({});
 
     const handleChange = (field: string, value: string): void => {
-        
+
         // Actualizar estado local
         setLocalData(prev => ({ ...prev, [field]: value }));
-        
+
         updateFormData({ [field]: value });
-        
+
         // Limpiar error cuando el usuario escribe
         if (errors[field]) {
             setErrors({ ...errors, [field]: '' });
@@ -122,8 +122,8 @@ const Step1Form = ({ formData, updateFormData, onNext, isEditing }: StepProps) =
                 phone: localData.phone,
                 email: localData.email
             });
-            
-            
+
+
             if (onNext) onNext();
         } else {
             Toast.show({
@@ -136,87 +136,93 @@ const Step1Form = ({ formData, updateFormData, onNext, isEditing }: StepProps) =
     };
 
     return (
-        <ScrollView>
-            <View style={styles.stepForm}>
-                <Text style={styles.sectionTitle}>{t("general_data")}</Text>
+       
+            <ScrollView
+                keyboardDismissMode="on-drag"
+                contentContainerStyle={{ flexGrow: 1 }}
+                automaticallyAdjustKeyboardInsets={true}
+                contentInsetAdjustmentBehavior="automatic"
+            >
+                <View style={[styles.stepForm, { flex: 1 }]}>
+                    <Text style={styles.sectionTitle}>{t("general_data")}</Text>
 
-                <FormInput
-                    label={`${t("name")} (*)`}
-                    value={localData.first_name}
-                    onChangeText={(text) => handleChange('first_name', text)}
-                    error={errors.first_name}
-                    required={true}
-                />
+                    <FormInput
+                        label={`${t("name")} (*)`}
+                        value={localData.first_name}
+                        onChangeText={(text) => handleChange('first_name', text)}
+                        error={errors.first_name}
+                        required={true}
+                    />
 
-                <FormInput
-                    label={`${t("last_name")} (*)`}
-                    value={localData.last_name}
-                    onChangeText={(text) => handleChange('last_name', text)}
-                    error={errors.last_name}
-                    required={true}
-                />
+                    <FormInput
+                        label={`${t("last_name")} (*)`}
+                        value={localData.last_name}
+                        onChangeText={(text) => handleChange('last_name', text)}
+                        error={errors.last_name}
+                        required={true}
+                    />
 
-                <DateInput
-                    label={`${t("birth_date")} (*)`}
-                    value={localData.birth_date}
-                    onChangeDate={(date) => handleChange('birth_date', date)}
-                    error={errors.birth_date}
-                    required={true}
-                />
+                    <DateInput
+                        label={`${t("birth_date")} (*)`}
+                        value={localData.birth_date}
+                        onChangeDate={(date) => handleChange('birth_date', date)}
+                        error={errors.birth_date}
+                        required={true}
+                    />
 
-                <DropdownInput
-                    label={`${t("identification_type")} (*)`}
-                    value={localData.type_id}
-                    onChange={(value) => handleChange('type_id', value)}
-                    options={[t("passport"), t("driver_license"), t("id_card")]}
-                    error={errors.type_id}
-                    required={true}
-                />
+                    <DropdownInput
+                        label={`${t("identification_type")} (*)`}
+                        value={localData.type_id}
+                        onChange={(value) => handleChange('type_id', value)}
+                        options={[t("passport"), t("driver_license"), t("id_card")]}
+                        error={errors.type_id}
+                        required={true}
+                    />
 
-                <FormInput
-                    label={`${t("id_number")} (*)`}
-                    value={localData.id_number}
-                    onChangeText={(text) => handleChange('id_number', text)}
-                    error={errors.id_number}
-                    keyboardType="numeric"
-                    required={true}
-                />
+                    <FormInput
+                        label={`${t("id_number")} (*)`}
+                        value={localData.id_number}
+                        onChangeText={(text) => handleChange('id_number', text)}
+                        error={errors.id_number}
+                        keyboardType="numeric"
+                        required={true}
+                    />
 
-                <FormInput
-                    label={`${t("address")} (*)`}
-                    value={localData.address}
-                    onChangeText={(text) => handleChange('address', text)}
-                    error={errors.address}
-                    required={true}
-                />
+                    <FormInput
+                        label={`${t("address")} (*)`}
+                        value={localData.address}
+                        onChangeText={(text) => handleChange('address', text)}
+                        error={errors.address}
+                        required={true}
+                    />
 
-                <FormInput
-                    label={`${t("phone")} (*)`}
-                    value={localData.phone}
-                    onChangeText={(text) => handleChange('phone', text)}
-                    keyboardType="phone-pad"
-                    error={errors.phone}
-                    required={true}
-                />
+                    <FormInput
+                        label={`${t("phone")} (*)`}
+                        value={localData.phone}
+                        onChangeText={(text) => handleChange('phone', text)}
+                        keyboardType="phone-pad"
+                        error={errors.phone}
+                        required={true}
+                    />
 
-                <FormInput
-                    label={t("email")}
-                    value={localData.email}
-                    onChangeText={(text) => handleChange('email', text)}
-                    keyboardType="email-address"
-                    error={errors.email}
-                />
+                    <FormInput
+                        label={t("email")}
+                        value={localData.email}
+                        onChangeText={(text) => handleChange('email', text)}
+                        keyboardType="email-address"
+                        error={errors.email}
+                    />
 
-                <View style={styles.buttonContainer}>
-                    <TouchableOpacity style={styles.cancelButton} onPress={() => router.back()}>
-                        <Text style={styles.buttonText}>{t("cancel")}</Text>
-                    </TouchableOpacity>
-                    <TouchableOpacity style={styles.nextButton} onPress={handleNext}>
-                        <Text style={styles.buttonText}>{t("next")}</Text>
-                    </TouchableOpacity>
+                    <View style={styles.buttonContainer}>
+                        <TouchableOpacity style={styles.cancelButton} onPress={() => router.back()}>
+                            <Text style={styles.buttonText}>{t("cancel")}</Text>
+                        </TouchableOpacity>
+                        <TouchableOpacity style={styles.nextButton} onPress={handleNext}>
+                            <Text style={styles.buttonText}>{t("next")}</Text>
+                        </TouchableOpacity>
+                    </View>
                 </View>
-            </View>
-        </ScrollView>
+            </ScrollView>
     );
 };
 
