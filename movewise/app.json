@@ -9,17 +9,19 @@
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "bundleIdentifier": "com.movewise.movewise",
+      "buildNumber": "2"
     },
     "android": {
       "adaptiveIcon": {
-        "foregroundImage": "./assets/images/adaptive-icon.png",
+        "foregroundImage": "./assets/images/icon.png",
         "backgroundColor": "#ffffff"
       },
       "permissions": [
         "android.permission.RECORD_AUDIO"
       ],
-      "package": "com.julian_munoz.movewise"
+      "package": "com.movewise.movewise"
     },
     "web": {
       "bundler": "metro",
@@ -31,7 +33,7 @@
       [
         "expo-splash-screen",
         {
-          "image": "./assets/images/splash-icon.png",
+          "image": "./assets/images/icon.png",
           "imageWidth": 200,
           "resizeMode": "contain",
           "backgroundColor": "#ffffff"
@@ -53,10 +55,10 @@
         "origin": false
       },
       "eas": {
-        "projectId": "a00c7327-6e6d-44d9-911c-0a13f9bf11d1"
+      
       }
     },
-    "owner": "julian_munoz"
+    "owner": "movewise"
   },
   "assets": [
     {
