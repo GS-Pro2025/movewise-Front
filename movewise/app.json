@@ -11,7 +11,20 @@
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "com.movewise.movewise",
-      "buildNumber": "2"
+      "buildNumber": "2",
+      "infoPlist": {
+        "NSAppTransportSecurity": {
+          "NSAllowsArbitraryLoads": true,
+          "NSExceptionDomains": {
+            "142.93.190.199": {
+              "NSTemporaryExceptionAllowsInsecureHTTPLoads": true,
+              "NSTemporaryExceptionMinimumTLSVersion": "TLSv1.2",
+              "NSTemporaryExceptionRequiresForwardSecrecy": false
+            }
+          }
+        },
+        "ITSAppUsesNonExemptEncryption": false
+      }
     },
     "android": {
       "adaptiveIcon": {
@@ -55,7 +68,7 @@
         "origin": false
       },
       "eas": {
-      
+        "projectId": "c839db62-788e-4cfc-8dd6-6eb65997c18b"
       }
     },
     "owner": "movewise"
