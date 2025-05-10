@@ -27,7 +27,7 @@ interface OrderPerson {
         const results = response.data?.data?.results || []; // Extraer resultados
         return results; // Devolver solo el array de órdenes
     } catch (error) {
-        console.error("Error fetching orders:", error);
+        console.error("Error fetching orders: ", error);
         throw error; // Lanzar el error para manejarlo en el componente
     }
 };

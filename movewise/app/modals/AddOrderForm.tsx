@@ -106,30 +106,36 @@ export default function AddOrderModal({ visible, onClose }: AddOrderModalProps) 
     }
   };
 
+  // En AddOrderModal, modifica las funciones de fetching:
+
   const fetchStates = async () => {
     try {
       const states = await ListStates();
-      setStateList(states);
+      // Asegurar que siempre sea un array
+      setStateList(Array.isArray(states) ? states : []);
     } catch (error) {
       console.error(t('error_fetching_states'), error);
+      setStateList([]); // Resetear a array vacío en errores
     }
   };
 
   const fetchJobs = async () => {
     try {
       const jobs = await ListJobs();
-      setJobList(jobs);
+      setJobList(Array.isArray(jobs) ? jobs : []);
     } catch (error) {
       console.error(t('error_fetching_jobs'), error);
+      setJobList([]);
     }
   };
 
   const fetchCompanies = async () => {
     try {
       const companies = await ListCompanies();
-      setCompanyList(companies);
+      setCompanyList(Array.isArray(companies) ? companies : []);
     } catch (error) {
       console.error(t('error_fetching_companies'), error);
+      setCompanyList([]);
     }
   };
 
@@ -141,14 +147,14 @@ export default function AddOrderModal({ visible, onClose }: AddOrderModalProps) 
 
   const handleChange = (field: string, value: any): void => {
     console.log(`AddOrderForm - Changing ${field} to:`, value);
-  
+
     // Actualizar el estado dinámicamente
     if (field === "dispatch_ticket") {
       setDispatchTicket(value);
     } else {
       console.warn(`Unhandled field: ${field}`);
     }
-  
+
     // Limpiar error si existe
     if (errors[field]) {
       setErrors(prevErrors => ({ ...prevErrors, [field]: '' }));
@@ -164,7 +170,7 @@ export default function AddOrderModal({ visible, onClose }: AddOrderModalProps) 
     if (!weight) newErrors.weight = t('weight_required');
     if (!job) newErrors.job = t('job_required');
     if (!company) newErrors.company = t('company_required');
-    if (!dispatchTicket) newErrors.dispatchTicket = t('dispatch_ticket_required'); 
+    if (!dispatchTicket) newErrors.dispatchTicket = t('dispatch_ticket_required');
     //validamos el tamaño del dispatch ticket 5mb
     if (!dispatchTicket) {
       newErrors.dispatchTicket = t('dispatch_ticket_required');
@@ -196,83 +202,83 @@ export default function AddOrderModal({ visible, onClose }: AddOrderModalProps) 
     ? require("../../assets/images/PNG_blanco.png")
     : require("../../assets/images/PNG_negativo.png");
 
-    const styles = StyleSheet.create({
-      container: {
-        flex: 1,
-        padding: 19,
-        paddingTop: 1,
-        borderRadius: 10,
-        backgroundColor: colorScheme === 'dark' ? '#112A4A' : '#ffffff',
-      },
-      header: {
-        backgroundColor: colorScheme === 'dark' ? '#112A4A' : '#ffffff',
-        paddingVertical: 5,
-        flexDirection: 'row',
-        alignItems: 'center',
-        justifyContent: 'center',
-        borderBottomWidth: 2,
-        borderBottomColor: colorScheme === 'dark' ? 'rgba(0, 0, 0, 0.2)' : 'rgba(0, 0, 0, 0.1)',
-      },
-      image: {
-        width: 50,
-        height: 50,
-        resizeMode: 'contain',
-        position: 'absolute',
-        left: 10,
-      },
-      text: {
-        fontSize: 14,
-        fontWeight: '600',
-        color: colorScheme === 'dark' ? '#ffffff' : '#0458AB',
-        marginTop: 8,
-      },
-      textLarge: {
-        fontSize: 20,
-        fontWeight: 'bold',
-        color: colorScheme === 'dark' ? '#ffffff' : '#0458AB',
-        marginTop: 16,
-        marginBottom: 8,
-      },
-      input: {
-        borderWidth: 2,
-        borderColor: colorScheme === 'dark' ? '#64748b' : '#0458AB',
-        backgroundColor: colorScheme === 'dark' ? '#FFFFFF36' : '#ffffff',
-        padding: 8,
-        borderRadius: 8,
-        color: colorScheme === 'dark' ? '#ffffff' : '#1f2937',
-      },
-      buttonContainer: {
-        flexDirection: 'row',
-        justifyContent: 'center',
-        marginTop: 16,
-      },
-      buttonCancel: {
-        backgroundColor: colorScheme === 'dark' ? '#0458AB' : '#545257',
-        padding: 10,
-        borderRadius: 6,
-        flex: 1,
-        alignItems: 'center',
-        marginRight: 8,
-      },
-      buttonSave: {
-        backgroundColor: colorScheme === 'dark' ? '#FFFFFF' : '#0458AB',
-        padding: 10,
-        borderRadius: 6,
-        flex: 1,
-        alignItems: 'center',
-      },
-      buttonTextCancel: {
-        color: '#FFFFFF',
-        fontWeight: 'bold',
-      },
-      buttonTextSave: {
-        color: colorScheme === 'dark' ? '#0458AB' : '#FFFFFF',
-        fontWeight: 'bold',
-      },
-      required: {
-        color: '#FF0000',
-      },
-    });
+  const styles = StyleSheet.create({
+    container: {
+      flex: 1,
+      padding: 19,
+      paddingTop: 1,
+      borderRadius: 10,
+      backgroundColor: colorScheme === 'dark' ? '#112A4A' : '#ffffff',
+    },
+    header: {
+      backgroundColor: colorScheme === 'dark' ? '#112A4A' : '#ffffff',
+      paddingVertical: 5,
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'center',
+      borderBottomWidth: 2,
+      borderBottomColor: colorScheme === 'dark' ? 'rgba(0, 0, 0, 0.2)' : 'rgba(0, 0, 0, 0.1)',
+    },
+    image: {
+      width: 50,
+      height: 50,
+      resizeMode: 'contain',
+      position: 'absolute',
+      left: 10,
+    },
+    text: {
+      fontSize: 14,
+      fontWeight: '600',
+      color: colorScheme === 'dark' ? '#ffffff' : '#0458AB',
+      marginTop: 8,
+    },
+    textLarge: {
+      fontSize: 20,
+      fontWeight: 'bold',
+      color: colorScheme === 'dark' ? '#ffffff' : '#0458AB',
+      marginTop: 16,
+      marginBottom: 8,
+    },
+    input: {
+      borderWidth: 2,
+      borderColor: colorScheme === 'dark' ? '#64748b' : '#0458AB',
+      backgroundColor: colorScheme === 'dark' ? '#FFFFFF36' : '#ffffff',
+      padding: 8,
+      borderRadius: 8,
+      color: colorScheme === 'dark' ? '#ffffff' : '#1f2937',
+    },
+    buttonContainer: {
+      flexDirection: 'row',
+      justifyContent: 'center',
+      marginTop: 16,
+    },
+    buttonCancel: {
+      backgroundColor: colorScheme === 'dark' ? '#0458AB' : '#545257',
+      padding: 10,
+      borderRadius: 6,
+      flex: 1,
+      alignItems: 'center',
+      marginRight: 8,
+    },
+    buttonSave: {
+      backgroundColor: colorScheme === 'dark' ? '#FFFFFF' : '#0458AB',
+      padding: 10,
+      borderRadius: 6,
+      flex: 1,
+      alignItems: 'center',
+    },
+    buttonTextCancel: {
+      color: '#FFFFFF',
+      fontWeight: 'bold',
+    },
+    buttonTextSave: {
+      color: colorScheme === 'dark' ? '#0458AB' : '#FFFFFF',
+      fontWeight: 'bold',
+    },
+    required: {
+      color: '#FF0000',
+    },
+  });
 
   return (
     <Modal visible={visible} transparent animationType="slide">
@@ -454,15 +460,15 @@ export default function AddOrderModal({ visible, onClose }: AddOrderModalProps) 
             </ThemedView>
 
             {/* Operator Modal */}
-            <OperatorModal visible={operatorModalVisible} 
-              onClose={() => setOperatorModalVisible(false)} 
+            <OperatorModal visible={operatorModalVisible}
+              onClose={() => setOperatorModalVisible(false)}
               orderKey={savedOrderKey || 'There is no key'}
               onSave={handleSaveOperators} />
-            
+
           </ScrollView>
         </KeyboardAvoidingView>
       </SafeAreaView>
-      <Toast/>
+      <Toast />
     </Modal>
   );
 }
