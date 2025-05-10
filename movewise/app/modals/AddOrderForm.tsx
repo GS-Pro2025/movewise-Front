@@ -65,7 +65,7 @@ export default function AddOrderModal({ visible, onClose }: AddOrderModalProps) 
       base64Image = await FileSystem.readAsStringAsync(dispatchTicket.uri, {
         encoding: FileSystem.EncodingType.Base64,
       });
-      base64Image = `data:image/jpeg;base64,${base64Image}`; // Asegúrate de incluir el prefijo
+      base64Image = `data:image/jpeg;base64,${base64Image}`; 
     }
 
     const orderData: AddOrderForm = {
@@ -106,7 +106,6 @@ export default function AddOrderModal({ visible, onClose }: AddOrderModalProps) 
     }
   };
 
-  // En AddOrderModal, modifica las funciones de fetching:
 
   const fetchStates = async () => {
     try {

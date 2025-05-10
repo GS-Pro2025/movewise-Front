@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Platform, View, Text, TouchableOpacity } from 'react-native';
+import { ScrollView, Platform, View, Text, TouchableOpacity } from 'react-native';
 import { FormInput, DateInput, DropdownInput } from '../HelperComponents';
 import { styles } from '../FormStyle';
 import { StepProps, Operator } from '../Types';
@@ -136,11 +136,7 @@ const Step1Form = ({ formData, updateFormData, onNext, isEditing }: StepProps) =
     };
 
     return (
-        <KeyboardAvoidingView
-            behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-            style={{ flex: 1 }}
-            keyboardVerticalOffset={Platform.OS === 'ios' ? 64 : 0} // Ajusta según tu header
-        >
+       
             <ScrollView
                 keyboardDismissMode="on-drag"
                 contentContainerStyle={{ flexGrow: 1 }}
@@ -227,7 +223,6 @@ const Step1Form = ({ formData, updateFormData, onNext, isEditing }: StepProps) =
                     </View>
                 </View>
             </ScrollView>
-        </KeyboardAvoidingView>
     );
 };
 

@@ -3,7 +3,6 @@ import { ModelCompany } from '@/models/ModelCompany';
 export const ListCompanies = async () => {
   try {
     const response = await apiClient.get('/companies');
-    console.log(`empresas: ${response.data.results}`);
     
     return response.data.results;
   } catch (error) {
