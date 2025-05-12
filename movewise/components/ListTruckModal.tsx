@@ -4,12 +4,13 @@ import { Ionicons } from '@expo/vector-icons';
 import { GestureHandlerRootView, Swipeable } from "react-native-gesture-handler";
 import { TouchableHighlight } from "react-native";
 import { ListTruck, DeleteTruck, UpdateTruckStatus } from "../hooks/api/TruckClient"; // Import TruckClient methods
-import CreateTruckScreen from "../app/modals/CreateTruck"; 
+import CreateTruckScreen from "../app/modals/CreateTruck";
 import UpdateTruckModal from "../app/modals/UpdateTruckModal"; // Modal for updating a truck
 import CreateTruckModal from "../app/modals/CreateTruck";
 import Toast from "react-native-toast-message";
 import Truck from "@/hooks/api/TruckClient"
 import { useTranslation } from "react-i18next";
+import { router } from "expo-router";
 
 interface ListTruckModalProps {
   visible: boolean;
@@ -56,7 +57,7 @@ const ListTruckModal: React.FC<ListTruckModalProps> = ({ visible, onClose }) => 
   const filteredTrucks = trucks.filter(truck => {
     const number_truck = truck.number_truck || ''; // Fallback to an empty string if undefined
     const category = truck.category || ''; // Fallback to an empty string if undefined
-  
+
     return (
       number_truck.toLowerCase().includes(searchText.toLowerCase()) ||
       category.toLowerCase().includes(searchText.toLowerCase())
@@ -153,13 +154,52 @@ const ListTruckModal: React.FC<ListTruckModalProps> = ({ visible, onClose }) => 
   return (
     <Modal animationType="slide" transparent={false} visible={visible} onRequestClose={onClose}>
       <SafeAreaView style={{ flex: 1 }}>
-        <View style={[styles.header, { backgroundColor: isDarkMode ? "#112A4A" : "#ffffff" }]}>
-          <Text style={[styles.title, { color: isDarkMode ? "#FFFFFF" : "#0458AB" }]}>{t("trucks")}</Text>
+        <View
+          style={[
+            styles.header,
+            { backgroundColor: isDarkMode ? '#112A4A' : '#ffffff' }
+          ]}
+        >
+          {/* Back Button */}
           <TouchableOpacity
-            style={[styles.addButton, { backgroundColor: isDarkMode ? "#FFF" : "#0458AB" }]}
+            onPress={() => router.back()}
+            style={[styles.backButton, { borderColor: isDarkMode ? '#FFF' : '#0458AB' }]}
+          >
+            <Text style={[styles.backIcon, { color: isDarkMode ? '#FFF' : '#0458AB' }]}>
+              ←
+            </Text>
+          </TouchableOpacity>
+
+          {/* Title centrado */}
+          <Text
+            style={[
+              styles.title,
+              {
+                color: isDarkMode ? '#FFFFFF' : '#0458AB',
+                flex: 1,
+                textAlign: 'center'
+              }
+            ]}
+          >
+            {t('trucks')}
+          </Text>
+
+          {/* Add Button */}
+          <TouchableOpacity
+            style={[
+              styles.addButton,
+              { backgroundColor: isDarkMode ? '#FFF' : '#0458AB' }
+            ]}
             onPress={() => setAddTruckVisible(true)}
           >
-            <Text style={[styles.plus, { color: isDarkMode ? "#0458AB" : "#FFF" }]}>+</Text>
+            <Text
+              style={[
+                styles.plus,
+                { color: isDarkMode ? '#0458AB' : '#FFF' }
+              ]}
+            >
+              +
+            </Text>
           </TouchableOpacity>
         </View>
 
@@ -209,15 +249,15 @@ const ListTruckModal: React.FC<ListTruckModalProps> = ({ visible, onClose }) => 
       <CreateTruckModal
         visible={addTruckVisible}
         onClose={() => setAddTruckVisible(false)}
-        onSuccess={loadTrucks} 
+        onSuccess={loadTrucks}
       />
       <UpdateTruckModal
         visible={updateTruckVisible}
         onClose={() => setUpdateTruckVisible(false)}
         truck={selectedTruck || null}
-        onSuccess={loadTrucks} 
+        onSuccess={loadTrucks}
       />
-      <Toast/>
+      <Toast />
     </Modal>
   );
 };
@@ -225,20 +265,40 @@ const ListTruckModal: React.FC<ListTruckModalProps> = ({ visible, onClose }) => 
 const styles = StyleSheet.create({
   container: { flex: 1, padding: 80 },
   header: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
     paddingBottom: 20,
     paddingTop: 30,
     borderBottomWidth: 2,
-    width: "100%",
+    width: '100%',
     paddingHorizontal: 20,
   },
+  backIcon: {
+    fontSize: 20,
+    fontWeight: 'bold',
+  },
   title: { fontSize: 20, fontWeight: "bold" },
-  addButton: { width: 40, height: 40, borderRadius: 20, alignItems: "center", justifyContent: "center" },
-  plus: { fontSize: 24, fontWeight: "bold" },
+  addButton: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  plus: {
+    fontSize: 24,
+    fontWeight: 'bold',
+  },
   buttonContainer: { flexDirection: "row", justifyContent: "center", gap: 120, marginTop: 20 },
-  backButton: { paddingVertical: 10, paddingHorizontal: 20, borderRadius: 8 },
+  backButton: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    borderWidth: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
   saveButton: { paddingVertical: 10, paddingHorizontal: 20, borderRadius: 8 },
   backButtonText: { color: "#FFF", fontWeight: "bold" },
   saveButtonText: { fontWeight: "bold" },
