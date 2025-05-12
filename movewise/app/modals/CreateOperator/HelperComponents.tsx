@@ -1,14 +1,17 @@
-import React, { useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, Platform } from 'react-native';
+import React, { useState, useRef } from 'react';
+import { Alert, View, Text, TextInput, TouchableOpacity, StyleSheet, useColorScheme, Platform } from 'react-native';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import * as ImagePicker from 'expo-image-picker';
 import { ALERT_TYPE, Toast } from 'react-native-alert-notification';
 import { FormInputProps, DateInputProps, DropdownInputProps, RadioGroupProps, ImageUploadProps, ImageInfo } from './Types';
 import { styles } from './FormStyle';
 import { useTranslation } from 'react-i18next';
+import { useActionSheet } from '@expo/react-native-action-sheet';
+import { Linking } from 'react-native';
+import ActionSheet from 'react-native-actionsheet';
 // Componentes de Ayuda
-export function FormInput({ label, value, onChangeText, keyboardType = 'default', error, required = false }: FormInputProps): JSX.Element {
-  
+function FormInput({ label, value, onChangeText, keyboardType = 'default', error, required = false }: FormInputProps): JSX.Element {
+
   return (
     <View style={styles.inputContainer}>
       <Text style={styles.inputLabel}>{label}</Text>
@@ -25,7 +28,7 @@ export function FormInput({ label, value, onChangeText, keyboardType = 'default'
   );
 }
 
-export function DateInput({ label, value, onChangeDate, error, required = false }: DateInputProps): JSX.Element {
+function DateInput({ label, value, onChangeDate, error, required = false }: DateInputProps): JSX.Element {
   const [showDatePicker, setShowDatePicker] = useState(false);
   const { t } = useTranslation();
   const handleDateChange = (event: any, selectedDate?: Date): void => {
@@ -59,7 +62,7 @@ export function DateInput({ label, value, onChangeDate, error, required = false 
   );
 }
 
-export function DropdownInput({ label, value, onChange, options, error, required = false }: DropdownInputProps): JSX.Element {
+function DropdownInput({ label, value, onChange, options, error, required = false }: DropdownInputProps): JSX.Element {
   const [isOpen, setIsOpen] = useState(false);
   const { t } = useTranslation();
   return (
@@ -94,7 +97,7 @@ export function DropdownInput({ label, value, onChange, options, error, required
   );
 }
 
-export function RadioGroup({ label, options, selectedValue, onSelect, error, required = false }: RadioGroupProps): JSX.Element {
+function RadioGroup({ label, options, selectedValue, onSelect, error, required = false }: RadioGroupProps): JSX.Element {
   const { t } = useTranslation();
   return (
     <View style={styles.inputContainer}>
@@ -117,42 +120,52 @@ export function RadioGroup({ label, options, selectedValue, onSelect, error, req
     </View>
   );
 }
-
-export function ImageUpload({ label, image, onImageSelected, error, required = false }: ImageUploadProps): JSX.Element {
+function ImageUpload({ label, image, onImageSelected, error, required = false }: ImageUploadProps): JSX.Element {
   const { t } = useTranslation();
-  const pickImage = async (): Promise<void> => {
+  const actionSheetRef = useRef<ActionSheet>(null);
+  
+  const handleImagePicker = async (type: 'camera' | 'gallery') => {
     try {
-      // Solicitar permiso para acceder a la galería
-      const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
-
-      if (status !== 'granted') {
-        Toast.show({
-          type: ALERT_TYPE.DANGER,
-          title: t("permission_denied"),
-          textBody: t("allow_photo_access"),
-          autoClose: 3000,
+      let result: ImagePicker.ImagePickerResult;
+      
+      if (type === 'camera') {
+        const { status } = await ImagePicker.requestCameraPermissionsAsync();
+        if (status !== 'granted') {
+          Alert.alert(t('permission_required'), t('camera_permission_needed'));
+          return;
+        }
+        result = await ImagePicker.launchCameraAsync({
+          mediaTypes: ImagePicker.MediaTypeOptions.Images,
+          allowsEditing: true,
+          aspect: [4, 3],
+          quality: 0.8,
         });
-        return;
+      } else {
+        const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+        if (status !== 'granted') {
+          Toast.show({
+            type: ALERT_TYPE.DANGER,
+            title: t("permission_denied"),
+            textBody: t("allow_photo_access"),
+            autoClose: 3000,
+          });
+          return;
+        }
+        result = await ImagePicker.launchImageLibraryAsync({
+          mediaTypes: ImagePicker.MediaTypeOptions.Images,
+          allowsEditing: true,
+          aspect: [4, 3],
+          quality: 0.8,
+        });
       }
-      // Abrir selector de imágenes
-      const result = await ImagePicker.launchImageLibraryAsync({
-        mediaTypes: ['images'],
-        allowsEditing: true,
-        aspect: [4, 3],
-        quality: 0.8,
-      });
 
       if (!result.canceled && result.assets && result.assets.length > 0) {
         const selectedAsset = result.assets[0];
-
-        // Información mejorada de la imagen
         const imageInfo: ImageInfo = {
           uri: selectedAsset.uri,
           name: `image_${Date.now()}.jpg`,
           type: 'image/jpeg',
         };
-
-        console.log(`Imagen seleccionada para ${label}:`, imageInfo);
         onImageSelected(imageInfo);
       }
     } catch (error) {
@@ -166,12 +179,22 @@ export function ImageUpload({ label, image, onImageSelected, error, required = f
     }
   };
 
+  const showActionSheet = () => {
+    actionSheetRef.current?.show();
+  };
+
+  const options = [
+    t('take_photo'),
+    t('choose_from_gallery'),
+    t('cancel'),
+  ];
+
   return (
     <View style={styles.inputContainer}>
       <Text style={styles.inputLabel}>{label}</Text>
       <TouchableOpacity
         style={[styles.imageUploadContainer, error ? styles.inputError : null]}
-        onPress={pickImage}
+        onPress={showActionSheet}
       >
         {image ? (
           <View style={styles.imagePreview}>
@@ -185,6 +208,26 @@ export function ImageUpload({ label, image, onImageSelected, error, required = f
         )}
       </TouchableOpacity>
       {error && <Text style={styles.errorText}>{error}</Text>}
+
+      <ActionSheet
+        ref={actionSheetRef}
+        title={t('select_option')}
+        options={options}
+        cancelButtonIndex={2}
+        destructiveButtonIndex={2}
+        onPress={(index) => {
+          if (index === 0) handleImagePicker('camera');
+          if (index === 1) handleImagePicker('gallery');
+        }}
+      />
     </View>
   );
 }
+
+export {
+  FormInput,
+  DateInput,
+  DropdownInput,
+  RadioGroup,
+  ImageUpload
+};

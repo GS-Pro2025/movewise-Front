@@ -1,5 +1,19 @@
 import apiClient from './apiClient';
 import { ModelCompany } from '@/models/ModelCompany';
+
+
+export const CustomerFactory = async () => {
+  try {
+    const response = await apiClient.get('/customer-factories/');
+    console.log(`lista de factorias ${response.data}`);
+    
+    return response.data;
+  } catch (error) {
+    console.error('Error to get customer factory:', error);
+    throw error;
+  }
+};
+
 export const ListCompanies = async () => {
   try {
     const response = await apiClient.get('/companies');

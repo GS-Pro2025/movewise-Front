@@ -132,3 +132,4 @@ export interface CreateOperatorProps {
     onClose: () => void;
   }
   
+export default {};

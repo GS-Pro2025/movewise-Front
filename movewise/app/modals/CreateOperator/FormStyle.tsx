@@ -1,10 +1,35 @@
 import { StyleSheet } from 'react-native';
 
 export const styles = StyleSheet.create({
+  // En tu FormStyle.ts
+  // En FormStyle.ts
+disabled: {
+  opacity: 0.6,
+  backgroundColor: '#f3f4f6',
+},
+imageText: {
+  color: '#0458AB',
+  fontWeight: '500',
+},
+filename: {
+  color: '#64748b',
+  fontSize: 12,
+},
+placeholder: {
+  color: '#94a3b8',
+},
+  disabledContainer: {
+    opacity: 0.6,
+    backgroundColor: '#f3f4f6',
+  },
+  imageSelectedText: {
+    color: '#0458AB',
+    fontWeight: '500',
+  },
   container: {
     flex: 1,
     backgroundColor: '#f5f5f5',
-    height:'100%'
+    height: '100%'
   },
   header: {
     padding: 16,
@@ -57,7 +82,7 @@ export const styles = StyleSheet.create({
   },
   stepForm: {
     flex: 1,
-    margin:15,
+    margin: 15,
   },
   sectionTitle: {
     fontSize: 16,

@@ -1,4 +1,4 @@
-package com.julian_munoz.movewise
+package com.movewise.movewise
 import expo.modules.splashscreen.SplashScreenManager
 
 import android.os.Build

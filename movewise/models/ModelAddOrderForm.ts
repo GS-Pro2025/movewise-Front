@@ -15,6 +15,6 @@ export interface AddOrderForm {
   person: Person;
   weight: string;
   job: string;
-  company?: string;
+  customer_factory?: string;
   dispatch_ticket?: string | null;
 }
