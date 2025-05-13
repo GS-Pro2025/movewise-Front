@@ -454,5 +454,8 @@
 
     "vans": "vans" ,
     "Truck_26": "truck_26" ,
-    "Trailer": "trailer" 
+    "Trailer": "trailer",
+
+    "logout_error": "Error de cierre de sesión",
+    "logout_success": "Cierre de sesión exitoso"
 }

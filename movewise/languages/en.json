@@ -431,6 +431,9 @@
 
     "vans": "Vans" ,
     "Truck_26": "Truck 26" ,
-    "Trailer": "Trailer" 
+    "Trailer": "Trailer",
+
+    "logout_error": "Logout error",
+    "logout_success": "Logout successful"
     
 }    

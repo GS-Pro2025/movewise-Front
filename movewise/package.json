@@ -18,7 +18,7 @@
     "@babel/runtime": "^7.27.0",
     "@expo/vector-icons": "^14.0.2",
     "@hookform/resolvers": "^5.0.1",
-    "@react-native-async-storage/async-storage": "^2.1.2",
+    "@react-native-async-storage/async-storage": "1.23.1",
     "@react-native-community/datetimepicker": "8.2.0",
     "@react-native-picker/picker": "^2.11.0",
     "@react-navigation/bottom-tabs": "^7.2.0",
@@ -35,6 +35,7 @@
     "expo-image-picker": "~16.0.6",
     "expo-linking": "~7.0.5",
     "expo-localization": "~16.0.1",
+    "expo-modules-core": "~2.2.3",
     "expo-router": "^4.0.20",
     "expo-splash-screen": "~0.29.22",
     "expo-status-bar": "~2.0.1",
@@ -66,7 +67,7 @@
     "react-native-vector-icons": "^10.2.0",
     "react-native-web": "~0.19.13",
     "react-native-webview": "^13.12.5",
-    "expo-modules-core": "~2.2.3"
+    "undefined": "\\"
   },
   "devDependencies": {
     "@babel/core": "^7.25.2",
