@@ -18,6 +18,9 @@ import { useTranslation } from "react-i18next";
 import TruckModal from "./TruckModal"; // Importar TruckModal
 import Toast from "react-native-toast-message";
 import { deleteAssign } from "@/hooks/api/DeleteAssign";
+import { useRouter } from "expo-router"; // Importar hook de router
+import { Ionicons } from '@expo/vector-icons'; // Importar ícono de flecha
+
 interface Operator {
   id_operator: number;
   name: string;
@@ -47,6 +50,7 @@ interface OperatorModalProps {
 
 
 const OperatorModal: React.FC<OperatorModalProps> = ({ visible, onClose, orderKey, onSave }) => {
+  const router = useRouter();
   const { t } = useTranslation();
   const [operators, setOperators] = useState<Operator[]>([]);
   const [assignedOperators, setAssignedOperators] = useState<AssignedOperator[]>([]);
@@ -140,7 +144,7 @@ const OperatorModal: React.FC<OperatorModalProps> = ({ visible, onClose, orderKe
         } else if (response.status === 400) {
           const errorMessages = responseData.data
             .map((e: { operator_id?: number; index?: number; message?: string; errors?: any }) =>
-               `${t("operator")} ${e.operator_id || `#${(e.index ?? -1) + 1}`}: ${e.message || JSON.stringify(e.errors)}`)
+              `${t("operator")} ${e.operator_id || `#${(e.index ?? -1) + 1}`}: ${e.message || JSON.stringify(e.errors)}`)
             .join('\n');
 
           Toast.show({
@@ -305,7 +309,18 @@ const OperatorModal: React.FC<OperatorModalProps> = ({ visible, onClose, orderKe
     <Modal animationType="slide" visible={visible} onRequestClose={onClose}>
       <View style={{ flex: 1, backgroundColor: "#A1C6EA" }}>
         <View style={[styles.header, { backgroundColor: isDarkMode ? "#112A4A" : "#ffffff" }]}>
-          <Text style={[styles.title, { color: isDarkMode ? "#FFFFFF" : "#0458AB" }]}>{t("operators")}</Text>
+          <TouchableOpacity onPress={() => router.push('/modals/OrderModal')} style={styles.backButton}>
+            <Ionicons
+              name="arrow-back"
+              size={24}
+              color={isDarkMode ? "#FFFFFF" : "#0458AB"}
+            />
+          </TouchableOpacity>
+
+          <Text style={[styles.title, { color: isDarkMode ? "#FFFFFF" : "#0458AB" }]}>
+            {t("operators")}
+          </Text>
+
           <TouchableOpacity
             style={[styles.addButton, { backgroundColor: isDarkMode ? "#FFF" : "#0458AB" }]}
             onPress={() => setAddOperatorVisible(true)}
@@ -342,10 +357,10 @@ const OperatorModal: React.FC<OperatorModalProps> = ({ visible, onClose, orderKe
           </View>
         </ScrollView>
         {operators.length > 0 && (
-            <TouchableOpacity style={styles.saveButton} onPress={handleSave}>
-              <Text style={styles.saveButtonText}>{t("save_button")}</Text>
-            </TouchableOpacity>
-          )}
+          <TouchableOpacity style={styles.saveButton} onPress={handleSave}>
+            <Text style={styles.saveButtonText}>{t("save_button")}</Text>
+          </TouchableOpacity>
+        )}
       </View>
 
       <AddOperatorForm
@@ -381,8 +396,8 @@ const OperatorModal: React.FC<OperatorModalProps> = ({ visible, onClose, orderKe
           </View>
         </View>
       </Modal>
-        {/* TruckModal */}
-        <TruckModal
+      {/* TruckModal */}
+      <TruckModal
         visible={truckModalVisible}
         onClose={() => setTruckModalVisible(false)}
         orderKey={orderKey}
@@ -406,6 +421,9 @@ const styles = StyleSheet.create({
     borderBottomWidth: 2,
     width: "100%",
     paddingHorizontal: 20,
+  },
+  backButton: {
+    padding: 8,
   },
   title: {
     fontSize: 20,

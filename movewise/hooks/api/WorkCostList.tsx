@@ -10,7 +10,7 @@ interface WorkCost{
 
 export const ListWorkCost = async (page: number, page_size: number): Promise<{ data: WorkCost[]; next: string | null }> => {
     try {
-        const response = await apiClient.get(`/workcost/?page=${page}&page_size=${page_size}`);
+        const response = await apiClient.get(`/workcost/?page=${page}&page_size=${page_size}/`);
         return {
         data: response.data.results,
         next: response.data.next, // URL for the next page
