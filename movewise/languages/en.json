@@ -401,7 +401,12 @@
     "dispatch_ticket_size_exceeded": "Dispatch ticket size exceeded, max 5mb",
     "rented": "Rented",
     "owned": "Owned",
-    "vans": "Vans",
-    "Truck_26": "Truck 26",
-    "Trailer": "Trailer"
-}
+
+    "vans": "Vans" ,
+    "Truck_26": "Truck 26" ,
+    "Trailer": "Trailer",
+
+    "logout_error": "Logout error",
+    "logout_success": "Logout successful"
+    
+}    

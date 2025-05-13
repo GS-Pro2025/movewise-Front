@@ -6,13 +6,15 @@ import {
   TouchableOpacity,
   StyleSheet,
   ImageBackground,
+  Keyboard,
+  TouchableWithoutFeedback,
 } from "react-native";
 import { useRouter } from "expo-router";
 import Toast from "react-native-toast-message";
 import { useTranslation } from "react-i18next";
 
 const RegisterCompany = () => {
-  const { t } = useTranslation(); // Import the translation function
+  const { t } = useTranslation();
   const [license, setLicense] = useState("");
   const [companyName, setCompanyName] = useState("");
   const [address, setAddress] = useState("");
@@ -57,12 +59,11 @@ const RegisterCompany = () => {
 
     setErrors(newErrors);
 
-    return Object.keys(newErrors).length === 0; // Retorna true si no hay errores
+    return Object.keys(newErrors).length === 0;
   };
 
   const handleRegister = () => {
     if (validateFields()) {
-      // Crear el objeto de la compañía
       const companyData = {
         license: license,
         company_name: companyName,
@@ -76,7 +77,6 @@ const RegisterCompany = () => {
         text2: t("redirecting_to_user_registration"),
       });
 
-      // Navegar a RegistryUser y pasar el objeto de la compañía
       router.push({
         pathname: "/modals/RegistryUser",
         params: {
@@ -96,7 +96,7 @@ const RegisterCompany = () => {
   };
 
   return (
-    <>
+    <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
       <ImageBackground
         source={require("../assets/images/bg_login.jpg")}
         style={styles.background}
@@ -147,10 +147,7 @@ const RegisterCompany = () => {
           </TouchableOpacity>
         </View>
       </ImageBackground>
-
-      {/* Componente Toast */}
-      <Toast />
-    </>
+    </TouchableWithoutFeedback>
   );
 };
 
@@ -182,7 +179,7 @@ const styles = StyleSheet.create({
     color: "#000",
   },
   inputError: {
-    borderColor: "#FF0000", // Highlight input with error in red
+    borderColor: "#FF0000",
   },
   errorText: {
     color: "#FF0000",

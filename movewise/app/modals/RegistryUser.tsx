@@ -8,6 +8,8 @@ import {
   ScrollView,
   ImageBackground,
   Modal,
+  TouchableWithoutFeedback,
+  Keyboard
 } from "react-native";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import Toast from "react-native-toast-message";
@@ -260,218 +262,220 @@ const RegistryUser = () => {
     fetchStates();
   }, []);
   return (
-    <ImageBackground
-      source={require("../../assets/images/bg_login.jpg")}
-      style={styles.background}
-      resizeMode="cover"
-    >
-      <ScrollView contentContainerStyle={styles.container}>
-        <Text style={styles.title}>{t("register_user_admin", { companyName: companyData?.name })}</Text>
-  
-        {/* Sección de credenciales */}
-        <View style={styles.separator} />
-        <View style={styles.section}>
-          <Text style={styles.textUserFields}>{t("user_admin_credentials")}</Text>
-          {errors.email && <Text style={styles.errorText}>{errors.email}</Text>}
-          <TextInput
-            style={[styles.input, errors.email && styles.inputError]}
-            placeholder={t("email_placeholder")}
-            placeholderTextColor="#888"
-            value={email}
-            onChangeText={setEmail}
-            keyboardType="email-address"
-            autoCapitalize="none"
-          />
-          {errors.userName && <Text style={styles.errorText}>{errors.userName}</Text>}
-          <TextInput
-            style={[styles.input, errors.userName && styles.inputError]}
-            placeholder={t("username_placeholder")}
-            placeholderTextColor="#888"
-            value={userName}
-            onChangeText={setUserName}
-          />
-          {errors.password && <Text style={styles.errorText}>{errors.password}</Text>}
-          <TextInput
-            style={[styles.input, errors.password && styles.inputError]}
-            placeholder={t("password_placeholder")}
-            placeholderTextColor="#888"
-            value={password}
-            onChangeText={setPassword}
-            secureTextEntry
-          />
-        </View>
-        <View style={styles.separator} />
-        {/* Resto de campos */}
-        {errors.firstName && <Text style={styles.errorText}>{errors.firstName}</Text>}
-        <View style={styles.section}>
-          <TextInput
-            style={[styles.input, errors.firstName && styles.inputError]}
-            placeholder={t("first_name_placeholder")}
-            placeholderTextColor="#888"
-            value={firstName}
-            onChangeText={setFirstName}
-          />
-  
-          {errors.lastName && <Text style={styles.errorText}>{errors.lastName}</Text>}
-          <TextInput
-            style={[styles.input, errors.lastName && styles.inputError]}
-            placeholder={t("last_name_placeholder")}
-            placeholderTextColor="#888"
-            value={lastName}
-            onChangeText={setLastName}
-          />
-  
-          {/* Fecha de nacimiento */}
-          {errors.birthDate && <Text style={styles.errorText}>{errors.birthDate}</Text>}
-          <View style={{ zIndex: 1000, marginTop: 16 }}>
-            <TouchableOpacity
-              onPress={() => setDatePickerVisibility(true)}
-              style={[styles.input, { flexDirection: "row", justifyContent: "space-between" }]}
-            >
-              <Text style={{ color: birthDate ? "#000" : "#9ca3af" }}>
-                {birthDate ? birthDate : t("birthdate_placeholder")}
-              </Text>
-              <MaterialIcons name="calendar-today" size={20} color="#9ca3af" />
-            </TouchableOpacity>
-            <DateTimePickerModal
-              isVisible={isDatePickerVisible}
-              mode="date"
-              onConfirm={(selectedDate) => {
-                setDatePickerVisibility(false);
-                setBirthDate(selectedDate.toISOString().split("T")[0]);
+    <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+      <ImageBackground
+        source={require("../../assets/images/bg_login.jpg")}
+        style={styles.background}
+        resizeMode="cover"
+      >
+        <ScrollView contentContainerStyle={styles.container}>
+          <Text style={styles.title}>{t("register_user_admin", { companyName: companyData?.name })}</Text>
+    
+          {/* Sección de credenciales */}
+          <View style={styles.separator} />
+          <View style={styles.section}>
+            <Text style={styles.textUserFields}>{t("user_admin_credentials")}</Text>
+            {errors.email && <Text style={styles.errorText}>{errors.email}</Text>}
+            <TextInput
+              style={[styles.input, errors.email && styles.inputError]}
+              placeholder={t("email_placeholder")}
+              placeholderTextColor="#888"
+              value={email}
+              onChangeText={setEmail}
+              keyboardType="email-address"
+              autoCapitalize="none"
+            />
+            {errors.userName && <Text style={styles.errorText}>{errors.userName}</Text>}
+            <TextInput
+              style={[styles.input, errors.userName && styles.inputError]}
+              placeholder={t("username_placeholder")}
+              placeholderTextColor="#888"
+              value={userName}
+              onChangeText={setUserName}
+            />
+            {errors.password && <Text style={styles.errorText}>{errors.password}</Text>}
+            <TextInput
+              style={[styles.input, errors.password && styles.inputError]}
+              placeholder={t("password_placeholder")}
+              placeholderTextColor="#888"
+              value={password}
+              onChangeText={setPassword}
+              secureTextEntry
+            />
+          </View>
+          <View style={styles.separator} />
+          {/* Resto de campos */}
+          {errors.firstName && <Text style={styles.errorText}>{errors.firstName}</Text>}
+          <View style={styles.section}>
+            <TextInput
+              style={[styles.input, errors.firstName && styles.inputError]}
+              placeholder={t("first_name_placeholder")}
+              placeholderTextColor="#888"
+              value={firstName}
+              onChangeText={setFirstName}
+            />
+    
+            {errors.lastName && <Text style={styles.errorText}>{errors.lastName}</Text>}
+            <TextInput
+              style={[styles.input, errors.lastName && styles.inputError]}
+              placeholder={t("last_name_placeholder")}
+              placeholderTextColor="#888"
+              value={lastName}
+              onChangeText={setLastName}
+            />
+    
+            {/* Fecha de nacimiento */}
+            {errors.birthDate && <Text style={styles.errorText}>{errors.birthDate}</Text>}
+            <View style={{ zIndex: 1000, marginTop: 16 }}>
+              <TouchableOpacity
+                onPress={() => setDatePickerVisibility(true)}
+                style={[styles.input, { flexDirection: "row", justifyContent: "space-between" }]}
+              >
+                <Text style={{ color: birthDate ? "#000" : "#9ca3af" }}>
+                  {birthDate ? birthDate : t("birthdate_placeholder")}
+                </Text>
+                <MaterialIcons name="calendar-today" size={20} color="#9ca3af" />
+              </TouchableOpacity>
+              <DateTimePickerModal
+                isVisible={isDatePickerVisible}
+                mode="date"
+                onConfirm={(selectedDate) => {
+                  setDatePickerVisibility(false);
+                  setBirthDate(selectedDate.toISOString().split("T")[0]);
+                }}
+                onCancel={() => setDatePickerVisibility(false)}
+              />
+            </View>
+    
+            {errors.idType && <Text style={styles.errorText}>{errors.idType}</Text>}
+            <DropDownPicker
+              open={openIdType}
+              value={idType}
+              items={[
+                { label: t("id_type_drivers_license"), value: "DL" },
+                { label: t("id_type_state_id"), value: "SI" },
+                { label: t("id_type_green_card"), value: "GC" },
+                { label: t("id_type_passport"), value: "PA" },
+              ]}
+              setOpen={setOpenIdType}
+              setValue={setIdType}
+              setItems={() => {}}
+              placeholder={t("select_id_type_placeholder")}
+              placeholderStyle={{ color: "#9ca3af" }}
+              style={[styles.input, { borderColor: errors.idType ? "red" : "#0458AB" }]}
+              listMode="MODAL"
+              modalTitle={t("select_id_type_modal_title")}
+              modalProps={{
+                animationType: "slide",
               }}
-              onCancel={() => setDatePickerVisibility(false)}
+              searchable={true}
+              searchPlaceholder={t("search_placeholder")}
+              searchPlaceholderTextColor="#9ca3af"
+              onChangeSearchText={(text) => setSearchTerm(text)}
+              scrollViewProps={{
+                nestedScrollEnabled: true,
+              }}
             />
-          </View>
-  
-          {errors.idType && <Text style={styles.errorText}>{errors.idType}</Text>}
-          <DropDownPicker
-            open={openIdType}
-            value={idType}
-            items={[
-              { label: t("id_type_drivers_license"), value: "DL" },
-              { label: t("id_type_state_id"), value: "SI" },
-              { label: t("id_type_green_card"), value: "GC" },
-              { label: t("id_type_passport"), value: "PA" },
-            ]}
-            setOpen={setOpenIdType}
-            setValue={setIdType}
-            setItems={() => {}}
-            placeholder={t("select_id_type_placeholder")}
-            placeholderStyle={{ color: "#9ca3af" }}
-            style={[styles.input, { borderColor: errors.idType ? "red" : "#0458AB" }]}
-            listMode="MODAL"
-            modalTitle={t("select_id_type_modal_title")}
-            modalProps={{
-              animationType: "slide",
-            }}
-            searchable={true}
-            searchPlaceholder={t("search_placeholder")}
-            searchPlaceholderTextColor="#9ca3af"
-            onChangeSearchText={(text) => setSearchTerm(text)}
-            scrollViewProps={{
-              nestedScrollEnabled: true,
-            }}
-          />
-  
-          {errors.idNumber && <Text style={styles.errorText}>{errors.idNumber}</Text>}
-          <TextInput
-            style={[styles.input, errors.idNumber && styles.inputError]}
-            placeholder={t("id_number_placeholder")}
-            placeholderTextColor="#888"
-            value={idNumber}
-            keyboardType="numeric"
-            onChangeText={setIdNumber}
-          />
-  
-          {errors.state && <Text style={styles.errorText}>{errors.state}</Text>}
-          <DropDownPicker
-            open={openState}
-            value={state}
-            items={stateList.map((state) => ({
-              label: state.label,
-              value: state.value,
-            }))}
-            setOpen={setOpenState}
-            setValue={setState}
-            setItems={() => {}}
-            placeholder={t("select_state_placeholder")}
-            placeholderStyle={{ color: "#9ca3af" }}
-            style={[styles.input, { borderColor: errors.state ? "red" : "#0458AB" }]}
-            dropDownContainerStyle={{ maxHeight: 200 }}
-            listMode="MODAL"
-            modalTitle={t("select_state_modal_title")}
-            modalProps={{
-              animationType: "slide",
-            }}
-            searchable={true}
-            searchPlaceholder={t("search_placeholder")}
-            searchPlaceholderTextColor="#9ca3af"
-            searchTextInputProps={{
-              onChangeText: (text) => setSearchTerm(text),
-            }}
-            scrollViewProps={{
-              nestedScrollEnabled: true,
-            }}
-          />
-  
-          {errors.city && <Text style={styles.errorText}>{errors.city}</Text>}
-          <TextInput
-            style={[styles.input, errors.city && styles.inputError]}
-            placeholder={t("city_placeholder")}
-            placeholderTextColor="#888"
-            value={city}
-            onChangeText={setCity}
-          />
-  
-          {errors.adressPerson && <Text style={styles.errorText}>{errors.adressPerson}</Text>}
-          <TextInput
-            style={[styles.input, errors.adressPerson && styles.inputError]}
-            placeholder={t("address_placeholder")}
-            placeholderTextColor="#888"
-            value={adressPerson}
-            onChangeText={setAddress}
-          />
-  
-          {errors.phone && <Text style={styles.errorText}>{errors.phone}</Text>}
-          <TextInput
-            style={[styles.input, errors.phone && styles.inputError]}
-            placeholder={t("phone_placeholder")}
-            placeholderTextColor="#888"
-            keyboardType="numeric"
-            value={phone}
-            onChangeText={setPhone}
-          />
-            {/* Checkbox de Términos y Condiciones */}
-            <View style={styles.termsContainer}>
-            <CheckBox
-              isChecked={isChecked}
-              onClick={() => setIsChecked(!isChecked)}
-              checkBoxColor="#002366"
+    
+            {errors.idNumber && <Text style={styles.errorText}>{errors.idNumber}</Text>}
+            <TextInput
+              style={[styles.input, errors.idNumber && styles.inputError]}
+              placeholder={t("id_number_placeholder")}
+              placeholderTextColor="#888"
+              value={idNumber}
+              keyboardType="numeric"
+              onChangeText={setIdNumber}
             />
-            <Text style={styles.termsText}>
-              {t("accept_terms")}{" "}
-              <Text style={styles.link} onPress={handleDownloadTerms}>
-                {t("terms_and_conditions")}
+    
+            {errors.state && <Text style={styles.errorText}>{errors.state}</Text>}
+            <DropDownPicker
+              open={openState}
+              value={state}
+              items={stateList.map((state) => ({
+                label: state.label,
+                value: state.value,
+              }))}
+              setOpen={setOpenState}
+              setValue={setState}
+              setItems={() => {}}
+              placeholder={t("select_state_placeholder")}
+              placeholderStyle={{ color: "#9ca3af" }}
+              style={[styles.input, { borderColor: errors.state ? "red" : "#0458AB" }]}
+              dropDownContainerStyle={{ maxHeight: 200 }}
+              listMode="MODAL"
+              modalTitle={t("select_state_modal_title")}
+              modalProps={{
+                animationType: "slide",
+              }}
+              searchable={true}
+              searchPlaceholder={t("search_placeholder")}
+              searchPlaceholderTextColor="#9ca3af"
+              searchTextInputProps={{
+                onChangeText: (text) => setSearchTerm(text),
+              }}
+              scrollViewProps={{
+                nestedScrollEnabled: true,
+              }}
+            />
+    
+            {errors.city && <Text style={styles.errorText}>{errors.city}</Text>}
+            <TextInput
+              style={[styles.input, errors.city && styles.inputError]}
+              placeholder={t("city_placeholder")}
+              placeholderTextColor="#888"
+              value={city}
+              onChangeText={setCity}
+            />
+    
+            {errors.adressPerson && <Text style={styles.errorText}>{errors.adressPerson}</Text>}
+            <TextInput
+              style={[styles.input, errors.adressPerson && styles.inputError]}
+              placeholder={t("address_placeholder")}
+              placeholderTextColor="#888"
+              value={adressPerson}
+              onChangeText={setAddress}
+            />
+    
+            {errors.phone && <Text style={styles.errorText}>{errors.phone}</Text>}
+            <TextInput
+              style={[styles.input, errors.phone && styles.inputError]}
+              placeholder={t("phone_placeholder")}
+              placeholderTextColor="#888"
+              keyboardType="numeric"
+              value={phone}
+              onChangeText={setPhone}
+            />
+              {/* Checkbox de Términos y Condiciones */}
+              <View style={styles.termsContainer}>
+              <CheckBox
+                isChecked={isChecked}
+                onClick={() => setIsChecked(!isChecked)}
+                checkBoxColor="#002366"
+              />
+              <Text style={styles.termsText}>
+                {t("accept_terms")}{" "}
+                <Text style={styles.link} onPress={handleDownloadTerms}>
+                  {t("terms_and_conditions")}
+                </Text>
               </Text>
-            </Text>
+            </View>
+            <TouchableOpacity style={styles.button} onPress={handleRegister}>
+              <Text style={styles.buttonText}>{t("register_user_button")}</Text>
+            </TouchableOpacity>
           </View>
-          <TouchableOpacity style={styles.button} onPress={handleRegister}>
-            <Text style={styles.buttonText}>{t("register_user_button")}</Text>
-          </TouchableOpacity>
-        </View>
-      </ScrollView>
-      {/* Modal con WebView */}
-      <Modal visible={termsVisible} onRequestClose={() => setTermsVisible(false)}>
-        <View style={{ flex: 1 }}>
-          <TouchableOpacity onPress={() => setTermsVisible(false)} style={styles.closeButton}>
-            <Text style={styles.closeButtonText}>Cerrar</Text>
-          </TouchableOpacity>
-          <WebView source={{ html: termsHtml }} />
-        </View>
-      </Modal>
-      <Toast />
-    </ImageBackground>
+        </ScrollView>
+        {/* Modal con WebView */}
+        <Modal visible={termsVisible} onRequestClose={() => setTermsVisible(false)}>
+          <View style={{ flex: 1 }}>
+            <TouchableOpacity onPress={() => setTermsVisible(false)} style={styles.closeButton}>
+              <Text style={styles.closeButtonText}>Cerrar</Text>
+            </TouchableOpacity>
+            <WebView source={{ html: termsHtml }} />
+          </View>
+        </Modal>
+        <Toast />
+      </ImageBackground>
+    </TouchableWithoutFeedback>
   );
 };
 

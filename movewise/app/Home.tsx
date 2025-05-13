@@ -48,6 +48,21 @@ const Home: React.FC = () => {
     loadAdmin();
   }, []);
 
+const handleLogout = async () => {
+  try {
+    await AsyncStorage.clear(); // Limpia todos los datos almacenados
+    Toast.show({
+      type: "success",
+      text1: t("logout_success"),
+    });
+    router.replace("/Login"); // Redirige al login
+  } catch (error) {
+    Toast.show({
+      type: "error",
+      text1: t("logout_error"),
+    });
+  }
+};
   return (
     <SafeAreaView
       style={[styles.container, { backgroundColor: isDarkMode ? colors.third : colors.lightBackground }]}
@@ -75,7 +90,7 @@ const Home: React.FC = () => {
               </Text>
             </View>
           </View>
-          <TouchableOpacity style={styles.shareButton}>
+          <TouchableOpacity style={styles.shareButton} onPress={handleLogout}>
             <Image
               source={require("../assets/images/exit.png")}
               style={[styles.userIcono, { tintColor: isDarkMode ? colors.darkText : colors.primary }]}
