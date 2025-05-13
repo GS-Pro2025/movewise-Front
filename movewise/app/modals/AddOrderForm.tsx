@@ -10,7 +10,7 @@ import { MaterialIcons } from '@expo/vector-icons';
 import { KeyboardAvoidingView, Platform } from 'react-native';
 import { job } from '@/models/ModelJob';
 import { ListJobs } from '@/hooks/api/JobClient';
-import { ListCompanies } from '@/hooks/api/CompanyClient';
+import { CustomerFactory, ListCompanies } from '@/hooks/api/CompanyClient';
 import { ListStates } from '@/hooks/api/StatesClient';
 import OperatorModal from './OperatorModal';
 import { useTranslation } from 'react-i18next';
@@ -83,7 +83,7 @@ export default function AddOrderModal({ visible, onClose }: AddOrderModalProps) 
       },
       weight: weight,
       job: job || "",
-      company: company || "",
+      customer_factory: company || "",
       dispatch_ticket: base64Image, // Enviar la imagen codificada en Base64
     };
 
@@ -130,7 +130,7 @@ export default function AddOrderModal({ visible, onClose }: AddOrderModalProps) 
 
   const fetchCompanies = async () => {
     try {
-      const companies = await ListCompanies();
+      const companies = await CustomerFactory();
       setCompanyList(Array.isArray(companies) ? companies : []);
     } catch (error) {
       console.error(t('error_fetching_companies'), error);
@@ -280,7 +280,8 @@ export default function AddOrderModal({ visible, onClose }: AddOrderModalProps) 
   });
 
   return (
-    <Modal visible={visible} transparent animationType="slide">
+    <Modal visible={visible} transparent animationType="slide" statusBarTranslucent={true}
+  hardwareAccelerated={true}>
       <SafeAreaView style={{ flex: 1, backgroundColor: colorScheme === 'dark' ? '#112A4A' : '#FFFFFF' }}>
         <KeyboardAvoidingView behavior={Platform.OS === "ios" ? "padding" : "height"} style={{ flex: 1 }}>
           <ScrollView
@@ -342,7 +343,7 @@ export default function AddOrderModal({ visible, onClose }: AddOrderModalProps) 
                 <DropDownPicker
                   open={openCompany}
                   value={company || ""}
-                  items={Array.isArray(companyList) ? companyList.map((companyItem) => ({ label: companyItem.name, value: companyItem.id })) : []}
+                  items={Array.isArray(companyList) ? companyList.map((companyItem) => ({ label: companyItem.name, value: companyItem.id_factory })) : []}
                   setOpen={setOpenCompany}
                   setValue={setCompany}
                   placeholder={t('select_company')}
@@ -446,7 +447,7 @@ export default function AddOrderModal({ visible, onClose }: AddOrderModalProps) 
                   onImageSelected={(image) => handleChange("dispatch_ticket", image)} // Usar handleChange para actualizar el estado
                   error={errors.dispatchTicket}
                   required={true}
-                />
+                />  
               </View>
               <View style={styles.buttonContainer}>
                 <TouchableOpacity style={styles.buttonCancel} onPress={onClose}>

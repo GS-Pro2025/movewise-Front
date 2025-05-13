@@ -7,12 +7,11 @@ import DateTimePickerModal from "react-native-modal-datetime-picker";
 import { KeyboardAwareView } from '../../components/KeyboardAwareView';
 import { ListJobs } from '@/hooks/api/JobClient';
 import { ListStates } from '@/hooks/api/StatesClient';
-import { ListCompanies } from '@/hooks/api/CompanyClient';
+import { CustomerFactory } from '@/hooks/api/CompanyClient';
 import UpdateOrderFormApi from '@/hooks/api/UpdateOrderFormApi';
 import { AntDesign } from '@expo/vector-icons';
 import OperatorModal from './OperatorModal';
 import { useTranslation } from 'react-i18next';
-
 interface Job {
   id: number;
   name: string;
@@ -40,10 +39,13 @@ interface UpdateOrderModalProps {
     income?: string;
     status?: string;
     payStatus?: number;
+    customer_factory?: number;
   };
 }
 
 export default function UpdateOrderModal({ visible = true, onClose, orderData }: UpdateOrderModalProps) {
+  const [customerFactoryId, setCustomerFactoryId] = useState<number | null>(null);
+  const [companyList, setCompanyList] = useState<any[]>([]);
   const { t } = useTranslation();
   if (!orderData) {
     console.error("orderData is null or undefined");
@@ -57,6 +59,8 @@ export default function UpdateOrderModal({ visible = true, onClose, orderData }:
   const { updateOrder, isLoading } = UpdateOrderFormApi();
   const colorScheme = useColorScheme();
   const isDarkMode = colorScheme === "dark";
+  const [openCompany, setOpenCompany] = useState(false);
+  const [company, setCompany] = useState<string | null>(null);
 
   // State variables for form fields
   const [state, setState] = useState<string | null>(null);
@@ -78,7 +82,9 @@ export default function UpdateOrderModal({ visible = true, onClose, orderData }:
     fetchJobs();
     fetchCompanies();
     fetchStates();
+    setCustomerFactoryId(orderData.customer_factory || null);
   }, []);
+
 
   const fetchJobs = async () => {
     try {
@@ -100,10 +106,10 @@ export default function UpdateOrderModal({ visible = true, onClose, orderData }:
 
   const fetchCompanies = async () => {
     try {
-      const companies = await ListCompanies();
+      const companies = await CustomerFactory();
       // Assuming you have a companyList to set
     } catch (error) {
-      console.error('Error fetching companies:', error);
+      console.error('Error fetching customerFactory:', error);
     }
   };
 
@@ -133,67 +139,69 @@ export default function UpdateOrderModal({ visible = true, onClose, orderData }:
     if (!customerLastName) newErrors.customerLastName = t("customer_last_name_required");
     if (!weight) newErrors.weight = t("weight_required");
     if (!jobId) newErrors.job = t("job_required");
-
+    if (!company) newErrors.company = t("company_required");
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
-};
+  };
+  console.log(`ID DE CUSTOMER FACTORY : ${company}`);
+  
+  const handleSaveOperators = () => {
+    console.log("Operators saved successfully! and closing the modal.");
+    setAddOperatorVisible(false); // Cerrar OperatorModal
+    if (onClose) {
+      onClose(); // Cerrar UpdateOrder
+    }
+  };
 
-const handleSaveOperators = () => {
-  console.log("Operators saved successfully! and closing the modal.");
-  setAddOperatorVisible(false); // Cerrar OperatorModal
-  if (onClose) {
-    onClose(); // Cerrar UpdateOrder
-  }
-};
-
-const handleUpdate = async () => {
+  const handleUpdate = async () => {
     if (!validateFields()) return; // Validar campos antes de actualizar
 
     try {
-        const updateData = {
-            key_ref: keyReference,
-            date: date || '',
-            distance: orderData.distance || 0,
-            expense: orderData.expense || "0",
-            income: orderData.income || "0",
-            weight: weight,
-            status: orderData.status || t("in_progress"),
-            payStatus: orderData.payStatus || 0,
-            state_usa: state || '',
-            person: {
-                email: email || '',
-                first_name: customerFirstName,
-                last_name: customerLastName
-            },
-            job: jobId || 0
-        };
+      const updateData = {
+        key_ref: keyReference,
+        date: date || '',
+        distance: orderData.distance || 0,
+        expense: orderData.expense || "0",
+        income: orderData.income || "0",
+        weight: weight,
+        status: orderData.status || t("in_progress"),
+        payStatus: orderData.payStatus || 0,
+        state_usa: state || '',
+        customer_factory: company || 0,
+        person: {
+          email: email || '',
+          first_name: customerFirstName,
+          last_name: customerLastName
+        },
+        job: jobId || 0
+      };
 
-        const result = await updateOrder(orderData.key || '', updateData);
+      const result = await updateOrder(orderData.key || '', updateData);
 
-        if (result.success) {
-            Alert.alert(t("success"), t("order_updated_successfully"));
-            if (onClose) {
-                onClose();
-            } else {
-                router.back();
-            }
+      if (result.success) {
+        Alert.alert(t("success"), t("order_updated_successfully"));
+        if (onClose) {
+          onClose();
         } else {
-            Alert.alert(t("error"), result.errorMessage);
+          router.back();
         }
+      } else {
+        Alert.alert(t("error"), result.errorMessage);
+      }
     } catch (err: any) {
-        console.error(t("error_in_handle_update"), err);
-        Alert.alert(t("error"), `${t("unexpected_error_occurred")}: ${err.message}`);
+      console.error(t("error_in_handle_update"), err);
+      Alert.alert(t("error"), `${t("unexpected_error_occurred")}: ${err.message}`);
     }
-};
+  };
 
-// Función para manejar el cierre del modal
-const handleClose = () => {
+  // Función para manejar el cierre del modal
+  const handleClose = () => {
     if (onClose) {
-        onClose(); // Llamar a onClose si se proporciona
+      onClose(); // Llamar a onClose si se proporciona
     } else {
-        router.back(); // Navegar hacia atrás si no hay onClose
+      router.back(); // Navegar hacia atrás si no hay onClose
     }
-};
+  };
   return (
     <Modal
       visible={visible}
@@ -213,7 +221,7 @@ const handleClose = () => {
               <Text style={[styles.headerText, { color: '#FFFFFF' }]}>{t("edit_order")}</Text>
               <Text style={{ color: '#FFFFFF' }}>{t("current_order")}: {orderData.key}</Text>
             </View>
-  
+
             <ThemedView style={{ padding: 16, flex: 1, backgroundColor: isDarkMode ? '#112A4A' : '#FFFFFF' }}>
               <View style={styles.inputContainer}>
                 <Text style={[styles.label, { color: isDarkMode ? '#FFFFFF' : '#0458AB' }]}>
@@ -249,11 +257,28 @@ const handleClose = () => {
                 />
                 {errors.state && <Text style={styles.errorText}>{errors.state}</Text>}
               </View>
-  
+
               <View style={styles.inputContainer}>
                 <Text style={[styles.label, { color: isDarkMode ? '#FFFFFF' : '#0458AB' }]}>
                   {t("date")} <Text style={{ color: '#FF0000' }}>(*)</Text>
                 </Text>
+                <View style={styles.inputContainer}>
+                  <Text style={[styles.label, { color: isDarkMode ? '#FFFFFF' : '#0458AB' }]}>
+                    {t("company_customer")} <Text style={{ color: '#FF0000' }}>(*)</Text>
+                  </Text>
+                  <DropDownPicker
+                    open={openCompany}
+                    value={company || ""}
+                    items={Array.isArray(companyList) ? companyList.map((companyItem) => ({ label: companyItem.name, value: companyItem.id_factory })) : []}
+                    setOpen={setOpenCompany}
+                    setValue={setCompany}
+                    placeholder={t('select_company')}
+                    placeholderStyle={{ color: '#9ca3af' }}
+                    style={[styles.input, { borderColor: errors.company ? "red" : "#0458AB" }]}
+                    listMode="SCROLLVIEW"
+                    dropDownContainerStyle={{ maxHeight: 200 }}
+                  />
+                </View>
                 <TouchableOpacity
                   style={[styles.dateButton, { backgroundColor: isDarkMode ? '#1E3A5F' : '#FFFFFF' }]}
                   onPress={() => setDatePickerVisibility(true)}
@@ -274,9 +299,9 @@ const handleClose = () => {
                 />
                 {errors.date && <Text style={styles.errorText}>{errors.date}</Text>}
               </View>
-  
+
               <Text style={[styles.sectionTitle, { color: isDarkMode ? '#A1C6EA' : '#0458AB' }]}>{t("general_data")}</Text>
-  
+
               <View style={styles.inputContainer}>
                 <Text style={[styles.label, { color: isDarkMode ? '#FFFFFF' : '#0458AB' }]}>
                   {t("key_reference")} <Text style={{ color: '#FF0000' }}>(*)</Text>
@@ -293,7 +318,7 @@ const handleClose = () => {
                 />
                 {errors.keyReference && <Text style={styles.errorText}>{errors.keyReference}</Text>}
               </View>
-  
+
               <View style={styles.inputContainer}>
                 {(errors.customerFirstName || errors.customerLastName) && (
                   <Text style={styles.errorText}>{t("customer_name_required")}</Text>
@@ -319,7 +344,7 @@ const handleClose = () => {
                   <Text style={styles.errorText}>{t("customer_name_required")}</Text>
                 )}
               </View>
-  
+
               <View style={styles.inputContainer}>
                 <Text style={[styles.label, { color: isDarkMode ? '#FFFFFF' : '#0458AB' }]}>
                   {t("weight")} (kg) <Text style={{ color: '#FF0000' }}>(*)</Text>
@@ -337,7 +362,7 @@ const handleClose = () => {
                 />
                 {errors.weight && <Text style={styles.errorText}>{errors.weight}</Text>}
               </View>
-  
+
               <View style={styles.inputContainer}>
                 <Text style={[styles.label, { color: isDarkMode ? '#FFFFFF' : '#0458AB' }]}>
                   {t("job")} <Text style={{ color: '#FF0000' }}>(*)</Text>
@@ -362,7 +387,7 @@ const handleClose = () => {
                 />
                 {errors.job && <Text style={styles.errorText}>{errors.job}</Text>}
               </View>
-  
+
               <TouchableOpacity style={styles.operatorsButton} onPress={() => setAddOperatorVisible(true)}>
                 <Text style={[styles.operatorsButtonText, { color: isDarkMode ? '#A1C6EA' : '#0458AB' }]}>{t("edit_operators")}</Text>
               </TouchableOpacity>
