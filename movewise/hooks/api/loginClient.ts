@@ -1,4 +1,4 @@
-import apiClient from "./apiClient"; // ajusta el path si es necesario
+import apiClient from "./apiClient";
 
 export interface LoginRequest {
   email: string;

@@ -1,6 +1,17 @@
-npx expo install expo-checkbox
-npm install react-native-toast-message
-npm install @react-native-picker/picker
-npm install react-native-get-random-values
-npm install date-fns
-npm install --save-dev @types/date-fns
+expo-checkbox
+react-native-toast-message
+i18next react-i18next
+expo-localization
+react-native-check-box
+@types/react-native-check-box
+expo-file-system
+expo-web-browser
+react-native-webview
+react-native-vector-icons
+
+@react-native-async-storage/async-storage@1.23.1 
+@react-native-picker/picker@2.9.0 
+expo@~52.0.46 
+expo-router@~4.0.21 
+expo-splash-screen@~0.29.24 
+react-native@0.76.9

@@ -80,24 +80,33 @@ const CreateTruckScreen = ({ visible, onClose, onSuccess }: CreateTruckScreenPro
       await CreateTruck(newTruck);
       setLoading(false);
       setShowConfirmModal(false);
-      onClose();
+      setShowConfirmModal(false);
+        setTimeout(() => {
+          onClose();
+        }, 300); // Da tiempo a que el modal se cierre con animación
+
       //For refreshing the list
       if (onSuccess) {
         onSuccess();
       }
-      Toast.show({
-        type: "success",
-        text1: t("truck_created"),
-        text2: t("truck_added"),
-      });
+      setTimeout(() => {
+        Toast.show({
+          type: "success",
+          text1: t("truck_created"),
+          text2: t("truck_added"),
+        });
+      }, 500);
+
     } catch (error) {
       console.error(t("truck_creation_error"), error);
       setLoading(false);
-      Toast.show({
-        type: "error",
-        text1: t("error"),
-        text2: t("truck_creation_error"),
-      });
+      setTimeout(() => {
+        Toast.show({
+          type: "error",
+          text1: t("error"),
+          text2: t("truck_creation_error"),
+        });
+      }, 500);
     }
   };
 

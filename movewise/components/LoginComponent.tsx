@@ -135,7 +135,7 @@ const LoginComponent: React.FC = () => {
         text1: t("login_success"),
         text2: `${t("welcome")} ${operatorData.first_name ?? t("user")}`,
       });
-      router.push("/Home");
+      router.replace("/Home");
 
     } catch (error: any) {
       console.error("❌ Error en login admin:", error);
