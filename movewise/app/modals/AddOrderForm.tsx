@@ -52,12 +52,12 @@ export default function AddOrderModal({ visible, onClose }: AddOrderModalProps) 
 
   const handleSaveOperators = () => {
     console.log("Operators saved successfully! Closing both modals.");
-    setOperatorModalVisible(false); // Cerrar OperatorModal
+    setOperatorModalVisible(false); // close OperatorModal
     if (onClose) {
-      onClose(); // Cerrar AddOrderForm
+      onClose(); // close AddOrderForm
     }
   };
-  // Actualizar el modelo para asegurar que customer_factory sea de tipo number
+  // Update the model to ensure that customer_factory is of type number
   interface AddOrderFormModel extends Omit<AddOrderForm, 'customer_factory'> {
     customer_factory: number;
   }
@@ -65,7 +65,7 @@ export default function AddOrderModal({ visible, onClose }: AddOrderModalProps) 
   const handleSave = async () => {
     if (!validateFields()) return;
 
-    // Validar campos obligatorios manualmente
+    //validate fields
     if (
       !customerName?.trim() ||
       !customerLastName?.trim() ||

@@ -65,9 +65,8 @@ const OrderModal: React.FC<OrderModalProps> = ({ visible, onClose }) => {
     setRefreshing(true);
     try {
       const response = await getOrders();
-      // console.log("API Response:", response);
 
-      // Asegurarse de que response es un array antes de usar filter/map
+      // Make sure response is an array before using filter/map
       if (!Array.isArray(response)) {
         console.error("La respuesta no es un array:", response);
         setOrders([]);
@@ -105,7 +104,7 @@ const OrderModal: React.FC<OrderModalProps> = ({ visible, onClose }) => {
     } catch (error) {
       console.error(t("error_loading_orders"), error);
       Alert.alert(t("error"), t("could_not_load_orders"));
-      setOrders([]); // Asegurar que orders es un array vacío en caso de error
+      setOrders([]); 
     } finally {
       setLoading(false);
       setRefreshing(false);

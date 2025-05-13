@@ -15,11 +15,11 @@ import AddOperatorForm from "./AddOperatorForm";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { url } from "../../hooks/api/apiClient";
 import { useTranslation } from "react-i18next";
-import TruckModal from "./TruckModal"; // Importar TruckModal
+import TruckModal from "./TruckModal"; 
 import Toast from "react-native-toast-message";
 import { deleteAssign } from "@/hooks/api/DeleteAssign";
-import { useRouter } from "expo-router"; // Importar hook de router
-import { Ionicons } from '@expo/vector-icons'; // Importar ícono de flecha
+import { useRouter } from "expo-router"; 
+import { Ionicons } from '@expo/vector-icons'; 
 
 interface Operator {
   id_operator: number;
