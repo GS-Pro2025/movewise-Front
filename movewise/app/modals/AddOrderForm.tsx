@@ -16,7 +16,7 @@ import OperatorModal from './OperatorModal';
 import { useTranslation } from 'react-i18next';
 import Toast from 'react-native-toast-message';
 import { ImageUpload } from './CreateOperator/HelperComponents';
-import { ImageInfo } from 'expo-image-picker';
+import { ImageInfo } from 'expo-image-picker'
 import * as FileSystem from 'expo-file-system';
 interface AddOrderModalProps {
   visible: boolean;
@@ -31,7 +31,7 @@ export default function AddOrderModal({ visible, onClose }: AddOrderModalProps) 
   const [openJob, setOpenJob] = useState(false);
   const [job, setJob] = useState<string | null>(null);
   const [openCompany, setOpenCompany] = useState(false);
-  const [company, setCompany] = useState<string | null>(null);
+  const [company, setCompany] = useState<number | null>(null);
   const [date, setDate] = useState<string | null>(null);
   const [isDatePickerVisible, setDatePickerVisibility] = useState(false);
   const [keyReference, setKeyReference] = useState('');
@@ -52,40 +52,71 @@ export default function AddOrderModal({ visible, onClose }: AddOrderModalProps) 
 
   const handleSaveOperators = () => {
     console.log("Operators saved successfully! Closing both modals.");
-    setOperatorModalVisible(false); // Cerrar OperatorModal
+    setOperatorModalVisible(false); // close OperatorModal
     if (onClose) {
-      onClose(); // Cerrar AddOrderForm
+      onClose(); // close AddOrderForm
     }
   };
+  // Update the model to ensure that customer_factory is of type number
+  interface AddOrderFormModel extends Omit<AddOrderForm, 'customer_factory'> {
+    customer_factory: number;
+  }
+
   const handleSave = async () => {
     if (!validateFields()) return;
+
+    //validate fields
+    if (
+      !customerName?.trim() ||
+      !customerLastName?.trim() ||
+      !address?.trim() ||
+      !email?.trim() ||
+      !cellPhone?.trim() ||
+      !date ||
+      !state ||
+      !weight ||
+      !keyReference ||
+      !company
+    ) {
+      Toast.show({
+        text1: t('error'),
+        text2: t('please_fill_all_required_fields'), // Asegúrate de tener esta traducción
+        type: 'error',
+      });
+      return;
+    }
 
     let base64Image = null;
     if (dispatchTicket) {
       base64Image = await FileSystem.readAsStringAsync(dispatchTicket.uri, {
         encoding: FileSystem.EncodingType.Base64,
       });
-      base64Image = `data:image/jpeg;base64,${base64Image}`; 
+      base64Image = `data:image/jpeg;base64,${base64Image}`;
     }
 
-    const orderData: AddOrderForm = {
+    const customerFactoryValue = typeof company === 'number' ? company :
+      company ? parseInt(company) : 0;
+
+    const orderData: AddOrderFormModel = {
       status: "Pending",
-      date: date || "",
+      date,
       key_ref: keyReference,
-      address: address,
-      state_usa: state || "",
-      phone: cellPhone,
+      address,
+      state_usa: state,
       person: {
         first_name: customerName,
         last_name: customerLastName,
-        address: address,
-        email: email,
+        address,
+        email,
+        phone: cellPhone,
       },
-      weight: weight,
+      weight,
       job: job || "",
-      customer_factory: company || "",
-      dispatch_ticket: base64Image, // Enviar la imagen codificada en Base64
+      customer_factory: customerFactoryValue,
+      dispatch_ticket: base64Image,
     };
+
+    console.log("Order data to be sent:", JSON.stringify(orderData));
 
     try {
       const savedOrder = await saveOrder(orderData);
@@ -96,13 +127,17 @@ export default function AddOrderModal({ visible, onClose }: AddOrderModalProps) 
           text2: t('order_saved_successfully'),
           type: 'success',
         });
-        //Wait 0.9 seconds before showing the modal
         await new Promise(resolve => setTimeout(resolve, 900));
-        setSavedOrderKey(savedOrder.key); // Store the key from savedOrder
-        setOperatorModalVisible(true); // Show OperatorModal instead of pushing to it
+        setSavedOrderKey(savedOrder.key);
+        setOperatorModalVisible(true);
       }
     } catch (error) {
       console.error(t('error_saving_order'), error);
+      Toast.show({
+        text1: t('error'),
+        text2: t('error_saving_order'),
+        type: 'error',
+      });
     }
   };
 
@@ -131,7 +166,14 @@ export default function AddOrderModal({ visible, onClose }: AddOrderModalProps) 
   const fetchCompanies = async () => {
     try {
       const companies = await CustomerFactory();
-      setCompanyList(Array.isArray(companies) ? companies : []);
+      // console.log("Companies raw response:", companies);
+
+      const companyArray = Array.isArray(companies) ? companies : [];
+      setCompanyList(companyArray);
+
+      // console.log("Companies fetched:", companyArray);
+      // console.log("First company value:", companyArray[0]?.id_factory);
+      // console.log("First company type:", typeof companyArray[0]?.id_factory);
     } catch (error) {
       console.error(t('error_fetching_companies'), error);
       setCompanyList([]);
@@ -143,6 +185,11 @@ export default function AddOrderModal({ visible, onClose }: AddOrderModalProps) 
     fetchCompanies();
     fetchStates();
   }, []);
+
+  // Registrar cambios en el valor de company
+  useEffect(() => {
+    console.log("Company value changed:", company);
+  }, [company]);
 
   const handleChange = (field: string, value: any): void => {
     console.log(`AddOrderForm - Changing ${field} to:`, value);
@@ -159,6 +206,7 @@ export default function AddOrderModal({ visible, onClose }: AddOrderModalProps) 
       setErrors(prevErrors => ({ ...prevErrors, [field]: '' }));
     }
   };
+
   const validateFields = async () => {
     let newErrors: { [key: string]: string } = {};
     if (!state) newErrors.state = t('state_required');
@@ -281,7 +329,7 @@ export default function AddOrderModal({ visible, onClose }: AddOrderModalProps) 
 
   return (
     <Modal visible={visible} transparent animationType="slide" statusBarTranslucent={true}
-  hardwareAccelerated={true}>
+      hardwareAccelerated={true}>
       <SafeAreaView style={{ flex: 1, backgroundColor: colorScheme === 'dark' ? '#112A4A' : '#FFFFFF' }}>
         <KeyboardAvoidingView behavior={Platform.OS === "ios" ? "padding" : "height"} style={{ flex: 1 }}>
           <ScrollView
@@ -323,7 +371,7 @@ export default function AddOrderModal({ visible, onClose }: AddOrderModalProps) 
               <View style={{ zIndex: 2000, marginTop: 16 }}>
                 <Text style={styles.text}>{t('date')} <Text style={styles.required}>(*)</Text></Text>
                 <TouchableOpacity onPress={() => setDatePickerVisibility(true)} style={[styles.input, { flexDirection: "row", alignItems: "center", justifyContent: "space-between" }]}>
-                  <Text style={{ color: date ? "#000" : "#9ca3af" }}>{date ? date : t('select_date')}</Text>
+                  <Text style={{ color: date ? (colorScheme === 'dark' ? "#ffffff" : "#000") : "#9ca3af" }}>{date ? date : t('select_date')}</Text>
                   <MaterialIcons name="calendar-today" size={20} color="#9ca3af" />
                 </TouchableOpacity>
 
@@ -342,10 +390,25 @@ export default function AddOrderModal({ visible, onClose }: AddOrderModalProps) 
                 <Text style={styles.text}>{t('company_customer')} <Text style={styles.required}>(*)</Text></Text>
                 <DropDownPicker
                   open={openCompany}
-                  value={company || ""}
-                  items={Array.isArray(companyList) ? companyList.map((companyItem) => ({ label: companyItem.name, value: companyItem.id_factory })) : []}
+                  value={company}
+                  items={companyList.map((companyItem) => ({
+                    label: companyItem.name,
+                    value: companyItem.id_factory,
+                    key: companyItem.id_factory.toString()
+                  }))}
                   setOpen={setOpenCompany}
-                  setValue={setCompany}
+                  setValue={(val) => {
+                    console.log("Company selected:", val);
+                    console.log("Company type:", typeof val);
+                    // Asegurar que sea numérico
+                    if (val !== null) {
+                      const numericVal = typeof val === 'string' ? parseInt(val, 10) : val;
+                      setCompany(numericVal);
+                      console.log("Company set to:", numericVal, "type:", typeof numericVal);
+                    } else {
+                      setCompany(null);
+                    }
+                  }}
                   placeholder={t('select_company')}
                   placeholderStyle={{ color: '#9ca3af' }}
                   style={[styles.input, { borderColor: errors.company ? "red" : "#0458AB" }]}
@@ -360,22 +423,25 @@ export default function AddOrderModal({ visible, onClose }: AddOrderModalProps) 
                 label: t('key_reference'),
                 state: keyReference,
                 setState: setKeyReference,
-                keyboardType: "default"
+                keyboardType: "default",
+                errorKey: "keyReference"
               }, {
                 label: t('customer_name'),
                 state: customerName,
                 setState: setCustomerName,
-                keyboardType: "default"
+                keyboardType: "default",
+                errorKey: "customerName"
               }, {
                 label: t('customer_last_name'),
                 state: customerLastName,
                 setState: setCustomerLastName,
-                keyboardType: "default"
+                keyboardType: "default",
+                errorKey: "customerLastName"
               }].map((input, index) => (
                 <View key={index}>
                   <Text style={styles.text}>{input.label} <Text style={styles.required}>(*)</Text></Text>
                   <TextInput
-                    style={styles.input}
+                    style={[styles.input, { borderColor: errors[input.errorKey] ? "red" : (colorScheme === 'dark' ? '#64748b' : '#0458AB') }]}
                     placeholder={input.label}
                     placeholderTextColor="#9ca3af"
                     value={input.state}
@@ -417,10 +483,17 @@ export default function AddOrderModal({ visible, onClose }: AddOrderModalProps) 
                 <Text style={styles.text}>{t('job')} <Text style={styles.required}>(*)</Text></Text>
                 <DropDownPicker
                   open={openJob}
-                  value={job || ""}
-                  items={jobList.map((jobItem) => ({ label: jobItem.name, value: jobItem.id.toString() }))}
+                  value={job}
+                  items={jobList.map((jobItem) => ({
+                    label: jobItem.name,
+                    value: jobItem.id.toString(),
+                    key: jobItem.id.toString()
+                  }))}
                   setOpen={setOpenJob}
-                  setValue={setJob}
+                  setValue={(val) => {
+                    console.log("Job selected:", val);
+                    setJob(val);
+                  }}
                   placeholder={t('select_job')}
                   placeholderStyle={{ color: '#9ca3af' }}
                   style={[styles.input, { borderColor: errors.job ? "red" : "#0458AB" }]}
@@ -431,7 +504,7 @@ export default function AddOrderModal({ visible, onClose }: AddOrderModalProps) 
 
               <Text style={styles.text}>{t('weight')} (kg) <Text style={styles.required}>(*)</Text></Text>
               <TextInput
-                style={styles.input}
+                style={[styles.input, { borderColor: errors.weight ? "red" : (colorScheme === 'dark' ? '#64748b' : '#0458AB') }]}
                 placeholder={t('weight')}
                 placeholderTextColor="#9ca3af"
                 value={weight}
@@ -447,7 +520,7 @@ export default function AddOrderModal({ visible, onClose }: AddOrderModalProps) 
                   onImageSelected={(image) => handleChange("dispatch_ticket", image)} // Usar handleChange para actualizar el estado
                   error={errors.dispatchTicket}
                   required={true}
-                />  
+                />
               </View>
               <View style={styles.buttonContainer}>
                 <TouchableOpacity style={styles.buttonCancel} onPress={onClose}>

@@ -22,6 +22,8 @@ interface OrderPerson {
   email: string;
   first_name: string | null;
   last_name: string | null;
+  address: string | null;
+  phone: number | null;
 }
 
 interface Order {
@@ -37,6 +39,8 @@ interface Order {
   state_usa: string;
   person: OrderPerson;
   job: number;
+  dispatch_ticket: string | null;
+  customer_factory: number | 0;
 }
 
 const OrderModal: React.FC<OrderModalProps> = ({ visible, onClose }) => {
@@ -61,9 +65,8 @@ const OrderModal: React.FC<OrderModalProps> = ({ visible, onClose }) => {
     setRefreshing(true);
     try {
       const response = await getOrders();
-      console.log("API Response:", response);
 
-      // Asegurarse de que response es un array antes de usar filter/map
+      // Make sure response is an array before using filter/map
       if (!Array.isArray(response)) {
         console.error("La respuesta no es un array:", response);
         setOrders([]);
@@ -89,21 +92,25 @@ const OrderModal: React.FC<OrderModalProps> = ({ visible, onClose }) => {
           email: order.person?.email || '',
           first_name: order.person?.first_name || null,
           last_name: order.person?.last_name || null,
+          phone: order.person?.phone || null,
+          address: order.person?.address || null,
         },
         job: order.job,
+        dispatch_ticket: order.dispatch_ticket,
+        customer_factory: order.customer_factory,
       }));
 
       setOrders(mappedOrders);
     } catch (error) {
       console.error(t("error_loading_orders"), error);
       Alert.alert(t("error"), t("could_not_load_orders"));
-      setOrders([]); // Asegurar que orders es un array vacío en caso de error
+      setOrders([]); 
     } finally {
       setLoading(false);
       setRefreshing(false);
     }
   }, []);
-  
+
   useEffect(() => {
     loadOrders();
   }, [visible, loadOrders]);
@@ -403,7 +410,33 @@ const OrderModal: React.FC<OrderModalProps> = ({ visible, onClose }) => {
       </SafeAreaView>
       {/* Aquí controlamos la visibilidad de los modales AddOrderForm y UpdateOrder */}
       <AddOrderForm visible={addOrderVisible} onClose={() => setAddOrderVisible(false)} />
-      <UpdateOrder visible={updateOrderVisible} onClose={() => setUpdateOrderVisible(false)} orderData={selectedOrder || {}} />
+      {/* <UpdateOrder visible={updateOrderVisible} onClose={() => setUpdateOrderVisible(false)} orderData={selectedOrder || {}} /> */}
+      <UpdateOrder
+        visible={updateOrderVisible}
+        onClose={() => setUpdateOrderVisible(false)}
+        orderData={{
+          key: selectedOrder?.key || '',
+          state_usa: selectedOrder?.state_usa || '',
+          date: selectedOrder?.date || null,
+          key_ref: selectedOrder?.key_ref || '',
+          person: {
+            first_name: selectedOrder?.person?.first_name || '',
+            last_name: selectedOrder?.person?.last_name || '',
+            email: selectedOrder?.person?.email || '',
+            phone: selectedOrder?.person?.phone || 0,
+            address: selectedOrder?.person?.address || '',
+          },
+          job: selectedOrder?.job,
+          weight: selectedOrder?.weight || '',
+          distance: selectedOrder?.distance || 0,
+          expense: selectedOrder?.expense || '',
+          income: selectedOrder?.income || '',
+          status: selectedOrder?.status,
+          payStatus: selectedOrder?.payStatus || 0,
+          customer_factory: selectedOrder?.customer_factory,
+          dispatch_ticket: selectedOrder?.dispatch_ticket || '',
+        }}
+      />
       <Toast />
     </Modal>
   );
