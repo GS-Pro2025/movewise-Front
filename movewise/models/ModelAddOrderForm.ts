@@ -10,7 +10,6 @@ export interface AddOrderForm {
   status: string;
   date: string;
   key_ref: string;
-  address: string;
   state_usa: string;
   person: Person;
   weight: string;
