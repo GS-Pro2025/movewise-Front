@@ -15,11 +15,11 @@ import AddOperatorForm from "./AddOperatorForm";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { url } from "../../hooks/api/apiClient";
 import { useTranslation } from "react-i18next";
-import TruckModal from "./TruckModal"; 
+import TruckModal from "./TruckModal";
 import Toast from "react-native-toast-message";
 import { deleteAssign } from "@/hooks/api/DeleteAssign";
-import { useRouter } from "expo-router"; 
-import { Ionicons } from '@expo/vector-icons'; 
+import { useRouter } from "expo-router";
+import { Ionicons } from '@expo/vector-icons';
 
 interface Operator {
   id_operator: number;
@@ -309,7 +309,7 @@ const OperatorModal: React.FC<OperatorModalProps> = ({ visible, onClose, orderKe
     <Modal animationType="slide" visible={visible} onRequestClose={onClose}>
       <View style={{ flex: 1, backgroundColor: "#A1C6EA" }}>
         <View style={[styles.header, { backgroundColor: isDarkMode ? "#112A4A" : "#ffffff" }]}>
-          <TouchableOpacity onPress={() => router.push('/modals/OrderModal')} style={styles.backButton}>
+          <TouchableOpacity onPress={onClose} style={styles.backButton}>
             <Ionicons
               name="arrow-back"
               size={24}

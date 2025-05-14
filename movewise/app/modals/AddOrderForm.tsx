@@ -1,4 +1,4 @@
-import { Modal, SafeAreaView, ScrollView, View, Text, TextInput, TouchableOpacity, StyleSheet, useColorScheme } from 'react-native';
+import { ActivityIndicator, Modal, SafeAreaView, ScrollView, View, Text, TextInput, TouchableOpacity, StyleSheet, useColorScheme } from 'react-native';
 import DropDownPicker from "react-native-dropdown-picker";
 import { useState, useEffect } from 'react';
 import { ThemedView } from '../../components/ThemedView';
@@ -63,6 +63,7 @@ export default function AddOrderModal({ visible, onClose }: AddOrderModalProps) 
   }
 
   const handleSave = async () => {
+    if (isLoading) return;
     if (!validateFields()) return;
 
     //validate fields
@@ -105,8 +106,8 @@ export default function AddOrderModal({ visible, onClose }: AddOrderModalProps) 
       person: {
         first_name: customerName,
         last_name: customerLastName,
-        address:address,
-        email:email,
+        address: address,
+        email: email,
         phone: cellPhone,
       },
       weight,
@@ -525,8 +526,21 @@ export default function AddOrderModal({ visible, onClose }: AddOrderModalProps) 
                 <TouchableOpacity style={styles.buttonCancel} onPress={onClose}>
                   <Text style={styles.buttonTextCancel}>{t('cancel')}</Text>
                 </TouchableOpacity>
-                <TouchableOpacity style={styles.buttonSave} onPress={handleSave}>
-                  <Text style={styles.buttonTextSave}>{t('save')}</Text>
+                <TouchableOpacity
+                  style={[
+                    styles.buttonSave,
+                    isLoading && { opacity: 0.7 }
+                  ]}
+                  onPress={handleSave}
+                  disabled={isLoading}
+                >
+                  {isLoading ? (
+                    <ActivityIndicator
+                      color={colorScheme === 'dark' ? '#0458AB' : '#FFFFFF'}
+                    />
+                  ) : (
+                    <Text style={styles.buttonTextSave}>{t('save')}</Text>
+                  )}
                 </TouchableOpacity>
               </View>
             </ThemedView>
