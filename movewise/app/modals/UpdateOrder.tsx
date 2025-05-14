@@ -94,7 +94,7 @@ export default function UpdateOrderModal({ visible = true, onClose, orderData }:
 
       setCompany(customerFactoryValue);
       setState(orderData.state_usa || null);
-      
+
       setDate(orderData.date || '');
       setKeyReference(orderData.key_ref || '');
       setCustomerFirstName(orderData.person?.first_name || '');
@@ -216,35 +216,31 @@ export default function UpdateOrderModal({ visible = true, onClose, orderData }:
   const handleUpdate = async () => {
     if (!(await validateFields())) return;
 
-    let base64Image = null;
-    if (dispatchTicket) {
-      if (hasExistingDispatchTicket && dispatchTicket.uri === orderData.dispatch_ticket) {
-        // Si es la imagen original, mantener la URL tal cual
-        base64Image = dispatchTicket.uri;
-      } else if (dispatchTicket.uri.startsWith('data:')) {
-        // Si ya es base64, usarlo directamente
-        base64Image = dispatchTicket.uri;
-      } else {
-        // Convertir a base64
-        try {
-          base64Image = await FileSystem.readAsStringAsync(dispatchTicket.uri, {
-            encoding: FileSystem.EncodingType.Base64,
-          });
-          base64Image = `data:image/jpeg;base64,${base64Image}`;
-        } catch (error) {
-          console.error("Error converting image to base64:", error);
-          Toast.show({
-            type: 'error',
-            text1: t('error'),
-            text2: t('error_processing_image'),
-          });
-          return;
+    try {
+      let base64Image = undefined; // Changed from null to undefined so it is not included in the request
+
+      if (dispatchTicket) {
+        if (hasExistingDispatchTicket && dispatchTicket.uri === orderData.dispatch_ticket) {
+        } else if (dispatchTicket.uri.startsWith('data:')) {
+          base64Image = dispatchTicket.uri;
+        } else {
+          try {
+            base64Image = await FileSystem.readAsStringAsync(dispatchTicket.uri, {
+              encoding: FileSystem.EncodingType.Base64,
+            });
+            base64Image = `data:image/jpeg;base64,${base64Image}`;
+          } catch (error) {
+            console.error("Error converting image to base64:", error);
+            Toast.show({
+              type: 'error',
+              text1: t('error'),
+              text2: t('error_processing_image'),
+            });
+            return;
+          }
         }
       }
-    }
 
-    try {
-      // Asegurar que customer_factory sea un número entero
       const customerFactoryValue = typeof company === 'number' ? company :
         company ? parseInt(company, 10) : 0;
 
@@ -267,8 +263,12 @@ export default function UpdateOrderModal({ visible = true, onClose, orderData }:
           address: address,
         },
         job: jobId || 0,
-        dispatch_ticket: base64Image
+        dispatch_ticket: dispatchTicket || '',
       };
+
+      if (base64Image !== undefined) {
+        updateData.dispatch_ticket = base64Image;
+      }
 
       // console.log("Updating order with data:", JSON.stringify(updateData));
       const result = await updateOrder(orderData.key || '', updateData);
@@ -290,7 +290,6 @@ export default function UpdateOrderModal({ visible = true, onClose, orderData }:
       });
     }
   };
-
   const handleClose = () => {
     if (onClose) onClose();
     else router.back();
