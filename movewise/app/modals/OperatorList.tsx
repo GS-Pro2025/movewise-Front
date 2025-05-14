@@ -1,12 +1,14 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, FlatList, TouchableOpacity, StyleSheet, Modal, Image, ActivityIndicator, SafeAreaView } from 'react-native';
+import { View, Text, FlatList, TouchableOpacity, StyleSheet, Modal, Image, ActivityIndicator, SafeAreaView, Alert } from 'react-native';
 import { GestureHandlerRootView, Swipeable } from "react-native-gesture-handler";
 import { Ionicons } from '@expo/vector-icons';
 import { ListOperators } from '@/hooks/api/Get_listOperator';
+import { SoftDeleteOperator } from '@/hooks/api/SoftDeleteOperator'; // Import the new function
 import CreateOperator from './CreateOperator';
 import { Operator, FormData } from './CreateOperator/Types';
 import { router, useGlobalSearchParams } from 'expo-router';
 import { useTranslation } from 'react-i18next';
+
 // Interface for pagination response
 interface PaginatedResponse {
   count: number;
@@ -37,6 +39,8 @@ const OperatorList = () => {
     previous: null,
   });
   const [currentPage, setCurrentPage] = useState<number>(1);
+  // Track open swipeable to close it when needed
+  const [activeSwipeable, setActiveSwipeable] = useState<Swipeable | null>(null);
 
   useEffect(() => {
     if (!isCreating) {
@@ -51,7 +55,6 @@ const OperatorList = () => {
     }
   }, [isCreating]);
 
-
   const loadOperators = async (page = 1, reset = true) => {
     try {
       if (page === 1) {
@@ -62,8 +65,6 @@ const OperatorList = () => {
 
       // Assuming your API supports page parameter
       const response = await ListOperators(page);
-
-      // console.log("API Response:", JSON.stringify(response, null, 2));
 
       // Handle different response structures
       if (response) {
@@ -127,7 +128,7 @@ const OperatorList = () => {
     phone: op.phone ?? '',
     email: op.email ?? '',
     number_licence: op.number_licence ?? '',
-    zipcode:op.zipcode ?? '', 
+    zipcode: op.zipcode ?? '', 
     code: op.code ?? '',
     has_minors: Array.isArray(op.sons) && op.sons.length > 0,
     n_children: op.n_children ?? 0,
@@ -147,6 +148,68 @@ const OperatorList = () => {
     status: op.status ?? '',
   });
 
+  // Handler for soft delete
+  const handleSoftDelete = async (operatorId: number) => {
+    try {
+      // Close the active swipeable if any
+      if (activeSwipeable) {
+        activeSwipeable.close();
+        setActiveSwipeable(null);
+      }
+      
+      // Show confirmation dialog
+      Alert.alert(
+        t("delete_operator"),
+        t("delete_operator_confirmation"),
+        [
+          {
+            text: t("cancel"),
+            style: "cancel"
+          },
+          {
+            text: t("delete"),
+            style: "destructive",
+            onPress: async () => {
+              try {
+                // Show loading indicator or disable UI while deleting
+                setLoading(true);
+                
+                // Call the API
+                const response = await SoftDeleteOperator(operatorId);
+                
+                // Show success message
+                Alert.alert(
+                  t("success"),
+                  t("operator_deleted_successfully"),
+                  [{ text: t("ok") }]
+                );
+                
+                // Refresh the operator list
+                loadOperators();
+              } catch (error) {
+                console.error('Error deleting operator:', error);
+                Alert.alert(
+                  t("error"),
+                  t("failed_to_delete_operator"),
+                  [{ text: t("ok") }]
+                );
+              } finally {
+                setLoading(false);
+              }
+            }
+          }
+        ]
+      );
+    } catch (error) {
+      console.error('Error in delete handler:', error);
+      Alert.alert(
+        t("error"),
+        t("an_unexpected_error_occurred"),
+        [{ text: t("ok") }]
+      );
+    }
+  };
+
   const renderLeftActions = (operator: Operator) => (
     <View style={styles.swipeActions}>
       <TouchableOpacity
@@ -161,48 +224,85 @@ const OperatorList = () => {
     </View>
   );
 
+  // Add the right actions for delete functionality
+  const renderRightActions = (operator: Operator) => (
+    <View style={styles.swipeActions}>
+      <TouchableOpacity
+        style={styles.deleteButton}
+        onPress={() => {
+          if (operator.id_operator) {
+            handleSoftDelete(operator.id_operator);
+          }
+        }}
+      >
+        <Ionicons name="trash-outline" size={24} color="#fff" />
+      </TouchableOpacity>
+    </View>
+  );
+
   const handleBackPress = () => {
     if (router && router.back) {
       router.back();
     }
   };
 
-  const renderOperatorItem = ({ item }: { item: Operator }) => (
-    <GestureHandlerRootView>
-      <Swipeable renderLeftActions={() => renderLeftActions(item)}>
-        <TouchableOpacity
-          style={styles.listItem}
-          onPress={() => {
-            setSelectedOperator(item);
-            setModalVisible(true);
+  // Update renderOperatorItem to include the renderRightActions and track the active swipeable
+  const renderOperatorItem = ({ item }: { item: Operator }) => {
+    let swipeableRef: Swipeable | null = null;
+    
+    return (
+      <GestureHandlerRootView>
+        <Swipeable
+          ref={ref => {
+            swipeableRef = ref;
+          }}
+          renderLeftActions={() => renderLeftActions(item)}
+          renderRightActions={() => renderRightActions(item)}
+          onSwipeableOpen={() => {
+            // Close previously opened swipeable
+            if (activeSwipeable && activeSwipeable !== swipeableRef) {
+              activeSwipeable.close();
+            }
+            // Set the current swipeable as active
+            if (swipeableRef) {
+              setActiveSwipeable(swipeableRef);
+            }
           }}
         >
-          <View style={styles.avatarContainer}>
-            {item.photo ? (
-              <Image source={{ uri: item.photo }} style={styles.avatar} />
-            ) : (
-              <View style={[styles.avatar, styles.noAvatar]}>
-                <Text style={styles.avatarText}>
-                  {(item.first_name?.[0] || '') + (item.last_name?.[0] || '')}
-                </Text>
-              </View>
-            )}
-          </View>
-          <View style={styles.operatorInfo}>
-            <Text style={styles.operatorName}>{item.first_name} {item.last_name}</Text>
-            <Text style={styles.operatorDetail}>{item.type_id} {item.id_number}</Text>
-            <Text style={styles.operatorDetail}>
-              <Ionicons name="call-outline" size={14} color="#666" /> {item.phone}
-            </Text>
-            <View style={styles.statusContainer}>
-              <View style={[styles.statusIndicator, { backgroundColor: item.status === 'activo' ? '#4CAF50' : '#FF9800' }]} />
-              <Text style={styles.statusText}>{item.status || t("not_available")}</Text>
+          <TouchableOpacity
+            style={styles.listItem}
+            onPress={() => {
+              setSelectedOperator(item);
+              setModalVisible(true);
+            }}
+          >
+            <View style={styles.avatarContainer}>
+              {item.photo ? (
+                <Image source={{ uri: item.photo }} style={styles.avatar} />
+              ) : (
+                <View style={[styles.avatar, styles.noAvatar]}>
+                  <Text style={styles.avatarText}>
+                    {(item.first_name?.[0] || '') + (item.last_name?.[0] || '')}
+                  </Text>
+                </View>
+              )}
             </View>
-          </View>
-        </TouchableOpacity>
-      </Swipeable>
-    </GestureHandlerRootView>
-  );
+            <View style={styles.operatorInfo}>
+              <Text style={styles.operatorName}>{item.first_name} {item.last_name}</Text>
+              <Text style={styles.operatorDetail}>{item.type_id} {item.id_number}</Text>
+              <Text style={styles.operatorDetail}>
+                <Ionicons name="call-outline" size={14} color="#666" /> {item.phone}
+              </Text>
+              <View style={styles.statusContainer}>
+                <View style={[styles.statusIndicator, { backgroundColor: item.status === 'activo' ? '#4CAF50' : '#FF9800' }]} />
+                <Text style={styles.statusText}>{item.status || t("not_available")}</Text>
+              </View>
+            </View>
+          </TouchableOpacity>
+        </Swipeable>
+      </GestureHandlerRootView>
+    );
+  };
 
   const renderFooter = () => {
     if (!loadingMore) return null;
@@ -302,6 +402,7 @@ const OperatorList = () => {
     </SafeAreaView>
   );
 };
+
 
 const styles = StyleSheet.create({
   safeArea: {
@@ -502,6 +603,15 @@ const styles = StyleSheet.create({
   paginationText: {
     fontSize: 12,
     color: '#666',
+  },
+  deleteButton: {
+    backgroundColor: '#e74c3c',
+    justifyContent: 'center',
+    alignItems: 'center',
+    width: 70,
+    height: '100%',
+    borderTopRightRadius: 8,
+    borderBottomRightRadius: 8,
   },
 });
 
