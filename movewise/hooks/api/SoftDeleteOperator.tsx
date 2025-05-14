@@ -1,8 +1,8 @@
 import apiClient from "./apiClient";
 
-export const ListOperators = async (page = 1) => {
+export const SoftDeleteOperator = async (operator_id: number) => {
     try {
-        const response = await apiClient.get('/operators/?page=' + page )
+        const response = await apiClient.delete(`/operators/${operator_id}/delete/`)
         console.log(response.data)
         return response.data
     } catch (error) {
