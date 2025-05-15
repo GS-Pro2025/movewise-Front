@@ -1,7 +1,7 @@
 import { Modal, SafeAreaView, ScrollView, View, Text, TextInput, TouchableOpacity, StyleSheet, useColorScheme } from 'react-native';
 import { useState, useEffect } from 'react';
 import { ThemedView } from '../../components/ThemedView';
-import { getOperatorByNumberId } from '../../hooks/api/GetOperatorByNumberId';
+import { getOperatorByCode } from '../../hooks/api/GetOperatorByCode';
 import { MaterialIcons } from '@expo/vector-icons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { ToastAndroid, Platform } from 'react-native';
@@ -51,7 +51,7 @@ export default function AddOperatorForm({ visible, onClose, onAddOperator, order
     if (operatorId.length > 0) {
       try {
         console.log("Buscando operador con cedula:", operatorId);
-        getOperatorByNumberId(operatorId).then(data => {
+        getOperatorByCode(operatorId).then(data => {
           if (data.id_operator) {
             console.log("Datos recibidos:", data);
             Toast.show({
