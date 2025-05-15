@@ -12,7 +12,7 @@ import colors from "../Colors";
 import Toast from "react-native-toast-message";
 import { DeleteOrder } from "@/hooks/api/DeleteOrder";
 import { useTranslation } from "react-i18next";
-
+import InfoOrderModal from './InfoOrderModal';
 interface OrderModalProps {
   visible: boolean;
   onClose: () => void;
@@ -26,7 +26,7 @@ interface OrderPerson {
   phone: number | null;
 }
 
-interface Order {
+export interface Order {
   key: string;
   key_ref: string;
   date: string | null;
@@ -39,14 +39,18 @@ interface Order {
   state_usa: string;
   person: OrderPerson;
   job: number;
+  evidence: string | null;
   dispatch_ticket: string | null;
   customer_factory: number | 0;
 }
+
 
 const OrderModal: React.FC<OrderModalProps> = ({ visible, onClose }) => {
 
   const { t } = useTranslation(); // Hook para traducción
   const [addOrderVisible, setAddOrderVisible] = useState(false);
+  const [infoModalVisible, setInfoModalVisible] = useState(false);
+  const [selectedOrderInfo, setSelectedOrderInfo] = useState<Order | null>(null);
   const [updateOrderVisible, setUpdateOrderVisible] = useState(false);
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
   const [orders, setOrders] = useState<Order[]>([]);
@@ -96,6 +100,7 @@ const OrderModal: React.FC<OrderModalProps> = ({ visible, onClose }) => {
           address: order.person?.address || null,
         },
         job: order.job,
+        evidence: order.evidence || null,
         dispatch_ticket: order.dispatch_ticket,
         customer_factory: order.customer_factory,
       }));
@@ -104,7 +109,7 @@ const OrderModal: React.FC<OrderModalProps> = ({ visible, onClose }) => {
     } catch (error) {
       console.error(t("error_loading_orders"), error);
       Alert.alert(t("error"), t("could_not_load_orders"));
-      setOrders([]); 
+      setOrders([]);
     } finally {
       setLoading(false);
       setRefreshing(false);
@@ -242,7 +247,10 @@ const OrderModal: React.FC<OrderModalProps> = ({ visible, onClose }) => {
         >
           <TouchableHighlight
             underlayColor={isDarkMode ? colors.highlightDark : colors.highlightLight}
-            onPress={() => handleEditOrder(item)}
+            onPress={() => {
+              setSelectedOrderInfo(item);
+              setInfoModalVisible(true);
+            }}
           >
             <View style={[styles.orderItem, { backgroundColor: isDarkMode ? colors.third : colors.lightBackground }]}>
               <View style={styles.orderIconContainer}>
@@ -408,7 +416,12 @@ const OrderModal: React.FC<OrderModalProps> = ({ visible, onClose }) => {
         )}
         {/* End of Back and Save Buttons */}
       </SafeAreaView>
-      {/* Aquí controlamos la visibilidad de los modales AddOrderForm y UpdateOrder */}
+      {/* Aquí controlamos la visibilidad de los modales AddOrderForm, UpdateOrder -> MODAL DE INFORMACION*/}
+      <InfoOrderModal
+        visible={infoModalVisible}
+        onClose={() => setInfoModalVisible(false)}
+        order={selectedOrderInfo}
+      />
       <AddOrderForm visible={addOrderVisible} onClose={() => setAddOrderVisible(false)} />
       {/* <UpdateOrder visible={updateOrderVisible} onClose={() => setUpdateOrderVisible(false)} orderData={selectedOrder || {}} /> */}
       <UpdateOrder
