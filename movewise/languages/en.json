@@ -434,6 +434,9 @@
     "Trailer": "Trailer",
 
     "logout_error": "Logout error",
-    "logout_success": "Logout successful"
+    "logout_success": "Logout successful",
+    "option_tool":"Tools",
+    "option_job":"Jobs",
+    "option_jobs_and_tools":"Jobs and Tools"
     
 }    

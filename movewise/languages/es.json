@@ -436,5 +436,8 @@
   "owned": "Propio",
   "vans": "vans",
   "Truck_26": "truck_26",
-  "Trailer": "trailer"
+  "Trailer": "trailer",
+  "option_tool":"Herramientas",
+  "option_job":"Trabajos",
+  "option_jobs_and_tools":"Trabajos y Herramientas"
 }

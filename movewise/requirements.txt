@@ -16,3 +16,4 @@ expo-router@~4.0.21
 expo-splash-screen@~0.29.24 
 react-native@0.76.9
 @expo/react-native-action-sheet 
+react-native-svg

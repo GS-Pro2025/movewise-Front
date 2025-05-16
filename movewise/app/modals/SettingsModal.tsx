@@ -1,13 +1,15 @@
-import React from "react";
+import React, { useState } from "react";
 import { Modal, View, Text, TouchableOpacity, StyleSheet } from "react-native";
 import { useTranslation } from "react-i18next";
+import { router } from "expo-router";
 
 interface SettingsModalProps {
   visible: boolean;
   onClose: () => void;
+  onOpenJobsModal: () => void; 
 }
 
-const SettingsModal: React.FC<SettingsModalProps> = ({ visible, onClose }) => {
+const SettingsModal: React.FC<SettingsModalProps> = ({ visible, onClose, onOpenJobsModal }) => {
   const { t } = useTranslation();
 
   return (
@@ -23,15 +25,12 @@ const SettingsModal: React.FC<SettingsModalProps> = ({ visible, onClose }) => {
           {/* Opciones de configuración */}
           <TouchableOpacity
             style={styles.modalOption}
-            onPress={() => console.log("Opción 1")}
+            onPress={() => {
+              onClose();
+              onOpenJobsModal(); // <-- Llama a la función aquí
+            }}
           >
-            <Text style={styles.modalOptionText}>{t("option_1")}</Text>
-          </TouchableOpacity>
-          <TouchableOpacity
-            style={styles.modalOption}
-            onPress={() => console.log("Opción 2")}
-          >
-            <Text style={styles.modalOptionText}>{t("option_2")}</Text>
+            <Text style={styles.modalOptionText}>{t("option_jobs_and_tools")}</Text>
           </TouchableOpacity>
           <TouchableOpacity style={styles.modalOption} onPress={onClose}>
             <Text style={styles.modalOptionText}>{t("close")}</Text>
