@@ -469,5 +469,8 @@
   "company_id": "Empresa",
   "system_info": "Información del sistema",
   "account_settings": "Configuración de la cuenta",
-  "new_password": "Nueva contraseña"
+  "new_password": "Nueva contraseña",
+  "option_tool":"Herramientas",
+  "option_job":"Trabajos",
+  "option_jobs_and_tools":"Trabajos y Herramientas"
 }

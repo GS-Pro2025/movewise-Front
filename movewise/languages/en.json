@@ -435,5 +435,9 @@
     "company_id": "Company ID",
     "system_info":"System Info",
     "account_settings":"Account settings",
-    "new_password":"New Password"
-}
+    "new_password":"New Password",
+    "option_tool":"Tools",
+    "option_job":"Jobs",
+    "option_jobs_and_tools":"Jobs and Tools"
+    
+}    

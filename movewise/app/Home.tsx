@@ -11,7 +11,6 @@ import {
   ScrollView,
 } from "react-native";
 import { useRouter } from "expo-router";
-
 import colors from "./Colors";
 import Toast from "react-native-toast-message";
 import AsyncStorage from "@react-native-async-storage/async-storage";
@@ -20,6 +19,8 @@ import { GetAdminInfo } from "@/hooks/api/GetAdminByToken";
 import InfoAdminModal from "./modals/InfoAdminModal";
 import EditAdminModal from "./modals/EditAdminModal";
 import { AdminInfo } from '@/hooks/api/GetAdminByToken';
+import SettingsModal from "./modals/SettingsModal";
+import ListJobsModal from "./modals/ListJobsModal";
 
 interface Admin {
   id: number;
@@ -47,7 +48,12 @@ const Home: React.FC = () => {
   const router = useRouter();
   const theme = useColorScheme();
   const isDarkMode = theme === "dark";
+  const [isSettingsModalVisible, setSettingsModalVisible] = useState(false);
+  const [isJobsModalVisible, setJobsModalVisible] = useState(false);
 
+  const toggleSettingsModal = () => {
+    setSettingsModalVisible(!isSettingsModalVisible);
+  };
   useEffect(() => {
     // En el useEffect del componente Home
     const loadAdmin = async () => {
@@ -178,7 +184,22 @@ const Home: React.FC = () => {
                 {t("admin_id")} <Text style={{ fontSize: 14 }}>{admin?.id_number}</Text>
               </Text>
             </View>
+            <View style={[styles.userTextContainer, { maxWidth: "70%" }]}>
+              <Text
+                style={[styles.userName, { color: isDarkMode ? "#FFFFFF" : "#0458AB" }]}
+                numberOfLines={2} 
+                ellipsizeMode="tail"
+              >
+                {Admin?.first_name} {Admin?.last_name}
+              </Text>
+            </View>
           </View>
+          <TouchableOpacity style={styles.shareButton} onPress={toggleSettingsModal}>
+            <Image
+              source={require("../assets/images/settings.png")} 
+              style={[styles.userIcono, { tintColor: isDarkMode ? colors.darkText : colors.primary }]}
+            />
+          </TouchableOpacity>
           <TouchableOpacity style={styles.shareButton} onPress={handleLogout}>
             <Image
               source={require("../assets/images/exit.png")}
@@ -283,6 +304,17 @@ const Home: React.FC = () => {
           />
         </>
       )}
+    {/* Modal de configuración */}
+    <SettingsModal
+      visible={isSettingsModalVisible}
+      onClose={toggleSettingsModal}
+      onOpenJobsModal={() => setJobsModalVisible(true)}
+    />
+
+    <ListJobsModal
+      visible={isJobsModalVisible}
+      onClose={() => setJobsModalVisible(false)}
+    />
     </SafeAreaView>
   );
 };
@@ -309,13 +341,41 @@ const ActionButton: React.FC<ActionButtonProps> = ({ title, iconSource, isDarkMo
 const styles = StyleSheet.create({
   container: { flex: 1 },
   scrollContent: { flexGrow: 1, padding: 20 },
-  header: { flexDirection: "row", justifyContent: "space-between", alignItems: "center", marginTop: 20 },
-  userInfo: { flexDirection: "row", alignItems: "center" },
-  avatarContainer: { width: 40, height: 40, borderRadius: 20, overflow: "hidden" },
-  userIcono: { width: 40, height: 40 },
-  userTextContainer: { marginLeft: 10 },
-  userName: { fontSize: 18, fontWeight: "bold" },
-  shareButton: { padding: 10 },
+  header: { 
+    flexDirection: "row", 
+    justifyContent: "space-between", 
+    alignItems: "center", 
+    marginTop: 20,
+    paddingVertical: 15,
+    paddingHorizontal: 20, },
+  userInfo: { flexDirection: "row", 
+    alignItems: "center",
+    flex: 1, // Permite que userInfo ocupe el espacio restante
+  },
+  avatarContainer: { 
+    width: 40,
+    height: 40, 
+    borderRadius: 20, 
+    overflow: "hidden",
+    marginRight: 10, },
+  userIcono: {  
+    width: 30,
+    height: 30,
+    resizeMode: 'contain',
+  },
+  userTextContainer: { 
+    marginLeft: 10, 
+    maxWidth: '50%', // Ocupa la mitad del espacio del contenedor userInfo
+    justifyContent: 'center', // Centra el texto verticalmente si ocupa una sola línea 
+  },
+  userName: { 
+  fontSize: 16,
+  fontWeight: 'bold',
+  lineHeight: 20, // Ajusta el espaciado entre líneas si el nombre se divide
+  },
+  shareButton: { padding: 10,
+    marginLeft: 15,
+  },
   divider: { height: 1, backgroundColor: colors.placeholderLight, marginVertical: 10 },
   imageContainer: { alignItems: "center", marginVertical: 10 },
   userLogo: { width: 100, height: 100 },
