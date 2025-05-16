@@ -22,6 +22,7 @@ const colors = {
     highlightLight: "#e0e0e0",
     neutralGray: "#545257", // Nuevo color
     blackText: "#000000",  // Nuevo color
+    warning: "#f39c12",
   };
   
   export default colors;

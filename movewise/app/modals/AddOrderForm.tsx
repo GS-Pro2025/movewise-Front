@@ -1,4 +1,4 @@
-import { ActivityIndicator, Modal, SafeAreaView, ScrollView, View, Text, TextInput, TouchableOpacity, StyleSheet, useColorScheme } from 'react-native';
+import { ActivityIndicator, Modal, SafeAreaView, ScrollView, View, Text, TextInput, TouchableOpacity, StyleSheet, useColorScheme, Alert } from 'react-native';
 import DropDownPicker from "react-native-dropdown-picker";
 import { useState, useEffect } from 'react';
 import { ThemedView } from '../../components/ThemedView';
@@ -18,6 +18,7 @@ import Toast from 'react-native-toast-message';
 import { ImageUpload } from './CreateOperator/HelperComponents';
 import { ImageInfo } from 'expo-image-picker'
 import * as FileSystem from 'expo-file-system';
+import { DeleteOrder } from '@/hooks/api/DeleteOrder';
 interface AddOrderModalProps {
   visible: boolean;
   onClose: () => void;
@@ -47,7 +48,7 @@ export default function AddOrderModal({ visible, onClose }: AddOrderModalProps) 
   const [stateList, setStateList] = useState<any[]>([]);
   const [operatorModalVisible, setOperatorModalVisible] = useState(false); // State for OperatorModal visibility
   const [savedOrderKey, setSavedOrderKey] = useState<string | null>(null); // State to store saved order key
-  const [dispatchTicket, setDispatchTicket] = useState<ImageInfo | null>(null); // Estado para el dispatch_Ticket// Estado para el dispatch_Ticket
+  const [dispatchTicket, setDispatchTicket] = useState<ImageInfo | null>(null); // State for dispatch_Ticket
   const { saveOrder, isLoading, error } = AddOrderformApi();
 
   const handleSaveOperators = () => {
@@ -57,6 +58,52 @@ export default function AddOrderModal({ visible, onClose }: AddOrderModalProps) 
       onClose(); // close AddOrderForm
     }
   };
+  
+  // Handler for deleting an order
+  const handleDeleteOrder = (key: string) => {
+    Alert.alert(
+      t("confirm_delete"),
+      t("delete_order_confirmation"),
+      [
+        { text: t("cancel"), style: "cancel" },
+        {
+          text: t("delete"),
+          onPress: async () => {
+            try {
+              console.log(t("deleting_order"), key);
+              await DeleteOrder(key);
+              Toast.show({
+                type: "success",
+                text1: t("order_deleted"),
+                text2: t("order_deleted_successfully"),
+              });
+              // Close the modal after successful deletion
+              onClose();
+            } catch (error) {
+              console.error(t("error_deleting_order"), error);
+              Toast.show({
+                type: "error",
+                text1: t("order_not_deleted"),
+                text2: t("order_could_not_be_deleted"),
+              });
+            }
+          }
+        }
+      ]
+    );
+  };
+
+  // Handler for cancel button click
+  const handleCancel = () => {
+    // If we have created an order but not assigned operators, offer to delete it
+    if (savedOrderKey) {
+      handleDeleteOrder(savedOrderKey);
+    } else {
+      // No order was created, just close the modal
+      onClose();
+    }
+  };
+
   // Update the model to ensure that customer_factory is of type number
   interface AddOrderFormModel extends Omit<AddOrderForm, 'customer_factory'> {
     customer_factory: number;
@@ -523,7 +570,7 @@ export default function AddOrderModal({ visible, onClose }: AddOrderModalProps) 
                 />
               </View>
               <View style={styles.buttonContainer}>
-                <TouchableOpacity style={styles.buttonCancel} onPress={onClose}>
+                <TouchableOpacity style={styles.buttonCancel} onPress={handleCancel}>
                   <Text style={styles.buttonTextCancel}>{t('cancel')}</Text>
                 </TouchableOpacity>
                 <TouchableOpacity

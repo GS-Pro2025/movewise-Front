@@ -384,6 +384,24 @@
     "update": "Update",
     "truck_found": "Truck found",
     "Orders": "Orders",
+    "order_details": "Order Details",
+    "not_found": "Not available",
+    "reference": "Reference",
+    "status_info_order": "Status",
+    "date_info_order": "Date",
+    "image_not_found":"image not Available",
+    "weight_info_order": "Weight",
+    "customer_info": "Customer Information",
+    "name_info_order": "Name",
+    "email_info_order": "Email",
+    "phone_info_order": "Phone",
+    "address_info_order": "Address",
+    "technical_info": "Technical Information",
+    "job_info_order": "Job",
+    "customer_factory": "Factory",
+    "state_info_order": "State",
+    "basic_info": "Basic Information",
+    "dispatch_ticket_info_order": "Dispatch Ticket",
     "assignation_deleted": "The assignation has been deleted successfully",
     "operator_registration": "Operator Registration",
     "operator_edit": "Operator Edit",
@@ -401,12 +419,9 @@
     "dispatch_ticket_size_exceeded": "Dispatch ticket size exceeded, max 5mb",
     "rented": "Rented",
     "owned": "Owned",
-
-    "vans": "Vans" ,
-    "Truck_26": "Truck 26" ,
+    "vans": "Vans",
+    "Truck_26": "Truck 26",
     "Trailer": "Trailer",
-
     "logout_error": "Logout error",
     "logout_success": "Logout successful"
-    
-}    
+}
