@@ -16,7 +16,7 @@ import colors from "./Colors";
 import Toast from "react-native-toast-message";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useTranslation } from "react-i18next";
-
+import SettingsModal from "./modals/SettingsModal";
 
 interface Admin {
   id: number;
@@ -39,7 +39,11 @@ const Home: React.FC = () => {
   const theme = useColorScheme();
   const isDarkMode = theme === "dark";
   const [Admin, setAdmin] = useState<Admin | null>(null);
+  const [isSettingsModalVisible, setSettingsModalVisible] = useState(false);
 
+  const toggleSettingsModal = () => {
+    setSettingsModalVisible(!isSettingsModalVisible);
+  };
   useEffect(() => {
     const loadAdmin = async () => {
       const adminData = await AsyncStorage.getItem("currentUser");
@@ -90,6 +94,12 @@ const handleLogout = async () => {
               </Text>
             </View>
           </View>
+          <TouchableOpacity style={styles.shareButton} onPress={toggleSettingsModal}>
+            <Image
+              source={require("../assets/images/settings.svg")} // Cambia la ruta según tu imagen
+              style={[styles.userIcono, { tintColor: isDarkMode ? colors.darkText : colors.primary }]}
+            />
+          </TouchableOpacity>
           <TouchableOpacity style={styles.shareButton} onPress={handleLogout}>
             <Image
               source={require("../assets/images/exit.png")}
@@ -170,6 +180,11 @@ const handleLogout = async () => {
           </View>
         </View>
       </ScrollView>
+    {/* Modal de configuración */}
+    <SettingsModal
+      visible={isSettingsModalVisible}
+      onClose={toggleSettingsModal}
+    />
     </SafeAreaView>
   );
 };
