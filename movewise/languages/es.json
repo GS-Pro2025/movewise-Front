@@ -458,5 +458,16 @@
   "owned": "Propio",
   "vans": "vans",
   "Truck_26": "truck_26",
-  "Trailer": "trailer"
+  "Trailer": "trailer",
+  "admin_info": "Información de administrador",
+  "personal_info": "Información personal",
+  "first_name": "Nombre",
+  "user_name": "Usuario",
+  "created_at": "Fecha de registro",
+  "updated_at": "Fecha de actualización",
+  "id_type": "Tipo de documento",
+  "company_id": "Empresa",
+  "system_info": "Información del sistema",
+  "account_settings": "Configuración de la cuenta",
+  "new_password": "Nueva contraseña"
 }

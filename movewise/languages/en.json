@@ -423,5 +423,17 @@
     "Truck_26": "Truck 26",
     "Trailer": "Trailer",
     "logout_error": "Logout error",
-    "logout_success": "Logout successful"
+    "logout_success": "Logout successful",
+
+    "admin_info": "Admin info",
+    "personal_info":"Personal Info",
+    "first_name":"First name",
+    "user_name": "User name",
+    "created_at": "Created at",
+    "updated_at":"Updated at",
+    "id_type": "ID type",
+    "company_id": "Company ID",
+    "system_info":"System Info",
+    "account_settings":"Account settings",
+    "new_password":"New Password"
 }

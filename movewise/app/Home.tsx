@@ -16,7 +16,10 @@ import colors from "./Colors";
 import Toast from "react-native-toast-message";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useTranslation } from "react-i18next";
-
+import { GetAdminInfo } from "@/hooks/api/GetAdminByToken";
+import InfoAdminModal from "./modals/InfoAdminModal";
+import EditAdminModal from "./modals/EditAdminModal";
+import { AdminInfo } from '@/hooks/api/GetAdminByToken';
 
 interface Admin {
   id: number;
@@ -34,35 +37,117 @@ interface ActionButtonProps {
 }
 
 const Home: React.FC = () => {
+  const [isInfoModalVisible, setIsInfoModalVisible] = useState(false);
+  const [isEditModalVisible, setIsEditModalVisible] = useState(false);
+  const [adminDetails, setAdminDetails] = useState<AdminInfo | null>(null);
+  const [admin, setAdmin] = useState<Admin | null>(null);
+  const [loading, setLoading] = useState(true);
+
   const { t } = useTranslation();
   const router = useRouter();
   const theme = useColorScheme();
   const isDarkMode = theme === "dark";
-  const [Admin, setAdmin] = useState<Admin | null>(null);
 
   useEffect(() => {
+    // En el useEffect del componente Home
     const loadAdmin = async () => {
-      const adminData = await AsyncStorage.getItem("currentUser");
-      setAdmin(JSON.parse(adminData || "{}"));
+      try {
+        setLoading(true);
+        const adminData = await AsyncStorage.getItem("currentUser");
+        if (adminData) setAdmin(JSON.parse(adminData));
+
+        // Obtener datos de la API
+        const response = await GetAdminInfo();
+        console.log('API Response:', response);
+
+        if (response) {  
+          console.log('Datos recibidos del API:', response);
+          setAdminDetails(response);  
+
+          setAdmin({
+            id: response.person.id_company,
+            first_name: response.person.first_name,
+            last_name: response.person.last_name,
+            id_number: response.person.id_number,
+            status: "active"
+          });
+
+          // Guardar en AsyncStorage
+          await AsyncStorage.setItem(
+            "currentUser",
+            JSON.stringify({
+              id: response.person.id_company,
+              first_name: response.person.first_name,
+              last_name: response.person.last_name,
+              id_number: response.person.id_number,
+              status: "active"
+            })
+          );
+        }
+      } catch (error) {
+        console.error("Error loading admin:", error);
+        Toast.show({ type: "error", text1: t("load_error") });
+      } finally {
+        setLoading(false);
+      }
     };
     loadAdmin();
   }, []);
 
-const handleLogout = async () => {
-  try {
-    await AsyncStorage.clear(); // Limpia todos los datos almacenados
-    Toast.show({
-      type: "success",
-      text1: t("logout_success"),
-    });
-    router.replace("/Login"); // Redirige al login
-  } catch (error) {
-    Toast.show({
-      type: "error",
-      text1: t("logout_error"),
-    });
-  }
-};
+  const handleLogout = async () => {
+    try {
+      await AsyncStorage.clear(); // Limpia todos los datos almacenados
+      Toast.show({
+        type: "success",
+        text1: t("logout_success"),
+      });
+      router.replace("/Login"); // Redirige al login
+    } catch (error) {
+      Toast.show({
+        type: "error",
+        text1: t("logout_error"),
+      });
+    }
+  };
+
+  const handleAdminUpdate = async (updatedAdmin: AdminInfo) => {
+    try {
+      setAdminDetails(updatedAdmin);
+
+      // Actualizar también el estado de admin
+      setAdmin({
+        id: updatedAdmin.person.id_company,
+        first_name: updatedAdmin.person.first_name,
+        last_name: updatedAdmin.person.last_name,
+        status: "active",
+        id_number: updatedAdmin.person.id_number,
+      });
+
+      // Actualizar AsyncStorage
+      await AsyncStorage.setItem(
+        "currentUser",
+        JSON.stringify({
+          id: updatedAdmin.person.id_company,
+          first_name: updatedAdmin.person.first_name,
+          last_name: updatedAdmin.person.last_name,
+          id_number: updatedAdmin.person.id_number,
+          status: "active"
+        })
+      );
+
+      Toast.show({
+        type: "success",
+        text1: t("profile_updated"),
+      });
+    } catch (error) {
+      console.error("Error updating admin:", error);
+      Toast.show({
+        type: "error",
+        text1: t("update_error"),
+      });
+    }
+  };
+
   return (
     <SafeAreaView
       style={[styles.container, { backgroundColor: isDarkMode ? colors.third : colors.lightBackground }]}
@@ -73,20 +158,24 @@ const handleLogout = async () => {
         {/* Header */}
         <View style={styles.header}>
           <View style={styles.userInfo}>
-            <View style={styles.avatarContainer}>
+            <TouchableOpacity
+              onPress={() => {
+                console.log('Opening info modal with data:', adminDetails);
+                setIsInfoModalVisible(true);
+              }}
+              style={styles.avatarContainer}
+            >
               <Image
                 source={require("../assets/images/logo.png")}
                 style={[styles.userIcono, { tintColor: isDarkMode ? colors.darkText : colors.primary }]}
               />
-            </View>
+            </TouchableOpacity>
             <View style={styles.userTextContainer}>
-              <Text
-                style={[styles.userName, { color: isDarkMode ? "#FFFFFF" : "#0458AB" }]}
-              >
-                {Admin?.first_name} {Admin?.last_name}
+              <Text style={[styles.userName, { color: isDarkMode ? "#FFFFFF" : "#0458AB" }]}>
+                {admin?.first_name} {admin?.last_name}
               </Text>
               <Text style={[styles.userName, { color: isDarkMode ? "#FFFFFF" : "#0458AB" }]}>
-                {t("admin_id")} <Text style={{ fontSize: 14 }}>{Admin?.id_number}</Text>
+                {t("admin_id")} <Text style={{ fontSize: 14 }}>{admin?.id_number}</Text>
               </Text>
             </View>
           </View>
@@ -139,16 +228,16 @@ const handleLogout = async () => {
               onPress={() => router.push("/modals/ListTruckScreen")}
             />
             <ActionButton
-                title={t("operator_edit")}
-                isDarkMode={isDarkMode}
-                iconSource={require("../assets/images/Pencil.png")}
-                onPress={() =>
-                  router.push({
-                    pathname: "/modals/OperatorList",
-                    params: { isEdit: "true" },
-                  })
-                }
-              />
+              title={t("operator_edit")}
+              isDarkMode={isDarkMode}
+              iconSource={require("../assets/images/Pencil.png")}
+              onPress={() =>
+                router.push({
+                  pathname: "/modals/OperatorList",
+                  params: { isEdit: "true" },
+                })
+              }
+            />
           </View>
           <View style={styles.row}>
             <ActionButton
@@ -170,6 +259,30 @@ const handleLogout = async () => {
           </View>
         </View>
       </ScrollView>
+
+      {/* Render modal only when we have data and modal is visible */}
+      {adminDetails && (
+        <>
+          {adminDetails && (
+            <InfoAdminModal
+              visible={isInfoModalVisible}
+              onClose={() => setIsInfoModalVisible(false)}
+              admin={adminDetails}  // Asegurar que adminDetails está correctamente poblado
+              onEdit={() => {
+                setIsInfoModalVisible(false);
+                setIsEditModalVisible(true);
+              }}
+            />
+          )}
+
+          <EditAdminModal
+            visible={isEditModalVisible}
+            onClose={() => setIsEditModalVisible(false)}
+            admin={adminDetails}
+            onUpdate={handleAdminUpdate}
+          />
+        </>
+      )}
     </SafeAreaView>
   );
 };
