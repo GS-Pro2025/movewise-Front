@@ -1,12 +1,13 @@
-import { View, Text, TouchableOpacity, Modal, StyleSheet, useColorScheme, FlatList, TextInput, ActivityIndicator, RefreshControl, Alert, SafeAreaView } from "react-native";
+import { View, Text, TouchableOpacity, Modal, StyleSheet, useColorScheme, FlatList, TextInput, ActivityIndicator, RefreshControl, Alert, SafeAreaView,Image } from "react-native";
 import { useState, useEffect, useCallback } from "react";
 import { Ionicons } from '@expo/vector-icons';
 import { GestureHandlerRootView, Swipeable } from "react-native-gesture-handler";
 import { TouchableHighlight } from "react-native";
-import { ListJobs, deleteJob, createJob, Job } from "../../hooks/api/JobClient"; // Debes crear estos métodos en tu API
+import { ListJobs, deleteJob, createJob, Job } from "../../../../hooks/api/JobClient"; // Debes crear estos métodos en tu API
 import Toast from "react-native-toast-message";
 import { useTranslation } from "react-i18next";
 import { router } from "expo-router";
+import CreateJobModal, { CreateJobProvider } from "./CreateJobModal";
 
 
 interface ListJobModalProps {
@@ -22,6 +23,7 @@ const ListJobsModal: React.FC<ListJobModalProps> = ({ visible, onClose }) => {
   const [searchText, setSearchText] = useState('');
   const colorScheme = useColorScheme();
   const isDarkMode = colorScheme === "dark";
+  const [createJobVisible, setCreateJobVisible] = useState(false);
 
   const loadJobs = useCallback(async () => {
     setLoading(true);
@@ -110,6 +112,10 @@ const ListJobsModal: React.FC<ListJobModalProps> = ({ visible, onClose }) => {
             // Puedes agregar aquí lógica para editar el job si lo necesitas
           >
             <View style={[styles.jobItem, { backgroundColor: isDarkMode ? '#1E3A5F' : '#f5f5f5' }]}>
+              <Image
+                source={require('../../../../assets/images/hammer.png')} // Ajusta la ruta si es necesario
+                style={[styles.hammerImage,{ backgroundColor: isDarkMode ? '#FFFFFF' : '#f5f5f5'}]}
+              />
               <View style={styles.jobDetails}>
                 <Text style={[styles.jobTitle, { color: isDarkMode ? '#FFFFFF' : '#0458AB' }]}>
                   {item.name}
@@ -127,16 +133,33 @@ const ListJobsModal: React.FC<ListJobModalProps> = ({ visible, onClose }) => {
       <SafeAreaView style={{ flex: 1 }}>
         <View style={[styles.header, { backgroundColor: isDarkMode ? '#112A4A' : '#ffffff' }]}>
           <TouchableOpacity
-            onPress={router.back}
+            onPress={onClose}
             style={[styles.backButton, { borderColor: isDarkMode ? '#FFF' : '#0458AB' }]}
           >
             <Text style={[styles.backIcon, { color: isDarkMode ? '#FFF' : '#0458AB' }]}>
               ←
             </Text>
-          </TouchableOpacity>
+            </TouchableOpacity>
           <Text style={[styles.title, { color: isDarkMode ? '#FFFFFF' : '#0458AB', flex: 1, textAlign: 'center' }]}>
             {t('jobs')}
           </Text>
+          {/* Add Button */}
+            <TouchableOpacity
+              style={[
+                styles.addButton,
+                { backgroundColor: isDarkMode ? '#FFF' : '#0458AB' }
+              ]}
+              onPress={() => setCreateJobVisible(true)}
+            >
+              <Text
+                style={[
+                  styles.plus,
+                  { color: isDarkMode ? '#0458AB' : '#FFF' }
+                ]}
+              >
+                +
+              </Text>
+            </TouchableOpacity>
           <View style={{ width: 40 }} />
         </View>
         <View style={[styles.filtersContainer, { backgroundColor: isDarkMode ? "#112A4A" : "#ffffff" }]}>
@@ -181,6 +204,13 @@ const ListJobsModal: React.FC<ListJobModalProps> = ({ visible, onClose }) => {
           />
         )}
       </SafeAreaView>
+      {/**Create job Modal */}
+  <CreateJobProvider 
+    visible={createJobVisible} 
+    onClose={() => setCreateJobVisible(false)} 
+    onSuccess={loadJobs}>
+    <CreateJobModal />
+  </CreateJobProvider>
       <Toast />
     </Modal>
   );
@@ -201,7 +231,22 @@ const styles = StyleSheet.create({
     fontSize: 20,
     fontWeight: 'bold',
   },
-  title: { fontSize: 20, fontWeight: "bold" },
+    addButton: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  plus: {
+    fontSize: 24,
+    fontWeight: 'bold',
+  },
+  title: { fontSize: 20, 
+      fontWeight: "bold",
+      alignItems: 'center',
+      marginLeft: 20
+    },
   backButton: {
     width: 40,
     height: 40,
@@ -244,7 +289,8 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
   jobItem: {
-    flexDirection: 'row',
+    flexDirection: 'row',  // Cambiado a row para alinear imagen y texto
+    alignItems: 'center', // Alinea verticalmente los elementos
     padding: 16,
     marginVertical: 8,
     borderRadius: 8,
@@ -257,7 +303,14 @@ const styles = StyleSheet.create({
   jobDetails: {
     flex: 1,
     justifyContent: 'center',
+    marginLeft: 10, // Añade margen izquierdo para separar la imagen del texto
   },
+  hammerImage: { // Estilos para la imagen
+        width: 30,  // Define el tamaño de la imagen
+        height: 30,
+        resizeMode: 'contain', // Asegura que la imagen se ajuste al tamaño sin distorsión
+        borderRadius: 20,
+    },
   jobTitle: {
     fontSize: 16,
     fontWeight: 'bold',

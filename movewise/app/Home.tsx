@@ -15,8 +15,8 @@ import colors from "./Colors";
 import Toast from "react-native-toast-message";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useTranslation } from "react-i18next";
-import SettingsModal from "./modals/SettingsModal";
-import ListJobsModal from "./modals/ListJobsModal";
+import SettingsModal from "./Settings/SettingsModal";
+import ListJobsModal from "./Settings/Options/JobAndTools/ListJobsModal";
 
 interface Admin {
   id: number;
