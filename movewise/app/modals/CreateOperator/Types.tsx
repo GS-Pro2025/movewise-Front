@@ -69,7 +69,7 @@ export interface Operator {
     last_name: string;
     birth_date: string;
     type_id: string;
-    id_number: number;
+    id_number: string;
     address: string;
     phone: string;
     email: string;

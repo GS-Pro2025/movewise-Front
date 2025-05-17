@@ -8,7 +8,6 @@ import {
   StyleSheet,
   useColorScheme,
   Platform,
-  Linking,
 } from 'react-native';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import * as ImagePicker from 'expo-image-picker';
@@ -17,7 +16,7 @@ import { FormInputProps, DateInputProps, DropdownInputProps, RadioGroupProps, Im
 import { styles } from './FormStyle';
 import { useTranslation } from 'react-i18next';
 import { useActionSheet } from '@expo/react-native-action-sheet';
-
+import { Linking } from 'react-native';
 // Componentes de Ayuda
 function FormInput({ label, value, onChangeText, keyboardType = 'default', error, required = false }: FormInputProps): JSX.Element {
   return (
@@ -129,12 +128,12 @@ function RadioGroup({ label, options, selectedValue, onSelect, error, required =
     </View>
   );
 }
+  
+  function ImageUpload({ label, image, onImageSelected, error, required = false }: ImageUploadProps): JSX.Element {
+    const { t } = useTranslation();
+    const { showActionSheetWithOptions } = useActionSheet();
 
-function ImageUpload({ label, image, onImageSelected, error, required = false }: ImageUploadProps): JSX.Element {
-  const { t } = useTranslation();
-  const { showActionSheetWithOptions } = useActionSheet();
-
-  const handleImagePicker = async (type: 'camera' | 'gallery') => {
+    const handleImagePicker = async (type: 'camera' | 'gallery') => {
     try {
       let result: ImagePicker.ImagePickerResult;
 
@@ -189,24 +188,35 @@ function ImageUpload({ label, image, onImageSelected, error, required = false }:
     }
   };
 
+
   const showActionSheet = () => {
-    const options = [t('take_photo'), t('choose_from_gallery'), t('cancel')];
+    const options = [
+      t('take_photo'),
+      t('choose_from_gallery'),
+      t('cancel'),
+    ];
     const cancelButtonIndex = 2;
+    // No hay un equivalente directo para destructiveButtonIndex en el mismo objeto de opciones
 
     showActionSheetWithOptions(
       {
         options,
         cancelButtonIndex,
-        title: t('select_option'),
+        // Puedes añadir más opciones como tintColor, message, etc., si lo necesitas
       },
       (buttonIndex) => {
-        if (buttonIndex === 0) handleImagePicker('camera');
-        else if (buttonIndex === 1) handleImagePicker('gallery');
+        if (buttonIndex === 0) {
+          handleImagePicker('camera');
+        } else if (buttonIndex === 1) {
+          handleImagePicker('gallery');
+        }
+        // Si buttonIndex es cancelButtonIndex (2), no se hace nada
       }
     );
   };
 
-  return (
+
+    return (
     <View style={styles.inputContainer}>
       <Text style={styles.inputLabel}>{label}</Text>
       <TouchableOpacity
@@ -225,6 +235,7 @@ function ImageUpload({ label, image, onImageSelected, error, required = false }:
         )}
       </TouchableOpacity>
       {error && <Text style={styles.errorText}>{error}</Text>}
+      {/* Ya no renderizamos el componente ActionSheet aquí */}
     </View>
   );
 }
