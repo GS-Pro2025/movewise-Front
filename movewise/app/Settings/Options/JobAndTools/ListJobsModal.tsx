@@ -123,8 +123,8 @@ const ListJobsModal: React.FC<ListJobModalProps> = ({ visible, onClose }) => {
           >
             <View style={[styles.jobItem, { backgroundColor: isDarkMode ? '#1E3A5F' : '#f5f5f5' }]}>
               <Image
-                source={require('../../../../assets/images/hammer.png')}
-                style={[styles.hammerImage, { backgroundColor: isDarkMode ? '#FFFFFF' : '#f5f5f5' }]}
+                source={require('../../../../assets/images/briefcase.png')}
+                style={[styles.briefcaseImage, { backgroundColor: isDarkMode ? '#FFFFFF' : '#f5f5f5' }]}
               />
               <View style={styles.jobDetails}>
                 <Text style={[styles.jobTitle, { color: isDarkMode ? '#FFFFFF' : '#0458AB' }]}>
@@ -322,11 +322,13 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     marginLeft: 10, // Añade margen izquierdo para separar la imagen del texto
   },
-  hammerImage: { // Estilos para la imagen
+  briefcaseImage: { // Estilos para la imagen
         width: 30,  // Define el tamaño de la imagen
         height: 30,
         resizeMode: 'contain', // Asegura que la imagen se ajuste al tamaño sin distorsión
         borderRadius: 20,
+        borderRightWidth: 18,
+        borderLeftWidth: 18
     },
   jobTitle: {
     fontSize: 16,

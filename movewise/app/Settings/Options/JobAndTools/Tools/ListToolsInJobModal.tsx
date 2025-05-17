@@ -349,6 +349,8 @@ const styles = StyleSheet.create({
     height: 30,
     resizeMode: 'contain',
     borderRadius: 20,
+    borderRightWidth: 18,
+    borderLeftWidth: 18
   },
   toolName: {
     fontSize: 16,
