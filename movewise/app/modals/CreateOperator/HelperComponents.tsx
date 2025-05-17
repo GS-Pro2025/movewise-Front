@@ -8,7 +8,6 @@ import {
   StyleSheet,
   useColorScheme,
   Platform,
-  Linking,
 } from 'react-native';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import * as ImagePicker from 'expo-image-picker';

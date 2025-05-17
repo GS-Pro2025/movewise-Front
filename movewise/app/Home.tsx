@@ -184,7 +184,7 @@ const Home: React.FC = () => {
                 {t("admin_id")} <Text style={{ fontSize: 14 }}>{admin?.id_number}</Text>
               </Text>
             </View>
-            <View style={[styles.userTextContainer, { maxWidth: "70%" }]}>
+            {/* <View style={[styles.userTextContainer, { maxWidth: "70%" }]}>
               <Text
                 style={[styles.userName, { color: isDarkMode ? "#FFFFFF" : "#0458AB" }]}
                 numberOfLines={2} 
@@ -192,7 +192,7 @@ const Home: React.FC = () => {
               >
                 {Admin?.first_name} {Admin?.last_name}
               </Text>
-            </View>
+            </View> */}
           </View>
           <TouchableOpacity style={styles.shareButton} onPress={toggleSettingsModal}>
             <Image
