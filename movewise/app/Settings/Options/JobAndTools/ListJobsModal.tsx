@@ -8,6 +8,7 @@ import Toast from "react-native-toast-message";
 import { useTranslation } from "react-i18next";
 import { router } from "expo-router";
 import CreateJobModal, { CreateJobProvider } from "./CreateJobModal";
+import ListToolsInJobModal from "./Tools/ListToolsInJobModal";
 
 
 interface ListJobModalProps {
@@ -24,6 +25,9 @@ const ListJobsModal: React.FC<ListJobModalProps> = ({ visible, onClose }) => {
   const colorScheme = useColorScheme();
   const isDarkMode = colorScheme === "dark";
   const [createJobVisible, setCreateJobVisible] = useState(false);
+  const [toolsModalVisible, setToolsModalVisible] = useState(false);
+  const [selectedJobId, setSelectedJobId] = useState<number | null>(null);
+
 
   const loadJobs = useCallback(async () => {
     setLoading(true);
@@ -104,17 +108,22 @@ const ListJobsModal: React.FC<ListJobModalProps> = ({ visible, onClose }) => {
       </View>
     );
 
+
+
     return (
       <GestureHandlerRootView>
         <Swipeable renderRightActions={renderRightActions}>
           <TouchableHighlight
             underlayColor={isDarkMode ? '#f0f0f0' : '#e0e0e0'}
-            // Puedes agregar aquí lógica para editar el job si lo necesitas
+            onPress={() => {
+              setSelectedJobId(item.id);
+              setToolsModalVisible(true);
+            }}
           >
             <View style={[styles.jobItem, { backgroundColor: isDarkMode ? '#1E3A5F' : '#f5f5f5' }]}>
               <Image
-                source={require('../../../../assets/images/hammer.png')} // Ajusta la ruta si es necesario
-                style={[styles.hammerImage,{ backgroundColor: isDarkMode ? '#FFFFFF' : '#f5f5f5'}]}
+                source={require('../../../../assets/images/hammer.png')}
+                style={[styles.hammerImage, { backgroundColor: isDarkMode ? '#FFFFFF' : '#f5f5f5' }]}
               />
               <View style={styles.jobDetails}>
                 <Text style={[styles.jobTitle, { color: isDarkMode ? '#FFFFFF' : '#0458AB' }]}>
@@ -205,12 +214,18 @@ const ListJobsModal: React.FC<ListJobModalProps> = ({ visible, onClose }) => {
         )}
       </SafeAreaView>
       {/**Create job Modal */}
-  <CreateJobProvider 
-    visible={createJobVisible} 
-    onClose={() => setCreateJobVisible(false)} 
-    onSuccess={loadJobs}>
-    <CreateJobModal />
-  </CreateJobProvider>
+      <CreateJobProvider 
+        visible={createJobVisible} 
+        onClose={() => setCreateJobVisible(false)} 
+        onSuccess={loadJobs}>
+        <CreateJobModal />
+      </CreateJobProvider>
+      {/**Tools modal */}
+      <ListToolsInJobModal
+        visible={toolsModalVisible}
+        onClose={() => setToolsModalVisible(false)}
+        jobId={selectedJobId}
+      />
       <Toast />
     </Modal>
   );

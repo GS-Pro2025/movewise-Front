@@ -32,6 +32,17 @@ const SettingsModal: React.FC<SettingsModalProps> = ({ visible, onClose, onOpenJ
           >
             <Text style={styles.modalOptionText}>{t("option_jobs_and_tools")}</Text>
           </TouchableOpacity>
+
+          <TouchableOpacity
+            style={styles.modalOption}
+            onPress={() => {
+              onClose();
+              onOpenJobsModal(); // <-- Llama a la función aquí
+            }}
+          >
+            <Text style={styles.modalOptionText}>{t("customer_factory_option")}</Text>
+          </TouchableOpacity>
+          
           <TouchableOpacity style={styles.modalOption} onPress={onClose}>
             <Text style={styles.modalOptionText}>{t("close")}</Text>
           </TouchableOpacity>

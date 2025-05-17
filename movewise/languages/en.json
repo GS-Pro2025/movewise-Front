@@ -455,6 +455,7 @@
     "search_placeholder_job": "Search jobs...",
     "no_jobs_available": "No jobs available.",
     "settings":"Settings",
-    "close":"Close"
+    "close":"Close",
+    "customer_factory_option":"Company client"
     
 }    

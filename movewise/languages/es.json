@@ -457,5 +457,6 @@
   "search_placeholder_job": "Buscar trabajos...",
   "no_jobs_available": "No hay trabajos disponibles.",
   "settings":"Configuración",
-  "close":"Cerrar"
+  "close":"Cerrar",
+  "customer_factory_option":"Compañías cliente"
 }

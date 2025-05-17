@@ -76,9 +76,9 @@ export interface ToolListResponse {
     current_company_id: number;
 }
 
-export const listTools = async (page: number, pageSize: number): Promise<ToolListResponse> => {
+export const listToolsByJob = async (jobId: number,page: number, pageSize: number): Promise<ToolListResponse> => {
     try {
-        const response = await apiClient.get<ToolListResponse>(`/tools/?page=${page}&page_size=${pageSize}`);
+        const response = await apiClient.get<ToolListResponse>(`/toolsByJob/${jobId}/?page=${page}&page_size=${pageSize}`);
         console.log("Tools response:", response.data);
         return response.data;
     } catch (error) {
