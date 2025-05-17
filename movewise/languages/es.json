@@ -458,5 +458,22 @@
   "no_jobs_available": "No hay trabajos disponibles.",
   "settings":"Configuración",
   "close":"Cerrar",
-  "customer_factory_option":"Compañías cliente"
+  "customer_factory_option":"Compañías cliente",
+  "delete_tool_confirmation": "¿Seguro que deseas eliminar esta herramienta?",
+  "tool_deleted": "Herramienta Eliminada",
+  "tool_deleted_successfully": "La herramienta se ha eliminado correctamente.",
+  "error_deleting_tool": "Error al eliminar la herramienta:",
+  "tool_could_not_be_deleted": "No se pudo eliminar esta herramienta.",
+  "Error_deleting_tool": "Hubo un error al eliminar la herramienta.",
+  "could_not_delete_tool": "No se pudo eliminar la herramienta.",
+  "error_loading_tools": "Error al cargar las herramientas:",
+  "could_not_load_tools": "No se pudieron cargar las herramientas.",
+  "no_tools_in_job": "No hay herramientas en este trabajo.",
+  "tools_in_job": "Herramientas en el Trabajo",
+  "create_tool": "Crear Herramienta",
+  "tool_name": "Nombre de la Herramienta",
+  "tool_name_placeholder": "Ingrese el nombre de la herramienta",
+  "tool_created": "Herramienta Creada",
+  "tool_added": "La herramienta se ha agregado correctamente.",
+  "tool_creation_error": "Error al crear la herramienta."
 }

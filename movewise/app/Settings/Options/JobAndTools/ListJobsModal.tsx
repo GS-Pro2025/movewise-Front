@@ -27,7 +27,7 @@ const ListJobsModal: React.FC<ListJobModalProps> = ({ visible, onClose }) => {
   const [createJobVisible, setCreateJobVisible] = useState(false);
   const [toolsModalVisible, setToolsModalVisible] = useState(false);
   const [selectedJobId, setSelectedJobId] = useState<number | null>(null);
-
+  const [selectedJobName, setSelectedJobName] = useState<String | null>(null);
 
   const loadJobs = useCallback(async () => {
     setLoading(true);
@@ -117,6 +117,7 @@ const ListJobsModal: React.FC<ListJobModalProps> = ({ visible, onClose }) => {
             underlayColor={isDarkMode ? '#f0f0f0' : '#e0e0e0'}
             onPress={() => {
               setSelectedJobId(item.id);
+              setSelectedJobName(item.name)
               setToolsModalVisible(true);
             }}
           >
@@ -225,6 +226,7 @@ const ListJobsModal: React.FC<ListJobModalProps> = ({ visible, onClose }) => {
         visible={toolsModalVisible}
         onClose={() => setToolsModalVisible(false)}
         jobId={selectedJobId}
+        jobName={selectedJobName}
       />
       <Toast />
     </Modal>
