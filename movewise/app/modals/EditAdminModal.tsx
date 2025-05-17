@@ -25,7 +25,7 @@ interface AdminFormData {
   user_name: string;
   password?: string;
   person: Omit<PersonInfo, 'phone' | 'id_company'> & {
-    phone: string;
+    phone: number | null;
     birth_date: string;
   };
 }
@@ -49,7 +49,7 @@ const EditAdminModal: React.FC<EditAdminModalProps> = ({ visible, onClose, admin
       email: '',
       first_name: '',
       last_name: '',
-      phone: '',
+      phone: 0,
       address: '',
       birth_date: '',
       id_number: '',
@@ -68,7 +68,7 @@ const EditAdminModal: React.FC<EditAdminModalProps> = ({ visible, onClose, admin
           email: admin.person.email,
           first_name: admin.person.first_name,
           last_name: admin.person.last_name,
-          phone: admin.person.phone.toString(),
+          phone: admin.person.phone,
           address: admin.person.address,
           birth_date: admin.person.birth_date,
           id_number: admin.person.id_number,

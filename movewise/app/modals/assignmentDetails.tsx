@@ -9,13 +9,20 @@ import {
     ActivityIndicator,
     useColorScheme,
     SafeAreaView,
-    ScrollView
+    ScrollView,
+    Image
 } from "react-native";
+import * as ImagePicker from 'expo-image-picker';
+import { useActionSheet } from '@expo/react-native-action-sheet';
+import { Platform } from 'react-native';
 import { useLocalSearchParams } from "expo-router";
 import { Ionicons } from '@expo/vector-icons';
 import { Assignment } from "@/components/operator/BaseOperator";
 import ToolsManager from "@/components/operator/ToolsList";
-
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import Toast from 'react-native-toast-message';
+import { useTranslation } from "react-i18next"
+import { url } from "@/hooks/api/apiClient";
 interface Props {
     visible: boolean;
     onClose: () => void;
@@ -27,10 +34,15 @@ interface Props {
 const AssignmentDetails: React.FC<Props> = ({
     visible, onClose, assignment, operatorId, type
 }) => {
+    const { t } = useTranslation();
     const [loading, setLoading] = useState(true);
     const [toolsModalVisible, setToolsModalVisible] = useState(false);
     const [actionModalVisible, setActionModalVisible] = useState(false);
 
+    const [uploading, setUploading] = useState(false);
+    const [selectedImage, setSelectedImage] = useState<ImagePicker.ImagePickerAsset | null>(null);
+    const { showActionSheetWithOptions } = useActionSheet();
+    const [pickerVisible, setPickerVisible] = useState(false);
     const colorScheme = useColorScheme();
     const isDarkMode = colorScheme === 'dark';
 
@@ -40,26 +52,154 @@ const AssignmentDetails: React.FC<Props> = ({
         }
     }, [assignment]);
 
-    // Format date for display (MM/DD/YYYY)
     const formatDate = (dateString: string) => {
-        if (!dateString) return "No date";
-
+        if (!dateString) return t("no_date");
         const date = new Date(dateString);
-        const month = String(date.getMonth() + 1).padStart(2, '0');
-        const day = String(date.getDate()).padStart(2, '0');
-        const year = date.getFullYear();
-
-        return `${month}/${day}/${year}`;
+        return `${date.getMonth() + 1}/${date.getDate()}/${date.getFullYear()}`;
     };
 
-    const handleCompleteWork = () => {
-        setActionModalVisible(true);
+    const handleCompleteWork = () => setActionModalVisible(true);
+
+    const handleImageSelection = async (type: 'camera' | 'gallery') => {
+        try {
+            setPickerVisible(true);
+            let result: ImagePicker.ImagePickerResult;
+
+            if (type === 'camera') {
+                const { status } = await ImagePicker.requestCameraPermissionsAsync();
+                if (status !== 'granted') {
+                    Alert.alert(t("permission_required"), t("camera_permission_needed"));
+                    return null;
+                }
+                result = await ImagePicker.launchCameraAsync({
+                    mediaTypes: ImagePicker.MediaTypeOptions.Images,
+                    allowsEditing: true,
+                    aspect: [4, 3],
+                    quality: 0.8,
+                });
+            } else {
+                const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+                if (status !== 'granted') {
+                    Alert.alert(t("permission_denied"), t("allow_photo_access"));
+                    return null;
+                }
+                result = await ImagePicker.launchImageLibraryAsync({
+                    mediaTypes: ImagePicker.MediaTypeOptions.Images,
+                    allowsEditing: true,
+                    aspect: [4, 3],
+                    quality: 0.8,
+                });
+            }
+
+            if (!result.canceled && result.assets?.[0]) {
+                setSelectedImage(result.assets[0]);
+                return result.assets[0];
+            }
+            return null;
+        } catch (error) {
+            console.error(t("error_picking_image"), error);
+            Alert.alert(t("error"), t("failed_to_select_image"));
+            return null;
+        } finally {
+            setPickerVisible(false);
+        }
     };
 
-    const completeWorkAction = () => {
-        Alert.alert("Success", "Work marked as completed");
-        setActionModalVisible(false);
-        onClose();
+    const showImagePickerOptions = () => {
+        setActionModalVisible(false); // Cerrar modal antes de abrir el selector
+        const options = [t('take_photo'), t('choose_from_gallery'), t('cancel')];
+
+        showActionSheetWithOptions(
+            {
+                options,
+                cancelButtonIndex: 2,
+                tintColor: isDarkMode ? '#FFFFFF' : '#0458AB',
+            },
+            async (buttonIndex) => {
+                if (buttonIndex === 0) await handleImageSelection('camera');
+                if (buttonIndex === 1) await handleImageSelection('gallery');
+                setActionModalVisible(true); // Reabrir modal después de selección
+            }
+        );
+    };
+
+    const completeWorkAction = async () => {
+        if (!selectedImage) {
+            showImagePickerOptions();
+            return;
+        }
+
+        if (assignment.data_order.status === 'finished') {
+            Toast.show({
+                type: 'error',
+                text1: t("error"),
+                text2: t("order_already_completed"),
+                position: 'bottom',
+                visibilityTime: 4000,
+            });
+            return;
+        }
+
+        try {
+            setUploading(true);
+
+            const formData = new FormData();
+            formData.append('status', 'finished');
+
+            const localUri = selectedImage.uri;
+            const filename = localUri.split('/').pop() || 'evidence.jpg';
+            const match = /\.(\w+)$/.exec(filename);
+            const type = match ? `image/${match[1]}` : `image/jpeg`;
+
+            formData.append('evidence', {
+                uri: localUri,
+                name: filename,
+                type,
+            } as any);
+
+            const token = await AsyncStorage.getItem('userToken');
+            if (!token) throw new Error(t("no_auth_token"));
+
+            const response = await fetch(
+                `${url}/orders/status/${assignment.data_order.key}/`,
+                {
+                    method: 'PATCH',
+                    headers: {
+                        'Content-Type': 'multipart/form-data',
+                        'Authorization': `Bearer ${token}`,
+                    },
+                    body: formData,
+                }
+            );
+
+            if (!response.ok) {
+                const errorData = await response.json();
+                throw new Error(errorData.detail || t("failed_complete_work"));
+            }
+
+            setActionModalVisible(false);
+            onClose();
+
+            Toast.show({
+                type: 'success',
+                text1: t("success"),
+                text2: `${t("work_completed_success")}\n${t("order_final_warning")}`,
+                position: 'bottom',
+                visibilityTime: 5000,
+            });
+
+            setSelectedImage(null);
+        } catch (error: any) {
+            Toast.show({
+                type: 'error',
+                text1: t("error"),
+                text2: error.message || t("failed_complete_work"),
+                position: 'bottom',
+                visibilityTime: 4000,
+            });
+        } finally {
+            setUploading(false);
+        }
     };
 
     const handleOpenToolsList = () => {
@@ -67,16 +207,16 @@ const AssignmentDetails: React.FC<Props> = ({
         setToolsModalVisible(true);
     };
 
-
     const handleClose = () => {
         setActionModalVisible(false);
+        setToolsModalVisible(false);
         onClose();
     };
 
     if (loading) {
         return (
-            <Modal visible={visible} animationType="slide" onRequestClose={onClose}>
-                <SafeAreaView style={[styles.container, { backgroundColor: isDarkMode ? '#112A4A' : '#FFF' }]}>
+            <Modal visible={visible} animationType="slide">
+                <SafeAreaView style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
                     <ActivityIndicator size="large" />
                 </SafeAreaView>
             </Modal>
@@ -300,12 +440,24 @@ const AssignmentDetails: React.FC<Props> = ({
                                 <TouchableOpacity
                                     style={[
                                         styles.actionButton,
-                                        { backgroundColor: isDarkMode ? '#0458AB' : '#0458AB' }
+                                        {
+                                            backgroundColor: isDarkMode ? '#0458AB' : '#0458AB',
+                                            opacity: assignment.data_order.status === 'finished' ? 0.6 : 1
+                                        }
                                     ]}
-                                    onPress={handleCompleteWork}
+                                    onPress={assignment.data_order.status === 'finished' ? undefined : handleCompleteWork}
+                                    disabled={assignment.data_order.status === 'finished'}
                                 >
-                                    <Ionicons name="checkmark-circle-outline" size={20} color="#FFFFFF" />
-                                    <Text style={styles.actionButtonText}>Complete Work</Text>
+                                    <Ionicons
+                                        name={assignment.data_order.status === 'finished' ? "checkmark-done" : "checkmark-circle-outline"}
+                                        size={20}
+                                        color="#FFFFFF"
+                                    />
+                                    <Text style={styles.actionButtonText}>
+                                        {assignment.data_order.status === 'finished'
+                                            ? t("completed")
+                                            : t("complete_work")}
+                                    </Text>
                                 </TouchableOpacity>
 
                                 <TouchableOpacity
@@ -352,7 +504,10 @@ const AssignmentDetails: React.FC<Props> = ({
                         onRequestClose={() => setActionModalVisible(false)}
                     >
                         <View style={styles.modalOverlay}>
-                            <View style={styles.modalContainer}>
+                            <View style={[
+                                styles.modalContainer,
+                                { backgroundColor: isDarkMode ? '#1C3A5A' : '#2A4B8D' }
+                            ]}>
                                 <View style={styles.modalHeader}>
                                     <Text style={styles.modalTitle}>
                                         {assignment?.data_order.key_ref} - {assignment?.data_order.person.first_name} {assignment?.data_order.person.last_name}
@@ -372,15 +527,41 @@ const AssignmentDetails: React.FC<Props> = ({
                                     <Text style={styles.modalInfoText}>
                                         Role: {assignment.rol === 'leader' ? 'Leader' : 'Operator'}
                                     </Text>
+
+                                    {/* Image Preview */}
+                                    {selectedImage && (
+                                        <View style={styles.imagePreviewContainer}>
+                                            <Image
+                                                source={{ uri: selectedImage.uri }}
+                                                style={styles.imagePreview}
+                                                resizeMode="cover"
+                                            />
+                                            <TouchableOpacity
+                                                style={styles.changeImageButton}
+                                                onPress={() => showImagePickerOptions()}>
+                                                <Text style={styles.changeImageText}>Change Image</Text>
+                                            </TouchableOpacity>
+                                        </View>
+                                    )}
                                 </View>
 
                                 {assignment.rol === 'leader' && (
                                     <View style={styles.modalButtonContainer}>
                                         <TouchableOpacity
-                                            style={styles.modalButton}
+                                            style={[
+                                                styles.modalButton,
+                                                { opacity: uploading ? 0.7 : 1 }
+                                            ]}
                                             onPress={completeWorkAction}
+                                            disabled={uploading}
                                         >
-                                            <Text style={styles.modalButtonText}>Work completed</Text>
+                                            {uploading ? (
+                                                <ActivityIndicator color="#2A4B8D" />
+                                            ) : (
+                                                <Text style={styles.modalButtonText}>
+                                                    {selectedImage ? t("submit_work") : t("select_photo")}
+                                                </Text>
+                                            )}
                                         </TouchableOpacity>
 
                                         <TouchableOpacity
@@ -418,23 +599,8 @@ const AssignmentDetails: React.FC<Props> = ({
     );
 };
 
-
-
-
 const styles = StyleSheet.create({
-    // Add these to your styles object
-    toolsModalInfo: {
-        flexDirection: 'row',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-        paddingHorizontal: 15,
-        paddingTop: 10,
-        paddingBottom: 5,
-    },
-    toolsModalSelection: {
-        fontSize: 14,
-        fontStyle: 'italic',
-    },
+    // General container styles
     container: {
         flex: 1,
     },
@@ -464,6 +630,8 @@ const styles = StyleSheet.create({
         color: '#FFFFFF',
         fontWeight: 'bold',
     },
+
+    // Header styles
     header: {
         flexDirection: 'row',
         alignItems: 'center',
@@ -487,6 +655,8 @@ const styles = StyleSheet.create({
     headerRight: {
         width: 30, // Same width as close button for balance
     },
+
+    // Content styles
     content: {
         flex: 1,
         padding: 15,
@@ -541,6 +711,8 @@ const styles = StyleSheet.create({
         fontSize: 15,
         flex: 1,
     },
+
+    // Actions card styles
     actionsCard: {
         padding: 15,
         borderRadius: 10,
@@ -572,9 +744,11 @@ const styles = StyleSheet.create({
     actionButtonText: {
         color: '#FFFFFF',
         fontWeight: '600',
-        fontSize: 12,
+        fontSize: 14,
         marginLeft: 8,
     },
+
+    // Message card styles
     messageCard: {
         padding: 15,
         borderRadius: 10,
@@ -592,14 +766,14 @@ const styles = StyleSheet.create({
         marginLeft: 10,
         fontSize: 14,
     },
-    // Modal Styles from WorkDailyOperator
+
+    // Modal styles
     modalOverlay: {
         flex: 1,
         justifyContent: 'flex-end',
         backgroundColor: 'rgba(0, 0, 0, 0.5)',
     },
     modalContainer: {
-        backgroundColor: '#2A4B8D',
         borderTopLeftRadius: 20,
         borderTopRightRadius: 20,
         paddingBottom: 40,
@@ -645,7 +819,7 @@ const styles = StyleSheet.create({
     modalButtonText: {
         color: '#2A4B8D',
         fontWeight: 'bold',
-        fontSize: 12,
+        fontSize: 14,
     },
     modalMessageContainer: {
         padding: 20,
@@ -657,6 +831,41 @@ const styles = StyleSheet.create({
         textAlign: 'center',
     },
 
+    // Image preview styles
+    imagePreviewContainer: {
+        marginTop: 15,
+        alignItems: 'center',
+    },
+    imagePreview: {
+        width: 250,
+        height: 200,
+        borderRadius: 8,
+        marginBottom: 10,
+    },
+    changeImageButton: {
+        backgroundColor: 'rgba(255, 255, 255, 0.2)',
+        paddingVertical: 8,
+        paddingHorizontal: 15,
+        borderRadius: 5,
+    },
+    changeImageText: {
+        color: '#FFFFFF',
+        fontSize: 14,
+    },
+
+    // Tools modal styles
+    toolsModalInfo: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        paddingHorizontal: 15,
+        paddingTop: 10,
+        paddingBottom: 5,
+    },
+    toolsModalSelection: {
+        fontSize: 14,
+        fontStyle: 'italic',
+    },
     toolsModalOverlay: {
         flex: 1,
         backgroundColor: 'rgba(0, 0, 0, 0.6)',

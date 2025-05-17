@@ -5,9 +5,9 @@ export interface PersonInfo {
   first_name: string;
   last_name: string;
   birth_date: string;
-  phone: number;
+  phone: number | null;
   address: string;
-  id_number: string;
+  id_number: string | null; 
   type_id: string;
   id_company: number;
 }

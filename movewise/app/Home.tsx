@@ -27,7 +27,9 @@ interface Admin {
   first_name: string;
   last_name: string;
   status: string;
-  id_number: string;
+  phone: number | null;
+  address: string | null;
+  id_number: string | null;
 }
 
 interface ActionButtonProps {
@@ -66,14 +68,16 @@ const Home: React.FC = () => {
         const response = await GetAdminInfo();
         console.log('API Response:', response);
 
-        if (response) {  
+        if (response) {
           console.log('Datos recibidos del API:', response);
-          setAdminDetails(response);  
+          setAdminDetails(response);
 
           setAdmin({
             id: response.person.id_company,
             first_name: response.person.first_name,
             last_name: response.person.last_name,
+            phone: response.person.phone,
+            address: response.person.address,
             id_number: response.person.id_number,
             status: "active"
           });
@@ -118,6 +122,11 @@ const Home: React.FC = () => {
 
   const handleAdminUpdate = async (updatedAdmin: AdminInfo) => {
     try {
+
+      if (!updatedAdmin.person.id_number) {
+        throw new Error(t("id_number_required"));
+      }
+
       setAdminDetails(updatedAdmin);
 
       // Actualizar también el estado de admin
@@ -126,6 +135,8 @@ const Home: React.FC = () => {
         first_name: updatedAdmin.person.first_name,
         last_name: updatedAdmin.person.last_name,
         status: "active",
+        phone: updatedAdmin.person.phone,
+        address: updatedAdmin.person.address,
         id_number: updatedAdmin.person.id_number,
       });
 
@@ -181,7 +192,9 @@ const Home: React.FC = () => {
                 {admin?.first_name} {admin?.last_name}
               </Text>
               <Text style={[styles.userName, { color: isDarkMode ? "#FFFFFF" : "#0458AB" }]}>
-                {t("admin_id")} <Text style={{ fontSize: 14 }}>{admin?.id_number}</Text>
+                <Text style={{ fontSize: 14 }}>
+                  {admin?.id_number || t("no_id_available")}
+                </Text>
               </Text>
             </View>
             {/* <View style={[styles.userTextContainer, { maxWidth: "70%" }]}>
@@ -196,7 +209,7 @@ const Home: React.FC = () => {
           </View>
           <TouchableOpacity style={styles.shareButton} onPress={toggleSettingsModal}>
             <Image
-              source={require("../assets/images/settings.png")} 
+              source={require("../assets/images/settings.png")}
               style={[styles.userIcono, { tintColor: isDarkMode ? colors.darkText : colors.primary }]}
             />
           </TouchableOpacity>
@@ -304,17 +317,17 @@ const Home: React.FC = () => {
           />
         </>
       )}
-    {/* Modal de configuración */}
-    <SettingsModal
-      visible={isSettingsModalVisible}
-      onClose={toggleSettingsModal}
-      onOpenJobsModal={() => setJobsModalVisible(true)}
-    />
+      {/* Modal de configuración */}
+      <SettingsModal
+        visible={isSettingsModalVisible}
+        onClose={toggleSettingsModal}
+        onOpenJobsModal={() => setJobsModalVisible(true)}
+      />
 
-    <ListJobsModal
-      visible={isJobsModalVisible}
-      onClose={() => setJobsModalVisible(false)}
-    />
+      <ListJobsModal
+        visible={isJobsModalVisible}
+        onClose={() => setJobsModalVisible(false)}
+      />
     </SafeAreaView>
   );
 };
@@ -341,39 +354,43 @@ const ActionButton: React.FC<ActionButtonProps> = ({ title, iconSource, isDarkMo
 const styles = StyleSheet.create({
   container: { flex: 1 },
   scrollContent: { flexGrow: 1, padding: 20 },
-  header: { 
-    flexDirection: "row", 
-    justifyContent: "space-between", 
-    alignItems: "center", 
+  header: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
     marginTop: 20,
     paddingVertical: 15,
-    paddingHorizontal: 20, },
-  userInfo: { flexDirection: "row", 
+    paddingHorizontal: 20,
+  },
+  userInfo: {
+    flexDirection: "row",
     alignItems: "center",
     flex: 1, // Permite que userInfo ocupe el espacio restante
   },
-  avatarContainer: { 
+  avatarContainer: {
     width: 40,
-    height: 40, 
-    borderRadius: 20, 
+    height: 40,
+    borderRadius: 20,
     overflow: "hidden",
-    marginRight: 10, },
-  userIcono: {  
+    marginRight: 10,
+  },
+  userIcono: {
     width: 30,
     height: 30,
     resizeMode: 'contain',
   },
-  userTextContainer: { 
-    marginLeft: 10, 
+  userTextContainer: {
+    marginLeft: 10,
     maxWidth: '50%', // Ocupa la mitad del espacio del contenedor userInfo
     justifyContent: 'center', // Centra el texto verticalmente si ocupa una sola línea 
   },
-  userName: { 
-  fontSize: 16,
-  fontWeight: 'bold',
-  lineHeight: 20, // Ajusta el espaciado entre líneas si el nombre se divide
+  userName: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    lineHeight: 20, // Ajusta el espaciado entre líneas si el nombre se divide
   },
-  shareButton: { padding: 10,
+  shareButton: {
+    padding: 10,
     marginLeft: 15,
   },
   divider: { height: 1, backgroundColor: colors.placeholderLight, marginVertical: 10 },

@@ -472,5 +472,8 @@
   "new_password": "Nueva contraseña",
   "option_tool":"Herramientas",
   "option_job":"Trabajos",
-  "option_jobs_and_tools":"Trabajos y Herramientas"
+  "option_jobs_and_tools":"Trabajos y Herramientas",
+  "work_completed_success": "Trabajo completado exitosamente!",
+  "order_final_warning": "Una vez finalizada, la orden no podrá ser modificada",
+  "failed_complete_work": "Error al completar el trabajo. Por favor intente nuevamente."
 }
