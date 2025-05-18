@@ -144,9 +144,9 @@ const Step2Form = ({ formData, updateFormData, onNext, onBack, isEditing }: Step
     const validateForm = (): boolean => {
         const newErrors: Record<string, string> = {};
 
-        if (!localData.number_licence?.trim()) {
-            newErrors.number_licence = 'License number is required';
-        }
+        // if (!localData.number_licence?.trim()) {
+        //     newErrors.number_licence = 'License number is required';
+        // }
 
         if (localData.zipcode && !/^\d{5}(-\d{4})?$/.test(localData.zipcode)) {
             newErrors.zipcode = 'Please enter a valid ZIP code (e.g., 12345 or 12345-6789)';

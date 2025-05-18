@@ -87,9 +87,7 @@ const Step1Form = ({ formData, updateFormData, onNext, isEditing }: StepProps) =
             newErrors.id_number = 'ID number is required';
         } else if (localData.id_number.length < 5) {
             newErrors.id_number = 'ID number must be at least 5 characters long';
-        } else if (!/^\d+$/.test(localData.id_number)) {
-            newErrors.id_number = 'ID number must contain only numbers';
-        }
+        } 
 
         if (!localData.address.trim()) {
             newErrors.address = t("address_required");
@@ -184,7 +182,7 @@ const Step1Form = ({ formData, updateFormData, onNext, isEditing }: StepProps) =
                         value={localData.id_number}
                         onChangeText={(text) => handleChange('id_number', text)}
                         error={errors.id_number}
-                        keyboardType="numeric"
+                        keyboardType="default"
                         required={true}
                     />
 
