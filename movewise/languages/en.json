@@ -475,6 +475,17 @@
     "tool_name_placeholder": "Enter tool name",
     "tool_created": "Tool Created",
     "tool_added": "The tool has been added successfully.",
-    "tool_creation_error": "Failed to create the tool."
+    "tool_creation_error": "Failed to create the tool.",
+    
+    "error_loading_customers": "Error loading customers:",
+    "could_not_load_customers": "Could not load customers.",
+    "delete_customer_confirmation": "Are you sure you want to delete this customer?",
+    "customer_deleted": "Customer Deleted",
+    "customer_deleted_successfully": "The customer was deleted successfully.",
+    "error_deleting_customer": "Error deleting customer:",
+    "could_not_delete_customer": "Could not delete the customer.",
+    "customers": "Customers",
+    "search_placeholder_customer": "Search customer",
+    "no_customers_available": "No customers available."
     
 }    

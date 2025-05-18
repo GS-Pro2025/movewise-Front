@@ -475,5 +475,16 @@
   "tool_name_placeholder": "Ingrese el nombre de la herramienta",
   "tool_created": "Herramienta Creada",
   "tool_added": "La herramienta se ha agregado correctamente.",
-  "tool_creation_error": "Error al crear la herramienta."
+  "tool_creation_error": "Error al crear la herramienta.",
+  
+  "error_loading_customers": "Error al cargar los clientes:",
+  "could_not_load_customers": "No se pudieron cargar los clientes.",
+  "delete_customer_confirmation": "¿Seguro que deseas eliminar este cliente?",
+  "customer_deleted": "Cliente Eliminado",
+  "customer_deleted_successfully": "El cliente fue eliminado correctamente.",
+  "error_deleting_customer": "Error al eliminar el cliente:",
+  "could_not_delete_customer": "No se pudo eliminar el cliente.",
+  "customers": "Clientes",
+  "search_placeholder_customer": "Buscar cliente",
+  "no_customers_available": "No hay clientes disponibles."
 }
