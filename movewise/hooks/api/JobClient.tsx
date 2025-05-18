@@ -3,7 +3,9 @@ export interface Job {
   id: number;
   name: string;
 }
-
+export interface CreateJobModel{
+  name: string;
+}
 export const ListJobs = async () => {
   try {
     const response = await apiClient.get('/jobs/');
@@ -15,9 +17,9 @@ export const ListJobs = async () => {
   }
 };
 
-export const createJob = async (job: any) => {
+export const createJob = async (job: CreateJobModel) => {
   try {
-    const response = await apiClient.post('/jobs', job);
+    const response = await apiClient.post('/jobs/', job);
     console.log('Job created:', response.data); // Log the response data for debugging
     return response.data;
   } catch (error) {
@@ -28,7 +30,7 @@ export const createJob = async (job: any) => {
 
 export const deleteJob = async (jobId: number) => {
   try {
-    const response = await apiClient.patch(`/jobs/${jobId}/delete/`);
+    const response = await apiClient.patch(`/job/${jobId}/delete/`);
     console.log('Job deleted:', response.data); // Log the response data for debugging
     return response.data;
   } catch (error) {

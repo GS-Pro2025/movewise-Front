@@ -15,12 +15,13 @@ import colors from "./Colors";
 import Toast from "react-native-toast-message";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useTranslation } from "react-i18next";
+import SettingsModal from "./Settings/SettingsModal";
+import ListJobsModal from "./Settings/Options/JobAndTools/ListJobsModal";
+import ListOfCustomersModal from "./Settings/Options/CompanyCustomers/ListOfCustomersModal";
 import { GetAdminInfo } from "@/hooks/api/GetAdminByToken";
 import InfoAdminModal from "./modals/InfoAdminModal";
 import EditAdminModal from "./modals/EditAdminModal";
 import { AdminInfo } from '@/hooks/api/GetAdminByToken';
-import SettingsModal from "./modals/SettingsModal";
-import ListJobsModal from "./modals/ListJobsModal";
 
 interface Admin {
   id: number;
@@ -52,6 +53,7 @@ const Home: React.FC = () => {
   const isDarkMode = theme === "dark";
   const [isSettingsModalVisible, setSettingsModalVisible] = useState(false);
   const [isJobsModalVisible, setJobsModalVisible] = useState(false);
+  const [isListOfCustomersModal,setListOfCustomersModal] = useState(false);
 
   const toggleSettingsModal = () => {
     setSettingsModalVisible(!isSettingsModalVisible);
@@ -294,6 +296,24 @@ const Home: React.FC = () => {
         </View>
       </ScrollView>
 
+    {/* Modal de configuración */}
+    <SettingsModal
+      visible={isSettingsModalVisible}
+      onClose={toggleSettingsModal}
+      onOpenJobsModal={() => setJobsModalVisible(true)}
+      onOpenCustomerListModal={() => setListOfCustomersModal(true)}
+    />
+
+    <ListJobsModal
+      visible={isJobsModalVisible}
+      onClose={() => setJobsModalVisible(false)}
+    />
+
+    <ListOfCustomersModal
+      visible={isListOfCustomersModal}
+      onClose={() => setListOfCustomersModal(false)}
+    />
+
       {/* Render modal only when we have data and modal is visible */}
       {adminDetails && (
         <>
@@ -317,17 +337,7 @@ const Home: React.FC = () => {
           />
         </>
       )}
-      {/* Modal de configuración */}
-      <SettingsModal
-        visible={isSettingsModalVisible}
-        onClose={toggleSettingsModal}
-        onOpenJobsModal={() => setJobsModalVisible(true)}
-      />
 
-      <ListJobsModal
-        visible={isJobsModalVisible}
-        onClose={() => setJobsModalVisible(false)}
-      />
     </SafeAreaView>
   );
 };
