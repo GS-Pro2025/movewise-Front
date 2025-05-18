@@ -116,7 +116,7 @@ const OperatorModal: React.FC<OperatorModalProps> = ({ visible, onClose, orderKe
         truck: op.truckId || null
       }));
       console.log("Payload enviado al backend para la asignación:", payload);
-      const response = await fetch(`${url}/assigns/bulk/`, {
+      const response = await fetch(`${url}assigns/bulk/`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

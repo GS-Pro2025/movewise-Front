@@ -97,9 +97,11 @@ const BaseOperatorView: React.FC<BaseOperatorViewProps> = ({
         setLoading(true);
         try {
             const response = await getWorkDailyByOperator(operatorId.toString());
-            // console.log("API response:", response);
+            console.log("API response:", response);
 
             if (response?.status === "success") {
+                console.log(`guardado en el estado: ${JSON.stringify(response.data)}`);
+                
                 setAssignments(response.data || []);
             } else {
                 console.error("API error:", response?.message);
