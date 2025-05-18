@@ -258,7 +258,7 @@ const OperatorModal: React.FC<OperatorModalProps> = ({ visible, onClose, orderKe
     if (selectedOperatorIndex !== null) {
       setOperators((prev) =>
         prev.map((op, i) =>
-          i === selectedOperatorIndex ? { ...op, role: t("team_leader") } : op
+          i === selectedOperatorIndex ? { ...op, role: 'leader' } : op
         )
       );
     }
