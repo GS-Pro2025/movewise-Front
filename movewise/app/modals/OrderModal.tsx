@@ -12,7 +12,7 @@ import colors from "../Colors";
 import Toast from "react-native-toast-message";
 import { DeleteOrder } from "@/hooks/api/DeleteOrder";
 import { useTranslation } from "react-i18next";
-
+import InfoOrderModal from './InfoOrderModal';
 interface OrderModalProps {
   visible: boolean;
   onClose: () => void;
@@ -22,9 +22,11 @@ interface OrderPerson {
   email: string;
   first_name: string | null;
   last_name: string | null;
+  address: string | null;
+  phone: number | null;
 }
 
-interface Order {
+export interface Order {
   key: string;
   key_ref: string;
   date: string | null;
@@ -37,12 +39,18 @@ interface Order {
   state_usa: string;
   person: OrderPerson;
   job: number;
+  evidence: string | null;
+  dispatch_ticket: string | null;
+  customer_factory: number | 0;
 }
+
 
 const OrderModal: React.FC<OrderModalProps> = ({ visible, onClose }) => {
 
   const { t } = useTranslation(); // Hook para traducción
   const [addOrderVisible, setAddOrderVisible] = useState(false);
+  const [infoModalVisible, setInfoModalVisible] = useState(false);
+  const [selectedOrderInfo, setSelectedOrderInfo] = useState<Order | null>(null);
   const [updateOrderVisible, setUpdateOrderVisible] = useState(false);
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
   const [orders, setOrders] = useState<Order[]>([]);
@@ -61,9 +69,8 @@ const OrderModal: React.FC<OrderModalProps> = ({ visible, onClose }) => {
     setRefreshing(true);
     try {
       const response = await getOrders();
-      console.log("API Response:", response);
 
-      // Asegurarse de que response es un array antes de usar filter/map
+      // Make sure response is an array before using filter/map
       if (!Array.isArray(response)) {
         console.error("La respuesta no es un array:", response);
         setOrders([]);
@@ -89,21 +96,26 @@ const OrderModal: React.FC<OrderModalProps> = ({ visible, onClose }) => {
           email: order.person?.email || '',
           first_name: order.person?.first_name || null,
           last_name: order.person?.last_name || null,
+          phone: order.person?.phone || null,
+          address: order.person?.address || null,
         },
         job: order.job,
+        evidence: order.evidence || null,
+        dispatch_ticket: order.dispatch_ticket,
+        customer_factory: order.customer_factory,
       }));
 
       setOrders(mappedOrders);
     } catch (error) {
       console.error(t("error_loading_orders"), error);
       Alert.alert(t("error"), t("could_not_load_orders"));
-      setOrders([]); // Asegurar que orders es un array vacío en caso de error
+      setOrders([]);
     } finally {
       setLoading(false);
       setRefreshing(false);
     }
   }, []);
-  
+
   useEffect(() => {
     loadOrders();
   }, [visible, loadOrders]);
@@ -235,7 +247,10 @@ const OrderModal: React.FC<OrderModalProps> = ({ visible, onClose }) => {
         >
           <TouchableHighlight
             underlayColor={isDarkMode ? colors.highlightDark : colors.highlightLight}
-            onPress={() => handleEditOrder(item)}
+            onPress={() => {
+              setSelectedOrderInfo(item);
+              setInfoModalVisible(true);
+            }}
           >
             <View style={[styles.orderItem, { backgroundColor: isDarkMode ? colors.third : colors.lightBackground }]}>
               <View style={styles.orderIconContainer}>
@@ -401,9 +416,40 @@ const OrderModal: React.FC<OrderModalProps> = ({ visible, onClose }) => {
         )}
         {/* End of Back and Save Buttons */}
       </SafeAreaView>
-      {/* Aquí controlamos la visibilidad de los modales AddOrderForm y UpdateOrder */}
+      {/* Aquí controlamos la visibilidad de los modales AddOrderForm, UpdateOrder -> MODAL DE INFORMACION*/}
+      <InfoOrderModal
+        visible={infoModalVisible}
+        onClose={() => setInfoModalVisible(false)}
+        order={selectedOrderInfo}
+      />
       <AddOrderForm visible={addOrderVisible} onClose={() => setAddOrderVisible(false)} />
-      <UpdateOrder visible={updateOrderVisible} onClose={() => setUpdateOrderVisible(false)} orderData={selectedOrder || {}} />
+      {/* <UpdateOrder visible={updateOrderVisible} onClose={() => setUpdateOrderVisible(false)} orderData={selectedOrder || {}} /> */}
+      <UpdateOrder
+        visible={updateOrderVisible}
+        onClose={() => setUpdateOrderVisible(false)}
+        orderData={{
+          key: selectedOrder?.key || '',
+          state_usa: selectedOrder?.state_usa || '',
+          date: selectedOrder?.date || null,
+          key_ref: selectedOrder?.key_ref || '',
+          person: {
+            first_name: selectedOrder?.person?.first_name || '',
+            last_name: selectedOrder?.person?.last_name || '',
+            email: selectedOrder?.person?.email || '',
+            phone: selectedOrder?.person?.phone || 0,
+            address: selectedOrder?.person?.address || '',
+          },
+          job: selectedOrder?.job,
+          weight: selectedOrder?.weight || '',
+          distance: selectedOrder?.distance || 0,
+          expense: selectedOrder?.expense || '',
+          income: selectedOrder?.income || '',
+          status: selectedOrder?.status,
+          payStatus: selectedOrder?.payStatus || 0,
+          customer_factory: selectedOrder?.customer_factory,
+          dispatch_ticket: selectedOrder?.dispatch_ticket || '',
+        }}
+      />
       <Toast />
     </Modal>
   );

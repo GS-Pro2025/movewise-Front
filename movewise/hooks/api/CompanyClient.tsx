@@ -1,8 +1,6 @@
 import apiClient from './apiClient';
 import { ModelCompany } from '@/models/ModelCompany';
 
-
-
 export const ListCompanies = async () => {
   try {
     const response = await apiClient.get('/companies');

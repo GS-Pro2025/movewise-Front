@@ -27,6 +27,8 @@
     "login_failed": "Login failed",
     "user": "user",
     "admin_id": "Admin #",
+    "cell_phone_placeholder": "example: 1483211",
+    "using_existing_dispatch_ticket": "using existing dispatch ticket",
     "create_daily": "Create\nDaily",
     "add_extra_cost": "Add extra cost",
     "edit_daily": "Edit\nDaily",
@@ -54,8 +56,8 @@
     "adding_extra_cost": "Adding extra cost:",
     "add_operator": "Add Operator",
     "current_order": "Current order is:",
-    "search_operator_id": "Search Operator ID",
-    "operator_id_placeholder": "Operator ID",
+    "search_operator_id": "Search Operator Code",
+    "operator_id_placeholder": "Operator Code",
     "name": "Name",
     "cost": "Cost (USD)",
     "cost_placeholder": "0.0",
@@ -67,7 +69,6 @@
     "search_valid_operator_first": "Search a valid operator first",
     "found": "found",
     "operator": "Operador",
-
     "add_order": "Add Order",
     "state": "State",
     "select_state": "Select State",
@@ -100,7 +101,6 @@
     "error_fetching_jobs": "Error fetching jobs",
     "error_fetching_companies": "Error fetching companies",
     "search": "Search...",
-
     "work_marked_as_completed": "Work marked as completed",
     "assignment_details": "Assignment Details",
     "no_reference": "No Reference",
@@ -116,7 +116,6 @@
     "complete_work": "Complete Work",
     "checklist_of_tools": "Checklist of Tools",
     "operator_message": "You are assigned as an operator for this job. Only leaders can assign tools and mark work as complete.",
-
     "truck_type": "Truck Type",
     "select_type": "Select Type",
     "light_load": "Light Load",
@@ -142,7 +141,6 @@
     "additional_cost_usd": "Additional Cost (USD)",
     "pending": "Pending",
     "saving_order": "Saving order...",
-
     "extra_costs": "Extra Costs",
     "type": "Type",
     "cancel_changes": "Cancel Changes?",
@@ -164,7 +162,6 @@
     "could_not_load_orders": "Could not load orders",
     "no_orders_available": "No orders available",
     "no_matching_orders": "No matching orders found",
-
     "trucks": "Trucks",
     "search_placeholder_truck": "Search by number or category",
     "edit": "Edit",
@@ -178,7 +175,6 @@
     "error_deleting_truck": "Error deleting truck:",
     "could_not_delete_truck": "Could not delete truck",
     "no_trucks_available": "No trucks available",
-
     "loading_operators": "Loading Operators...",
     "retry": "Retry",
     "no_operators_available": "No operators available",
@@ -188,7 +184,6 @@
     "not_available": "Not Available",
     "error_loading_operators": "Error loading operators:",
     "could_not_load_operators": "Could not load operators",
-
     "authentication_required": "Authentication required",
     "failed_to_fetch_assigned_operators": "Failed to fetch assigned operators",
     "assigned_operators": "Assigned operators",
@@ -203,19 +198,16 @@
     "unknown_error": "Unknown error",
     "all_assignments_saved": "All assignments saved successfully",
     "could_not_save_assignments": "Could not save the assignments",
-    
     "unsynchronized_operators": "Unsynchronized Operators",
     "truck": "Truck",
     "truck_id": "Truck ID",
     "no_assigned_operators": "No operators assigned yet",
     "back": "Back",
     "operator_name": "Operator Name",
-
     "no_truck_assignments_available": "No truck assignments available",
     "no_work_assignments_available": "No work assignments available",
     "truck_daily": "Truck Daily",
     "work_daily": "Work Daily",
-
     "create_order": "Create Order",
     "selected_order_null": "Selected order data is null or undefined.",
     "delete_order_confirmation": "Are you sure you want to delete this order?",
@@ -225,7 +217,6 @@
     "error_deleting_order": "Error deleting order",
     "order_not_deleted": "Order could not be deleted",
     "order_could_not_be_deleted": "The order is not able to be deleted.",
-
     "email_invalid_format": "Invalid email format.",
     "password_min_length": "Password must be at least 6 characters.",
     "username_required": "Username is required.",
@@ -246,7 +237,6 @@
     "registration_error": "Registration Error",
     "registration_failed": "Registration failed.",
     "fetch_states_error": "Error fetching states.",
-
     "register_user_admin": "Register User admin for {{companyName}}",
     "user_admin_credentials": "User admin credentials",
     "username_placeholder": "Username",
@@ -266,8 +256,7 @@
     "address_placeholder": "Address",
     "phone_placeholder": "Phone",
     "register_user_button": "REGISTER USER",
-
-    "not_available_summary_part":"N/A",
+    "not_available_summary_part": "N/A",
     "order_reference_missing": "Order reference is missing.",
     "api_response": "API Response:",
     "error_fetching_summary": "Error fetching summary:",
@@ -284,7 +273,6 @@
     "driver_salaries": "Driver Salaries",
     "total_cost": "Total Cost",
     "back_to_orders": "Back to Orders",
-
     "name_required": "Name is required.",
     "fuel_cost_required": "Fuel cost is required.",
     "invalid_currency_format": "Invalid currency format.",
@@ -297,7 +285,6 @@
     "must_be_greater_than_initial_odometer": "Must be greater than the initial odometer.",
     "response": "Response:",
     "error_sending_data": "Error sending data.",
-
     "truck_reference": "Truck Reference",
     "name_label": "Name",
     "enter_name_placeholder": "Enter name",
@@ -312,25 +299,21 @@
     "final_odometer_label": "Final Odometer",
     "enter_final_odometer_placeholder": "Enter final odometer",
     "distance_label": "Distance",
-
     "truck_not_found": "Truck not found",
     "saving_operator_data": "Saving operator data:",
     "add_truck": "Add Truck",
     "search_truck_id": "Search Truck Id",
     "number": "Number",
-
     "customer_first_name_required": "Customer First Name is required.",
     "in_progress": "In Progress",
     "order_updated_successfully": "Order updated successfully.",
     "error_in_handle_update": "Error in handleUpdate:",
     "unexpected_error_occurred": "An unexpected error occurred",
-    
     "edit_order": "Edit Order",
     "key_reference_placeholder": "Key/Reference",
     "customer_name_placeholder": "Customer Name",
     "job_placeholder": "Job",
     "edit_operators": "Edit Operators",
-
     "mandatory_fields": "Mandatory fields",
     "complete_required_fields": "Some fields are required, please complete them",
     "truck_updated": "Truck updated",
@@ -341,13 +324,11 @@
     "update_truck": "Update Truck",
     "category_placeholder": "Category",
     "save_changes": "Save Changes",
-
     "error_fetching_orders": "Error fetching orders:",
     "no_more_data": "No More Data",
     "no_more_orders_to_load": "There is no more orders to load.",
     "failed_to_load_orders": "Failed to load orders.",
     "pressed_item": "Pressed item:",
-
     "license_required": "License Number is required.",
     "license_min_length": "License Number must be at least 5 characters long.",
     "name_min_length": "Name must be at least 3 characters long.",
@@ -359,7 +340,6 @@
     "license_placeholder": "License Number",
     "zip_code_placeholder": "Zip Code",
     "register_company_button": "REGISTER COMPANY",
-
     "id_entered": "ID entered:",
     "enter_valid_id": "Please enter a valid identification number.",
     "incomplete_fields": "Incomplete Fields",
@@ -369,7 +349,6 @@
     "welcome_to": "Welcome to",
     "identification_number": "IDENTIFICATION NUMBER",
     "id_placeholder": "0192333213123",
-
     "select_option": "Select an option",
     "permission_denied": "Permission Denied",
     "allow_photo_access": "Please allow access to your photo library to upload images",
@@ -377,7 +356,6 @@
     "failed_to_select_image": "Failed to select image",
     "image_selected": "Image selected",
     "upload_image": "Upload Image",
-
     "operators_load_error": "Operators could not be loaded",
     "operator_minimum_age": "Operator must be at least 18 years old",
     "identification_type_required": "Identification type is required",
@@ -392,7 +370,6 @@
     "id_number": "Identification Number",
     "phone": "Phone",
     "next": "Next",
-
     "salary_required": "Salary is mandatory",
     "salary_invalid": "Enter a valid salary amount",
     "size_required": "Size is mandatory",
@@ -402,20 +379,36 @@
     "size": "Size",
     "shirt_name": "Name for the t-shirt",
     "photo": "Photo",
-    "active": "Active",
-    "inactive": "Inactive",
+    "active": "active",
+    "inactive": "inactive",
     "update": "Update",
-
     "truck_found": "Truck found",
-
     "Orders": "Orders",
-    "assignation_deleted":"The assignation has been deleted successfully",
-    "operator_registration":"Operator Registration",
-    "operator_edit":"Operator Edit",
-    "operator_unlink":"Operator Unlink",
-    "operator_not_found":"Operator not found",
-    "operator_not_found_message":"The operator was not found",
-    "operator_found_message":"The operator was found",
+    "order_details": "Order Details",
+    "not_found": "Not available",
+    "reference": "Reference",
+    "status_info_order": "Status",
+    "date_info_order": "Date",
+    "image_not_found": "image not Available",
+    "weight_info_order": "Weight",
+    "customer_info": "Customer Information",
+    "name_info_order": "Name",
+    "email_info_order": "Email",
+    "phone_info_order": "Phone",
+    "address_info_order": "Address",
+    "technical_info": "Technical Information",
+    "job_info_order": "Job",
+    "customer_factory": "Factory",
+    "state_info_order": "State",
+    "basic_info": "Basic Information",
+    "dispatch_ticket_info_order": "Dispatch Ticket",
+    "assignation_deleted": "The assignation has been deleted successfully",
+    "operator_registration": "Operator Registration",
+    "operator_edit": "Operator Edit",
+    "operator_unlink": "Operator Unlink",
+    "operator_not_found": "Operator not found",
+    "operator_not_found_message": "The operator was not found",
+    "operator_found_message": "The operator was found",
     "accept_terms_to_continue": "Accept the terms and conditions to continue",
     "terms_and_conditions": "Terms and Conditions",
     "terms_required": "Terms and conditions are required",
@@ -424,15 +417,11 @@
     "upload_dispatch_ticket": "Upload Dispatch Ticket",
     "dispatch_ticket_required": "Dispatch ticket is required",
     "dispatch_ticket_size_exceeded": "Dispatch ticket size exceeded, max 5mb",
-
-    
     "rented": "Rented",
     "owned": "Owned",
-
-    "vans": "Vans" ,
-    "Truck_26": "Truck 26" ,
+    "vans": "Vans",
+    "Truck_26": "Truck 26",
     "Trailer": "Trailer",
-
     "logout_error": "Logout error",
     "logout_success": "Logout successful",
     "option_tool":"Tools",
@@ -486,6 +475,21 @@
     "could_not_delete_customer": "Could not delete the customer.",
     "customers": "Customers",
     "search_placeholder_customer": "Search customer",
-    "no_customers_available": "No customers available."
+    "no_customers_available": "No customers available.",
+    "admin_info": "Admin info",
+    "personal_info": "Personal Info",
+    "first_name": "First name",
+    "user_name": "User name",
+    "created_at": "Created at",
+    "updated_at": "Updated at",
+    "id_type": "ID type",
+    "company_id": "Company ID",
+    "system_info": "System Info",
+    "account_settings": "Account settings",
+    "new_password": "New Password",
+    "work_completed_success": "Work completed successfully!",
+    "order_final_warning": "Once completed, the order cannot be modified",
+    "failed_complete_work": "Error completing the work. Please try again."
     
 }    
+

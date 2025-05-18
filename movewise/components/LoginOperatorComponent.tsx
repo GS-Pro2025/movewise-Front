@@ -49,13 +49,9 @@ const IdLoginScreen: React.FC = () => {
       // Espera corta para asegurar guardado
       await new Promise(resolve => setTimeout(resolve, 300));
   
-      const numericId = parseInt(id_number, 10);
-      if (isNaN(numericId)) {
-        throw new Error(t("invalid_id_format"));
-      }
   
-      console.log("🔎 Buscando operador con ID:", numericId);
-      const operatorData = await getOperatorByNumberId(numericId.toString());
+      console.log("🔎 Buscando operador con ID:", id_number);
+      const operatorData = await getOperatorByNumberId(id_number);
   
       if (!operatorData || operatorData.error) {
         throw new Error(t("operator_not_found"));
@@ -100,7 +96,7 @@ const IdLoginScreen: React.FC = () => {
           style={styles.input}
           placeholder={t("id_placeholder")}
           placeholderTextColor="#666"
-          keyboardType="numeric"
+          keyboardType="default"
           value={id_number}
           onChangeText={setIdNumber}
         />

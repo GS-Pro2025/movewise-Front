@@ -1,5 +1,14 @@
-import React, { useState, useRef } from 'react';
-import { Alert, View, Text, TextInput, TouchableOpacity, StyleSheet, useColorScheme, Platform } from 'react-native';
+import React, { useState } from 'react';
+import {
+  Alert,
+  View,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  StyleSheet,
+  useColorScheme,
+  Platform,
+} from 'react-native';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import * as ImagePicker from 'expo-image-picker';
 import { ALERT_TYPE, Toast } from 'react-native-alert-notification';
@@ -10,7 +19,6 @@ import { useActionSheet } from '@expo/react-native-action-sheet';
 import { Linking } from 'react-native';
 // Componentes de Ayuda
 function FormInput({ label, value, onChangeText, keyboardType = 'default', error, required = false }: FormInputProps): JSX.Element {
-
   return (
     <View style={styles.inputContainer}>
       <Text style={styles.inputLabel}>{label}</Text>
@@ -30,6 +38,7 @@ function FormInput({ label, value, onChangeText, keyboardType = 'default', error
 function DateInput({ label, value, onChangeDate, error, required = false }: DateInputProps): JSX.Element {
   const [showDatePicker, setShowDatePicker] = useState(false);
   const { t } = useTranslation();
+
   const handleDateChange = (event: any, selectedDate?: Date): void => {
     setShowDatePicker(Platform.OS === 'ios');
     if (selectedDate) {
@@ -48,7 +57,6 @@ function DateInput({ label, value, onChangeDate, error, required = false }: Date
         <Text style={styles.dateIcon}>📅</Text>
       </TouchableOpacity>
       {error && <Text style={styles.errorText}>{error}</Text>}
-
       {showDatePicker && (
         <DateTimePicker
           value={value ? new Date(value) : new Date()}
@@ -64,6 +72,7 @@ function DateInput({ label, value, onChangeDate, error, required = false }: Date
 function DropdownInput({ label, value, onChange, options, error, required = false }: DropdownInputProps): JSX.Element {
   const [isOpen, setIsOpen] = useState(false);
   const { t } = useTranslation();
+
   return (
     <View style={styles.inputContainer}>
       <Text style={styles.inputLabel}>{label}</Text>
@@ -75,7 +84,6 @@ function DropdownInput({ label, value, onChange, options, error, required = fals
         <Text style={styles.dropdownIcon}>▼</Text>
       </TouchableOpacity>
       {error && <Text style={styles.errorText}>{error}</Text>}
-
       {isOpen && (
         <View style={styles.dropdownMenu}>
           {options.map((option) => (
@@ -98,6 +106,7 @@ function DropdownInput({ label, value, onChange, options, error, required = fals
 
 function RadioGroup({ label, options, selectedValue, onSelect, error, required = false }: RadioGroupProps): JSX.Element {
   const { t } = useTranslation();
+
   return (
     <View style={styles.inputContainer}>
       <Text style={styles.inputLabel}>{label}</Text>
