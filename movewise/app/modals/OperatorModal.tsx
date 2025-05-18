@@ -33,7 +33,7 @@ interface AssignedOperator {
   id: number;
   first_name: string | null;
   last_name: string;
-  role?: string;
+  rol?: string;
   additional_costs: number;
   truck?: {
     id_truck: number;
@@ -81,15 +81,20 @@ const OperatorModal: React.FC<OperatorModalProps> = ({ visible, onClose, orderKe
         },
       });
 
+      
       if (!response.ok) {
         throw new Error(t("failed_to_fetch_assigned_operators"));
       }
+      
 
       const data = await response.json();
       const formattedData = data.map((operator: AssignedOperator) => ({
         ...operator,
-        role: operator.role || t("operator"),
+        role: operator.rol,
       }));
+
+      
+      console.log(`operadores asignados: ${JSON.stringify(formattedData)}`);
 
       setAssignedOperators(formattedData);
     } catch (error) {
@@ -106,7 +111,7 @@ const OperatorModal: React.FC<OperatorModalProps> = ({ visible, onClose, orderKe
       const payload = operators.map(op => ({
         operator: op.id_operator, // Cambiado de op.id a op.id_operator
         order: orderKey,
-        rol: op.role || t("operator"),
+        rol: op.role,
         additional_costs: op.additionalCosts || 0,
         truck: op.truckId || null
       }));
@@ -228,6 +233,7 @@ const OperatorModal: React.FC<OperatorModalProps> = ({ visible, onClose, orderKe
           i === selectedOperatorIndex ? { ...op, role: t("driver"), truckId: truckId } : op
         )
       );
+      console.log(`truck id seleccionado: ${truckId}`)
     }
     setTruckModalVisible(false); // Cerrar el TruckModal
   };

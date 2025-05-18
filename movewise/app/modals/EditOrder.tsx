@@ -14,6 +14,7 @@ import { ListJobs } from '@/hooks/api/JobClient';
 import { ListCompanies } from '@/hooks/api/CompanyClient';
 import { ListStates } from '@/hooks/api/StatesClient';
 import { useTranslation } from 'react-i18next';
+import { compareAsc } from 'date-fns';
 
 interface AddOrderModalProps {
   visible: boolean;
@@ -51,18 +52,17 @@ export default function AddOrderModal({ visible, onClose }: AddOrderModalProps) 
       status: t("pending"),
       date: date || "",
       key_ref: keyReference,
-      address: address,
       state_usa: state || "",
-      phone: cellPhone,
       person: {
         first_name: customerName,
         last_name: customerLastName,
         address: address,
         email: email,
+        phone:cellPhone,
       },
       weight: weight,
       job: job || "",
-      company: company || "",
+      customer_factory: parseInt(company || '0'),
     };
   
     try {
