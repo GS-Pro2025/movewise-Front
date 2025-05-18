@@ -17,6 +17,7 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useTranslation } from "react-i18next";
 import SettingsModal from "./Settings/SettingsModal";
 import ListJobsModal from "./Settings/Options/JobAndTools/ListJobsModal";
+import ListOfCustomersModal from "./Settings/Options/CompanyCustomers/ListOfCustomersModal";
 
 interface Admin {
   id: number;
@@ -41,6 +42,7 @@ const Home: React.FC = () => {
   const [Admin, setAdmin] = useState<Admin | null>(null);
   const [isSettingsModalVisible, setSettingsModalVisible] = useState(false);
   const [isJobsModalVisible, setJobsModalVisible] = useState(false);
+  const [isListOfCustomersModal,setListOfCustomersModal] = useState(false);
 
   const toggleSettingsModal = () => {
     setSettingsModalVisible(!isSettingsModalVisible);
@@ -185,11 +187,17 @@ const handleLogout = async () => {
       visible={isSettingsModalVisible}
       onClose={toggleSettingsModal}
       onOpenJobsModal={() => setJobsModalVisible(true)}
+      onOpenCustomerListModal={() => setListOfCustomersModal(true)}
     />
 
     <ListJobsModal
       visible={isJobsModalVisible}
       onClose={() => setJobsModalVisible(false)}
+    />
+
+    <ListOfCustomersModal
+      visible={isListOfCustomersModal}
+      onClose={() => setListOfCustomersModal(false)}
     />
     </SafeAreaView>
   );
