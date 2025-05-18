@@ -10,7 +10,6 @@ import { MaterialIcons } from '@expo/vector-icons';
 import { KeyboardAvoidingView, Platform } from 'react-native';
 import { job } from '@/models/ModelJob';
 import { ListJobs } from '@/hooks/api/JobClient';
-import { CustomerFactory, ListCompanies } from '@/hooks/api/CompanyClient';
 import { ListStates } from '@/hooks/api/StatesClient';
 import OperatorModal from './OperatorModal';
 import { useTranslation } from 'react-i18next';
@@ -19,12 +18,14 @@ import { ImageUpload } from './CreateOperator/HelperComponents';
 import { ImageInfo } from 'expo-image-picker'
 import * as FileSystem from 'expo-file-system';
 import { DeleteOrder } from '@/hooks/api/DeleteOrder';
+import { CustomerFactory } from '@/hooks/api/CustomerFactoryClient';
 interface AddOrderModalProps {
   visible: boolean;
   onClose: () => void;
 }
 
 export default function AddOrderModal({ visible, onClose }: AddOrderModalProps) {
+  if (!visible) return;
   const { t } = useTranslation();
   const [open, setOpen] = useState(false);
   const [state, setState] = useState<string | null>(null);
@@ -58,7 +59,7 @@ export default function AddOrderModal({ visible, onClose }: AddOrderModalProps) 
       onClose(); // close AddOrderForm
     }
   };
-  
+
   // Handler for deleting an order
   const handleDeleteOrder = (key: string) => {
     Alert.alert(
@@ -203,7 +204,11 @@ export default function AddOrderModal({ visible, onClose }: AddOrderModalProps) 
   const fetchJobs = async () => {
     try {
       const jobs = await ListJobs();
+      // console.log(`recibiendo jobs ${JSON.stringify(jobs)}`);
+
       setJobList(Array.isArray(jobs) ? jobs : []);
+
+      
     } catch (error) {
       console.error(t('error_fetching_jobs'), error);
       setJobList([]);
@@ -213,14 +218,14 @@ export default function AddOrderModal({ visible, onClose }: AddOrderModalProps) 
   const fetchCompanies = async () => {
     try {
       const companies = await CustomerFactory();
-      // console.log("Companies raw response:", companies);
+      console.log("Companies raw response:", companies);
 
       const companyArray = Array.isArray(companies) ? companies : [];
       setCompanyList(companyArray);
 
-      // console.log("Companies fetched:", companyArray);
-      // console.log("First company value:", companyArray[0]?.id_factory);
-      // console.log("First company type:", typeof companyArray[0]?.id_factory);
+      console.log("Companies fetched:", companyArray);
+      console.log("First company value:", companyArray[0]?.id_factory);
+      console.log("First company type:", typeof companyArray[0]?.id_factory);
     } catch (error) {
       console.error(t('error_fetching_companies'), error);
       setCompanyList([]);
