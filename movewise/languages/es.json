@@ -522,5 +522,11 @@
   "no_customers_available": "No hay clientes disponibles.",
   "work_completed_success": "Trabajo completado exitosamente!",
   "order_final_warning": "Una vez finalizada, la orden no podrá ser modificada",
-  "failed_complete_work": "Error al completar el trabajo. Por favor intente nuevamente."
+  "failed_complete_work": "Error al completar el trabajo. Por favor intente nuevamente.",
+  "create_customer": "Crear Cliente",
+  "customer_created": "Cliente creado",
+  "customer_added": "El cliente fue agregado correctamente",
+  "customer_creation_error": "No se pudo crear el cliente",
+  "search_operator_code":"Buscar operador por su codigo",
+  "operator_code_placeholder":"Codigo del operador"
 }

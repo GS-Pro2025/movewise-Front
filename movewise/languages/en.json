@@ -489,7 +489,13 @@
     "new_password": "New Password",
     "work_completed_success": "Work completed successfully!",
     "order_final_warning": "Once completed, the order cannot be modified",
-    "failed_complete_work": "Error completing the work. Please try again."
+    "failed_complete_work": "Error completing the work. Please try again.",
+    "create_customer": "Create Customer",
+    "customer_created": "Customer Created",
+    "customer_added": "The customer was added successfully",
+    "customer_creation_error": "Could not create the customer",
+    "search_operator_code":"Search operator by its code",
+    "operator_code_placeholder":"Operator code"
     
 }    
 

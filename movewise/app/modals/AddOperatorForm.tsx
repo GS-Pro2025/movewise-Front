@@ -201,15 +201,14 @@ export default function AddOperatorForm({ visible, onClose, onAddOperator, order
             <Text style={{ fontWeight: 'bold', color: colorScheme === 'dark' ? 'green' : '#0458AB' }}>{orderKey}</Text></Text>
 
           <ThemedView style={styles.container}>
-            <Text style={styles.text}>{t("search_operator_id")}</Text>
+            <Text style={styles.text}>{t("search_operator_code")}</Text>
             <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 12 }}>
               <TextInput
                 style={[styles.input, { flex: 0.8, marginRight: 8 }]}
-                placeholder={t('operator_id_placeholder')}
+                placeholder={t('operator_code_placeholder')}
                 placeholderTextColor="#9ca3af"
                 value={operatorId}
                 onChangeText={setOperatorId}
-                keyboardType="numeric"
               />
               <TouchableOpacity
                 style={{
