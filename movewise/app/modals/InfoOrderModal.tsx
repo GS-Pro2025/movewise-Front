@@ -1,21 +1,33 @@
 import React, { useState, useEffect } from 'react';
-import { 
-  Modal, 
-  SafeAreaView, 
-  ScrollView, 
-  View, 
-  Text, 
-  TouchableOpacity, 
-  Image, 
-  StyleSheet, 
+import {
+  Modal,
+  SafeAreaView,
+  ScrollView,
+  View,
+  Text,
+  TouchableOpacity,
+  Image,
+  StyleSheet,
   ActivityIndicator,
-  Linking 
+  Linking,
+  Dimensions
 } from 'react-native';
 import { useColorScheme } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useTranslation } from 'react-i18next';
 import colors from '../Colors';
 import { Order } from './OrderModal';
+import { GetAssignedOperators } from '@/hooks/api/GetAssignedOperators';
+
+
+interface Operator {
+  id_assign: number;
+  photo: string | null;
+  first_name: string;
+  last_name: string;
+  rol: string;
+}
+
 
 interface InfoOrderModalProps {
   visible: boolean;
@@ -24,6 +36,7 @@ interface InfoOrderModalProps {
 }
 
 const InfoOrderModal: React.FC<InfoOrderModalProps> = ({ visible, onClose, order }) => {
+  const { width } = Dimensions.get('window');
   const { t } = useTranslation();
   const colorScheme = useColorScheme();
   const isDarkMode = colorScheme === "dark";
@@ -31,6 +44,27 @@ const InfoOrderModal: React.FC<InfoOrderModalProps> = ({ visible, onClose, order
     dispatchTicket: 'loading' | 'valid' | 'invalid';
     evidence: 'loading' | 'valid' | 'invalid';
   }>({ dispatchTicket: 'loading', evidence: 'loading' });
+
+  const [operators, setOperators] = useState<Operator[]>([]);
+  const [loadingOperators, setLoadingOperators] = useState(true);
+
+  const fetchOperators = async (orderKey: string) => {
+    try {
+      setLoadingOperators(true);
+      const data = await GetAssignedOperators(orderKey);
+      setOperators(data);
+    } catch (error) {
+      console.error("Error fetching operators:", error);
+    } finally {
+      setLoadingOperators(false);
+    }
+  };
+
+  useEffect(() => {
+    if (visible && order?.key) {
+      fetchOperators(order.key);
+    }
+  }, [visible, order?.key]);
 
   // Base theme colors
   const backgroundColor = isDarkMode ? colors.darkBackground : colors.lightBackground;
@@ -59,7 +93,7 @@ const InfoOrderModal: React.FC<InfoOrderModalProps> = ({ visible, onClose, order
       } else {
         setImageStatus(prev => ({ ...prev, dispatchTicket: 'invalid' }));
       }
-      
+
       if (order.evidence) {
         verifyImage(order.evidence, 'evidence');
       } else {
@@ -78,7 +112,7 @@ const InfoOrderModal: React.FC<InfoOrderModalProps> = ({ visible, onClose, order
   };
 
   const getStatusColor = (status: string) => {
-    switch(status.toLowerCase()) {
+    switch (status.toLowerCase()) {
       case 'completed':
         return '#4CAF50';
       case 'pending':
@@ -92,7 +126,7 @@ const InfoOrderModal: React.FC<InfoOrderModalProps> = ({ visible, onClose, order
 
   const renderInfoItem = (label: string, value: string | number | undefined | null) => {
     const displayValue = value !== undefined && value !== null ? value : t('not_found');
-    
+
     return (
       <View style={styles.infoItem}>
         <Text style={[styles.label, { color: primaryColor }]}>{label}</Text>
@@ -101,6 +135,50 @@ const InfoOrderModal: React.FC<InfoOrderModalProps> = ({ visible, onClose, order
     );
   };
 
+  const renderOperators = () => (
+    <View style={[styles.card, { backgroundColor: cardBackground, borderColor }]}>
+      <View style={styles.cardHeader}>
+        <Ionicons name="people" size={20} color={primaryColor} style={styles.cardIcon} />
+        <Text style={[styles.cardTitle, { color: primaryColor }]}>{t("assigned_operators")}</Text>
+      </View>
+
+      <View style={styles.operatorsContainer}>
+        {loadingOperators ? (
+          <ActivityIndicator size="small" color={primaryColor} />
+        ) : operators.length === 0 ? (
+          <Text style={[styles.value, { color: textColor }]}>{t("no_operators")}</Text>
+        ) : (
+          <ScrollView
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            contentContainerStyle={styles.operatorsScroll}
+          >
+            {operators.map((operator) => (
+              <View key={operator.id_assign} style={styles.operatorCard}>
+                <View style={[styles.operatorImageContainer, { borderColor: primaryColor }]}>
+                  {operator.photo ? (
+                    <Image
+                      source={{ uri: operator.photo }}
+                      style={styles.operatorImage}
+                    />
+                  ) : (
+                    <Ionicons name="person" size={24} color={primaryColor} />
+                  )}
+                </View>
+                <Text style={[styles.operatorName, { color: textColor }]}>
+                  {operator.first_name} {operator.last_name}
+                </Text>
+                <Text style={[styles.operatorRole, { color: primaryColor }]}>
+                  {operator.rol}
+                </Text>
+              </View>
+            ))}
+          </ScrollView>
+        )}
+      </View>
+    </View>
+  );
+
   const renderImageSection = (url: string | null, type: 'dispatchTicket' | 'evidence') => {
     const status = imageStatus[type];
     const label = type === 'dispatchTicket' ? t('dispatch_ticket') : t('evidence');
@@ -108,11 +186,11 @@ const InfoOrderModal: React.FC<InfoOrderModalProps> = ({ visible, onClose, order
     return (
       <View style={[styles.card, { backgroundColor: cardBackground, borderColor }]}>
         <View style={styles.cardHeader}>
-          <Ionicons 
-            name={type === 'dispatchTicket' ? 'document-text' : 'camera'} 
-            size={20} 
+          <Ionicons
+            name={type === 'dispatchTicket' ? 'document-text' : 'camera'}
+            size={20}
             color={primaryColor}
-            style={styles.cardIcon} 
+            style={styles.cardIcon}
           />
           <Text style={[styles.cardTitle, { color: primaryColor }]}>{label}</Text>
         </View>
@@ -125,7 +203,7 @@ const InfoOrderModal: React.FC<InfoOrderModalProps> = ({ visible, onClose, order
           )}
 
           {status === 'valid' && url && (
-            <TouchableOpacity 
+            <TouchableOpacity
               style={styles.imageWrapper}
               onPress={() => Linking.openURL(url)}
               activeOpacity={0.8}
@@ -171,7 +249,7 @@ const InfoOrderModal: React.FC<InfoOrderModalProps> = ({ visible, onClose, order
           <View style={styles.placeholderIcon} />
         </View>
 
-        <ScrollView 
+        <ScrollView
           contentContainerStyle={styles.content}
           showsVerticalScrollIndicator={false}
         >
@@ -194,7 +272,7 @@ const InfoOrderModal: React.FC<InfoOrderModalProps> = ({ visible, onClose, order
               <Ionicons name="information-circle" size={20} color={primaryColor} style={styles.cardIcon} />
               <Text style={[styles.cardTitle, { color: primaryColor }]}>{t("basic_info")}</Text>
             </View>
-            
+
             <View style={styles.cardContent}>
               {renderInfoItem(t("date_info_order"), formatDate(order.date))}
               {renderInfoItem(t("weight_info_order"), `${order.weight} kg`)}
@@ -209,10 +287,10 @@ const InfoOrderModal: React.FC<InfoOrderModalProps> = ({ visible, onClose, order
               <Ionicons name="person" size={20} color={primaryColor} style={styles.cardIcon} />
               <Text style={[styles.cardTitle, { color: primaryColor }]}>{t("customer_info")}</Text>
             </View>
-            
+
             <View style={styles.cardContent}>
               {renderInfoItem(
-                t("name_info_order"), 
+                t("name_info_order"),
                 `${order.person?.first_name || ''} ${order.person?.last_name || ''}`
               )}
               {renderInfoItem(t("email_info_order"), order.person?.email)}
@@ -227,7 +305,7 @@ const InfoOrderModal: React.FC<InfoOrderModalProps> = ({ visible, onClose, order
               <Ionicons name="build" size={20} color={primaryColor} style={styles.cardIcon} />
               <Text style={[styles.cardTitle, { color: primaryColor }]}>{t("technical_info")}</Text>
             </View>
-            
+
             <View style={styles.cardContent}>
               {renderInfoItem(t("customer_factory"), `#${order.customer_factory} - ${order.customer_factory_name}`)}
             </View>
@@ -236,6 +314,7 @@ const InfoOrderModal: React.FC<InfoOrderModalProps> = ({ visible, onClose, order
           {/* Images */}
           {renderImageSection(order.dispatch_ticket, 'dispatchTicket')}
           {renderImageSection(order.evidence, 'evidence')}
+          {renderOperators()}
         </ScrollView>
       </SafeAreaView>
     </Modal>
@@ -388,6 +467,43 @@ const styles = StyleSheet.create({
     marginTop: 12,
     fontSize: 16,
     fontStyle: 'italic',
+  },
+  //operators styles
+   operatorsScroll: {
+    paddingRight: 16, // Previene el corte del último elemento
+  },
+  operatorsContainer: {
+    padding: 16,
+  },
+  operatorCard: {
+    alignItems: 'center',
+    marginRight: 20,
+  },
+  operatorImageContainer: {
+    width: 60,
+    height: 60,
+    borderRadius: 30,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: '#f0f0f0',
+    borderWidth: 1,
+    marginBottom: 8,
+    overflow: 'hidden',
+  },
+  operatorImage: {
+    width: '100%',
+    height: '100%',
+  },
+  operatorName: {
+    fontSize: 12,
+    fontWeight: '500',
+    textAlign: 'center',
+    maxWidth: 80,
+  },
+  operatorRole: {
+    fontSize: 10,
+    textTransform: 'uppercase',
+    marginTop: 4,
   },
 });
 

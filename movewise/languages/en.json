@@ -14,6 +14,7 @@
     "forgot_password": "Forgot your password?",
     "login_button": "LOGIN",
     "operator_daily_work": "OPERATOR DAILY WORK",
+    "no_operators": "There are no operators in this order",
     "no_company": "Don't have a company?",
     "register_company": "REGISTER COMPANY",
     "email_required": "Email is required.",
@@ -307,6 +308,7 @@
     "search_truck_id": "Search Truck Id",
     "number": "Number",
     "customer_first_name_required": "Customer First Name is required.",
+    "customer_first_name": "Customer Name",
     "in_progress": "In Progress",
     "order_updated_successfully": "Order updated successfully.",
     "error_in_handle_update": "Error in handleUpdate:",
@@ -488,5 +490,8 @@
     "new_password": "New Password",
     "work_completed_success": "Work completed successfully!",
     "order_final_warning": "Once completed, the order cannot be modified",
-    "failed_complete_work": "Error completing the work. Please try again."
+    "failed_complete_work": "Error completing the work. Please try again.",
+    "customer_client": "customer client",
+    "edit_profile": "Edit Profile",
+    "could_not_delete_assignation": "could not delete assignation"
 }
