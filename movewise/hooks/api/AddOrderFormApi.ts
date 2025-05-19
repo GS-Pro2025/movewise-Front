@@ -17,7 +17,7 @@ const AddOrderformApi = () => {
       console.log(`token al enviar orden: ${token}`);
       console.log(`ruta que se usa: ${url}orders/`);
       
-      const response = await fetch(url + 'orders/', {
+      const response = await fetch(url + '/orders/', {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`,

@@ -206,6 +206,7 @@
   "could_not_delete_truck": "No se pudo eliminar el camión",
   "no_trucks_available": "No hay camiones disponibles",
   "loading_operators": "Cargando operadores...",
+  "no_operators": "No hay operadores en esta orden",
   "retry": "Reintentar",
   "no_operators_available": "No hay operadores disponibles",
   "loading_more_operators": "Cargando más operadores...",
@@ -523,5 +524,9 @@
   "no_customers_available": "No hay clientes disponibles.",
   "work_completed_success": "Trabajo completado exitosamente!",
   "order_final_warning": "Una vez finalizada, la orden no podrá ser modificada",
-  "failed_complete_work": "Error al completar el trabajo. Por favor intente nuevamente."
+  "failed_complete_work": "Error al completar el trabajo. Por favor intente nuevamente.",
+  "customer_client": "Empresa Cliente",
+  "edit_profile": "Editar Perfil",
+  "customer_first_name": "Nombre del cliente",
+  "could_not_delete_assignation":"No se pudo eliminar la asignacion"
 }

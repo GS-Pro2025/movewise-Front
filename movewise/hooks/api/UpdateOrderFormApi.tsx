@@ -36,7 +36,7 @@ const UpdateOrderFormApi = () => {
     setErrorData(null);
 
     try {
-      const response = await fetch(`${url}orders/${orderKey}/`, {
+      const response = await fetch(`${url}/orders/${orderKey}/`, {
         method: 'PATCH',
         headers: {
           'Authorization': `Bearer ${token}`,

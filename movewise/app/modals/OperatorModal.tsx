@@ -30,6 +30,7 @@ interface Operator {
 }
 
 interface AssignedOperator {
+  id_assign: number;
   id: number;
   first_name: string | null;
   last_name: string;
@@ -74,7 +75,7 @@ const OperatorModal: React.FC<OperatorModalProps> = ({ visible, onClose, orderKe
       const token = await AsyncStorage.getItem("userToken");
       if (!token) throw new Error(t("authentication_required"));
 
-      const response = await fetch(`${url}assigns/order/${orderKey}/operators/`, {
+      const response = await fetch(`${url}/assigns/order/${orderKey}/operators/`, {
         method: "GET",
         headers: {
           Authorization: `Bearer ${token}`,
@@ -143,7 +144,7 @@ const OperatorModal: React.FC<OperatorModalProps> = ({ visible, onClose, orderKe
       }));
 
       // console.log("Payload enviado al backend para la asignación:", payload);
-      const response = await fetch(`${url}assigns/bulk/`, {
+      const response = await fetch(`${url}/assigns/bulk/`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -218,7 +219,6 @@ const OperatorModal: React.FC<OperatorModalProps> = ({ visible, onClose, orderKe
     );
   };
 
-
   const handleDeleteOperator = (index: number, isAssigned: boolean) => {
     Alert.alert(
       t("confirm_deletion"),
@@ -230,22 +230,22 @@ const OperatorModal: React.FC<OperatorModalProps> = ({ visible, onClose, orderKe
           style: "destructive",
           onPress: () => {
             if (isAssigned) {
-              setAssignedOperators((prev) => prev.filter((_, i) => i !== index));
-              //Delete the assignation
-              const operatorId = assignedOperators[index].id;
-              deleteAssign(operatorId).then(() => {
-                Toast.show({
-                  type: "success",
-                  text1: t("success"),
-                  text2: t("assignation_deleted"),
+              const assignmentId = assignedOperators[index].id_assign;
+              deleteAssign(assignmentId)
+                .then(() => {
+                  setAssignedOperators(prev => prev.filter((_, i) => i !== index));
+                  Toast.show({
+                    type: "success",
+                    text1: t("success"),
+                    text2: t("assignation_deleted"),
+                  });
+                  fetchAssignedOperators();
+                })
+                .catch((error) => {
+                  console.error("Error deleting assignation:", error);
+                  Alert.alert(t("error"), t("could_not_delete_assignation"));
                 });
-                fetchAssignedOperators(); // Refresh the assigned operators list
-              }
-              ).catch((error) => {
-                console.error("Error deleting assignation:", error);
-                Alert.alert(t("error"), t("could_not_delete_assignation"));
-              }
-              );
+
             } else {
               setOperators((prev) => prev.filter((_, i) => i !== index));
             }
@@ -304,6 +304,7 @@ const OperatorModal: React.FC<OperatorModalProps> = ({ visible, onClose, orderKe
     }
     setRoleSelectorVisible(false);
   };
+  
   const renderOperatorItem = (operator: any, index: number, isAssigned: boolean) => {
     const renderRightActions = () => (
       <View style={styles.rightSwipeActions}>

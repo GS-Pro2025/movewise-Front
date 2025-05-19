@@ -29,7 +29,7 @@ import apiClient from "./apiClient";
  */
 export const registerUserWithCompany = async (body: any) => {
   try {
-    const response = await apiClient.post("registerWithCompany/", body);
+    const response = await apiClient.post("/registerWithCompany/", body);
     console.log("Response from registerUserWithCompany:", response.data);
     return response.data;
   } catch (error) {
