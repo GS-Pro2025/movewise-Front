@@ -33,7 +33,6 @@ export default function AddOperatorForm({ visible, onClose, onAddOperator, order
     return null;
   }
 
-  // Notify message
   function notifyMessage(msg: string) {
     if (Platform.OS === 'android') {
       ToastAndroid.show(msg, ToastAndroid.SHORT)
@@ -47,43 +46,48 @@ export default function AddOperatorForm({ visible, onClose, onAddOperator, order
   const [fetchedOperatorId, setFetchedOperatorId] = useState<number | null>(null);
   const colorScheme = useColorScheme();
 
-  const handleSearch = () => {
-    if (operatorId.length > 0) {
-      try {
-        console.log("Buscando operador con cedula:", operatorId);
-        getOperatorByCode(operatorId).then(data => {
-          if (data.id_operator) {
-            console.log("Datos recibidos:", data);
-            Toast.show({
-              type: "success",
-              text1: t('operator_found'),
-              text2: t('operator_found_message', { name: `${data.first_name} ${data.last_name}` })
-            });
-            // Actualiza estos accesos
-            setName(`${data.first_name} ${data.last_name}`);
-            setCost(data.salary ? data.salary.toString() : '');
-            setFetchedOperatorId(data.id_operator);
-          } else {
-            Toast.show({
-              type: "error",
-              text1: t('operator_not_found'),
-              text2: t('operator_not_found_message')
-            });
-            resetForm();
-          }
+  const handleSearch = async () => {
+    if (!operatorId.trim()) {
+      resetForm();
+      return;
+    }
+
+    try {
+      console.log("Buscando operador con cédula:", operatorId);
+      const data = await getOperatorByCode(operatorId);
+
+      if (data && data.id_operator) {
+        console.log("Datos recibidos:", data);
+        Toast.show({
+          type: "success",
+          text1: t('operator_found'),
+          text2: t('operator_found_message', {
+            name: `${data.first_name} ${data.last_name}`
+          })
         });
-      } catch (error) {
-        resetForm();
+        setName(`${data.first_name} ${data.last_name}`);
+        setCost(data.salary?.toString() ?? '');
+        setFetchedOperatorId(data.id_operator);
+      } else {
         Toast.show({
           type: "error",
           text1: t('operator_not_found'),
           text2: t('operator_not_found_message')
         });
+        resetForm();
       }
-    } else {
+
+    } catch (error) {
+      console.error("Error al buscar operador:", error);
+      Toast.show({
+        type: "error",
+        text1: t('operator_not_found'),
+        text2: t('operator_not_found_message')
+      });
       resetForm();
     }
   };
+
 
   // Función auxiliar para resetear el formulario
   const resetForm = () => {
@@ -190,89 +194,89 @@ export default function AddOperatorForm({ visible, onClose, onAddOperator, order
 
   return (
     <>
-    <Modal visible={visible} transparent animationType="slide">
-      <SafeAreaView style={{ flex: 1, backgroundColor: colorScheme === 'dark' ? '#112A4A' : '#FFFFFF' }}>
-        <ScrollView contentContainerStyle={{ flexGrow: 1 }}>
-          <View style={styles.header}>
-            <Text style={styles.textLarge}>{t('add_operator')}</Text>
-          </View>
-          <Text style={[styles.text, { fontSize: 12, textAlign: 'center' }]}>
-            {t("current_order")} #
-            <Text style={{ fontWeight: 'bold', color: colorScheme === 'dark' ? 'green' : '#0458AB' }}>{orderKey}</Text></Text>
+      <Modal visible={visible} transparent animationType="slide">
+        <SafeAreaView style={{ flex: 1, backgroundColor: colorScheme === 'dark' ? '#112A4A' : '#FFFFFF' }}>
+          <ScrollView contentContainerStyle={{ flexGrow: 1 }}>
+            <View style={styles.header}>
+              <Text style={styles.textLarge}>{t('add_operator')}</Text>
+            </View>
+            <Text style={[styles.text, { fontSize: 12, textAlign: 'center' }]}>
+              {t("current_order")} #
+              <Text style={{ fontWeight: 'bold', color: colorScheme === 'dark' ? 'green' : '#0458AB' }}>{orderKey}</Text></Text>
 
-          <ThemedView style={styles.container}>
-            <Text style={styles.text}>{t("search_operator_id")}</Text>
-            <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 12 }}>
+            <ThemedView style={styles.container}>
+              <Text style={styles.text}>{t("search_operator_id")}</Text>
+              <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 12 }}>
+                <TextInput
+                  style={[styles.input, { flex: 0.8, marginRight: 8 }]}
+                  placeholder={t('operator_id_placeholder')}
+                  placeholderTextColor="#9ca3af"
+                  value={operatorId}
+                  onChangeText={setOperatorId}
+                  keyboardType="default"
+                />
+                <TouchableOpacity
+                  style={{
+                    backgroundColor: colorScheme === 'dark' ? '#FFFFFF' : '#0458AB',
+                    height: 45,
+                    flex: 0.2,
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    borderRadius: 8,
+                  }}
+                  onPress={handleSearch}
+                >
+                  <MaterialIcons
+                    name="search"
+                    size={22}
+                    color={colorScheme === 'dark' ? '#0458AB' : '#FFFFFF'}
+                  />
+                </TouchableOpacity>
+              </View>
+
+              <Text style={styles.text}>{t('name')}</Text>
               <TextInput
-                style={[styles.input, { flex: 0.8, marginRight: 8 }]}
-                placeholder={t('operator_id_placeholder')}
+                style={styles.input}
+                placeholder={t('name_placeholder')}
                 placeholderTextColor="#9ca3af"
-                value={operatorId}
-                onChangeText={setOperatorId}
+                value={name}
+                onChangeText={setName}
+                editable={false}
+              />
+              <Text style={styles.text}>{t('cost')}</Text>
+              <TextInput
+                style={styles.input}
+                placeholder={t('cost_placeholder')}
+                placeholderTextColor="#9ca3af"
+                value={cost}
+                onChangeText={setCost}
+                editable={false}
+              />
+              <Text style={styles.text}>
+                {t('additional_cost')}
+              </Text>
+              <TextInput
+                style={styles.input}
+                placeholder={t('additional_cost_placeholder')}
+                placeholderTextColor="#9ca3af"
+                value={additionalCost}
+                onChangeText={setAdditionalCost}
                 keyboardType="numeric"
               />
-              <TouchableOpacity
-                style={{
-                  backgroundColor: colorScheme === 'dark' ? '#FFFFFF' : '#0458AB',
-                  height: 45,
-                  flex: 0.2,
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  borderRadius: 8,
-                }}
-                onPress={handleSearch}
-              >
-                <MaterialIcons
-                  name="search"
-                  size={22}
-                  color={colorScheme === 'dark' ? '#0458AB' : '#FFFFFF'}
-                />
-              </TouchableOpacity>
-            </View>
 
-            <Text style={styles.text}>{t('name')}</Text>
-            <TextInput
-              style={styles.input}
-              placeholder={t('name_placeholder')}
-              placeholderTextColor="#9ca3af"
-              value={name}
-              onChangeText={setName}
-              editable={false}
-            />
-            <Text style={styles.text}>{t('cost')}</Text>
-            <TextInput
-              style={styles.input}
-              placeholder={t('cost_placeholder')}
-              placeholderTextColor="#9ca3af"
-              value={cost}
-              onChangeText={setCost}
-              editable={false}
-            />
-            <Text style={styles.text}>
-              {t('additional_cost')}
-            </Text>
-            <TextInput
-              style={styles.input}
-              placeholder={t('additional_cost_placeholder')}
-              placeholderTextColor="#9ca3af"
-              value={additionalCost}
-              onChangeText={setAdditionalCost}
-              keyboardType="numeric"
-            />
-
-            <View style={styles.buttonContainer}>
-              <TouchableOpacity style={styles.buttonCancel} onPress={onClose}>
-                <Text style={styles.buttonTextCancel}>{t('cancel')}</Text>
-              </TouchableOpacity>
-              <TouchableOpacity style={styles.buttonSave} onPress={handleSubmit}>
-                <Text style={styles.buttonTextSave}>{t('add')}</Text>
-              </TouchableOpacity>
-            </View>
-          </ThemedView>
-        </ScrollView>
-      </SafeAreaView>
-      <Toast/>
-    </Modal>
+              <View style={styles.buttonContainer}>
+                <TouchableOpacity style={styles.buttonCancel} onPress={onClose}>
+                  <Text style={styles.buttonTextCancel}>{t('cancel')}</Text>
+                </TouchableOpacity>
+                <TouchableOpacity style={styles.buttonSave} onPress={handleSubmit}>
+                  <Text style={styles.buttonTextSave}>{t('add')}</Text>
+                </TouchableOpacity>
+              </View>
+            </ThemedView>
+          </ScrollView>
+        </SafeAreaView>
+        <Toast />
+      </Modal>
     </>
   );
 }

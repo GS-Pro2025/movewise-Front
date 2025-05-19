@@ -1,7 +1,7 @@
 import axios, { AxiosInstance } from "axios";
 
-export const  url = 'http:///'
-
+// export const  url = 'http://142.93.190.199'
+export const  url = 'http://192.168.18.164:8000/'
 
 import AsyncStorage from "@react-native-async-storage/async-storage";
 let token = null;
@@ -27,7 +27,7 @@ apiClient.interceptors.request.use(async (config) => {
 apiClient.interceptors.response.use(
   (response) => response,
   (error) => {
-    console.error("API Error:", error.response?.data || error.message);
+    // console.error("API Error:", error.response?.data || error.message);
     return Promise.reject(error);
   }
 );
