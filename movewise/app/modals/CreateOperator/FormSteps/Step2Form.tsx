@@ -285,12 +285,18 @@ const Step2Form = ({ formData, updateFormData, onNext, onBack, isEditing }: Step
                             />
 
                             <DropdownInput
-                                label={`${t("gender")} (*)`}
-                                value={currentSon.gender || 'M'}
-                                onChange={(value) => handleSonChange('gender', value)}
-                                options={[{ label: t("male"), value: 'M' }, { label: t("female"), value: 'F' }]}
-                                error={sonErrors.gender}
-                                required={true}
+                            label={`${t("gender")} (*)`}
+                            value={
+                                currentSon.gender === 'M'
+                                ? t("male")
+                                : currentSon.gender === 'F'
+                                    ? t("female")
+                                    : ''
+                            }
+                            onChange={(value) => handleSonChange('gender', value)}
+                            options={['M', 'F']}
+                            error={sonErrors.gender}
+                            required={true}
                             />
 
                             <TouchableOpacity style={styles.addButton} onPress={addSon}>
