@@ -133,12 +133,19 @@ const Step3Form = ({ formData, updateFormData, onBack, onSubmit, isEditing }: St
                 />
 
                 <DropdownInput
-                    label={t("status")}
-                    value={localData.status}
-                    onChange={(value) => handleChange('status', value)}
-                    options={[t("active"), t("inactive")]}
-                    error={errors.status}
+                label={t("status")}
+                value={
+                    localData.status === "active"
+                    ? t("active")
+                    : localData.status === "inactive"
+                        ? t("inactive")
+                        : ""
+                }
+                onChange={(value) => handleChange("status", value)}
+                options={["active", "inactive"]}
+                error={errors.status}
                 />
+
 
                 <View style={styles.buttonContainer}>
                     <TouchableOpacity style={styles.cancelButton} onPress={onBack}>
