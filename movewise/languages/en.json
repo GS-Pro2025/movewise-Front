@@ -3,8 +3,9 @@
     "no_items_message": "No items available",
     "operators": "Operators",
     "name_operator": "Operator name",
-    "driver": "Driver",
+    "driver": "driver",
     "team_leader": "Team leader",
+    "truck_not_selected": "You must select a valid truck",
     "assigned_role": "Assigned {{role}} to {{name}}",
     "welcome_title": "Welcome to\nMovewise",
     "email_placeholder": "Email",
@@ -16,6 +17,7 @@
     "no_company": "Don't have a company?",
     "register_company": "REGISTER COMPANY",
     "email_required": "Email is required.",
+    "invalid_email_format": "Invalid email format",
     "email_invalid": "Invalid email format.",
     "password_required": "Password is required.",
     "password_length": "Password must be at least 6 characters.",
@@ -424,9 +426,9 @@
     "Trailer": "Trailer",
     "logout_error": "Logout error",
     "logout_success": "Logout successful",
-    "option_tool":"Tools",
-    "option_job":"Jobs",
-    "option_jobs_and_tools":"Jobs and Tools",
+    "option_tool": "Tools",
+    "option_job": "Jobs",
+    "option_jobs_and_tools": "Jobs and Tools",
     "Create_job": "Create Job",
     "job_name": "Job Name",
     "job_name_placeholder": "Enter job name",
@@ -443,10 +445,9 @@
     "jobs": "Jobs",
     "search_placeholder_job": "Search jobs...",
     "no_jobs_available": "No jobs available.",
-    "settings":"Settings",
-    "close":"Close",
-    "customer_factory_option":"Company client",
-
+    "settings": "Settings",
+    "close": "Close",
+    "customer_factory_option": "Company client",
     "delete_tool_confirmation": "Are you sure you want to delete this tool?",
     "tool_deleted": "Tool Deleted",
     "tool_deleted_successfully": "The tool has been deleted successfully.",
@@ -458,14 +459,12 @@
     "could_not_load_tools": "Could not load tools.",
     "no_tools_in_job": "No tools in this job.",
     "tools_in_job": "Tools in Job",
-
     "create_tool": "Create Tool",
     "tool_name": "Tool Name",
     "tool_name_placeholder": "Enter tool name",
     "tool_created": "Tool Created",
     "tool_added": "The tool has been added successfully.",
     "tool_creation_error": "Failed to create the tool.",
-    
     "error_loading_customers": "Error loading customers:",
     "could_not_load_customers": "Could not load customers.",
     "delete_customer_confirmation": "Are you sure you want to delete this customer?",
@@ -490,6 +489,4 @@
     "work_completed_success": "Work completed successfully!",
     "order_final_warning": "Once completed, the order cannot be modified",
     "failed_complete_work": "Error completing the work. Please try again."
-    
-}    
-
+}

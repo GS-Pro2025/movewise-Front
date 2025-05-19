@@ -81,11 +81,11 @@ const OperatorModal: React.FC<OperatorModalProps> = ({ visible, onClose, orderKe
         },
       });
 
-      
+
       if (!response.ok) {
         throw new Error(t("failed_to_fetch_assigned_operators"));
       }
-      
+
 
       const data = await response.json();
       const formattedData = data.map((operator: AssignedOperator) => ({
@@ -93,7 +93,7 @@ const OperatorModal: React.FC<OperatorModalProps> = ({ visible, onClose, orderKe
         role: operator.rol,
       }));
 
-      
+
       console.log(`operadores asignados: ${JSON.stringify(formattedData)}`);
 
       setAssignedOperators(formattedData);
@@ -103,19 +103,46 @@ const OperatorModal: React.FC<OperatorModalProps> = ({ visible, onClose, orderKe
       setLoading(false);
     }
   };
+  const validateFields = () => {
+    const errors = operators.filter(op =>
+      op.role === "driver" && !op.truckId
+    );
+
+    if (errors.length > 0) {
+      Toast.show({
+        type: "error",
+        text1: t("error"),
+        text2: t("drivers_need_truck"),
+      });
+      return false;
+    }
+    return true;
+  };
+
   const handleSave = async () => {
     try {
       const token = await AsyncStorage.getItem("userToken");
       if (!token) throw new Error(t("authentication_required"));
-      console.log("Operadores antes de construir el payload:", operators);
+      // console.log("Operadores antes de construir el payload:", operators);
+
+      if (!validateFields()) {
+        Toast.show({
+          type: "error",
+          text1: t("error"),
+          text2: t("validation_error"),
+        });
+        return;
+      }
+
       const payload = operators.map(op => ({
-        operator: op.id_operator, // Cambiado de op.id a op.id_operator
+        operator: op.id_operator,
         order: orderKey,
-        rol: op.role,
+        rol: op.role?.toLowerCase() || '',
         additional_costs: op.additionalCosts || 0,
-        truck: op.truckId || null
+        truck: op.role === "driver" ? op.truckId : null
       }));
-      console.log("Payload enviado al backend para la asignación:", payload);
+
+      // console.log("Payload enviado al backend para la asignación:", payload);
       const response = await fetch(`${url}assigns/bulk/`, {
         method: 'POST',
         headers: {
@@ -126,7 +153,8 @@ const OperatorModal: React.FC<OperatorModalProps> = ({ visible, onClose, orderKe
       });
 
       const responseData = await response.json();
-      console.log("Respuesta del backend:", responseData);
+      // console.log("Respuesta del backend:", responseData);
+
       if (!response.ok) {
         if (response.status === 207) {
           const conflictMessages = responseData.data.conflicts
@@ -226,17 +254,7 @@ const OperatorModal: React.FC<OperatorModalProps> = ({ visible, onClose, orderKe
       ]
     );
   };
-  const handleTruckSelection = (truckId: number) => {
-    if (selectedOperatorIndex !== null) {
-      setOperators((prev) =>
-        prev.map((op, i) =>
-          i === selectedOperatorIndex ? { ...op, role: t("driver"), truckId: truckId } : op
-        )
-      );
-      console.log(`truck id seleccionado: ${truckId}`)
-    }
-    setTruckModalVisible(false); // Cerrar el TruckModal
-  };
+
   const handleSelectRole = (index: number) => {
     setSelectedOperatorIndex(index);
     setRoleSelectorVisible(true);
@@ -244,27 +262,48 @@ const OperatorModal: React.FC<OperatorModalProps> = ({ visible, onClose, orderKe
 
   const assignDriver = () => {
     if (selectedOperatorIndex !== null) {
-      setOperators((prev) =>
+      setOperators(prev =>
         prev.map((op, i) =>
-          i === selectedOperatorIndex ? { ...op, role: t("driver") } : op
+          i === selectedOperatorIndex
+            ? { ...op, role: "driver", truckId: undefined }
+            : op
         )
       );
+      setTimeout(() => setTruckModalVisible(true), 100);
     }
     setRoleSelectorVisible(false);
-    setTruckModalVisible(true); // Show TruckModal after assigning driver
+  };
+
+  const handleTruckSelection = (truckId: number) => {
+    console.log("Índice actual:", selectedOperatorIndex);
+    console.log("Operadores antes:", JSON.stringify(operators));
+
+    if (selectedOperatorIndex !== null) {
+      setOperators(prev => {
+        const newOperators = [...prev];
+        newOperators[selectedOperatorIndex].truckId = truckId;
+        return newOperators;
+      });
+    }
+
+    console.log("Operadores después:", JSON.stringify(operators));
+    setTruckModalVisible(false);
   };
 
   const assignTeamLeader = () => {
     if (selectedOperatorIndex !== null) {
       setOperators((prev) =>
         prev.map((op, i) =>
-          i === selectedOperatorIndex ? { ...op, role: 'leader' } : op
+          i === selectedOperatorIndex ? {
+            ...op,
+            role: "leader",
+            truckId: undefined
+          } : op
         )
       );
     }
     setRoleSelectorVisible(false);
   };
-
   const renderOperatorItem = (operator: any, index: number, isAssigned: boolean) => {
     const renderRightActions = () => (
       <View style={styles.rightSwipeActions}>
@@ -276,17 +315,6 @@ const OperatorModal: React.FC<OperatorModalProps> = ({ visible, onClose, orderKe
         </TouchableOpacity>
       </View>
     );
-
-    const handleTruckSelection = (truck: any) => {
-      if (selectedOperatorIndex !== null) {
-        setOperators((prev) =>
-          prev.map((op, i) =>
-            i === selectedOperatorIndex ? { ...op, role: t("driver"), truckId: truck.id } : op
-          )
-        );
-      }
-      setTruckModalVisible(false); // Cerrar el TruckModal
-    };
     return (
       <GestureHandlerRootView key={`operator-${index}`}>
         <Swipeable renderRightActions={renderRightActions}>
@@ -299,7 +327,7 @@ const OperatorModal: React.FC<OperatorModalProps> = ({ visible, onClose, orderKe
                   {operator.first_name || operator.name} {operator.last_name || ""}
                 </Text>
                 <Text style={[styles.operatorRole, { color: isDarkMode ? "#CCCCCC" : "#333333" }]}>
-                  {operator.role ? `(${operator.role})` : ""}
+                  {operator.role ? `(${t(operator.role)})` : ""}
                   {operator.additional_costs > 0 ? ` - ${t("cost")}: $${operator.additional_costs.toFixed(2)}` : ""}
                   {operator.truck?.plate ? ` - ${t("truck")}: ${operator.truck.plate}` : ""}
                 </Text>

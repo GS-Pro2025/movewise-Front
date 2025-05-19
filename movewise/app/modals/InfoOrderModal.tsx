@@ -198,7 +198,7 @@ const InfoOrderModal: React.FC<InfoOrderModalProps> = ({ visible, onClose, order
             <View style={styles.cardContent}>
               {renderInfoItem(t("date_info_order"), formatDate(order.date))}
               {renderInfoItem(t("weight_info_order"), `${order.weight} kg`)}
-              {renderInfoItem(t("job_info_order"), `#${order.job}`)}
+              {renderInfoItem(t("job_info_order"), `#${order.job} - ${order.job_name}`)}
               {renderInfoItem(t("state_info_order"), order.state_usa)}
             </View>
           </View>
@@ -229,7 +229,7 @@ const InfoOrderModal: React.FC<InfoOrderModalProps> = ({ visible, onClose, order
             </View>
             
             <View style={styles.cardContent}>
-              {renderInfoItem(t("customer_factory"), `#${order.customer_factory}`)}
+              {renderInfoItem(t("customer_factory"), `#${order.customer_factory} - ${order.customer_factory_name}`)}
             </View>
           </View>
 

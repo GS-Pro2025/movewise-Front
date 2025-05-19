@@ -53,7 +53,7 @@ const Home: React.FC = () => {
   const isDarkMode = theme === "dark";
   const [isSettingsModalVisible, setSettingsModalVisible] = useState(false);
   const [isJobsModalVisible, setJobsModalVisible] = useState(false);
-  const [isListOfCustomersModal,setListOfCustomersModal] = useState(false);
+  const [isListOfCustomersModal, setListOfCustomersModal] = useState(false);
 
   const toggleSettingsModal = () => {
     setSettingsModalVisible(!isSettingsModalVisible);
@@ -296,23 +296,23 @@ const Home: React.FC = () => {
         </View>
       </ScrollView>
 
-    {/* Modal de configuración */}
-    <SettingsModal
-      visible={isSettingsModalVisible}
-      onClose={toggleSettingsModal}
-      onOpenJobsModal={() => setJobsModalVisible(true)}
-      onOpenCustomerListModal={() => setListOfCustomersModal(true)}
-    />
+      {/* Modal de configuración */}
+      <SettingsModal
+        visible={isSettingsModalVisible}
+        onClose={toggleSettingsModal}
+        onOpenJobsModal={() => setJobsModalVisible(true)}
+        onOpenCustomerListModal={() => setListOfCustomersModal(true)}
+      />
 
-    <ListJobsModal
-      visible={isJobsModalVisible}
-      onClose={() => setJobsModalVisible(false)}
-    />
+      <ListJobsModal
+        visible={isJobsModalVisible}
+        onClose={() => setJobsModalVisible(false)}
+      />
 
-    <ListOfCustomersModal
-      visible={isListOfCustomersModal}
-      onClose={() => setListOfCustomersModal(false)}
-    />
+      <ListOfCustomersModal
+        visible={isListOfCustomersModal}
+        onClose={() => setListOfCustomersModal(false)}
+      />
 
       {/* Render modal only when we have data and modal is visible */}
       {adminDetails && (

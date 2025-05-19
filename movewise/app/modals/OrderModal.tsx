@@ -39,9 +39,11 @@ export interface Order {
   state_usa: string;
   person: OrderPerson;
   job: number;
+  job_name: string | null;
   evidence: string | null;
   dispatch_ticket: string | null;
   customer_factory: number | 0;
+  customer_factory_name: string | null;
 }
 
 
@@ -100,10 +102,13 @@ const OrderModal: React.FC<OrderModalProps> = ({ visible, onClose }) => {
           address: order.person?.address || null,
         },
         job: order.job,
+        job_name: order.job_name,                       // ← nuevo
         evidence: order.evidence || null,
         dispatch_ticket: order.dispatch_ticket,
         customer_factory: order.customer_factory,
+        customer_factory_name: order.customer_factory_name, // ← nuevo
       }));
+
 
       setOrders(mappedOrders);
     } catch (error) {

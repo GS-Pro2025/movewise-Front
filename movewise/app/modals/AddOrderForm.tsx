@@ -119,7 +119,7 @@ export default function AddOrderModal({ visible, onClose }: AddOrderModalProps) 
       !customerName?.trim() ||
       !customerLastName?.trim() ||
       !address?.trim() ||
-      !email?.trim() ||
+      // !email?.trim() ||
       !cellPhone?.trim() ||
       !date ||
       !state ||
@@ -208,7 +208,7 @@ export default function AddOrderModal({ visible, onClose }: AddOrderModalProps) 
 
       setJobList(Array.isArray(jobs) ? jobs : []);
 
-      
+
     } catch (error) {
       console.error(t('error_fetching_jobs'), error);
       setJobList([]);
@@ -261,11 +261,13 @@ export default function AddOrderModal({ visible, onClose }: AddOrderModalProps) 
 
   const validateFields = async () => {
     let newErrors: { [key: string]: string } = {};
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!state) newErrors.state = t('state_required');
     if (!date) newErrors.date = t('date_required');
     if (!keyReference) newErrors.keyReference = t('key_reference_required');
     if (!customerName) newErrors.customerName = t('customer_name_required');
     if (!customerLastName) newErrors.customerLastName = t('customer_last_name_required');
+    if (!email) { newErrors.email = t('email_required'); } else if (!emailRegex.test(email)) { newErrors.email = t('invalid_email_format'); }
     if (!weight) newErrors.weight = t('weight_required');
     if (!job) newErrors.job = t('job_required');
     if (!company) newErrors.company = t('company_required');
@@ -522,13 +524,22 @@ export default function AddOrderModal({ visible, onClose }: AddOrderModalProps) 
                 onChangeText={setAddress}
               />
 
-              <Text style={styles.text}>{t('email')}</Text>
+              // En la sección del campo email, modificar el código a:
+              <Text style={styles.text}>{t('email')} <Text style={styles.required}>(*)</Text>
+              </Text>
+              {errors.email && (
+                <Text style={{ color: 'red', marginTop: 4, marginBottom: 8 }}>
+                  {errors.email}
+                </Text>
+              )}
               <TextInput
-                style={styles.input}
+                style={[styles.input, { borderColor: errors.email ? "red" : (colorScheme === 'dark' ? '#64748b' : '#0458AB') }]}
                 placeholder={t('email')}
                 placeholderTextColor="#9ca3af"
                 value={email}
                 onChangeText={setEmail}
+                keyboardType="email-address"
+                autoCapitalize="none"
               />
 
               <View style={{ zIndex: 1000 }}>
