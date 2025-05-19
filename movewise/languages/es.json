@@ -5,6 +5,7 @@
   "name_operator": "Nombre del operador",
   "driver": "Conductor",
   "team_leader": "Líder de equipo",
+  "truck_not_selected": "Debe seleccionar un camión válido",
   "assigned_role": "Asignado {{role}} a {{name}}",
   "welcome_title": "Bienvenido a\nMovewise",
   "email_placeholder": "Correo electrónico",

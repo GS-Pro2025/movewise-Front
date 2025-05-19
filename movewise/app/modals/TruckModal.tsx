@@ -175,12 +175,12 @@ const TruckModal: React.FC<TruckModalProps> = ({ visible, onClose, orderKey, onT
       padding: 12,
     },
   });
-  
+
   const handleSearch = async () => {
     const truckData = await getTruckById(TruckData.id);
     if (truckData) {
       setTruckData({
-        id: truckData.id_truck, 
+        id: truckData.id_truck,
         name: truckData.name,
         number: truckData.number_truck,
         category: truckData.category,
@@ -206,17 +206,14 @@ const TruckModal: React.FC<TruckModalProps> = ({ visible, onClose, orderKey, onT
       });
     }
   };
-  
+
   const handleSave = () => {
-    if (TruckData.id) {
-      onTruckSelect(TruckData.id); // Llamar a la función `onTruckSelect` con los datos del camión seleccionado
-      onClose(); // Cerrar el modal
+    if (TruckData.id && TruckData.id > 0) {
+      console.log("Enviando truckId al padre:", TruckData.id);
+      onTruckSelect(TruckData.id); // father func
+      onClose();
     } else {
-      Toast.show({
-        text1: t("error"),
-        text2: t("truck_not_selected"),
-        type: 'error',
-      });
+      Toast.show({ text1: t("error"), text2: t("truck_not_selected") });
     }
   };
 
@@ -259,19 +256,31 @@ const TruckModal: React.FC<TruckModalProps> = ({ visible, onClose, orderKey, onT
         </View>
 
         {/* Otras entradas */}
-        {['name', 'number', 'category', 'type'].map((field) => (
-          <View key={field}>
-            <Text style={styles.inputLabel}>{t(field)}</Text>
-            <TextInput
-              style={styles.input}
-              placeholder={t(field)}
-              placeholderTextColor={isDarkMode ? '#a0a0a0' : '#606060'}
-              value={TruckData[field as keyof TruckData]}
-              onChangeText={(text) => setTruckData({ ...TruckData, [field]: text })}
-              keyboardType={field === 'number' || field === 'category' || field === 'type' ? 'numeric' : 'default'}
-            />
-          </View>
-        ))}
+        {['name', 'number', 'category', 'type'].map((field) => {
+          // Convertir el campo a un tipo específico
+          const key = field as keyof TruckData;
+
+          return (
+            <View key={field}>
+              <Text style={styles.inputLabel}>{t(field)}</Text>
+              <TextInput
+                style={styles.input}
+                placeholder={t(field)}
+                placeholderTextColor={isDarkMode ? '#a0a0a0' : '#606060'}
+                value={TruckData[key].toString()} // Convertir a string
+                onChangeText={(text) => {
+                  // Convertir de vuelta a número solo para campos numéricos
+                  const value = ['number', 'category', 'type'].includes(field)
+                    ? parseInt(text) || 0
+                    : text;
+
+                  setTruckData({ ...TruckData, [field]: value });
+                }}
+                keyboardType={field === 'number' || field === 'category' || field === 'type' ? 'numeric' : 'default'}
+              />
+            </View>
+          );
+        })}
 
         {/* Botones */}
         <View style={styles.buttonContainer}>
@@ -283,7 +292,7 @@ const TruckModal: React.FC<TruckModalProps> = ({ visible, onClose, orderKey, onT
           </TouchableOpacity>
         </View>
       </SafeAreaView>
-      <Toast/>
+      <Toast />
     </Modal>
   );
 };
