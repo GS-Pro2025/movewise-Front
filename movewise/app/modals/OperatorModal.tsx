@@ -103,19 +103,46 @@ const OperatorModal: React.FC<OperatorModalProps> = ({ visible, onClose, orderKe
       setLoading(false);
     }
   };
+  const validateFields = () => {
+    const errors = operators.filter(op =>
+      op.role === "driver" && !op.truckId
+    );
+
+    if (errors.length > 0) {
+      Toast.show({
+        type: "error",
+        text1: t("error"),
+        text2: t("drivers_need_truck"),
+      });
+      return false;
+    }
+    return true;
+  };
+
   const handleSave = async () => {
     try {
       const token = await AsyncStorage.getItem("userToken");
       if (!token) throw new Error(t("authentication_required"));
-      console.log("Operadores antes de construir el payload:", operators);
+      // console.log("Operadores antes de construir el payload:", operators);
+
+      if (!validateFields()) {
+        Toast.show({
+          type: "error",
+          text1: t("error"),
+          text2: t("validation_error"),
+        });
+        return;
+      }
+
       const payload = operators.map(op => ({
-        operator: op.id_operator, // Cambiado de op.id a op.id_operator
+        operator: op.id_operator,
         order: orderKey,
         rol: op.role?.toLowerCase() || '',
         additional_costs: op.additionalCosts || 0,
         truck: op.role === "driver" ? op.truckId : null
       }));
-      console.log("Payload enviado al backend para la asignación:", payload);
+
+      // console.log("Payload enviado al backend para la asignación:", payload);
       const response = await fetch(`${url}assigns/bulk/`, {
         method: 'POST',
         headers: {
@@ -126,7 +153,8 @@ const OperatorModal: React.FC<OperatorModalProps> = ({ visible, onClose, orderKe
       });
 
       const responseData = await response.json();
-      console.log("Respuesta del backend:", responseData);
+      // console.log("Respuesta del backend:", responseData);
+
       if (!response.ok) {
         if (response.status === 207) {
           const conflictMessages = responseData.data.conflicts
