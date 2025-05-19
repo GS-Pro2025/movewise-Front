@@ -4,7 +4,7 @@ export const  url = 'http://192.168.18.164:8000'
 
 
 import AsyncStorage from "@react-native-async-storage/async-storage";
-let token = null;
+let token : string | null ;
 
 const apiClient: AxiosInstance = axios.create({
   baseURL: url,

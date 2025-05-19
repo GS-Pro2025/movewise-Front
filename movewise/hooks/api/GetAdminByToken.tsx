@@ -22,7 +22,7 @@ export interface AdminInfo {
 // En GetAdminByToken.ts
 export const GetAdminInfo = async (): Promise<AdminInfo> => {  // Cambiar AdminInfo[] por AdminInfo
   try {
-    const response = await apiClient.get("profile/");
+    const response = await apiClient.get("/profile/");
     return response.data;  // Retorna el objeto directamente
   } catch (error) {
     console.error("Error fetching admin info:", error);

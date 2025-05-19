@@ -74,7 +74,7 @@ const OperatorModal: React.FC<OperatorModalProps> = ({ visible, onClose, orderKe
       const token = await AsyncStorage.getItem("userToken");
       if (!token) throw new Error(t("authentication_required"));
 
-      const response = await fetch(`${url}assigns/order/${orderKey}/operators/`, {
+      const response = await fetch(`${url}/assigns/order/${orderKey}/operators/`, {
         method: "GET",
         headers: {
           Authorization: `Bearer ${token}`,
@@ -143,7 +143,7 @@ const OperatorModal: React.FC<OperatorModalProps> = ({ visible, onClose, orderKe
       }));
 
       // console.log("Payload enviado al backend para la asignación:", payload);
-      const response = await fetch(`${url}assigns/bulk/`, {
+      const response = await fetch(`${url}/assigns/bulk/`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
