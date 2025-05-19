@@ -37,7 +37,7 @@ interface Operator {
   role: string | null;
 }
 
-type RoleType = 'Driver' | 'Team leader';
+type RoleType = 'driver' | 'leader';
 
 const OperatorsScreen = () => {
   const { t } = useTranslation();
@@ -150,13 +150,13 @@ const OperatorsScreen = () => {
             <View style={styles.roleButtonsContainer}>
               <TouchableOpacity 
                 style={[styles.roleButton, theme === 'dark' && styles.roleButtonDark]}
-                onPress={() => assignRole('Driver')}
+                onPress={() => assignRole('driver')}
               >
                 <Text style={styles.roleButtonText}>{t('driver')}</Text>
               </TouchableOpacity>
               <TouchableOpacity 
                 style={[styles.roleButton, theme === 'dark' && styles.roleButtonDark]}
-                onPress={() => assignRole('Team leader')}
+                onPress={() => assignRole('leader')}
               >
                 <Text style={styles.roleButtonText}>{t('team_leader')}</Text>
               </TouchableOpacity>

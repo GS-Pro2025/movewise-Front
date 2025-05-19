@@ -7,7 +7,10 @@ export const PostOperator = async (formData: FormData) => {
   try {
     const token = await AsyncStorage.getItem("userToken");
     if (!token) throw new Error("Token not found");
-
+    console.log(`ruta de envio operador: ${url}operators/create/`);
+    console.log(`info enviada como cuerpo: ${JSON.stringify(formData)}`);
+    
+    
     const response = await axios.post(`${url}operators/create/`, formData, {
       headers: {
         "Authorization": `Bearer ${token}`,

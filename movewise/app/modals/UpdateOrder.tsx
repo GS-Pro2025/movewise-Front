@@ -7,7 +7,6 @@ import DateTimePickerModal from "react-native-modal-datetime-picker";
 import { KeyboardAwareView } from '../../components/KeyboardAwareView';
 import { ListJobs } from '@/hooks/api/JobClient';
 import { ListStates } from '@/hooks/api/StatesClient';
-import { CustomerFactory } from '@/hooks/api/CompanyClient';
 import UpdateOrderFormApi from '@/hooks/api/UpdateOrderFormApi';
 import { AntDesign, MaterialIcons } from '@expo/vector-icons';
 import OperatorModal from './OperatorModal';
@@ -17,6 +16,7 @@ import { ImageInfo } from 'expo-image-picker';
 import * as FileSystem from 'expo-file-system';
 import Toast from 'react-native-toast-message';
 import OrderModal from './OrderModal';
+import { CustomerFactory } from '@/hooks/api/CustomerFactoryClient';
 
 interface Job {
   id: number;

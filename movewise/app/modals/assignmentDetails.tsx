@@ -161,7 +161,7 @@ const AssignmentDetails: React.FC<Props> = ({
             if (!token) throw new Error(t("no_auth_token"));
 
             const response = await fetch(
-                `${url}/orders/status/${assignment.data_order.key}/`,
+                `${url}orders/status/${assignment.data_order.key}/`,
                 {
                     method: 'PATCH',
                     headers: {
