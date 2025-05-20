@@ -51,7 +51,7 @@ export interface ApiResponse {
 }
 
 interface BaseOperatorViewProps {
-    filterRole: string | null;
+    filterRole: ((role: string) => boolean) | null;
     renderItem: ({ item }: { item: Assignment }) => React.ReactElement;
     emptyMessage: string;
     isDarkMode: boolean;

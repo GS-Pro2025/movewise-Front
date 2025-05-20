@@ -10,7 +10,8 @@ import {
     useColorScheme,
     SafeAreaView,
     ScrollView,
-    Image
+    Image,
+    TextInput
 } from "react-native";
 import * as ImagePicker from 'expo-image-picker';
 import { useActionSheet } from '@expo/react-native-action-sheet';
@@ -23,6 +24,10 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import Toast from 'react-native-toast-message';
 import { useTranslation } from "react-i18next"
 import { url } from "@/hooks/api/apiClient";
+import { ImageInfo } from 'expo-image-picker';
+import { ImageUpload } from "./CreateOperator/HelperComponents";
+import { ImagePickerAsset } from 'expo-image-picker';
+
 interface Props {
     visible: boolean;
     onClose: () => void;
@@ -39,8 +44,9 @@ const AssignmentDetails: React.FC<Props> = ({
     const [toolsModalVisible, setToolsModalVisible] = useState(false);
     const [actionModalVisible, setActionModalVisible] = useState(false);
 
+    const [evidence, setEvidence] = useState<ImagePickerAsset | null>(null);
+    const [evidenceError, setEvidenceError] = useState<string | undefined>(undefined);
     const [uploading, setUploading] = useState(false);
-    const [selectedImage, setSelectedImage] = useState<ImagePicker.ImagePickerAsset | null>(null);
     const { showActionSheetWithOptions } = useActionSheet();
     const [pickerVisible, setPickerVisible] = useState(false);
     const colorScheme = useColorScheme();
@@ -56,6 +62,11 @@ const AssignmentDetails: React.FC<Props> = ({
         if (!dateString) return t("no_date");
         const date = new Date(dateString);
         return `${date.getMonth() + 1}/${date.getDate()}/${date.getFullYear()}`;
+    };
+
+    const handleEvidenceSelected = (image: ImagePickerAsset) => {
+        setEvidence(image);
+        setEvidenceError(undefined);
     };
 
     const handleCompleteWork = () => setActionModalVisible(true);
@@ -92,7 +103,8 @@ const AssignmentDetails: React.FC<Props> = ({
             }
 
             if (!result.canceled && result.assets?.[0]) {
-                setSelectedImage(result.assets[0]);
+                setEvidence(result.assets[0]);
+                setEvidenceError(null);
                 return result.assets[0];
             }
             return null;
@@ -106,7 +118,6 @@ const AssignmentDetails: React.FC<Props> = ({
     };
 
     const showImagePickerOptions = () => {
-        setActionModalVisible(false); // Cerrar modal antes de abrir el selector
         const options = [t('take_photo'), t('choose_from_gallery'), t('cancel')];
 
         showActionSheetWithOptions(
@@ -118,14 +129,13 @@ const AssignmentDetails: React.FC<Props> = ({
             async (buttonIndex) => {
                 if (buttonIndex === 0) await handleImageSelection('camera');
                 if (buttonIndex === 1) await handleImageSelection('gallery');
-                setActionModalVisible(true); // Reabrir modal después de selección
             }
         );
     };
 
     const completeWorkAction = async () => {
-        if (!selectedImage) {
-            showImagePickerOptions();
+        if (!evidence) {
+            setEvidenceError(t('evidence_required'));
             return;
         }
 
@@ -146,7 +156,7 @@ const AssignmentDetails: React.FC<Props> = ({
             const formData = new FormData();
             formData.append('status', 'finished');
 
-            const localUri = selectedImage.uri;
+            const localUri = evidence.uri;
             const filename = localUri.split('/').pop() || 'evidence.jpg';
             const match = /\.(\w+)$/.exec(filename);
             const type = match ? `image/${match[1]}` : `image/jpeg`;
@@ -161,7 +171,7 @@ const AssignmentDetails: React.FC<Props> = ({
             if (!token) throw new Error(t("no_auth_token"));
 
             const response = await fetch(
-                `${url}orders/status/${assignment.data_order.key}/`,
+                `${url}/orders/status/${assignment.data_order.key}/`,
                 {
                     method: 'PATCH',
                     headers: {
@@ -188,7 +198,7 @@ const AssignmentDetails: React.FC<Props> = ({
                 visibilityTime: 5000,
             });
 
-            setSelectedImage(null);
+            setEvidence(null);
         } catch (error: any) {
             Toast.show({
                 type: 'error',
@@ -241,7 +251,7 @@ const AssignmentDetails: React.FC<Props> = ({
                         <Ionicons name="arrow-back" size={24} color="#FFFFFF" />
                     </TouchableOpacity>
 
-                    <Text style={styles.headerTitle}>Assignment Details</Text>
+                    <Text style={styles.headerTitle}>{t('assignment_details')}</Text>
 
                     <View style={styles.headerRight} />
                 </View>
@@ -495,13 +505,15 @@ const AssignmentDetails: React.FC<Props> = ({
                     )}
                 </ScrollView>
 
-                {/* Action Modal - Similar to the one in WorkDailyOperator */}
+                {/* Action Modal */}
                 {assignment && (
                     <Modal
                         animationType="slide"
                         transparent={true}
                         visible={actionModalVisible}
                         onRequestClose={() => setActionModalVisible(false)}
+                        statusBarTranslucent={true}
+                        hardwareAccelerated={true}
                     >
                         <View style={styles.modalOverlay}>
                             <View style={[
@@ -518,30 +530,21 @@ const AssignmentDetails: React.FC<Props> = ({
                                 </View>
 
                                 <View style={styles.modalContent}>
-                                    <Text style={styles.modalInfoText}>
-                                        Date: {formatDate(assignment?.data_order.date || '')}
+                                    {/* Evidence Upload */}
+                                    <Text style={[styles.modalInfoText, { color: '#FFFFFF', marginTop: 10 }]}>
+                                        {t('evidence')} <Text style={{ color: '#FF0000' }}>*</Text>
                                     </Text>
-                                    <Text style={styles.modalInfoText}>
-                                        Status: {assignment.data_order.status}
-                                    </Text>
-                                    <Text style={styles.modalInfoText}>
-                                        Role: {assignment.rol === 'leader' ? 'Leader' : 'Operator'}
-                                    </Text>
-
-                                    {/* Image Preview */}
-                                    {selectedImage && (
-                                        <View style={styles.imagePreviewContainer}>
-                                            <Image
-                                                source={{ uri: selectedImage.uri }}
-                                                style={styles.imagePreview}
-                                                resizeMode="cover"
-                                            />
-                                            <TouchableOpacity
-                                                style={styles.changeImageButton}
-                                                onPress={() => showImagePickerOptions()}>
-                                                <Text style={styles.changeImageText}>Change Image</Text>
-                                            </TouchableOpacity>
-                                        </View>
+                                    <ImageUpload
+                                        label={t("upload_evidence")}
+                                        image={evidence}
+                                        onImageSelected={handleEvidenceSelected}
+                                        error={evidenceError || undefined}
+                                        required={true}
+                                    />
+                                    {evidenceError && (
+                                        <Text style={{ color: '#FF0000', marginTop: 5 }}>
+                                            {evidenceError}
+                                        </Text>
                                     )}
                                 </View>
 
@@ -559,25 +562,10 @@ const AssignmentDetails: React.FC<Props> = ({
                                                 <ActivityIndicator color="#2A4B8D" />
                                             ) : (
                                                 <Text style={styles.modalButtonText}>
-                                                    {selectedImage ? t("submit_work") : t("select_photo")}
+                                                    {t('submit')}
                                                 </Text>
                                             )}
                                         </TouchableOpacity>
-
-                                        <TouchableOpacity
-                                            style={styles.modalButton}
-                                            onPress={handleOpenToolsList}
-                                        >
-                                            <Text style={styles.modalButtonText}>Checklist of Tools</Text>
-                                        </TouchableOpacity>
-                                    </View>
-                                )}
-
-                                {assignment.rol !== 'leader' && (
-                                    <View style={styles.modalMessageContainer}>
-                                        <Text style={styles.modalMessageText}>
-                                            You do not have leader permissions for this assignment
-                                        </Text>
                                     </View>
                                 )}
                             </View>
@@ -599,6 +587,7 @@ const AssignmentDetails: React.FC<Props> = ({
     );
 };
 
+// Estilos (se mantienen igual que en el código original)
 const styles = StyleSheet.create({
     // General container styles
     container: {
@@ -930,5 +919,6 @@ const styles = StyleSheet.create({
         color: '#FFFFFF',
     },
 });
+
 
 export default AssignmentDetails;
