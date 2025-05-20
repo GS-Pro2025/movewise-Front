@@ -2,18 +2,22 @@ export interface Son {
     name: string;
     birth_date: string;
     gender: 'M' | 'F';
-  }
-  
-  export interface ImageInfo {
+}
+
+export interface ImageInfo {
     uri: string;
     name?: string;
     type?: string;
-  }
-  
-  export interface FormData {
+    width?: number;
+    height?: number;
+    fileSize?: number;
+    exif?: any;
+}
+
+export interface FormData {
     //edit mod3
     id_operator?: number;
-  
+
     // ─── step 1: General Data ──────────────────────────────────────
     first_name: string;
     last_name: string;
@@ -23,14 +27,14 @@ export interface Son {
     address: string;
     phone: string;
     email?: string;
-  
+
     // ─── step 2: driven licence and childs ────────────────────────
     number_licence: string;
     zipcode?: string;
     has_minors: boolean;
     n_children: number;
     sons: Son[];
-  
+
     // ─── step 3: end info ───────────────────────────────────
     code: string;
     salary: string;
@@ -40,8 +44,8 @@ export interface Son {
     license_front: ImageInfo | null;
     license_back: ImageInfo | null;
     status: string;
-  }
-  
+}
+
 // Props for step components
 export interface StepProps {
     formData: FormData;
@@ -123,6 +127,11 @@ export interface ImageUploadProps {
     onImageSelected: (image: ImageInfo) => void;
     error?: string;
     required?: boolean;
+    quality?: number; // Calidad de la imagen (0.0 - 1.0)
+    maxWidth?: number; // Ancho máximo para redimensionar
+    maxHeight?: number; // Alto máximo para redimensionar
+    aspect?: [number, number]; // Relación de aspecto para recorte [ancho, alto]
+    allowsEditing?: boolean; // Permitir edición de imagen
 }
 
 // interface to CreateOperato
@@ -130,5 +139,4 @@ export interface CreateOperatorProps {
     isEditing?: boolean;
     initialData?: FormData; // Asegúrate de que 'FormData' esté definido o crea tu propia interfaz
     onClose: () => void;
-  }
-  
+}

@@ -14,6 +14,7 @@ import { useRouter } from "expo-router";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
+import Toast from "react-native-toast-message";
 
 interface ActionButtonProps {
     title: string;
@@ -31,7 +32,7 @@ interface Operator {
 }
 
 const Home: React.FC = () => {
-    const { t, i18n } = useTranslation(); 
+    const { t, i18n } = useTranslation();
     const router = useRouter();
     const theme = useColorScheme();
     const isDarkMode = theme === "dark";
@@ -44,7 +45,21 @@ const Home: React.FC = () => {
         };
         loadOperator();
     }, []);
-
+    const handleLogout = async () => {
+        try {
+            await AsyncStorage.clear(); // Limpia todos los datos almacenados
+            Toast.show({
+                type: "success",
+                text1: t("logout_success"),
+            });
+            router.replace("/Login"); // Redirige al login
+        } catch (error) {
+            Toast.show({
+                type: "error",
+                text1: t("logout_error"),
+            });
+        }
+    };
     return (
         <SafeAreaView
             style={[styles.container, isDarkMode ? styles.darkBackground : styles.lightBackground]}
@@ -70,7 +85,7 @@ const Home: React.FC = () => {
                             </Text>
                         </View>
                     </View>
-                    <TouchableOpacity style={styles.shareButton}>
+                    <TouchableOpacity style={styles.shareButton} onPress={handleLogout}>
                         <Image
                             source={require("../assets/images/exit.png")}
                             style={[styles.userIcono, { tintColor: isDarkMode ? "#FFFFFF" : "#0458AB" }]}

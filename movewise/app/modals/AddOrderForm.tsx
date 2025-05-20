@@ -14,18 +14,17 @@ import { ListStates } from '@/hooks/api/StatesClient';
 import OperatorModal from './OperatorModal';
 import { useTranslation } from 'react-i18next';
 import Toast from 'react-native-toast-message';
-import { ImageUpload } from './CreateOperator/HelperComponents';
-import { ImageInfo } from 'expo-image-picker'
 import * as FileSystem from 'expo-file-system';
 import { DeleteOrder } from '@/hooks/api/DeleteOrder';
 import { CustomerFactory } from '@/hooks/api/CustomerFactoryClient';
+import CrossPlatformImageUpload from './CrossPlatformImageUpload';
+import { ImageInfo } from './CrossPlatformImageUpload';
 interface AddOrderModalProps {
   visible: boolean;
   onClose: () => void;
 }
 
 export default function AddOrderModal({ visible, onClose }: AddOrderModalProps) {
-  if (!visible) return;
   const { t } = useTranslation();
   const [open, setOpen] = useState(false);
   const [state, setState] = useState<string | null>(null);
@@ -524,7 +523,6 @@ export default function AddOrderModal({ visible, onClose }: AddOrderModalProps) 
                 onChangeText={setAddress}
               />
 
-              // En la sección del campo email, modificar el código a:
               <Text style={styles.text}>{t('email')} <Text style={styles.required}>(*)</Text>
               </Text>
               {errors.email && (
@@ -577,10 +575,10 @@ export default function AddOrderModal({ visible, onClose }: AddOrderModalProps) 
 
               <View style={{ zIndex: 50, marginTop: 16 }}>
                 <Text style={styles.text}>{t('dispatch_ticket')} <Text style={styles.required}>(*)</Text></Text>
-                <ImageUpload
+                <CrossPlatformImageUpload
                   label={t("upload_dispatch_ticket")}
                   image={dispatchTicket || null}
-                  onImageSelected={(image) => handleChange("dispatch_ticket", image)} // Usar handleChange para actualizar el estado
+                  onImageSelected={(image) => handleChange("dispatch_ticket", image)}
                   error={errors.dispatchTicket}
                   required={true}
                 />

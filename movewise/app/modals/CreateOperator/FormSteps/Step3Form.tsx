@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { ScrollView, View, Text, TouchableOpacity } from 'react-native';
-import { FormInput, ImageUpload, DropdownInput } from '../HelperComponents';
+import { FormInput, DropdownInput } from '../HelperComponents';
 import { styles } from '../FormStyle';
 import { StepProps } from '../Types';
 import { ALERT_TYPE, Toast } from 'react-native-alert-notification';
 import { useTranslation } from 'react-i18next';
+import CrossPlatformImageUpload from '../../CrossPlatformImageUpload';
 
 const Step3Form = ({ formData, updateFormData, onBack, onSubmit, isEditing }: StepProps) => {
     const { t } = useTranslation();
@@ -14,7 +15,7 @@ const Step3Form = ({ formData, updateFormData, onBack, onSubmit, isEditing }: St
         size_t_shift: formData.size_t_shift,
         name_t_shift: formData.name_t_shift,
         photo: formData.photo,
-        status: formData.status || 'active' 
+        status: formData.status || 'active'
     });
 
     // Errores de validación
@@ -124,7 +125,7 @@ const Step3Form = ({ formData, updateFormData, onBack, onSubmit, isEditing }: St
                     required={true}
                 />
 
-                <ImageUpload
+                <CrossPlatformImageUpload
                     label={`${t("operator_photo")} (*)`}
                     image={localData.photo}
                     onImageSelected={(image) => handleChange('photo', image)}
@@ -133,17 +134,17 @@ const Step3Form = ({ formData, updateFormData, onBack, onSubmit, isEditing }: St
                 />
 
                 <DropdownInput
-                label={t("status")}
-                value={
-                    localData.status === "active"
-                    ? t("active")
-                    : localData.status === "inactive"
-                        ? t("inactive")
-                        : ""
-                }
-                onChange={(value) => handleChange("status", value)}
-                options={["active", "inactive"]}
-                error={errors.status}
+                    label={t("status")}
+                    value={
+                        localData.status === "active"
+                            ? t("active")
+                            : localData.status === "inactive"
+                                ? t("inactive")
+                                : ""
+                    }
+                    onChange={(value) => handleChange("status", value)}
+                    options={["active", "inactive"]}
+                    error={errors.status}
                 />
 
 
