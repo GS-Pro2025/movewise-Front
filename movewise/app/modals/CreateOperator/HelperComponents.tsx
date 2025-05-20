@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { JSX, useState } from 'react';
 import {
   Alert,
   View,
@@ -17,6 +17,7 @@ import { styles } from './FormStyle';
 import { useTranslation } from 'react-i18next';
 import { useActionSheet } from '@expo/react-native-action-sheet';
 import { Linking } from 'react-native';
+import { Modal, Image } from 'react-native';
 // Componentes de Ayuda
 function FormInput({ label, value, onChangeText, keyboardType = 'default', error, required = false }: FormInputProps): JSX.Element {
   return (
@@ -131,8 +132,9 @@ function RadioGroup({ label, options, selectedValue, onSelect, error, required =
   
   function ImageUpload({ label, image, onImageSelected, error, required = false }: ImageUploadProps): JSX.Element {
     const { t } = useTranslation();
-    const { showActionSheetWithOptions } = useActionSheet();
+    const [showOverlay, setShowOverlay] = useState(false);
 
+    
     const handleImagePicker = async (type: 'camera' | 'gallery') => {
     try {
       let result: ImagePicker.ImagePickerResult;
@@ -189,39 +191,15 @@ function RadioGroup({ label, options, selectedValue, onSelect, error, required =
   };
 
 
-  const showActionSheet = () => {
-    const options = [
-      t('take_photo'),
-      t('choose_from_gallery'),
-      t('cancel'),
-    ];
-    const cancelButtonIndex = 2;
-    // No hay un equivalente directo para destructiveButtonIndex en el mismo objeto de opciones
-
-    showActionSheetWithOptions(
-      {
-        options,
-        cancelButtonIndex,
-        // Puedes añadir más opciones como tintColor, message, etc., si lo necesitas
-      },
-      (buttonIndex) => {
-        if (buttonIndex === 0) {
-          handleImagePicker('camera');
-        } else if (buttonIndex === 1) {
-          handleImagePicker('gallery');
-        }
-        // Si buttonIndex es cancelButtonIndex (2), no se hace nada
-      }
-    );
-  };
+  const openOverlay = () => setShowOverlay(true);
 
 
-    return (
+return (
     <View style={styles.inputContainer}>
       <Text style={styles.inputLabel}>{label}</Text>
       <TouchableOpacity
         style={[styles.imageUploadContainer, error ? styles.inputError : null]}
-        onPress={showActionSheet}
+        onPress={openOverlay}
       >
         {image ? (
           <View style={styles.imagePreview}>
@@ -235,7 +213,45 @@ function RadioGroup({ label, options, selectedValue, onSelect, error, required =
         )}
       </TouchableOpacity>
       {error && <Text style={styles.errorText}>{error}</Text>}
-      {/* Ya no renderizamos el componente ActionSheet aquí */}
+
+      {/* Overlay Modal */}
+      <Modal
+        visible={showOverlay}
+        transparent
+        animationType="fade"
+        onRequestClose={() => setShowOverlay(false)}
+      >
+        <View style={{
+          flex: 1,
+          backgroundColor: 'rgba(0,0,0,0.7)',
+          justifyContent: 'center',
+          alignItems: 'center'
+        }}>
+          <View style={{
+            backgroundColor: '#fff',
+            borderRadius: 12,
+            padding: 24,
+            alignItems: 'center'
+          }}>
+            <Text style={{ fontWeight: 'bold', marginBottom: 16 }}>{t("select_image_source")}</Text>
+            <TouchableOpacity
+              style={{ marginBottom: 12 }}
+              onPress={() => { setShowOverlay(false); handleImagePicker('camera'); }}
+            >
+              <Text style={{ color: '#0458AB', fontSize: 16 }}>{t('take_photo')}</Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={{ marginBottom: 12 }}
+              onPress={() => { setShowOverlay(false); handleImagePicker('gallery'); }}
+            >
+              <Text style={{ color: '#0458AB', fontSize: 16 }}>{t('choose_from_gallery')}</Text>
+            </TouchableOpacity>
+            <TouchableOpacity onPress={() => setShowOverlay(false)}>
+              <Text style={{ color: '#e74c3c', fontSize: 16 }}>{t('cancel')}</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </Modal>
     </View>
   );
 }
