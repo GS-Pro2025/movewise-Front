@@ -232,7 +232,7 @@ const RegistryUser = () => {
   
       // Navegar a la pantalla de inicio con un mensaje de éxito
       router.push({
-        pathname: "/Home",
+        pathname: "/Login",
         params: { toastMessage: t("company_and_user_registered") },
       });
     } catch (error: any) {
