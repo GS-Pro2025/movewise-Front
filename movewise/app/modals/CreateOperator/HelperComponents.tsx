@@ -218,36 +218,32 @@ return (
       <Modal
         visible={showOverlay}
         transparent
-        animationType="fade"
+        animationType="slide"
         onRequestClose={() => setShowOverlay(false)}
       >
-        <View style={{
-          flex: 1,
-          backgroundColor: 'rgba(0,0,0,0.7)',
-          justifyContent: 'center',
-          alignItems: 'center'
-        }}>
-          <View style={{
-            backgroundColor: '#fff',
-            borderRadius: 12,
-            padding: 24,
-            alignItems: 'center'
-          }}>
-            <Text style={{ fontWeight: 'bold', marginBottom: 16 }}>{t("select_image_source")}</Text>
+        <View style={uploadModalStyles.uploadModal_overlay}>
+          <View style={uploadModalStyles.uploadModal_container}>
+            <Text style={uploadModalStyles.uploadModal_title}>{t("select_image_source")}</Text>
+
             <TouchableOpacity
-              style={{ marginBottom: 12 }}
+              style={uploadModalStyles.uploadModal_button}
               onPress={() => { setShowOverlay(false); handleImagePicker('camera'); }}
             >
-              <Text style={{ color: '#0458AB', fontSize: 16 }}>{t('take_photo')}</Text>
+              <Text style={uploadModalStyles.uploadModal_buttonText}>{t('take_photo')}</Text>
             </TouchableOpacity>
+
             <TouchableOpacity
-              style={{ marginBottom: 12 }}
+              style={uploadModalStyles.uploadModal_button}
               onPress={() => { setShowOverlay(false); handleImagePicker('gallery'); }}
             >
-              <Text style={{ color: '#0458AB', fontSize: 16 }}>{t('choose_from_gallery')}</Text>
+              <Text style={uploadModalStyles.uploadModal_buttonText}>{t('choose_from_gallery')}</Text>
             </TouchableOpacity>
-            <TouchableOpacity onPress={() => setShowOverlay(false)}>
-              <Text style={{ color: '#e74c3c', fontSize: 16 }}>{t('cancel')}</Text>
+
+            <TouchableOpacity
+              style={uploadModalStyles.uploadModal_cancelButton}
+              onPress={() => setShowOverlay(false)}
+            >
+              <Text style={uploadModalStyles.uploadModal_cancelText}>{t('cancel')}</Text>
             </TouchableOpacity>
           </View>
         </View>
@@ -255,6 +251,52 @@ return (
     </View>
   );
 }
+const uploadModalStyles = StyleSheet.create({
+  uploadModal_overlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.5)',
+    justifyContent: 'flex-end',
+  },
+  uploadModal_container: {
+    backgroundColor: '#fff',
+    borderTopLeftRadius: 20,
+    borderTopRightRadius: 20,
+    padding: 20,
+    paddingBottom: 40,
+    alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: -2 },
+    shadowOpacity: 0.2,
+    shadowRadius: 6,
+    elevation: 10,
+  },
+  uploadModal_title: {
+    fontSize: 18,
+    fontWeight: '600',
+    marginBottom: 20,
+    color: '#333',
+  },
+  uploadModal_button: {
+    width: '100%',
+    paddingVertical: 12,
+    borderBottomWidth: 1,
+    borderColor: '#eee',
+    alignItems: 'center',
+  },
+  uploadModal_cancelButton: {
+    width: '100%',
+    paddingVertical: 12,
+    alignItems: 'center',
+  },
+  uploadModal_buttonText: {
+    color: '#0458AB',
+    fontSize: 16,
+  },
+  uploadModal_cancelText: {
+    color: '#e74c3c',
+    fontSize: 16,
+  },
+});
 
 export {
   FormInput,
