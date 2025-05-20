@@ -22,6 +22,7 @@ import { GetAssignedOperators } from '@/hooks/api/GetAssignedOperators';
 
 interface Operator {
   id_assign: number;
+  assigned_at: string;
   photo: string | null;
   first_name: string;
   last_name: string;
@@ -111,6 +112,14 @@ const InfoOrderModal: React.FC<InfoOrderModalProps> = ({ visible, onClose, order
     });
   };
 
+  const formatGroupedDate = (dateString: string) => {
+    return new Date(dateString).toLocaleDateString('en-US', {
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric'
+    });
+  }
+
   const getStatusColor = (status: string) => {
     switch (status.toLowerCase()) {
       case 'completed':
@@ -135,49 +144,76 @@ const InfoOrderModal: React.FC<InfoOrderModalProps> = ({ visible, onClose, order
     );
   };
 
-  const renderOperators = () => (
-    <View style={[styles.card, { backgroundColor: cardBackground, borderColor }]}>
-      <View style={styles.cardHeader}>
-        <Ionicons name="people" size={20} color={primaryColor} style={styles.cardIcon} />
-        <Text style={[styles.cardTitle, { color: primaryColor }]}>{t("assigned_operators")}</Text>
-      </View>
+  const renderOperators = () => {
+    // Procesar agrupamiento
+    const groupedOperators = operators.reduce((acc, operator) => {
+      const dateKey = new Date(operator.assigned_at).toISOString().split('T')[0];
+      if (!acc[dateKey]) acc[dateKey] = [];
+      acc[dateKey].push(operator);
+      return acc;
+    }, {} as Record<string, Operator[]>);
 
-      <View style={styles.operatorsContainer}>
-        {loadingOperators ? (
-          <ActivityIndicator size="small" color={primaryColor} />
-        ) : operators.length === 0 ? (
-          <Text style={[styles.value, { color: textColor }]}>{t("no_operators")}</Text>
-        ) : (
-          <ScrollView
-            horizontal
-            showsHorizontalScrollIndicator={false}
-            contentContainerStyle={styles.operatorsScroll}
-          >
-            {operators.map((operator) => (
-              <View key={operator.id_assign} style={styles.operatorCard}>
-                <View style={[styles.operatorImageContainer, { borderColor: primaryColor }]}>
-                  {operator.photo ? (
-                    <Image
-                      source={{ uri: operator.photo }}
-                      style={styles.operatorImage}
-                    />
-                  ) : (
-                    <Ionicons name="person" size={24} color={primaryColor} />
-                  )}
+    const sortedDates = Object.keys(groupedOperators).sort(
+      (a, b) => new Date(b).getTime() - new Date(a).getTime()
+    );
+
+    return (
+      <View style={[styles.card, { backgroundColor: cardBackground, borderColor }]}>
+        <View style={styles.cardHeader}>
+          <Ionicons name="people" size={20} color={primaryColor} style={styles.cardIcon} />
+          <Text style={[styles.cardTitle, { color: primaryColor }]}>{t("assigned_operators")}</Text>
+        </View>
+
+        <View style={styles.operatorsContainer}>
+          {loadingOperators ? (
+            <ActivityIndicator size="small" color={primaryColor} />
+          ) : operators.length === 0 ? (
+            <Text style={[styles.value, { color: textColor }]}>{t("no_operators")}</Text>
+          ) : (
+            <ScrollView
+              showsVerticalScrollIndicator={false}
+              contentContainerStyle={styles.operatorsGroupContainer}
+            >
+              {sortedDates.map((date) => (
+                <View key={date} style={styles.dateGroup}>
+                  <Text style={[styles.dateHeader, { color: textColor }]}>
+                    {formatGroupedDate(date)}
+                  </Text>
+                  <ScrollView
+                    horizontal
+                    showsHorizontalScrollIndicator={false}
+                    contentContainerStyle={styles.operatorsScroll}
+                  >
+                    {groupedOperators[date].map((operator) => (
+                      <View key={operator.id_assign} style={styles.operatorCard}>
+                        <View style={[styles.operatorImageContainer, { borderColor: primaryColor }]}>
+                          {operator.photo ? (
+                            <Image
+                              source={{ uri: operator.photo }}
+                              style={styles.operatorImage}
+                            />
+                          ) : (
+                            <Ionicons name="person" size={24} color={primaryColor} />
+                          )}
+                        </View>
+                        <Text style={[styles.operatorName, { color: textColor }]}>
+                          {operator.first_name} {operator.last_name}
+                        </Text>
+                        <Text style={[styles.operatorRole, { color: primaryColor }]}>
+                          {operator.rol}
+                        </Text>
+                      </View>
+                    ))}
+                  </ScrollView>
                 </View>
-                <Text style={[styles.operatorName, { color: textColor }]}>
-                  {operator.first_name} {operator.last_name}
-                </Text>
-                <Text style={[styles.operatorRole, { color: primaryColor }]}>
-                  {operator.rol}
-                </Text>
-              </View>
-            ))}
-          </ScrollView>
-        )}
+              ))}
+            </ScrollView>
+          )}
+        </View>
       </View>
-    </View>
-  );
+    );
+  };
+
 
   const renderImageSection = (url: string | null, type: 'dispatchTicket' | 'evidence') => {
     const status = imageStatus[type];
@@ -322,6 +358,21 @@ const InfoOrderModal: React.FC<InfoOrderModalProps> = ({ visible, onClose, order
 };
 
 const styles = StyleSheet.create({
+  operatorsGroupContainer: {
+    paddingBottom: 16,
+  },
+  dateGroup: {
+    marginBottom: 20,
+  },
+  dateHeader: {
+    fontSize: 16,
+    fontWeight: '600',
+    marginBottom: 12,
+    paddingHorizontal: 16,
+  },
+  operatorsScroll: {
+    paddingHorizontal: 16,
+  },
   container: {
     flex: 1,
   },
@@ -467,10 +518,6 @@ const styles = StyleSheet.create({
     marginTop: 12,
     fontSize: 16,
     fontStyle: 'italic',
-  },
-  //operators styles
-   operatorsScroll: {
-    paddingRight: 16, // Previene el corte del último elemento
   },
   operatorsContainer: {
     padding: 16,

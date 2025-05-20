@@ -26,8 +26,8 @@ const OperatorView = () => {
     const [modalVisible, setModalVisible] = useState(false);
     const [selected, setSelected] = useState<Assignment | null>(null);
     const isTruckView = type === 'truck';
-    const filterRole = isTruckView 
-        ? (role: string) => role.toLowerCase() === 'driver' 
+    const filterRole  = isTruckView
+        ? (role: string) => role.toLowerCase() === 'driver'
         : (role: string) => role.toLowerCase() !== 'driver' && !role.toLowerCase().includes('driver');
     const emptyMessage = isTruckView
         ? t("no_truck_assignments_available")
@@ -107,6 +107,14 @@ const OperatorView = () => {
 const styles = StyleSheet.create({
     container: {
         flex: 1,
+    },
+    iosHeader: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'flex-start',
+        paddingVertical: 20,
+        paddingHorizontal: 10,
+        elevation: 4,
     },
     header: {
         flexDirection: 'row',

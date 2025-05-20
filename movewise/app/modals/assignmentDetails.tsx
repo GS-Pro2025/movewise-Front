@@ -502,6 +502,7 @@ const AssignmentDetails: React.FC<Props> = ({
                         transparent={true}
                         visible={actionModalVisible}
                         onRequestClose={() => setActionModalVisible(false)}
+                        statusBarTranslucent={true}
                     >
                         <View style={styles.modalOverlay}>
                             <View style={[
@@ -550,7 +551,7 @@ const AssignmentDetails: React.FC<Props> = ({
                                         <TouchableOpacity
                                             style={[
                                                 styles.modalButton,
-                                                { opacity: uploading ? 0.7 : 1 }
+                                                { opacity: uploading ? 0.7 : 1, zIndex:9999999999}
                                             ]}
                                             onPress={completeWorkAction}
                                             disabled={uploading}
