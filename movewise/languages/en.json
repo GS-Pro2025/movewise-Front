@@ -499,5 +499,6 @@
     "camera_permission_needed": "Camera access is needed to take photos.",
     "select_image_source": "Select Image Source",
     "take_photo": "Take Photo",
-    "choose_from_gallery": "Choose from Gallery"
+    "choose_from_gallery": "Choose from Gallery",
+    "search_truck_number_id": "Search truck by its number"
 }

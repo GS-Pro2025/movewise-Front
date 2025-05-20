@@ -71,3 +71,13 @@ export const UpdateTruck = async (id: string, data: Partial<Truck>): Promise<Tru
     throw error;
   }
 };
+
+export const getTruckByNumberId = async (number_id: string)=>{
+    try {
+    const response = await apiClient.get(`/trucks/by-number/${number_id}/`);
+    return response.data;
+  } catch (error) {
+    console.error("Error getting truck by Number_id:", error);
+    throw error;
+  }
+}
