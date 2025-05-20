@@ -529,5 +529,7 @@
   "edit_profile": "Editar Perfil",
   "customer_first_name": "Nombre del cliente",
   "could_not_delete_assignation":"No se pudo eliminar la asignacion",
-  "select_image_source": "Seleccionar Origen de Imagen"
+  "select_image_source": "Seleccionar Origen de Imagen",
+  "search_truck_number_id": "Buscar camión por placa",
+  "truck_found":"Camión encontrado"
 }
