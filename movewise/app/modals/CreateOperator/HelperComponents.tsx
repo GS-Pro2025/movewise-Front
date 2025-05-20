@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { JSX, useState } from 'react';
 import {
   Alert,
   View,
@@ -17,6 +17,7 @@ import { styles } from './FormStyle';
 import { useTranslation } from 'react-i18next';
 import { useActionSheet } from '@expo/react-native-action-sheet';
 import { Linking } from 'react-native';
+import { Modal, Image } from 'react-native';
 // Componentes de Ayuda
 function FormInput({ label, value, onChangeText, keyboardType = 'default', error, required = false }: FormInputProps): JSX.Element {
   return (
@@ -131,8 +132,9 @@ function RadioGroup({ label, options, selectedValue, onSelect, error, required =
   
   function ImageUpload({ label, image, onImageSelected, error, required = false }: ImageUploadProps): JSX.Element {
     const { t } = useTranslation();
-    const { showActionSheetWithOptions } = useActionSheet();
+    const [showOverlay, setShowOverlay] = useState(false);
 
+    
     const handleImagePicker = async (type: 'camera' | 'gallery') => {
     try {
       let result: ImagePicker.ImagePickerResult;
@@ -189,39 +191,15 @@ function RadioGroup({ label, options, selectedValue, onSelect, error, required =
   };
 
 
-  const showActionSheet = () => {
-    const options = [
-      t('take_photo'),
-      t('choose_from_gallery'),
-      t('cancel'),
-    ];
-    const cancelButtonIndex = 2;
-    // No hay un equivalente directo para destructiveButtonIndex en el mismo objeto de opciones
-
-    showActionSheetWithOptions(
-      {
-        options,
-        cancelButtonIndex,
-        // Puedes añadir más opciones como tintColor, message, etc., si lo necesitas
-      },
-      (buttonIndex) => {
-        if (buttonIndex === 0) {
-          handleImagePicker('camera');
-        } else if (buttonIndex === 1) {
-          handleImagePicker('gallery');
-        }
-        // Si buttonIndex es cancelButtonIndex (2), no se hace nada
-      }
-    );
-  };
+  const openOverlay = () => setShowOverlay(true);
 
 
-    return (
+return (
     <View style={styles.inputContainer}>
       <Text style={styles.inputLabel}>{label}</Text>
       <TouchableOpacity
         style={[styles.imageUploadContainer, error ? styles.inputError : null]}
-        onPress={showActionSheet}
+        onPress={openOverlay}
       >
         {image ? (
           <View style={styles.imagePreview}>
@@ -235,10 +213,90 @@ function RadioGroup({ label, options, selectedValue, onSelect, error, required =
         )}
       </TouchableOpacity>
       {error && <Text style={styles.errorText}>{error}</Text>}
-      {/* Ya no renderizamos el componente ActionSheet aquí */}
+
+      {/* Overlay Modal */}
+      <Modal
+        visible={showOverlay}
+        transparent
+        animationType="slide"
+        onRequestClose={() => setShowOverlay(false)}
+      >
+        <View style={uploadModalStyles.uploadModal_overlay}>
+          <View style={uploadModalStyles.uploadModal_container}>
+            <Text style={uploadModalStyles.uploadModal_title}>{t("select_image_source")}</Text>
+
+            <TouchableOpacity
+              style={uploadModalStyles.uploadModal_button}
+              onPress={() => { setShowOverlay(false); handleImagePicker('camera'); }}
+            >
+              <Text style={uploadModalStyles.uploadModal_buttonText}>{t('take_photo')}</Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              style={uploadModalStyles.uploadModal_button}
+              onPress={() => { setShowOverlay(false); handleImagePicker('gallery'); }}
+            >
+              <Text style={uploadModalStyles.uploadModal_buttonText}>{t('choose_from_gallery')}</Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              style={uploadModalStyles.uploadModal_cancelButton}
+              onPress={() => setShowOverlay(false)}
+            >
+              <Text style={uploadModalStyles.uploadModal_cancelText}>{t('cancel')}</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </Modal>
     </View>
   );
 }
+const uploadModalStyles = StyleSheet.create({
+  uploadModal_overlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.5)',
+    justifyContent: 'flex-end',
+  },
+  uploadModal_container: {
+    backgroundColor: '#fff',
+    borderTopLeftRadius: 20,
+    borderTopRightRadius: 20,
+    padding: 20,
+    paddingBottom: 40,
+    alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: -2 },
+    shadowOpacity: 0.2,
+    shadowRadius: 6,
+    elevation: 10,
+  },
+  uploadModal_title: {
+    fontSize: 18,
+    fontWeight: '600',
+    marginBottom: 20,
+    color: '#333',
+  },
+  uploadModal_button: {
+    width: '100%',
+    paddingVertical: 12,
+    borderBottomWidth: 1,
+    borderColor: '#eee',
+    alignItems: 'center',
+  },
+  uploadModal_cancelButton: {
+    width: '100%',
+    paddingVertical: 12,
+    alignItems: 'center',
+  },
+  uploadModal_buttonText: {
+    color: '#0458AB',
+    fontSize: 16,
+  },
+  uploadModal_cancelText: {
+    color: '#e74c3c',
+    fontSize: 16,
+  },
+});
 
 export {
   FormInput,
