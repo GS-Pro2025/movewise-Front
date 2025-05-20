@@ -12,6 +12,7 @@ import {
   StatusBar,
 } from 'react-native';
 import { useTranslation } from 'react-i18next';
+import { getTruckByNumberId } from '@/hooks/api/TruckClient';
 
 interface TruckData {
   id: number;
@@ -177,7 +178,8 @@ const TruckModal: React.FC<TruckModalProps> = ({ visible, onClose, orderKey, onT
   });
 
   const handleSearch = async () => {
-    const truckData = await getTruckById(TruckData.id);
+    console.log("TruckData handleSearch:", TruckData.number)
+    const truckData = await getTruckByNumberId(TruckData.number);
     if (truckData) {
       setTruckData({
         id: truckData.id_truck,
@@ -234,18 +236,14 @@ const TruckModal: React.FC<TruckModalProps> = ({ visible, onClose, orderKey, onT
         </View>
 
         {/* Entradas */}
-        <Text style={styles.searchLabel}>{t("search_truck_id")}</Text>
+        <Text style={styles.searchLabel}>{t("search_truck_number_id")}</Text>
         <View style={styles.searchInputContainer}>
           <TextInput
             style={styles.searchInput}
-            value={TruckData.id.toString()}
-            placeholder="000101"
+            placeholder="FLO-123"
+            value={TruckData.number}
+            onChangeText={text => setTruckData({ ...TruckData, number: text })}
             placeholderTextColor={isDarkMode ? '#a0a0a0' : '#606060'}
-            onChangeText={(text) => {
-              const numericValue = text.trim() === "" ? 0 : parseInt(text, 10) || 0;
-              setTruckData({ ...TruckData, id: numericValue });
-            }}
-            keyboardType="numeric"
           />
           <TouchableOpacity style={styles.searchButton} onPress={handleSearch}>
             <Image
