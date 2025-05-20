@@ -323,6 +323,12 @@ const handleUpdate = async () => {
         text2: t("order_updated_successfully")
       });
       if (onClose) onClose();
+    }else{
+    Toast.show({
+      type: 'error',
+      text1: t("error"),
+      text2: `${t("unexpected_error_occurred")}}`
+    });
     }
   } catch (err: any) {
     console.error(t("error_in_handle_update"), err);
