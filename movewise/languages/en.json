@@ -493,5 +493,11 @@
     "failed_complete_work": "Error completing the work. Please try again.",
     "customer_client": "customer client",
     "edit_profile": "Edit Profile",
-    "could_not_delete_assignation": "could not delete assignation"
+    "could_not_delete_assignation": "could not delete assignation",
+    "permission_required": "Permission Required",
+    "camera_permission_needed": "Camera access is needed to take photos.",
+    "select_image_source": "Select Image Source",
+    "take_photo": "Take Photo",
+    "choose_from_gallery": "Choose from Gallery",
+    "search_truck_number_id": "Search truck by its number"
 }

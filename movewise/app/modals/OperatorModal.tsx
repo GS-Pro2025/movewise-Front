@@ -244,8 +244,7 @@ const OperatorModal: React.FC<OperatorModalProps> = ({ visible, onClose, orderKe
                 .catch((error) => {
                   console.error("Error deleting assignation:", error);
                   Alert.alert(t("error"), t("could_not_delete_assignation"));
-                });
-
+              });
             } else {
               setOperators((prev) => prev.filter((_, i) => i !== index));
             }

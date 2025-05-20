@@ -86,7 +86,7 @@ export const UpdateOperator = async (id: number, formData: FormData) => {
     if (!token) throw new Error("Token not found");
 
     const response = await axios.patch(
-      `${url}operators/update/${id}/`,
+      `${url}/operators/update/${id}/`,
       formData,
       {
         headers: {
