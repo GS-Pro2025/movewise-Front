@@ -24,9 +24,9 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import Toast from 'react-native-toast-message';
 import { useTranslation } from "react-i18next"
 import { url } from "@/hooks/api/apiClient";
-import { ImageInfo } from 'expo-image-picker';
-import { ImageUpload } from "./CreateOperator/HelperComponents";
 import { ImagePickerAsset } from 'expo-image-picker';
+import CrossPlatformImageUpload from "./CrossPlatformImageUpload";
+import { ImageInfo } from "./CrossPlatformImageUpload";
 
 interface Props {
     visible: boolean;
@@ -44,7 +44,7 @@ const AssignmentDetails: React.FC<Props> = ({
     const [toolsModalVisible, setToolsModalVisible] = useState(false);
     const [actionModalVisible, setActionModalVisible] = useState(false);
 
-    const [evidence, setEvidence] = useState<ImagePickerAsset | null>(null);
+    const [evidence, setEvidence] = useState<ImageInfo | null>(null);
     const [evidenceError, setEvidenceError] = useState<string | undefined>(undefined);
     const [uploading, setUploading] = useState(false);
     const { showActionSheetWithOptions } = useActionSheet();
@@ -64,7 +64,7 @@ const AssignmentDetails: React.FC<Props> = ({
         return `${date.getMonth() + 1}/${date.getDate()}/${date.getFullYear()}`;
     };
 
-    const handleEvidenceSelected = (image: ImagePickerAsset) => {
+    const handleEvidenceSelected = (image: ImageInfo) => {
         setEvidence(image);
         setEvidenceError(undefined);
     };
@@ -104,7 +104,7 @@ const AssignmentDetails: React.FC<Props> = ({
 
             if (!result.canceled && result.assets?.[0]) {
                 setEvidence(result.assets[0]);
-                setEvidenceError(null);
+                setEvidenceError(undefined);
                 return result.assets[0];
             }
             return null;
@@ -534,7 +534,7 @@ const AssignmentDetails: React.FC<Props> = ({
                                     <Text style={[styles.modalInfoText, { color: '#FFFFFF', marginTop: 10 }]}>
                                         {t('evidence')} <Text style={{ color: '#FF0000' }}>*</Text>
                                     </Text>
-                                    <ImageUpload
+                                    <CrossPlatformImageUpload
                                         label={t("upload_evidence")}
                                         image={evidence}
                                         onImageSelected={handleEvidenceSelected}

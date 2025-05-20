@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { ScrollView, View, Text, TouchableOpacity } from 'react-native';
-import { FormInput, ImageUpload, RadioGroup, DateInput, DropdownInput } from '../HelperComponents';
+import { FormInput, RadioGroup, DateInput, DropdownInput } from '../HelperComponents';
 import { styles } from '../FormStyle';
 import { Son, StepProps } from '../Types';
 import { ALERT_TYPE, Toast } from 'react-native-alert-notification';
 import { useTranslation } from 'react-i18next';
+import CrossPlatformImageUpload from '../../CrossPlatformImageUpload';
 const Step2Form = ({ formData, updateFormData, onNext, onBack, isEditing }: StepProps) => {
     const { t } = useTranslation();
     const [localData, setLocalData] = useState({
@@ -214,7 +215,7 @@ const Step2Form = ({ formData, updateFormData, onNext, onBack, isEditing }: Step
                     required={false}
                 />
 
-                <ImageUpload
+                <CrossPlatformImageUpload
                     label={`${t("front_license_photo")} (*)`}
                     image={localData.license_front}
                     onImageSelected={(image) => handleChange('license_front', image)}
@@ -222,7 +223,7 @@ const Step2Form = ({ formData, updateFormData, onNext, onBack, isEditing }: Step
                     required={true}
                 />
 
-                <ImageUpload
+                <CrossPlatformImageUpload
                     label={`${t("back_license_photo")} (*)`}
                     image={localData.license_back}
                     onImageSelected={(image) => handleChange('license_back', image)}
@@ -285,18 +286,18 @@ const Step2Form = ({ formData, updateFormData, onNext, onBack, isEditing }: Step
                             />
 
                             <DropdownInput
-                            label={`${t("gender")} (*)`}
-                            value={
-                                currentSon.gender === 'M'
-                                ? t("male")
-                                : currentSon.gender === 'F'
-                                    ? t("female")
-                                    : ''
-                            }
-                            onChange={(value) => handleSonChange('gender', value)}
-                            options={['M', 'F']}
-                            error={sonErrors.gender}
-                            required={true}
+                                label={`${t("gender")} (*)`}
+                                value={
+                                    currentSon.gender === 'M'
+                                        ? t("male")
+                                        : currentSon.gender === 'F'
+                                            ? t("female")
+                                            : ''
+                                }
+                                onChange={(value) => handleSonChange('gender', value)}
+                                options={['M', 'F']}
+                                error={sonErrors.gender}
+                                required={true}
                             />
 
                             <TouchableOpacity style={styles.addButton} onPress={addSon}>
