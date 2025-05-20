@@ -1,7 +1,7 @@
-import React, { useState, useEffect } from 'react';
-import { Image, useColorScheme, Modal } from 'react-native';
-import { getTruckById } from '@/hooks/api/GetTruckById';
-import Toast from 'react-native-toast-message';
+import React, { useState, useEffect } from "react";
+import { Image, useColorScheme, Modal, ScrollView, KeyboardAvoidingView } from "react-native";
+import { getTruckById } from "@/hooks/api/GetTruckById";
+import Toast from "react-native-toast-message";
 import {
   View,
   Text,
@@ -10,9 +10,9 @@ import {
   StyleSheet,
   SafeAreaView,
   StatusBar,
-} from 'react-native';
-import { useTranslation } from 'react-i18next';
-import { getTruckByNumberId } from '@/hooks/api/TruckClient';
+} from "react-native";
+import { useTranslation } from "react-i18next";
+import { getTruckByNumberId } from "@/hooks/api/TruckClient";
 
 interface TruckData {
   id: number;
@@ -33,7 +33,12 @@ interface AddOperatorScreenProps {
   orderKey: string;
 }
 
-const TruckModal: React.FC<TruckModalProps> = ({ visible, onClose, orderKey, onTruckSelect }) => {
+const TruckModal: React.FC<TruckModalProps> = ({
+  visible,
+  onClose,
+  orderKey,
+  onTruckSelect,
+}) => {
   const { t } = useTranslation();
   if (!orderKey) {
     return null;
@@ -41,10 +46,10 @@ const TruckModal: React.FC<TruckModalProps> = ({ visible, onClose, orderKey, onT
 
   const [TruckData, setTruckData] = useState<TruckData>({
     id: 0,
-    name: '',
-    number: '',
-    category: '',
-    type: '',
+    name: "",
+    number: "",
+    category: "",
+    type: "",
   });
 
   // Agrega un useEffect para resetear el estado
@@ -52,39 +57,42 @@ const TruckModal: React.FC<TruckModalProps> = ({ visible, onClose, orderKey, onT
     if (visible) {
       setTruckData({
         id: 0,
-        name: '',
-        number: '',
-        category: '',
-        type: '',
+        name: "",
+        number: "",
+        category: "",
+        type: "",
       });
     }
   }, [visible]);
 
   const colorScheme = useColorScheme();
-  const isDarkMode = colorScheme === 'dark';
+  const isDarkMode = colorScheme === "dark";
 
   const styles = StyleSheet.create({
     modalContainer: {
       flex: 1,
-      backgroundColor: isDarkMode ? '#112A4A' : '#FFFFFF',
+      backgroundColor: isDarkMode ? "#112A4A" : "#FFFFFF",
       padding: 16,
       borderTopLeftRadius: 20,
       borderTopRightRadius: 20,
-      marginTop: 'auto'
+      marginTop: "auto",
     },
     header: {
-      flexDirection: 'row',
-      alignItems: 'center',
+      flexDirection: "row",
+      alignItems: "center",
       paddingVertical: 12,
       paddingHorizontal: 16,
       borderBottomWidth: 1,
-      borderBottomColor: colorScheme === 'dark' ? 'rgba(255, 255, 255, 0.2)' : 'rgba(0, 0, 0, 0.1)',
+      borderBottomColor:
+        colorScheme === "dark"
+          ? "rgba(255, 255, 255, 0.2)"
+          : "rgba(0, 0, 0, 0.1)",
     },
     headerTitle: {
       fontSize: 20,
-      fontWeight: 'bold',
-      color: isDarkMode ? '#ffffff' : '#0458AB',
-      textAlign: 'center',
+      fontWeight: "bold",
+      color: isDarkMode ? "#ffffff" : "#0458AB",
+      textAlign: "center",
       flex: 1,
       paddingRight: 40,
     },
@@ -93,24 +101,24 @@ const TruckModal: React.FC<TruckModalProps> = ({ visible, onClose, orderKey, onT
     },
     closeButtonText: {
       fontSize: 18,
-      color: isDarkMode ? '#ffffff' : '#0458AB',
+      color: isDarkMode ? "#ffffff" : "#0458AB",
     },
     searchLabel: {
       fontSize: 16,
-      color: isDarkMode ? 'white' : '#0458AB',
+      color: isDarkMode ? "white" : "#0458AB",
       marginBottom: 8,
       paddingTop: 30,
       paddingLeft: 10,
     },
     searchInputContainer: {
-      flexDirection: 'row',
-      alignItems: 'center',
-      backgroundColor: isDarkMode ? '#ffffff36' : 'white',
+      flexDirection: "row",
+      alignItems: "center",
+      backgroundColor: isDarkMode ? "#ffffff36" : "white",
       borderRadius: 13,
-      borderColor: isDarkMode ? '#9ca3af' : '#0458AB',
+      borderColor: isDarkMode ? "#9ca3af" : "#0458AB",
       borderWidth: 2,
-      width: '95%',
-      alignSelf: 'center',
+      width: "95%",
+      alignSelf: "center",
       height: 45,
     },
     searchInput: {
@@ -118,55 +126,55 @@ const TruckModal: React.FC<TruckModalProps> = ({ visible, onClose, orderKey, onT
       height: 50,
       paddingHorizontal: 16,
       fontSize: 16,
-      color: isDarkMode ? '#112A4A' : 'black',
+      color: isDarkMode ? "#112A4A" : "black",
     },
     inputLabel: {
       fontSize: 16,
-      color: isDarkMode ? '#ffffff' : '#0458AB',
+      color: isDarkMode ? "#ffffff" : "#0458AB",
       marginTop: 5,
       paddingLeft: 10,
     },
     input: {
-      backgroundColor: isDarkMode ? '#ffffff36' : 'white',
+      backgroundColor: isDarkMode ? "#ffffff36" : "white",
       borderRadius: 13,
       height: 47,
       paddingHorizontal: 12,
       fontSize: 16,
       marginBottom: 0,
-      borderColor: isDarkMode ? '#9ca3af' : '#0458AB',
+      borderColor: isDarkMode ? "#9ca3af" : "#0458AB",
       borderWidth: 2,
-      color: isDarkMode ? 'white' : 'black',
-      width: '95%',
-      alignSelf: 'center',
+      color: isDarkMode ? "white" : "black",
+      width: "95%",
+      alignSelf: "center",
     },
     buttonContainer: {
-      flexDirection: 'row',
-      justifyContent: 'space-between',
+      flexDirection: "row",
+      justifyContent: "space-between",
       padding: 50,
     },
     cancelButton: {
-      backgroundColor: isDarkMode ? '#0458AB' : '#545257',
+      backgroundColor: isDarkMode ? "#0458AB" : "#545257",
       borderRadius: 14,
       paddingVertical: 10,
-      width: '45%',
-      alignItems: 'center',
+      width: "45%",
+      alignItems: "center",
     },
     cancelButtonText: {
-      color: 'white',
+      color: "white",
       fontSize: 18,
-      fontWeight: 'bold',
+      fontWeight: "bold",
     },
     saveButton: {
-      backgroundColor: isDarkMode ? '#ffffff' : '#0458AB',
+      backgroundColor: isDarkMode ? "#ffffff" : "#0458AB",
       borderRadius: 14,
       paddingVertical: 10,
-      width: '45%',
-      alignItems: 'center',
+      width: "45%",
+      alignItems: "center",
     },
     saveButtonText: {
-      color: isDarkMode ? '#112A4A' : '#ffffff',
+      color: isDarkMode ? "#112A4A" : "#ffffff",
       fontSize: 18,
-      fontWeight: 'bold',
+      fontWeight: "bold",
     },
     searchIcon: {
       width: 24,
@@ -178,7 +186,7 @@ const TruckModal: React.FC<TruckModalProps> = ({ visible, onClose, orderKey, onT
   });
 
   const handleSearch = async () => {
-    console.log("TruckData handleSearch:", TruckData.number)
+    console.log("TruckData handleSearch:", TruckData.number);
     const truckData = await getTruckByNumberId(TruckData.number);
     if (truckData) {
       setTruckData({
@@ -191,20 +199,20 @@ const TruckModal: React.FC<TruckModalProps> = ({ visible, onClose, orderKey, onT
       Toast.show({
         text1: t("success"),
         text2: t("truck_found"),
-        type: 'success',
+        type: "success",
       });
       console.log(t("truck_found"), truckData);
     } else {
       setTruckData({
         id: 0, // Campo vacío
-        name: '', // Campo vacío
-        number: '', // Campo vacío
-        category: '', // Campo vacío
-        type: '', // Campo vacío
+        name: "", // Campo vacío
+        number: "", // Campo vacío
+        category: "", // Campo vacío
+        type: "", // Campo vacío
       });
       Toast.show({
         text1: t("error") + ": " + (truckData?.sms || t("truck_not_found")),
-        type: 'error',
+        type: "error",
       });
     }
   };
@@ -222,73 +230,112 @@ const TruckModal: React.FC<TruckModalProps> = ({ visible, onClose, orderKey, onT
   return (
     <Modal visible={visible} animationType="slide" transparent={true}>
       <SafeAreaView style={styles.modalContainer}>
-        <StatusBar backgroundColor={isDarkMode ? '#112A4A' : '#0458AB'} barStyle={isDarkMode ? 'light-content' : 'dark-content'} />
-
-        {/* Encabezado */}
-        <View style={styles.header}>
-          <Image
-            source={require('../../assets/images/LOGOPNG.png')}
-            style={{ width: 40, height: 40, tintColor: isDarkMode ? '#ffffff' : '#0458AB' }}
-          />
-          <Text style={styles.headerTitle}>{t("add_truck")}</Text>
-          <TouchableOpacity onPress={onClose} style={styles.closeButton}>
-          </TouchableOpacity>
-        </View>
-
-        {/* Entradas */}
-        <Text style={styles.searchLabel}>{t("search_truck_number_id")}</Text>
-        <View style={styles.searchInputContainer}>
-          <TextInput
-            style={styles.searchInput}
-            placeholder="FLO-123"
-            value={TruckData.number}
-            onChangeText={text => setTruckData({ ...TruckData, number: text })}
-            placeholderTextColor={isDarkMode ? '#a0a0a0' : '#606060'}
-          />
-          <TouchableOpacity style={styles.searchButton} onPress={handleSearch}>
-            <Image
-              source={require('../../assets/images/search.png')}
-              style={[styles.searchIcon, { tintColor: isDarkMode ? '#9ca3af' : '#0458AB' }]}
-            />
-          </TouchableOpacity>
-        </View>
-
-        {/* Otras entradas */}
-        {['name', 'number', 'category', 'type'].map((field) => {
-          // Convertir el campo a un tipo específico
-          const key = field as keyof TruckData;
-
-          return (
-            <View key={field}>
-              <Text style={styles.inputLabel}>{t(field)}</Text>
-              <TextInput
-                style={styles.input}
-                placeholder={t(field)}
-                placeholderTextColor={isDarkMode ? '#a0a0a0' : '#606060'}
-                value={TruckData[key].toString()} // Convertir a string
-                onChangeText={(text) => {
-                  // Convertir de vuelta a número solo para campos numéricos
-                  const value = ['number', 'category', 'type'].includes(field)
-                    ? parseInt(text) || 0
-                    : text;
-
-                  setTruckData({ ...TruckData, [field]: value });
+        <StatusBar
+          backgroundColor={isDarkMode ? "#112A4A" : "#0458AB"}
+          barStyle={isDarkMode ? "light-content" : "dark-content"}
+        />
+        <KeyboardAvoidingView
+          behavior={Platform.OS === "ios" ? "padding" : "height"}
+          style={{ flex: 1 }}
+        >
+          <ScrollView
+            contentContainerStyle={{ flexGrow: 1 }}
+            keyboardShouldPersistTaps="handled"
+            nestedScrollEnabled={true}
+          >
+            {/* Encabezado */}
+            <View style={styles.header}>
+              <Image
+                source={require("../../assets/images/LOGOPNG.png")}
+                style={{
+                  width: 40,
+                  height: 40,
+                  tintColor: isDarkMode ? "#ffffff" : "#0458AB",
                 }}
-                keyboardType={field === 'number' || field === 'category' || field === 'type' ? 'numeric' : 'default'}
               />
+              <Text style={styles.headerTitle}>{t("add_truck")}</Text>
+              <TouchableOpacity
+                onPress={onClose}
+                style={styles.closeButton}
+              ></TouchableOpacity>
             </View>
-          );
-        })}
 
-        {/* Botones */}
-        <View style={styles.buttonContainer}>
-          <TouchableOpacity style={styles.cancelButton} onPress={onClose}>
-            <Text style={styles.cancelButtonText}>{t("cancel_button")}</Text>
-          </TouchableOpacity>
-          <TouchableOpacity style={styles.saveButton} onPress={handleSave}>
-            <Text style={styles.saveButtonText}>{t("save_button")}</Text>
-          </TouchableOpacity>
-        </View>
+            {/* Entradas */}
+            <Text style={styles.searchLabel}>
+              {t("search_truck_number_id")}
+            </Text>
+            <View style={styles.searchInputContainer}>
+              <TextInput
+                style={styles.searchInput}
+                placeholder="FLO-123"
+                value={TruckData.number}
+                onChangeText={(text) =>
+                  setTruckData({ ...TruckData, number: text })
+                }
+                placeholderTextColor={isDarkMode ? "#a0a0a0" : "#606060"}
+              />
+              <TouchableOpacity
+                style={styles.searchButton}
+                onPress={handleSearch}
+              >
+                <Image
+                  source={require("../../assets/images/search.png")}
+                  style={[
+                    styles.searchIcon,
+                    { tintColor: isDarkMode ? "#9ca3af" : "#0458AB" },
+                  ]}
+                />
+              </TouchableOpacity>
+            </View>
+
+            {/* Otras entradas */}
+            {["name", "number", "category", "type"].map((field) => {
+              // Convertir el campo a un tipo específico
+              const key = field as keyof TruckData;
+
+              return (
+                <View key={field}>
+                  <Text style={styles.inputLabel}>{t(field)}</Text>
+                  <TextInput
+                    style={styles.input}
+                    placeholder={t(field)}
+                    placeholderTextColor={isDarkMode ? "#a0a0a0" : "#606060"}
+                    value={TruckData[key].toString()} // Convertir a string
+                    onChangeText={(text) => {
+                      // Convertir de vuelta a número solo para campos numéricos
+                      const value = ["number", "category", "type"].includes(
+                        field
+                      )
+                        ? parseInt(text) || 0
+                        : text;
+
+                      setTruckData({ ...TruckData, [field]: value });
+                    }}
+                    keyboardType={
+                      field === "number" ||
+                      field === "category" ||
+                      field === "type"
+                        ? "numeric"
+                        : "default"
+                    }
+                  />
+                </View>
+              );
+            })}
+
+            {/* Botones */}
+            <View style={styles.buttonContainer}>
+              <TouchableOpacity style={styles.cancelButton} onPress={onClose}>
+                <Text style={styles.cancelButtonText}>
+                  {t("cancel_button")}
+                </Text>
+              </TouchableOpacity>
+              <TouchableOpacity style={styles.saveButton} onPress={handleSave}>
+                <Text style={styles.saveButtonText}>{t("save_button")}</Text>
+              </TouchableOpacity>
+            </View>
+          </ScrollView>
+        </KeyboardAvoidingView>
       </SafeAreaView>
       <Toast />
     </Modal>
