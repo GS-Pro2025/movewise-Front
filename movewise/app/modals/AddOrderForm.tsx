@@ -49,6 +49,7 @@ export default function AddOrderModal({ visible, onClose }: AddOrderModalProps) 
   const [operatorModalVisible, setOperatorModalVisible] = useState(false); // State for OperatorModal visibility
   const [savedOrderKey, setSavedOrderKey] = useState<string | null>(null); // State to store saved order key
   const [dispatchTicket, setDispatchTicket] = useState<ImageInfo | null>(null); // State for dispatch_Ticket
+  
   const { saveOrder, isLoading, error } = AddOrderformApi();
 
   const handleSaveOperators = () => {
@@ -611,7 +612,6 @@ export default function AddOrderModal({ visible, onClose }: AddOrderModalProps) 
               onClose={() => setOperatorModalVisible(false)}
               orderKey={savedOrderKey || 'There is no key'}
               onSave={handleSaveOperators} />
-
           </ScrollView>
         </KeyboardAvoidingView>
       </SafeAreaView>
