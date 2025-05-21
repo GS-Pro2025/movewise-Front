@@ -62,8 +62,8 @@
       [
         "expo-image-picker",
         {
-          "photosPermission": "The app accesses your photos to let you share them with your friends.",
-          "cameraPermission": "Allow access to your camera"
+          "photosPermission": "The app needs access to the photos to upload evidence of orders.",
+          "cameraPermission": "The app needs access to the camera to take photos of work completion evidence."
         }
       ]
     ],

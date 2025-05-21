@@ -3,7 +3,6 @@ import {
   View,
   Text,
   TouchableOpacity,
-  Modal,
   StyleSheet,
   Platform,
   Alert,
@@ -13,6 +12,7 @@ import {
 } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
 import { useTranslation } from 'react-i18next';
+import { useActionSheet } from '@expo/react-native-action-sheet';
 
 export interface ImageInfo {
   uri: string;
@@ -33,9 +33,9 @@ export interface ImageUploadProps {
   required?: boolean;
   quality?: number;
   maxWidth?: number;
-  maxHeight?: number; 
-  aspect?: [number, number]; 
-  allowsEditing?: boolean; 
+  maxHeight?: number;
+  aspect?: [number, number];
+  allowsEditing?: boolean;
 }
 
 
@@ -52,8 +52,8 @@ const CrossPlatformImageUpload: React.FC<ImageUploadProps> = ({
   allowsEditing = true
 }) => {
   const { t } = useTranslation();
-  const [showModal, setShowModal] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const { showActionSheetWithOptions } = useActionSheet();
 
   /**
    * Normalizes image information to be consistent across platforms
@@ -80,17 +80,52 @@ const CrossPlatformImageUpload: React.FC<ImageUploadProps> = ({
     };
   };
 
+
   /**
    * Manages image selection from the camera
    */
+  const handleImageSelection = () => {
+    const options = [
+      t('take_photo'),
+      t('choose_from_gallery'),
+      t('cancel')
+    ];
+    
+    const cancelButtonIndex = 2;
+    
+    showActionSheetWithOptions(
+      {
+        options,
+        cancelButtonIndex,
+        // Para iOS podemos añadir un título y mensaje descriptivo
+        title: t('select_image_source'),
+        message: t('how_would_you_like_to_add_a_photo'),
+        // Índice del botón destructivo (rojo) - ninguno en este caso
+        destructiveButtonIndex: undefined,
+        // Podemos también personalizar el estilo en iOS
+        userInterfaceStyle: 'light',
+        // Usamos la API de anchorToView para tablets en iOS (opcional)
+        // containerStyle: { ... } // estilos adicionales si necesitas
+      },
+      async (buttonIndex) => {
+        if (buttonIndex === 0) {
+          // Take photo
+          await handleCameraCapture();
+        } else if (buttonIndex === 1) {
+          // Choose from gallery
+          await handleGalleryPick();
+        }
+        // Si es cancelButtonIndex, no hacemos nada
+      }
+    );
+  };
   const handleCameraCapture = async () => {
     try {
       setIsLoading(true);
-      setShowModal(false);
-      
+
       // Request camera permissions
       const { status } = await ImagePicker.requestCameraPermissionsAsync();
-      
+
       if (status !== 'granted') {
         setTimeout(() => {
           Alert.alert(
@@ -98,36 +133,35 @@ const CrossPlatformImageUpload: React.FC<ImageUploadProps> = ({
             t('camera_permission_needed'),
             [
               { text: t('cancel'), style: 'cancel' },
-              { 
-                text: t('settings'), 
-                onPress: () => Platform.OS === 'ios' ? 
+              {
+                text: t('settings'),
+                onPress: () => Platform.OS === 'ios' ?
                   // En iOS, abre la configuración de la app
                   // On iOS, open the app settings
-                  Linking.openURL('app-settings:') : 
+                  Linking.openURL('app-settings:') :
                   // En Android, intenta abrir la configuración de la app
                   // On Android, try opening the app settings
-                  Linking.openSettings() 
+                  Linking.openSettings()
               }
             ]
           );
-        }, 500);
+        }, 300);
         return;
       }
-      
-      // Configuración para ambas plataformas
+
+      // Configuración para ambas plataformas usando la nueva API
       const options: ImagePicker.ImagePickerOptions = {
         mediaTypes: ['images'],
         allowsEditing,
         aspect,
         quality,
-        presentationStyle: ImagePicker.UIImagePickerPresentationStyle.FULL_SCREEN,
         ...(maxWidth && { maxWidth }),
         ...(maxHeight && { maxHeight }),
       };
-      
+
       const result = await ImagePicker.launchCameraAsync(options);
       const normalizedImage = normalizeImageInfo(result);
-      
+
       if (normalizedImage) {
         onImageSelected(normalizedImage);
       }
@@ -147,53 +181,55 @@ const CrossPlatformImageUpload: React.FC<ImageUploadProps> = ({
   const handleGalleryPick = async () => {
     try {
       setIsLoading(true);
-      setShowModal(false);
-      
-      // Request gallery permissions
+
+      // Solicitar permisos usando requestMediaLibraryPermissionsAsync directamente
+      // Request permissions using requestMediaLibraryPermissionsAsync directly
       const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
-      
+
       if (status !== 'granted') {
         setTimeout(() => {
           Alert.alert(
-            t('permission_denied'),
-            t('allow_photo_access'),
+            t('permission_required'),
+            t('gallery_permission_needed'),
             [
               { text: t('cancel'), style: 'cancel' },
-              { 
-                text: t('settings'), 
-                onPress: () => Platform.OS === 'ios' ? 
-                  Linking.openURL('app-settings:') : 
-                  Linking.openSettings() 
+              {
+                text: t('settings'),
+                onPress: () => Platform.OS === 'ios' ?
+                  Linking.openURL('app-settings:') :
+                  Linking.openSettings()
               }
             ]
           );
-        }, 500);
+        }, 300);
         return;
       }
-      
-      // Configuración para ambas plataformas
-      // Configuration for both platforms
+
+      // Configuración simplificada para ambas plataformas usando la nueva API
       const options: ImagePicker.ImagePickerOptions = {
         mediaTypes: ['images'],
         allowsEditing,
         aspect,
         quality,
-        presentationStyle: ImagePicker.UIImagePickerPresentationStyle.FULL_SCREEN,
         ...(maxWidth && { maxWidth }),
         ...(maxHeight && { maxHeight }),
       };
-      
+
+      // Usar el método correcto sin opciones específicas de plataforma problemáticas
       const result = await ImagePicker.launchImageLibraryAsync(options);
-      const normalizedImage = normalizeImageInfo(result);
       
-      if (normalizedImage) {
-        onImageSelected(normalizedImage);
+      // Procesar el resultado solo si no fue cancelado
+      if (!result.canceled && result.assets && result.assets.length > 0) {
+        const normalizedImage = normalizeImageInfo(result);
+        if (normalizedImage) {
+          onImageSelected(normalizedImage);
+        }
       }
     } catch (error) {
-      console.error('Error al seleccionar imagen:', error);
+      console.error('Error en selección de imagen:', error);
       setTimeout(() => {
         Alert.alert(t('error'), t('failed_to_select_image'));
-      }, 500);
+      }, 300);
     } finally {
       setIsLoading(false);
     }
@@ -208,9 +244,9 @@ const CrossPlatformImageUpload: React.FC<ImageUploadProps> = ({
 
     return (
       <View style={styles.previewContainer}>
-        <Image 
-          source={{ uri: image.uri }} 
-          style={styles.imagePreview} 
+        <Image
+          source={{ uri: image.uri }}
+          style={styles.imagePreview}
           resizeMode="cover"
         />
         <Text style={styles.imageFilename} numberOfLines={1} ellipsizeMode="middle">
@@ -225,14 +261,14 @@ const CrossPlatformImageUpload: React.FC<ImageUploadProps> = ({
       <Text style={styles.label}>
         {label} {required && <Text style={styles.requiredMark}>*</Text>}
       </Text>
-      
+
       <TouchableOpacity
         style={[
           styles.uploadButton,
           error ? styles.uploadButtonError : null,
           image ? styles.uploadButtonWithImage : null
         ]}
-        onPress={() => setShowModal(true)}
+        onPress={handleImageSelection}
         disabled={isLoading}
       >
         {isLoading ? (
@@ -246,44 +282,8 @@ const CrossPlatformImageUpload: React.FC<ImageUploadProps> = ({
           </View>
         )}
       </TouchableOpacity>
-      
-      {error && <Text style={styles.errorText}>{error}</Text>}
 
-      {/* Modal para seleccionar fuente de imagen */}
-      {/* Modal to select image source */}
-      <Modal
-        visible={showModal}
-        transparent
-        animationType="fade"
-        onRequestClose={() => setShowModal(false)}
-      >
-        <View style={styles.modalOverlay}>
-          <View style={styles.modalContainer}>
-            <Text style={styles.modalTitle}>{t('select_image_source')}</Text>
-            
-            <TouchableOpacity
-              style={styles.modalButton}
-              onPress={handleCameraCapture}
-            >
-              <Text style={styles.modalButtonText}>{t('take_photo')}</Text>
-            </TouchableOpacity>
-            
-            <TouchableOpacity
-              style={styles.modalButton}
-              onPress={handleGalleryPick}
-            >
-              <Text style={styles.modalButtonText}>{t('choose_from_gallery')}</Text>
-            </TouchableOpacity>
-            
-            <TouchableOpacity
-              style={styles.cancelButton}
-              onPress={() => setShowModal(false)}
-            >
-              <Text style={styles.cancelButtonText}>{t('cancel')}</Text>
-            </TouchableOpacity>
-          </View>
-        </View>
-      </Modal>
+      {error && <Text style={styles.errorText}>{error}</Text>}
     </View>
   );
 };
@@ -355,46 +355,6 @@ const styles = StyleSheet.create({
     color: 'red',
     fontSize: 12,
     marginTop: 4,
-  },
-  modalOverlay: {
-    flex: 1,
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
-    justifyContent: 'flex-end',
-  },
-  modalContainer: {
-    backgroundColor: 'white',
-    borderTopLeftRadius: 20,
-    borderTopRightRadius: 20,
-    padding: 20,
-    paddingBottom: Platform.OS === 'ios' ? 40 : 20, 
-  },
-  modalTitle: {
-    fontSize: 18,
-    fontWeight: '600',
-    marginBottom: 20,
-    textAlign: 'center',
-    color: '#333',
-  },
-  modalButton: {
-    paddingVertical: 14,
-    borderBottomWidth: 1,
-    borderBottomColor: '#eee',
-    alignItems: 'center',
-  },
-  modalButtonText: {
-    color: '#0458AB',
-    fontSize: 16,
-    fontWeight: '500',
-  },
-  cancelButton: {
-    paddingVertical: 14,
-    marginTop: 10,
-    alignItems: 'center',
-  },
-  cancelButtonText: {
-    color: '#e74c3c',
-    fontSize: 16,
-    fontWeight: '500',
   },
 });
 
