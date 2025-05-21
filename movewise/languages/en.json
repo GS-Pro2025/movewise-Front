@@ -500,5 +500,7 @@
     "select_image_source": "Select Image Source",
     "take_photo": "Take Photo",
     "choose_from_gallery": "Choose from Gallery",
-    "search_truck_number_id": "Search truck by its number"
+    "search_truck_number_id": "Search truck by its number",
+    "how_would_you_like_to_add_a_photo":"How would you like to add a photo?",
+    "upload_evidence":"Upload evidence"
 }

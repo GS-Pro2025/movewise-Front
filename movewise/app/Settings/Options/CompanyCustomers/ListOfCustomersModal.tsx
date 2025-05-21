@@ -79,7 +79,7 @@ const ListOfCustomersModal: React.FC<ListOfCustomersModalProps> = ({ visible, on
           text: t("delete"),
           onPress: async () => {
             try {
-                console.log("Id del customer a eliminar", id)
+              console.log("Id del customer a eliminar", id)
               await DeleteCompany(id);
               loadCustomers()
               Toast.show({
@@ -114,10 +114,12 @@ const ListOfCustomersModal: React.FC<ListOfCustomersModalProps> = ({ visible, on
       <GestureHandlerRootView>
         <Swipeable renderRightActions={renderRightActions}>
           <View style={[styles.jobItem, { backgroundColor: isDarkMode ? '#1E3A5F' : '#f5f5f5' }]}>
-            <Image
-              source={require('../../../../assets/images/briefcase.png')}
-              style={[styles.briefcaseImage, { backgroundColor: isDarkMode ? '#FFFFFF' : '#f5f5f5' }]}
+            <Ionicons
+              size={30}
+              name="briefcase-outline"
+              color={isDarkMode ? '#ffffff' : '#000000'} // blanco en modo oscuro, negro en modo claro
             />
+
             <View style={styles.jobDetails}>
               <Text style={[styles.jobTitle, { color: isDarkMode ? '#FFFFFF' : '#0458AB' }]}>
                 {item.name}
@@ -133,34 +135,34 @@ const ListOfCustomersModal: React.FC<ListOfCustomersModalProps> = ({ visible, on
     <Modal animationType="slide" transparent={false} visible={visible} onRequestClose={onClose}>
       <SafeAreaView style={{ flex: 1 }}>
         <View style={[styles.header, { backgroundColor: isDarkMode ? '#112A4A' : '#ffffff' }]}>
-            <TouchableOpacity
-                onPress={onClose}
-                style={[styles.backButton, { borderColor: isDarkMode ? '#FFF' : '#0458AB' }]}
-            >
-                <Text style={[styles.backIcon, { color: isDarkMode ? '#FFF' : '#0458AB' }]}>
-                ←
-                </Text>
-            </TouchableOpacity>
-            <Text style={[styles.title, { color: isDarkMode ? '#FFFFFF' : '#0458AB', flex: 1, textAlign: 'center' }]}>
-                {t('customers') || "Clientes"}
+          <TouchableOpacity
+            onPress={onClose}
+            style={[styles.backButton, { borderColor: isDarkMode ? '#FFF' : '#0458AB' }]}
+          >
+            <Text style={[styles.backIcon, { color: isDarkMode ? '#FFF' : '#0458AB' }]}>
+              ←
             </Text>
-            <TouchableOpacity
-                style={[
-                styles.addButton,
-                { backgroundColor: isDarkMode ? '#FFF' : '#0458AB' }
-                ]}
-                onPress={() => setCreateCustomerVisible(true)}
+          </TouchableOpacity>
+          <Text style={[styles.title, { color: isDarkMode ? '#FFFFFF' : '#0458AB', flex: 1, textAlign: 'center' }]}>
+            {t('customers') || "Clientes"}
+          </Text>
+          <TouchableOpacity
+            style={[
+              styles.addButton,
+              { backgroundColor: isDarkMode ? '#FFF' : '#0458AB' }
+            ]}
+            onPress={() => setCreateCustomerVisible(true)}
+          >
+            <Text
+              style={[
+                styles.plus,
+                { color: isDarkMode ? '#0458AB' : '#FFF' }
+              ]}
             >
-                <Text
-                style={[
-                    styles.plus,
-                    { color: isDarkMode ? '#0458AB' : '#FFF' }
-                ]}
-                >
-                +
-                </Text>
-            </TouchableOpacity>
-            </View>
+              +
+            </Text>
+          </TouchableOpacity>
+        </View>
         <View style={[styles.filtersContainer, { backgroundColor: isDarkMode ? "#112A4A" : "#ffffff" }]}>
           <Ionicons name="search" size={20} color={isDarkMode ? "#A1C6EA" : "#0458AB"} />
           <TextInput
@@ -208,7 +210,7 @@ const ListOfCustomersModal: React.FC<ListOfCustomersModalProps> = ({ visible, on
         onClose={() => setCreateCustomerVisible(false)}
         onSuccess={loadCustomers}
       >
-      <CreateCustomerModal />
+        <CreateCustomerModal />
       </CreateCustomerProvider>
       <Toast />
     </Modal>
@@ -227,16 +229,16 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
   },
   addButton: {
-  width: 40,
-  height: 40,
-  borderRadius: 20,
-  alignItems: 'center',
-  justifyContent: 'center',
-},
-plus: {
-  fontSize: 24,
-  fontWeight: 'bold',
-},
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  plus: {
+    fontSize: 24,
+    fontWeight: 'bold',
+  },
   backIcon: {
     fontSize: 20,
     fontWeight: 'bold',

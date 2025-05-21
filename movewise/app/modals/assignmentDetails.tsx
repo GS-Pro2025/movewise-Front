@@ -532,7 +532,7 @@ const AssignmentDetails: React.FC<Props> = ({
                                 <View style={styles.modalContent}>
                                     {/* Evidence Upload */}
                                     <Text style={[styles.modalInfoText, { color: '#FFFFFF', marginTop: 10 }]}>
-                                        {t('evidence')} <Text style={{ color: '#FF0000' }}>*</Text>
+                                        {t('evidence')} <Text style={{  color: '#FF0000' }}>*</Text>
                                     </Text>
                                     <CrossPlatformImageUpload
                                         label={t("upload_evidence")}
