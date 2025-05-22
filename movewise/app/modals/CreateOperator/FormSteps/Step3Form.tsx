@@ -57,9 +57,9 @@ const Step3Form = ({ formData, updateFormData, onBack, onSubmit, isEditing }: St
             newErrors.name_t_shift = t("tshirt_name_required");
         }
 
-        if (!localData.photo) {
+        /*if (!localData.photo) {
             newErrors.photo = t("photo_required");
-        }
+        }**/
 
         setErrors(newErrors);
         return Object.keys(newErrors).length === 0;
@@ -156,7 +156,7 @@ const Step3Form = ({ formData, updateFormData, onBack, onSubmit, isEditing }: St
                         <Text style={styles.buttonText}>{isEditing ? t("update") : t("save")}</Text>
                     </TouchableOpacity>
                 </View>
-            </View>
+            </View> 
         </ScrollView>
     );
 }

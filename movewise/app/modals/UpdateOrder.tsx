@@ -695,11 +695,12 @@ const handleUpdate = async () => {
 
 const styles = StyleSheet.create({
   header: {
-    paddingVertical: 12,
+    paddingVertical: 20,
     paddingHorizontal: 16,
     alignItems: 'center',
     borderBottomWidth: 2,
     borderBottomColor: 'rgba(0, 0, 0, 0.1)',
+    marginTop: 30
   },
   headerText: {
     fontSize: 18,
