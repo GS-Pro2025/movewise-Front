@@ -91,7 +91,7 @@ const OrderModal: React.FC<OrderModalProps> = ({ visible, onClose }) => {
         expense: order.expense,
         income: order.income,
         weight: order.weight,
-        status: order.status,
+        status: order.status.toUpperCase(),
         payStatus: order.payStatus,
         state_usa: order.state_usa,
         person: {
