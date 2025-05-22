@@ -508,5 +508,6 @@
     "license_front": "Front image",
     "license_back": "Back image",
     "no_image_available": "No image available",
-    "professional_info": "Professional Info"
+    "professional_info": "Professional Info",
+    "please_fill_all_required_fields": "Please fill all required fields"
 }

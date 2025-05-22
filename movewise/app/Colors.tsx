@@ -29,6 +29,7 @@ const colors = {
     cardLight: "#F5F5F5",         
     textDark: "#FFFFFF",          
     textLight: "#333333", 
+    primaryDark:"#00000"
   };
   
   export default colors;

@@ -168,6 +168,15 @@ const Home: React.FC = () => {
                 <View style={styles.gridContainer}>
                     <View style={styles.row}>
                         <ActionButton
+                            title={t("create_daily")}
+                            isDarkMode={isDarkMode}
+                            iconSource={require("../assets/images/paquete.png")}
+                            onPress={() => router.push({
+                                pathname: "/modals/OrderModal",
+                                params: { isOperator: "true" }
+                            })}
+                        />
+                        <ActionButton
                             title={t("operator_work_daily")}
                             isDarkMode={isDarkMode}
                             iconSource={require("../assets/images/workDailyIcon.png")}
@@ -275,12 +284,12 @@ const styles = StyleSheet.create({
         borderRadius: 4,
     },
     avatarImage: {
-        width: 40,             
-        height: 40,            
-        borderRadius: 20,      
-        borderWidth: 1,        
-        overflow: "hidden",   
-        marginRight: 10,   
+        width: 40,
+        height: 40,
+        borderRadius: 20,
+        borderWidth: 1,
+        overflow: "hidden",
+        marginRight: 10,
     },
     darkBorder: {
         borderColor: "#333333",
