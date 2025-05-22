@@ -214,7 +214,7 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
   backButton: {
-    backgroundColor: '#FF5733',
+    backgroundColor:'#e74c3c',
     alignItems: 'center',
     justifyContent: 'center',
     width: '100%',

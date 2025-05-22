@@ -12,11 +12,11 @@ import {
   TextInput,
 } from "react-native";
 import { useRouter } from "expo-router";
-import { getOrders } from "../../hooks/api/GetOrders";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { Ionicons } from "@expo/vector-icons";
 import DateTimePicker, { DateTimePickerEvent } from "@react-native-community/datetimepicker";
 import { useTranslation } from "react-i18next";
+import { GetOrderWithAllStatus } from "@/hooks/api/GetOrderWithAllStatus";
 
 interface OrderPerson {
   email: string;
@@ -55,7 +55,7 @@ const ListOfOrdersForSummary: React.FC = () => {
     setLoading(true);
     setRefreshing(true);
     try {
-      const response = await getOrders();
+      const response = await GetOrderWithAllStatus();
       const ordersData = Array.isArray(response) ? response : response?.data || [];
       setOrders(ordersData);
     } catch (error) {
@@ -154,9 +154,9 @@ const ListOfOrdersForSummary: React.FC = () => {
                   styles.statusText,
                   {
                     color:
-                      item.status === t("pending")
+                      item.status.toLocaleLowerCase() === 'pending'
                         ? "#f39c12"
-                        : item.status === t("completed")
+                        : item.status.toLocaleLowerCase() === t("completed")
                         ? "#48dc33"
                         : "#48dc33",
                   },
