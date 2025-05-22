@@ -534,5 +534,8 @@
   "search_truck_number_id": "Buscar camión por placa",
   "truck_found": "Camión encontrado",
   "how_would_you_like_to_add_a_photo": "¿Cómo te gustaría agregar una foto?",
-  "upload_evidence": "Cargar Evidencia"
+  "upload_evidence": "Cargar Evidencia",
+  "operator_saved_succesfully":"Operador guardado exitosamente",
+  "logout_error": "Error al cerrar sesión",
+  "logout_success": "Sesión cerrada exitosamente"
 }

@@ -8,6 +8,7 @@ import CreateOperator from './CreateOperator';
 import { Operator, FormData } from './CreateOperator/Types';
 import { router, useGlobalSearchParams } from 'expo-router';
 import { useTranslation } from 'react-i18next';
+import { Toast, ALERT_TYPE } from 'react-native-alert-notification';
 
 // Interface for pagination response
 interface PaginatedResponse {
@@ -22,7 +23,7 @@ const OperatorList = () => {
   const { isEdit } = useGlobalSearchParams<{ isEdit: string }>();
   const isCreating = isEdit === 'false'; // ahora esto sí funciona
   console.log(isCreating);
-
+  const [successModalVisible, setSuccessModalVisible] = useState(false);
   const [operators, setOperators] = useState<Operator[]>([]);
   const [selectedOperator, setSelectedOperator] = useState<Operator | null>(null);
   const [modalVisible, setModalVisible] = useState(false);
@@ -315,11 +316,18 @@ const OperatorList = () => {
     );
   };
 
-  const handleSuccess = () => {
-    loadOperators(1, true);
-    setModalVisible(false);
-    setSelectedOperator(null);
-  };
+const handleSuccess = () => {
+  loadOperators(1, true);
+  setModalVisible(false);
+  setSelectedOperator(null);
+  Toast.show({
+      type: ALERT_TYPE.DANGER,
+      title: t("error"),
+      textBody: t("error_sending_data"),
+      autoClose: 3000,
+  });
+  setTimeout(() => setSuccessModalVisible(true), 400); // Espera a que se cierre el modal de creación
+};
 
   return (
     <SafeAreaView style={styles.safeArea}>
@@ -398,6 +406,7 @@ const OperatorList = () => {
             onClose={handleSuccess}
           />
         </Modal>
+
       </View>
     </SafeAreaView>
   );
@@ -427,6 +436,7 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 1 },
     shadowOpacity: 0.1,
     shadowRadius: 1,
+    marginTop: 30,
   },
   backButton: {
     padding: 8,
@@ -435,6 +445,7 @@ const styles = StyleSheet.create({
     fontSize: 20,
     fontWeight: 'bold',
     color: '#333',
+    marginBottom:10,
   },
   addButton: {
     backgroundColor: '#3498db',
