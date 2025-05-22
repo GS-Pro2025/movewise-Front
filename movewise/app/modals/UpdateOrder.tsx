@@ -11,8 +11,8 @@ import UpdateOrderFormApi from '@/hooks/api/UpdateOrderFormApi';
 import { AntDesign, MaterialIcons } from '@expo/vector-icons';
 import OperatorModal from './OperatorModal';
 import { useTranslation } from 'react-i18next';
-import { ImageUpload } from './CreateOperator/HelperComponents';
-import { ImageInfo } from 'expo-image-picker';
+import CrossPlatformImageUpload from './CrossPlatformImageUpload';
+import { ImageInfo } from './CrossPlatformImageUpload';
 import * as FileSystem from 'expo-file-system';
 import Toast from 'react-native-toast-message';
 import OrderModal from './OrderModal';
@@ -213,132 +213,132 @@ export default function UpdateOrderModal({ visible = true, onClose, orderData }:
     if (onClose) onClose();
   };
 
- // Dentro de la función handleUpdate modifica esta parte
+  // Dentro de la función handleUpdate modifica esta parte
 
-// Definamos primero un tipo para el objeto updateData
-type UpdateOrderData = {
-  key_ref: string;
-  date: string;
-  distance: number;
-  expense: string;
-  income: string;
-  weight: string;
-  status: string;
-  payStatus: number;
-  state_usa: string;
-  customer_factory: number;
-  person: {
-    email: string;
-    first_name: string;
-    last_name: string;
-    phone: number;
-    address: string;
-  };
-  job: number;
-  dispatch_ticket?: string; // optional property
-}
+  // Definamos primero un tipo para el objeto updateData
+  type UpdateOrderData = {
+    key_ref: string;
+    date: string;
+    distance: number;
+    expense: string;
+    income: string;
+    weight: string;
+    status: string;
+    payStatus: number;
+    state_usa: string;
+    customer_factory: number;
+    person: {
+      email: string;
+      first_name: string;
+      last_name: string;
+      phone: number;
+      address: string;
+    };
+    job: number;
+    dispatch_ticket?: string; // optional property
+  }
 
-const handleUpdate = async () => {
-  if (!(await validateFields())) return;
+  const handleUpdate = async () => {
+    if (!(await validateFields())) return;
 
-  try {
-    let base64Image = undefined;
+    try {
+      let base64Image = undefined;
 
-    if (dispatchTicket) {
-      
-      if (hasExistingDispatchTicket && dispatchTicket.uri === orderData.dispatch_ticket) {
-        console.log("Using existing image - will not send");
-      } else {
-        if (dispatchTicket.uri && dispatchTicket.uri.startsWith('data:')) {
-          base64Image = dispatchTicket.uri;
-          console.log("Using existing URI in base64 format");
-        } else if (dispatchTicket.uri) {
-          // Convert to base64
-          try {
-            console.log("Converting image to base64:", dispatchTicket.uri);
-            base64Image = await FileSystem.readAsStringAsync(dispatchTicket.uri, {
-              encoding: FileSystem.EncodingType.Base64,
-            });
-            base64Image = `data:image/jpeg;base64,${base64Image}`;
-          } catch (error) {
-            console.error("Error converting image to base64:", error);
+      if (dispatchTicket) {
+
+        if (hasExistingDispatchTicket && dispatchTicket.uri === orderData.dispatch_ticket) {
+          console.log("Using existing image - will not send");
+        } else {
+          if (dispatchTicket.uri && dispatchTicket.uri.startsWith('data:')) {
+            base64Image = dispatchTicket.uri;
+            console.log("Using existing URI in base64 format");
+          } else if (dispatchTicket.uri) {
+            // Convert to base64
+            try {
+              console.log("Converting image to base64:", dispatchTicket.uri);
+              base64Image = await FileSystem.readAsStringAsync(dispatchTicket.uri, {
+                encoding: FileSystem.EncodingType.Base64,
+              });
+              base64Image = `data:image/jpeg;base64,${base64Image}`;
+            } catch (error) {
+              console.error("Error converting image to base64:", error);
+              Toast.show({
+                type: 'error',
+                text1: t('error'),
+                text2: t('error_processing_image'),
+              });
+              return;
+            }
+          } else {
+            console.error("dispatchTicket does not have a valid URI");
             Toast.show({
               type: 'error',
               text1: t('error'),
-              text2: t('error_processing_image'),
+              text2: t('invalid_image_format'),
             });
             return;
           }
-        } else {
-          console.error("dispatchTicket does not have a valid URI");
-          Toast.show({
-            type: 'error',
-            text1: t('error'),
-            text2: t('invalid_image_format'),
-          });
-          return;
         }
       }
-    }
 
-    const customerFactoryValue = typeof company === 'number' ? company :
-      company ? parseInt(company, 10) : 0;
+      const customerFactoryValue = typeof company === 'number' ? company :
+        company ? parseInt(company, 10) : 0;
 
-    // Create the updateData object without including dispatch_ticket initially
-    const updateData = {
-      key_ref: keyReference,
-      date: date || '',
-      distance: orderData.distance || 0,
-      expense: orderData.expense || "0",
-      income: orderData.income || "0",
-      weight: weight,
-      status: orderData.status || t("in_progress"),
-      payStatus: orderData.payStatus || 0,
-      state_usa: state || '',
-      customer_factory: customerFactoryValue,
-      person: {
-        email: email || '',
-        first_name: customerFirstName,
-        last_name: customerLastName,
-        phone: cellPhone,
-        address: address,
-      },
-      job: jobId || 0,
-    } as UpdateOrderData;
-    
-    // Only add the dispatch_ticket field if the image has been modified and is a valid string
-    if (base64Image !== undefined) {
-      console.log("Including dispatch_ticket in the request");
-      updateData.dispatch_ticket = base64Image;
-    } else {
-      console.log("No se incluirá dispatch_ticket en la solicitud");
-    }
-    
-    const result = await updateOrder(orderData.key || '', updateData);
+      // Create the updateData object without including dispatch_ticket initially
+      const updateData = {
+        key_ref: keyReference,
+        date: date || '',
+        distance: orderData.distance || 0,
+        expense: orderData.expense || "0",
+        income: orderData.income || "0",
+        weight: weight,
+        status: orderData.status || t("in_progress"),
+        payStatus: orderData.payStatus || 0,
+        state_usa: state || '',
+        customer_factory: customerFactoryValue,
+        person: {
+          email: email || '',
+          first_name: customerFirstName,
+          last_name: customerLastName,
+          phone: cellPhone,
+          address: address,
+        },
+        job: jobId || 0,
+      } as UpdateOrderData;
 
-    if (result.success) {
+      // Only add the dispatch_ticket field if the image has been modified and is a valid string
+      if (base64Image !== undefined) {
+        console.log("Including dispatch_ticket in the request");
+        updateData.dispatch_ticket = base64Image;
+      } else {
+        console.log("No se incluirá dispatch_ticket en la solicitud");
+      }
+
+      const result = await updateOrder(orderData.key || '', updateData);
+
+      if (result.success) {
+        Toast.show({
+          type: 'success',
+          text1: t("success"),
+          text2: t("order_updated_successfully")
+        });
+        if (onClose) onClose();
+      } else {
+        Toast.show({
+          type: 'error',
+          text1: t("error"),
+          text2: `${t("unexpected_error_occurred")}}`
+        });
+      }
+    } catch (err: any) {
+      console.error(t("error_in_handle_update"), err);
       Toast.show({
-        type: 'success',
-        text1: t("success"),
-        text2: t("order_updated_successfully")
+        type: 'error',
+        text1: t("error"),
+        text2: `${t("unexpected_error_occurred")}: ${err.message}`
       });
-      if (onClose) onClose();
-    }else{
-    Toast.show({
-      type: 'error',
-      text1: t("error"),
-      text2: `${t("unexpected_error_occurred")}}`
-    });
     }
-  } catch (err: any) {
-    console.error(t("error_in_handle_update"), err);
-    Toast.show({
-      type: 'error',
-      text1: t("error"),
-      text2: `${t("unexpected_error_occurred")}: ${err.message}`
-    });
-  }
-};
+  };
 
   const handleClose = () => {
     if (onClose) onClose();
@@ -642,12 +642,17 @@ const handleUpdate = async () => {
                 <Text style={[styles.label, { color: isDarkMode ? '#FFFFFF' : '#0458AB' }]}>
                   {t("dispatch_ticket")} <Text style={{ color: '#FF0000' }}>(*)</Text>
                 </Text>
-                <ImageUpload
+                <CrossPlatformImageUpload
                   label={t("upload_dispatch_ticket")}
                   image={dispatchTicket}
                   onImageSelected={(image) => handleChange("dispatch_ticket", image)}
                   error={errors.dispatchTicket}
                   required={true}
+                  aspect={[16, 9]}
+                  allowsEditing={true}
+                  maxWidth={1024}
+                  maxHeight={768}
+                  quality={0.9}
                 />
                 {hasExistingDispatchTicket && dispatchTicket?.uri === orderData.dispatch_ticket && (
                   <Text style={{ color: isDarkMode ? '#A1C6EA' : '#0458AB', marginTop: 5 }}>

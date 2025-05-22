@@ -23,6 +23,13 @@ const colors = {
     neutralGray: "#545257", // Nuevo color
     blackText: "#000000",  // Nuevo color
     warning: "#f39c12",
+    backgroundDark: "#112A4A",      
+    backgroundLight: "#ffffff",    
+    cardDark: "#2A2A2A",           
+    cardLight: "#F5F5F5",         
+    textDark: "#FFFFFF",          
+    textLight: "#333333", 
+    primaryDark:"#00000"
   };
   
   export default colors;
