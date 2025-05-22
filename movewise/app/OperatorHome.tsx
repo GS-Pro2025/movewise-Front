@@ -12,9 +12,14 @@ import {
 } from "react-native";
 import { useRouter } from "expo-router";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import { decodeToken, getPersonIdFromToken, isAdmin } from "@/utils/decodeToken";
 import { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import Toast from "react-native-toast-message";
+import InfoOperatorModal from "./modals/operatorInfo/InfoOperatorModal";
+import EditOperatorModal from "./modals/operatorInfo/EditOperatorModal";
+import colors from "./Colors";
+import Ionicons from 'react-native-vector-icons/Ionicons';
 
 interface ActionButtonProps {
     title: string;
@@ -23,12 +28,35 @@ interface ActionButtonProps {
     onPress?: () => void;
 }
 
+// En tu archivo de interfaces o en el mismo componente
+interface Son {
+    name: string;
+    birth_date: string;
+    gender: "M" | "F" | string;
+}
+
 interface Operator {
     id_operator: number;
+    number_licence: string;
+    code: string;
+    n_children: number;
+    size_t_shift: string;
+    name_t_shift: string;
+    salary: string;
+    photo: string | null;
+    license_front: string | null;
+    license_back: string | null;
+    status: string;
     first_name: string;
     last_name: string;
-    status: string;
+    birth_date: string;
+    type_id: string;
     id_number: string;
+    address: string;
+    phone: string;
+    email: string;
+    id_company: number;
+    sons: Son[];
 }
 
 const Home: React.FC = () => {
@@ -36,15 +64,33 @@ const Home: React.FC = () => {
     const router = useRouter();
     const theme = useColorScheme();
     const isDarkMode = theme === "dark";
+    const [isInfoModalVisible, setIsInfoModalVisible] = useState(false);
+    const [isEditModalVisible, setIsEditModalVisible] = useState(false);
     const [operator, setOperator] = useState<Operator | null>(null);
 
     useEffect(() => {
         const loadOperator = async () => {
-            const operatorData = await AsyncStorage.getItem("currentUser");
-            setOperator(JSON.parse(operatorData || "{}"));
+            try {
+                const operatorData = await AsyncStorage.getItem("currentUser");
+                if (operatorData) {
+                    const parsedData = JSON.parse(operatorData);
+                    setOperator(parsedData);
+                }
+            } catch (error) {
+                console.error("Error loading operator:", error);
+                Toast.show({ type: "error", text1: t("load_error") });
+            }
         };
         loadOperator();
-    }, []);
+    }, [])
+
+
+    const handleUpdate = async (updatedOperator: Operator) => {
+        setOperator(updatedOperator);
+        await AsyncStorage.setItem("currentUser", JSON.stringify(updatedOperator));
+        Toast.show({ type: "success", text1: t("profile_updated") });
+    };
+
     const handleLogout = async () => {
         try {
             await AsyncStorage.clear(); // Limpia todos los datos almacenados
@@ -69,26 +115,42 @@ const Home: React.FC = () => {
             <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
                 {/* Header */}
                 <View style={styles.header}>
-                    <View style={styles.userInfo}>
-                        <View style={styles.avatarContainer}>
+                    <TouchableOpacity
+                        onPress={() => setIsInfoModalVisible(true)}
+                        style={styles.avatarContainer}
+                    >
+                        {operator?.photo ? (
                             <Image
-                                source={require("../assets/images/logo.png")}
-                                style={[styles.userIcono, { tintColor: isDarkMode ? "#fff" : "#0458AB" }]}
+                                source={{ uri: operator.photo }}
+                                style={[styles.avatarImage, isDarkMode && styles.darkBorder]}
+                                onError={() => console.log("Error cargando foto del operador")}
                             />
-                        </View>
-                        <View style={styles.userTextContainer}>
-                            <Text style={[styles.userName, { color: isDarkMode ? "#FFFFFF" : "#0458AB" }]}>
-                                {operator?.first_name} {operator?.last_name}
-                            </Text>
-                            <Text style={[styles.userName, { color: isDarkMode ? "#FFFFFF" : "#0458AB" }]}>
-                                {t("user_level")}
-                            </Text>
-                        </View>
+                        ) : (
+                            <Ionicons
+                                name="person-circle-outline"
+                                size={40}
+                                color={isDarkMode ? colors.darkText : colors.primary}
+                            />
+                        )}
+                    </TouchableOpacity>
+
+                    <View style={styles.userTextContainer}>
+                        <Text style={[styles.userName, { color: isDarkMode ? "#FFFFFF" : "#0458AB" }]}>
+                            {operator?.first_name} {operator?.last_name}
+                        </Text>
+                        <Text style={[styles.userId, { color: isDarkMode ? "#CCCCCC" : "#888888" }]}>
+                            {operator?.code || t("no_code_available")}
+                        </Text>
                     </View>
-                    <TouchableOpacity style={styles.shareButton} onPress={handleLogout}>
-                        <Image
-                            source={require("../assets/images/exit.png")}
-                            style={[styles.userIcono, { tintColor: isDarkMode ? "#FFFFFF" : "#0458AB" }]}
+
+                    <TouchableOpacity
+                        onPress={handleLogout}
+                        style={styles.logoutButton}
+                    >
+                        <Ionicons
+                            name="log-out-outline"
+                            size={28}
+                            color={isDarkMode ? colors.darkText : colors.primary}
                         />
                     </TouchableOpacity>
                 </View>
@@ -105,6 +167,15 @@ const Home: React.FC = () => {
                 {/* Grid de botones */}
                 <View style={styles.gridContainer}>
                     <View style={styles.row}>
+                        <ActionButton
+                            title={t("create_daily")}
+                            isDarkMode={isDarkMode}
+                            iconSource={require("../assets/images/paquete.png")}
+                            onPress={() => router.push({
+                                pathname: "/modals/OrderModal",
+                                params: { isOperator: "true" }
+                            })}
+                        />
                         <ActionButton
                             title={t("operator_work_daily")}
                             isDarkMode={isDarkMode}
@@ -138,6 +209,27 @@ const Home: React.FC = () => {
                         />
                     </View>
                 </View>
+                {/* Modales */}
+                {operator && (
+                    <>
+                        <InfoOperatorModal
+                            visible={isInfoModalVisible}
+                            onClose={() => setIsInfoModalVisible(false)}
+                            operator={operator}
+                            onEdit={() => {
+                                setIsInfoModalVisible(false);
+                                setIsEditModalVisible(true);
+                            }}
+                        />
+
+                        <EditOperatorModal
+                            visible={isEditModalVisible}
+                            onClose={() => setIsEditModalVisible(false)}
+                            operator={operator}
+                            onUpdate={handleUpdate}
+                        />
+                    </>
+                )}
             </ScrollView>
         </SafeAreaView>
     );
@@ -185,6 +277,23 @@ const styles = StyleSheet.create({
     actionButtonText: { fontSize: 14, textAlign: "center" },
     darkText: { color: "#112A4A" },
     lightText: { color: "#ffff" },
+    userId: { fontSize: 11 },
+    logoutButton: {
+        marginLeft: 10,
+        padding: 6,
+        borderRadius: 4,
+    },
+    avatarImage: {
+        width: 40,
+        height: 40,
+        borderRadius: 20,
+        borderWidth: 1,
+        overflow: "hidden",
+        marginRight: 10,
+    },
+    darkBorder: {
+        borderColor: "#333333",
+    },
 });
 
 export default Home;

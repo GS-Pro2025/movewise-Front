@@ -13,9 +13,12 @@ import Toast from "react-native-toast-message";
 import { DeleteOrder } from "@/hooks/api/DeleteOrder";
 import { useTranslation } from "react-i18next";
 import InfoOrderModal from './InfoOrderModal';
+import { useLocalSearchParams } from 'expo-router';
+
 interface OrderModalProps {
   visible: boolean;
   onClose: () => void;
+  isOperator?: boolean;
 }
 
 interface OrderPerson {
@@ -48,6 +51,8 @@ export interface Order {
 
 
 const OrderModal: React.FC<OrderModalProps> = ({ visible, onClose }) => {
+  const params = useLocalSearchParams();
+  const isOperator = params.isOperator === "true"; 
 
   const { t } = useTranslation(); // Hook para traducción
   const [addOrderVisible, setAddOrderVisible] = useState(false);
@@ -210,7 +215,7 @@ const OrderModal: React.FC<OrderModalProps> = ({ visible, onClose }) => {
   };
 
   const renderItem = ({ item }: { item: Order }) => {
-    const renderLeftActions = () => (
+    const renderLeftActions = !isOperator ? () => (
       <View style={styles.leftSwipeActions}>
         <TouchableOpacity
           style={[styles.editAction, { backgroundColor: colors.swipeEdit }]}
@@ -220,7 +225,7 @@ const OrderModal: React.FC<OrderModalProps> = ({ visible, onClose }) => {
           <Text style={styles.actionText}>Edit</Text>
         </TouchableOpacity>
       </View>
-    );
+    ) : undefined;
 
     const renderRightActions = () => (
       <View style={styles.rightSwipeActions}>
