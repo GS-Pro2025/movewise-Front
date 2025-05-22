@@ -21,7 +21,8 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import Toast from 'react-native-toast-message';
 import { useRouter } from 'expo-router';
 import apiClient from '@/hooks/api/apiClient';
-
+import CrossPlatformImageUpload from '../CrossPlatformImageUpload';
+import { ImageInfo } from '../CrossPlatformImageUpload';
 interface OperatorFormData {
   number_licence: string;
   code: string;
@@ -152,62 +153,25 @@ const EditOperatorModal: React.FC<EditOperatorModalProps> = ({ visible, onClose,
     });
   };
 
-  const requestPermissions = async () => {
-    const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
-    if (status !== 'granted') {
-      Alert.alert(
-        t('permission_required') || 'Permission Required',
-        t('permission_message') || 'We need permission to access your photo library'
-      );
-      return false;
-    }
-    return true;
-  };
 
-  const pickImage = async (imageType: 'photo' | 'licenseFront' | 'licenseBack') => {
-    const hasPermission = await requestPermissions();
-    if (!hasPermission) return;
-
-    try {
-      const result = await ImagePicker.launchImageLibraryAsync({
-        mediaTypes: ImagePicker.MediaTypeOptions.Images,
-        allowsEditing: true,
-        aspect: imageType === 'photo' ? [1, 1] : [16, 10], // Prioriza relación de aspecto para iOS
-        quality: 0.8,
-        exif: false // Mejor rendimiento en iOS
-      });
-
-      if (!result.canceled && result.assets[0]) {
-        const asset = result.assets[0];
-        // Obtener extensión correcta para iOS
-        const extension = asset.uri.split('.').pop() || 'jpg';
-        const type = asset.type ? `${asset.type}/${extension}` : 'image/jpeg';
-
-        const imageData: ImageData = {
-          uri: asset.uri,
-          type: type,
-          name: `${imageType}_${Date.now()}.${extension}`
-        };
-
-        setSelectedImages(prev => ({
-          ...prev,
-          [imageType]: imageData
-        }));
-      }
-    } catch (error) {
-      console.error('Error picking image:', error);
-      Toast.show({
-        type: 'error',
-        text1: t('error') || 'Error',
-        text2: t('image_pick_error') || 'Error selecting image'
-      });
-    }
-  };
 
   const removeImage = (imageType: 'photo' | 'licenseFront' | 'licenseBack') => {
     setSelectedImages(prev => ({
       ...prev,
       [imageType]: null
+    }));
+  };
+
+  const handleImageSelected = (imageType: 'photo' | 'licenseFront' | 'licenseBack', imageInfo: ImageInfo) => {
+    const imageData: ImageData = {
+      uri: imageInfo.uri,
+      type: imageInfo.type || 'image/jpeg',
+      name: imageInfo.name || `${imageType}_${Date.now()}.jpg`,
+    };
+
+    setSelectedImages(prev => ({
+      ...prev,
+      [imageType]: imageData
     }));
   };
 
@@ -226,6 +190,10 @@ const EditOperatorModal: React.FC<EditOperatorModalProps> = ({ visible, onClose,
 
     if (formData.email && !emailRegex.test(formData.email)) {
       newErrors.email = t('invalid_email');
+    }
+
+    if (!selectedImages.photo && imageStatus.photo !== 'valid') {
+      newErrors.photo = t('photo_required');
     }
 
     setErrors(newErrors);
@@ -340,78 +308,6 @@ const EditOperatorModal: React.FC<EditOperatorModalProps> = ({ visible, onClose,
     }
   };
 
-  const renderImageSection = (
-    imageType: 'photo' | 'licenseFront' | 'licenseBack',
-    title: string,
-    icon: string,
-    isCircular: boolean = false
-  ) => {
-    const selectedImage = selectedImages[imageType];
-    const existingImageValid = imageStatus[imageType] === 'valid';
-    const existingImageUrl = operator?.[imageType === 'photo' ? 'photo' : imageType === 'licenseFront' ? 'license_front' : 'license_back'];
-
-    return (
-      <View style={styles.imageSection}>
-        <Text style={[styles.imageTitle, { color: primaryColor }]}>
-          <Ionicons name={icon as any} size={16} color={primaryColor} /> {title}
-        </Text>
-
-        <View style={[styles.imageContainer, isCircular && styles.circularContainer]}>
-          {selectedImage ? (
-            <Image
-              source={{ uri: selectedImage.uri }}
-              style={[styles.imagePreview, isCircular && styles.circularImage]}
-              resizeMode={isCircular ? "cover" : "contain"}
-            />
-          ) : existingImageValid && existingImageUrl ? (
-            <Image
-              source={{ uri: existingImageUrl }}
-              style={[styles.imagePreview, isCircular && styles.circularImage]}
-              resizeMode={isCircular ? "cover" : "contain"}
-            />
-          ) : (
-            <View style={[styles.imagePlaceholder, { borderColor }]}>
-              <Ionicons
-                name={icon as any}
-                size={40}
-                color={borderColor}
-              />
-              <Text style={[styles.placeholderText, { color: borderColor }]}>
-                {t('no_image') || 'No image'}
-              </Text>
-            </View>
-          )}
-        </View>
-
-        <View style={styles.imageActions}>
-          <TouchableOpacity
-            style={[styles.imageButton, { backgroundColor: primaryColor }]}
-            onPress={() => pickImage(imageType)}
-          >
-            <Ionicons name="camera" size={16} color="white" />
-            <Text style={styles.imageButtonText}>
-              {selectedImage || (existingImageValid && existingImageUrl)
-                ? (t('change_image') || 'Change')
-                : (t('add_image') || 'Add')}
-            </Text>
-          </TouchableOpacity>
-
-          {(imageType !== 'photo' && (selectedImage || (existingImageValid && existingImageUrl))) && (
-            <TouchableOpacity
-              style={[styles.imageButton, styles.removeButton]}
-              onPress={() => removeImage(imageType)}
-            >
-              <Ionicons name="trash" size={16} color={colors.warning} />
-              <Text style={[styles.imageButtonText, { color: colors.warning }]}>
-                {t('remove') || 'Remove'}
-              </Text>
-            </TouchableOpacity>
-          )}
-        </View>
-      </View>
-    );
-  };
-
   return (
     <Modal visible={visible} animationType="slide" transparent={false}>
       <SafeAreaView style={[styles.container, { backgroundColor }]}>
@@ -438,9 +334,80 @@ const EditOperatorModal: React.FC<EditOperatorModalProps> = ({ visible, onClose,
               {t("images") || "Images"}
             </Text>
 
-            {renderImageSection('photo', t('operator_photo') || 'Operator Photo', 'person-circle', true)}
-            {renderImageSection('licenseFront', t('license_front') || 'License Front', 'card')}
-            {renderImageSection('licenseBack', t('license_back') || 'License Back', 'card')}
+            {/* Foto del operario */}
+            <View style={styles.imageSection}>
+              <CrossPlatformImageUpload
+                label={t('operator_photo') || 'Operator Photo'}
+                image={
+                  selectedImages.photo
+                    ? { uri: selectedImages.photo.uri }
+                    : (imageStatus.photo === 'valid' && operator?.photo)
+                      ? { uri: operator.photo }
+                      : null
+                }
+                onImageSelected={(img) => handleImageSelected('photo', img)}
+                error={errors.photo}
+                required
+                aspect={[1, 1]}
+                allowsEditing={true}
+              />
+            </View>
+
+            {/* Licencia frontal */}
+            <View style={styles.imageSection}>
+              <CrossPlatformImageUpload
+                label={t('license_front') || 'License Front'}
+                image={
+                  selectedImages.licenseFront
+                    ? { uri: selectedImages.licenseFront.uri }
+                    : (imageStatus.licenseFront === 'valid' && operator?.license_front)
+                      ? { uri: operator.license_front }
+                      : null
+                }
+                onImageSelected={(img) => handleImageSelected('licenseFront', img)}
+                aspect={[16, 10]}
+                allowsEditing={true}
+              />
+              {(selectedImages.licenseFront || imageStatus.licenseFront === 'valid') && (
+                <TouchableOpacity
+                  style={[styles.removeButton, { borderColor: colors.warning }]}
+                  onPress={() => removeImage('licenseFront')}
+                >
+                  <Ionicons name="trash" size={16} color={colors.warning} />
+                  <Text style={[styles.removeButtonText, { color: colors.warning }]}>
+                    {t('remove') || 'Remove'}
+                  </Text>
+                </TouchableOpacity>
+              )}
+            </View>
+
+            {/* Licencia trasera */}
+            <View style={styles.imageSection}>
+              <CrossPlatformImageUpload
+                label={t('license_back') || 'License Back'}
+                image={
+                  selectedImages.licenseBack
+                    ? { uri: selectedImages.licenseBack.uri }
+                    : (imageStatus.licenseBack === 'valid' && operator?.license_back)
+                      ? { uri: operator.license_back }
+                      : null
+                }
+                onImageSelected={(img) => handleImageSelected('licenseBack', img)}
+                aspect={[16, 10]}
+                allowsEditing={true}
+              />
+              {(selectedImages.licenseBack || imageStatus.licenseBack === 'valid') && (
+                <TouchableOpacity
+                  style={[styles.removeButton, { borderColor: colors.warning }]}
+                  onPress={() => removeImage('licenseBack')}
+                >
+                  <Ionicons name="trash" size={16} color={colors.warning} />
+                  <Text style={[styles.removeButtonText, { color: colors.warning }]}>
+                    {t('remove') || 'Remove'}
+                  </Text>
+                </TouchableOpacity>
+              )}
+            </View>
           </View>
 
           {/* Información Personal */}
@@ -608,7 +575,7 @@ const EditOperatorModal: React.FC<EditOperatorModalProps> = ({ visible, onClose,
               }]}
               placeholder={t("shift_name")}
               value={formData.name_t_shift}
-              onChangeText={(text: string) => handleChange('name_t_shift', text)} 
+              onChangeText={(text: string) => handleChange('name_t_shift', text)}
               placeholderTextColor={colors.placeholderDark}
             />
 
@@ -737,6 +704,11 @@ const styles = StyleSheet.create({
   },
   imageButtonText: {
     color: 'white',
+    fontSize: 12,
+    fontWeight: '600',
+    marginLeft: 4,
+  },
+  removeButtonText: {
     fontSize: 12,
     fontWeight: '600',
     marginLeft: 4,
