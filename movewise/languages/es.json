@@ -541,5 +541,8 @@
   "license_back": "Imagen trasera",
   "no_image_available":"Imagen no disponible",
   "professional_info":"Informacion profesional",
-  "please_fill_all_required_fields": "Por favor completa todos los campos"
+  "please_fill_all_required_fields": "Por favor completa todos los campos",
+  "operator_saved_succesfully":"Operador guardado exitosamente",
+  "logout_error": "Error al cerrar sesión",
+  "logout_success": "Sesión cerrada exitosamente"
 }

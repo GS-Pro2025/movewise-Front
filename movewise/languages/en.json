@@ -501,13 +501,14 @@
     "take_photo": "Take Photo",
     "choose_from_gallery": "Choose from Gallery",
     "search_truck_number_id": "Search truck by its number",
-    "how_would_you_like_to_add_a_photo": "How would you like to add a photo?",
-    "upload_evidence": "Upload evidence",
     "operator_info": "Operator info",
     "license_images": "License images",
     "license_front": "Front image",
     "license_back": "Back image",
     "no_image_available": "No image available",
     "professional_info": "Professional Info",
-    "please_fill_all_required_fields": "Please fill all required fields"
+    "please_fill_all_required_fields": "Please fill all required fields",
+    "how_would_you_like_to_add_a_photo":"How would you like to add a photo?",
+    "upload_evidence":"Upload evidence",
+    "operator_saved_succesfully":"Operator saved successfully"
 }

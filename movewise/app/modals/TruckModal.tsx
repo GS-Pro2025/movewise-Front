@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Image, useColorScheme, Modal, ScrollView, KeyboardAvoidingView } from "react-native";
+import { Image, useColorScheme, Modal, ScrollView, KeyboardAvoidingView, Platform } from "react-native";
 import { getTruckById } from "@/hooks/api/GetTruckById";
 import Toast from "react-native-toast-message";
 import {
