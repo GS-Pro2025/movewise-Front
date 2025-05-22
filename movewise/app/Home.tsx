@@ -25,6 +25,7 @@ import { AdminInfo } from '@/hooks/api/GetAdminByToken';
 
 interface Admin {
   id: number;
+  user_name: string;
   first_name: string;
   last_name: string;
   status: string;
@@ -76,6 +77,7 @@ const Home: React.FC = () => {
 
           setAdmin({
             id: response.person.id_company,
+            user_name: response.user_name,
             first_name: response.person.first_name,
             last_name: response.person.last_name,
             phone: response.person.phone,
@@ -134,6 +136,7 @@ const Home: React.FC = () => {
       // Actualizar también el estado de admin
       setAdmin({
         id: updatedAdmin.person.id_company,
+        user_name: updatedAdmin.user_name,
         first_name: updatedAdmin.person.first_name,
         last_name: updatedAdmin.person.last_name,
         status: "active",
@@ -186,42 +189,50 @@ const Home: React.FC = () => {
             >
               <Image
                 source={require("../assets/images/logo.png")}
-                style={[styles.userIcono, { tintColor: isDarkMode ? colors.darkText : colors.primary }]}
+                style={[
+                  styles.userIcono,
+                  { tintColor: isDarkMode ? colors.darkText : colors.primary }
+                ]}
               />
             </TouchableOpacity>
+
             <View style={styles.userTextContainer}>
-              <Text style={[styles.userName, { color: isDarkMode ? "#FFFFFF" : "#0458AB" }]}>
-                {admin?.first_name} {admin?.last_name}
+              <Text style={[
+                styles.userName,
+                { color: isDarkMode ? "#FFFFFF" : "#0458AB" }
+              ]}>
+                {admin?.user_name}
               </Text>
-              <Text style={[styles.userName, { color: isDarkMode ? "#FFFFFF" : "#0458AB" }]}>
-                <Text style={{ fontSize: 14 }}>
-                  {admin?.id_number || t("no_id_available")}
-                </Text>
+              <Text style={[
+                styles.userId,
+                { color: isDarkMode ? "#CCCCCC" : "#888888" }
+              ]}>
+                {admin?.id_number || t("no_id_available")}
               </Text>
             </View>
-            {/* <View style={[styles.userTextContainer, { maxWidth: "70%" }]}>
-              <Text
-                style={[styles.userName, { color: isDarkMode ? "#FFFFFF" : "#0458AB" }]}
-                numberOfLines={2} 
-                ellipsizeMode="tail"
-              >
-                {Admin?.first_name} {Admin?.last_name}
-              </Text>
-            </View> */}
           </View>
+
           <TouchableOpacity style={styles.shareButton} onPress={toggleSettingsModal}>
             <Image
               source={require("../assets/images/settings.png")}
-              style={[styles.userIcono, { tintColor: isDarkMode ? colors.darkText : colors.primary }]}
+              style={[
+                styles.userIcono,
+                { tintColor: isDarkMode ? colors.darkText : colors.primary }
+              ]}
             />
           </TouchableOpacity>
+
           <TouchableOpacity style={styles.shareButton} onPress={handleLogout}>
             <Image
               source={require("../assets/images/exit.png")}
-              style={[styles.userIcono, { tintColor: isDarkMode ? colors.darkText : colors.primary }]}
+              style={[
+                styles.userIcono,
+                { tintColor: isDarkMode ? colors.darkText : colors.primary }
+              ]}
             />
           </TouchableOpacity>
         </View>
+
 
         <View style={styles.divider} />
 
@@ -366,42 +377,36 @@ const styles = StyleSheet.create({
   scrollContent: { flexGrow: 1, padding: 20 },
   header: {
     flexDirection: "row",
-    justifyContent: "space-between",
     alignItems: "center",
-    marginTop: 20,
-    paddingVertical: 15,
-    paddingHorizontal: 20,
+    justifyContent: "space-between",
+    padding: 10,
   },
   userInfo: {
     flexDirection: "row",
     alignItems: "center",
-    flex: 1, // Permite que userInfo ocupe el espacio restante
+    flex: 1,
   },
   avatarContainer: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    overflow: "hidden",
     marginRight: 10,
   },
   userIcono: {
-    width: 30,
-    height: 30,
-    resizeMode: 'contain',
+    width: 40,
+    height: 40,
+    resizeMode: "contain",
   },
   userTextContainer: {
-    marginLeft: 10,
-    maxWidth: '50%', // Ocupa la mitad del espacio del contenedor userInfo
-    justifyContent: 'center', // Centra el texto verticalmente si ocupa una sola línea 
+    flexShrink: 1,
   },
   userName: {
     fontSize: 16,
-    fontWeight: 'bold',
-    lineHeight: 20, // Ajusta el espaciado entre líneas si el nombre se divide
+    fontWeight: "bold",
+  },
+  userId: {
+    fontSize: 12,
+    marginTop: 2,
   },
   shareButton: {
-    padding: 10,
-    marginLeft: 15,
+    marginLeft: 10,
   },
   divider: { height: 1, backgroundColor: colors.placeholderLight, marginVertical: 10 },
   imageContainer: { alignItems: "center", marginVertical: 10 },
