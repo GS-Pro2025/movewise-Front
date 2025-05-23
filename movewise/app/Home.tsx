@@ -314,7 +314,7 @@ const Home: React.FC = () => {
             <ActionButton
               title={t("workhouse")}
               isDarkMode={isDarkMode}
-              iconSource={require("../assets/images/personx.png")}
+              iconSource={require("../assets/images/work-house.png")}
               onPress={() => router.push("/modals/workhouse/ListWorkHouse")}
             />
           </View>

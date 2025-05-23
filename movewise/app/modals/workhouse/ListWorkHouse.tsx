@@ -1,4 +1,6 @@
-import { View, Text, TouchableOpacity, Modal, StyleSheet, useColorScheme, FlatList, ActivityIndicator, RefreshControl, Alert, SafeAreaView, TextInput } from "react-native";
+//este modal se creo para listar todos los workhouse, activos e inactivos, es el modal principal que une
+//el homeOperator con las vista de administracion de Work house
+import { View, Text, TouchableOpacity, Modal, StyleSheet, useColorScheme, FlatList, ActivityIndicator, RefreshControl, Alert, SafeAreaView, TextInput, SectionList } from "react-native";
 import { useState, useEffect, useCallback } from "react";
 import { useRouter } from "expo-router";
 import { Ionicons } from '@expo/vector-icons';
@@ -10,36 +12,13 @@ import { useTranslation } from "react-i18next";
 import AddWorkhouseForm from "./AddWorkhouseForm";
 import { ListWorkHouse } from "@/hooks/api/GetWorkhouse";
 import { DeleteOrder } from "@/hooks/api/DeleteOrder";
-import InfoOrderModal from "../InfoOrderModal";
+import InfoOrderModal from "../InfoOrderModal"
+import EditWorkhouseForm from "./EditWorkhouseForm";
 
 interface WorkhouseModalProps {
   visible: boolean;
   onClose: () => void;
 }
-
-interface WorkhouseOrder {
-  key: string;
-  key_ref: string;
-  date: string;
-  status: string;
-  customer_factory: number;
-  customer_factory_name: string;
-  job: number;
-  job_name: string;
-  dispatch_ticket?: string;
-  weight?: number;
-  state_usa?: string;
-  evidence?: string;
-  person?: {
-    first_name: string;
-    last_name: string;
-    email: string;
-    phone: string;
-    address: string;
-  };
-}
-
-
 
 interface OrderPerson {
   email: string;
@@ -75,9 +54,9 @@ const WorkhouseModal: React.FC<WorkhouseModalProps> = ({ visible, onClose }) => 
   const [addModalVisible, setAddModalVisible] = useState(false);
   const [editModalVisible, setEditModalVisible] = useState(false);
   const [infoModalVisible, setInfoModalVisible] = useState(false);
-  const [selectedOrderInfo, setSelectedOrderInfo] = useState<WorkhouseOrder | null>(null);
-  const [selectedOrderForEdit, setSelectedOrderForEdit] = useState<WorkhouseOrder | null>(null);
-  const [orders, setOrders] = useState<WorkhouseOrder[]>([]);
+  const [selectedOrderInfo, setSelectedOrderInfo] = useState<Order | null>(null);
+  const [selectedOrderForEdit, setSelectedOrderForEdit] = useState<Order | null>(null);
+  const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [searchText, setSearchText] = useState('');
@@ -94,20 +73,30 @@ const WorkhouseModal: React.FC<WorkhouseModalProps> = ({ visible, onClose }) => 
 
       // Mapea solo si response es un array
       if (Array.isArray(response)) {
-        const mappedOrders = response.map((order: any) => ({
+        const mappedOrders = response.map((order: Order) => ({
           key: order.key,
           key_ref: order.key_ref,
           date: order.date,
-          status: order.status,
-          customer_factory: order.customer_factory,
-          customer_factory_name: order.customer_factory_name,
-          job: order.job,
-          job_name: order.job_name,
-          dispatch_ticket: order.dispatch_ticket_url,
+          distance: order.distance,
+          expense: order.expense,
+          income: order.income,
           weight: order.weight,
+          status: order.status,
+          payStatus: order.payStatus,
           state_usa: order.state_usa,
-          evidence: order.evidence,
-          person: order.person
+          person: {
+            email: order.person?.email || '',
+            first_name: order.person?.first_name || null,
+            last_name: order.person?.last_name || null,
+            phone: order.person?.phone || null,
+            address: order.person?.address || null,
+          },
+          job: order.job,
+          job_name: order.job_name,                       // ← nuevo
+          evidence: order.evidence || null,
+          dispatch_ticket: order.dispatch_ticket,
+          customer_factory: order.customer_factory,
+          customer_factory_name: order.customer_factory_name || null, // ← nuevo
         }));
         setOrders(mappedOrders);
       } else {
@@ -122,9 +111,29 @@ const WorkhouseModal: React.FC<WorkhouseModalProps> = ({ visible, onClose }) => 
   }, [t]);
 
   useEffect(() => {
-      loadOrders();
+    loadOrders();
   }, [loadOrders]); // Añade loadOrders como dependencia
 
+  const filteredSections = () => {
+    const searchLower = searchText.toLowerCase();
+
+    const active = orders.filter(order =>
+      order.status.toLowerCase() !== 'inactive' &&
+      (order.key_ref.toLowerCase().includes(searchLower) ||
+        order.customer_factory_name?.toLowerCase()?.includes(searchLower))
+    );
+
+    const inactive = orders.filter(order =>
+      order.status.toLowerCase() === 'inactive' &&
+      (order.key_ref.toLowerCase().includes(searchLower) ||
+        order.customer_factory_name?.toLowerCase()?.includes(searchLower))
+    );
+
+    return [
+      { title: t('active_orders'), data: active },
+      { title: t('inactive_orders'), data: inactive },
+    ].filter(section => section.data.length > 0);  // Filtra secciones vacías
+  };
 
   const handleDelete = async (key: string) => {
     Alert.alert(
@@ -139,6 +148,7 @@ const WorkhouseModal: React.FC<WorkhouseModalProps> = ({ visible, onClose }) => 
               await DeleteOrder(key);
               setOrders(prev => prev.filter(order => order.key !== key));
               Toast.show({ type: "success", text1: t("order_deleted") });
+              loadOrders()
             } catch (error) {
               Toast.show({ type: "error", text1: t("delete_error") });
             }
@@ -148,12 +158,12 @@ const WorkhouseModal: React.FC<WorkhouseModalProps> = ({ visible, onClose }) => 
     );
   };
 
-  const handleEdit = (order: WorkhouseOrder) => {
+  const handleEdit = (order: Order) => {
     setSelectedOrderForEdit(order);
     setEditModalVisible(true);
   };
 
-  const handleViewInfo = (order: WorkhouseOrder) => {
+  const handleViewInfo = (order: Order) => {
     setSelectedOrderInfo(order);
     setInfoModalVisible(true);
   };
@@ -164,101 +174,134 @@ const WorkhouseModal: React.FC<WorkhouseModalProps> = ({ visible, onClose }) => 
     setRefreshing(false);
   }, [loadOrders]);
 
-  const renderItem = ({ item }: { item: WorkhouseOrder }) => (
-    <GestureHandlerRootView>
-      <Swipeable
-        renderLeftActions={() => (
-          <View style={styles.leftSwipeActions}>
-            <TouchableOpacity
-              style={[styles.editAction, { backgroundColor: colors.primary }]}
-              onPress={() => handleEdit(item)}
-            >
-              <Ionicons name="create-outline" size={24} color={colors.darkText} />
-              <Text style={styles.actionText}>{t("edit")}</Text>
-            </TouchableOpacity>
-          </View>
-        )}
-        renderRightActions={() => (
-          <View style={styles.rightSwipeActions}>
-            <TouchableOpacity
-              style={[styles.deleteAction, { backgroundColor: colors.swipeDelete }]}
-              onPress={() => handleDelete(item.key)}
-            >
-              <Ionicons name="trash-outline" size={24} color={colors.darkText} />
-              <Text style={styles.actionText}>{t("delete")}</Text>
-            </TouchableOpacity>
-          </View>
-        )}
-      >
-        <TouchableHighlight
-          underlayColor={isDarkMode ? colors.highlightDark : colors.highlightLight}
-          onPress={() => handleViewInfo(item)}
+  const renderItem = ({ item }: { item: Order }) => {
+    const isInactive = item.status.toLowerCase() === 'inactive';
+
+    return (
+      <GestureHandlerRootView>
+        <Swipeable
+          renderLeftActions={isInactive ? undefined : () => (
+            <View style={styles.leftSwipeActions}>
+              <TouchableOpacity
+                style={[styles.editAction, { backgroundColor: colors.primary }]}
+                onPress={() => handleEdit(item)}
+              >
+                <Ionicons name="create-outline" size={24} color={colors.darkText} />
+                <Text style={styles.actionText}>{t("edit")}</Text>
+              </TouchableOpacity>
+            </View>
+          )}
+          renderRightActions={isInactive ? undefined : () => (
+            <View style={styles.rightSwipeActions}>
+              <TouchableOpacity
+                style={[styles.deleteAction, { backgroundColor: colors.swipeDelete }]}
+                onPress={() => handleDelete(item.key)}
+              >
+                <Ionicons name="trash-outline" size={24} color={colors.darkText} />
+                <Text style={styles.actionText}>{t("delete")}</Text>
+              </TouchableOpacity>
+            </View>
+          )}
         >
-          <View style={[styles.orderItem, { backgroundColor: isDarkMode ? colors.third : colors.lightBackground }]}>
-            <View style={styles.orderIconContainer}>
-              <Ionicons
-                name="business-outline"
-                size={24}
-                color={isDarkMode ? colors.secondary : colors.primary}
-              />
+          <TouchableHighlight
+            underlayColor={isDarkMode ? colors.highlightDark : colors.highlightLight}
+            onPress={() => handleViewInfo(item)}
+          >
+            <View style={[styles.orderItem, { backgroundColor: isDarkMode ? colors.third : colors.lightBackground }]}>
+              <View style={styles.orderIconContainer}>
+                <Ionicons
+                  name="business-outline"
+                  size={24}
+                  color={isDarkMode ? colors.secondary : colors.primary}
+                />
+              </View>
+              <View style={styles.orderDetails}>
+                <Text style={[styles.orderRef, { color: isDarkMode ? colors.darkText : colors.primary }]}>
+                  {item.key_ref}
+                </Text>
+                <Text style={[styles.customerName, { color: isDarkMode ? colors.placeholderDark : colors.lightText }]}>
+                  {item.customer_factory_name}
+                </Text>
+              </View>
+              <View style={styles.orderStatus}>
+                <Text style={[styles.statusText, {
+                  color: item.status.toLowerCase() === 'inactive'
+                    ? colors.warning // Rojo para inactivo
+                    : item.status.toLowerCase() === 'pending'
+                      ? colors.completedStatus // Verde para pendiente
+                      : colors.pendingStatus // Color por defecto para otros estados
+                }]}>
+                  {t(item.status.toLowerCase())}
+                </Text>
+                <Text style={[styles.dateText, { color: isDarkMode ? colors.placeholderDark : colors.placeholderLight }]}>
+                  {item.date}
+                </Text>
+              </View>
+              <View style={styles.infoIcon}>
+                <Ionicons
+                  name="information-circle-outline"
+                  size={20}
+                  color={isDarkMode ? colors.placeholderDark : colors.placeholderLight}
+                />
+              </View>
             </View>
-            <View style={styles.orderDetails}>
-              <Text style={[styles.orderRef, { color: isDarkMode ? colors.darkText : colors.primary }]}>
-                {item.key_ref}
-              </Text>
-              <Text style={[styles.customerName, { color: isDarkMode ? colors.placeholderDark : colors.lightText }]}>
-                {item.customer_factory_name}
-              </Text>
-            </View>
-            <View style={styles.orderStatus}>
-              <Text style={[styles.statusText, { color: colors.pendingStatus }]}>
-                {t(item.status.toLowerCase())}
-              </Text>
-              <Text style={[styles.dateText, { color: isDarkMode ? colors.placeholderDark : colors.placeholderLight }]}>
-                {new Date(item.date).toLocaleDateString()}
-              </Text>
-            </View>
-            <View style={styles.infoIcon}>
-              <Ionicons
-                name="information-circle-outline"
-                size={20}
-                color={isDarkMode ? colors.placeholderDark : colors.placeholderLight}
-              />
-            </View>
-          </View>
-        </TouchableHighlight>
-      </Swipeable>
-    </GestureHandlerRootView>
+          </TouchableHighlight>
+        </Swipeable>
+      </GestureHandlerRootView>
+    )
+  };
+
+  const renderSectionHeader = ({ section }: { section: { title: string } }) => (
+    <View style={[styles.sectionHeader, { backgroundColor: isDarkMode ? colors.darkBackground : colors.lightBackground }]}>
+      <Text style={[styles.sectionHeaderText, { color: isDarkMode ? colors.darkText : colors.primary }]}>
+        {section.title}
+      </Text>
+    </View>
   );
 
   return (
     <Modal animationType="slide" transparent={false} visible={visible} onRequestClose={onClose}>
-      <SafeAreaView style={{ flex: 1 }}>
-        <View style={[styles.header, { backgroundColor: isDarkMode ? colors.third : colors.lightBackground }]}>
-          {/* Botón de back */}
-          <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
-            <Ionicons
-              name="arrow-back"
-              size={24}
-              color={isDarkMode ? colors.secondary : colors.primary}
-            />
-          </TouchableOpacity>
+      <SafeAreaView style={[styles.safeArea, { backgroundColor: isDarkMode ? colors.darkBackground : colors.lightBackground }]}>
+        <View style={[styles.headerContainer, { backgroundColor: isDarkMode ? colors.third : colors.lightBackground }]}>
+          <View style={styles.headerTopRow}>
+            <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
+              <Ionicons
+                name="arrow-back"
+                size={24}
+                color={isDarkMode ? colors.secondary : colors.primary}
+              />
+            </TouchableOpacity>
 
-          <TextInput
-            placeholder={t("search_placeholder")}
-            placeholderTextColor={isDarkMode ? colors.placeholderDark : colors.placeholderLight}
-            style={[styles.searchInput, { color: isDarkMode ? colors.darkText : colors.primary }]}
-            value={searchText}
-            onChangeText={setSearchText}
-          />
+            <Text style={[styles.headerTitle, { color: isDarkMode ? colors.darkText : colors.primary }]}>
+              {t("workhouse")}
+            </Text>
 
-          <TouchableOpacity onPress={() => setAddModalVisible(true)} style={styles.addButton}>
-            <Ionicons
-              name="add-circle-outline"
-              size={34}
-              color={isDarkMode ? colors.secondary : colors.primary}
+            <View style={styles.emptySpace} />
+          </View>
+
+          {/* Search bar */}
+          <View style={styles.searchContainer}>
+            <TextInput
+              placeholder={t("search_placeholder")}
+              placeholderTextColor={isDarkMode ? colors.placeholderDark : colors.placeholderLight}
+              style={[styles.searchInput, {
+                backgroundColor: isDarkMode ? colors.darkBackground : '#f5f5f5',
+                color: isDarkMode ? colors.darkText : colors.primary
+              }]}
+              value={searchText}
+              onChangeText={setSearchText}
             />
-          </TouchableOpacity>
+            <TouchableOpacity
+              onPress={() => setAddModalVisible(true)}
+              style={styles.addButton}
+            >
+              <Ionicons
+                name="add-circle-outline"
+                size={34}
+                color={isDarkMode ? colors.secondary : colors.primary}
+              />
+            </TouchableOpacity>
+          </View>
         </View>
 
         {loading ? (
@@ -266,17 +309,18 @@ const WorkhouseModal: React.FC<WorkhouseModalProps> = ({ visible, onClose }) => 
             <ActivityIndicator size="large" color={colors.primary} />
           </View>
         ) : (
-          <FlatList
-            data={orders.filter(order =>
-              order.key_ref.toLowerCase().includes(searchText.toLowerCase()) ||
-              order.customer_factory_name.toLowerCase().includes(searchText.toLowerCase())
-            )}
-            renderItem={renderItem}
+          <SectionList
+            sections={filteredSections()}
             keyExtractor={(item) => item.key}
+            renderItem={renderItem}
+            renderSectionHeader={renderSectionHeader}
             refreshControl={
               <RefreshControl
                 refreshing={refreshing}
-                onRefresh={handleRefresh}
+                onRefresh={() => {
+                  setRefreshing(true);
+                  loadOrders().finally(() => setRefreshing(false));
+                }}
                 colors={[colors.primary]}
               />
             }
@@ -303,7 +347,7 @@ const WorkhouseModal: React.FC<WorkhouseModalProps> = ({ visible, onClose }) => 
         />
 
         {/* Modal para editar workhouse */}
-        <AddWorkhouseForm
+        <EditWorkhouseForm
           visible={editModalVisible}
           onClose={() => {
             setEditModalVisible(false);
@@ -312,13 +356,13 @@ const WorkhouseModal: React.FC<WorkhouseModalProps> = ({ visible, onClose }) => 
           onSuccess={() => {
             loadOrders();
             setEditModalVisible(false);
-            setSelectedOrderForEdit(null);
           }}
-          editOrder={selectedOrderForEdit}
+          order={selectedOrderForEdit}
         />
 
         <InfoOrderModal
           visible={infoModalVisible}
+          isWorkhouse={true}
           onClose={() => {
             setInfoModalVisible(false);
             setSelectedOrderInfo(null);
@@ -331,6 +375,45 @@ const WorkhouseModal: React.FC<WorkhouseModalProps> = ({ visible, onClose }) => 
 };
 
 const styles = StyleSheet.create({
+  safeArea: {
+    flex: 1,
+  },
+  headerContainer: {
+    padding: 16,
+    borderBottomWidth: 1,
+    borderBottomColor: '#e0e0e0',
+  },
+  headerTopRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: 12,
+  },
+  headerTitle: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    flex: 1,
+    textAlign: 'center',
+    marginHorizontal: 8,
+  },
+  emptySpace: {
+    width: 24, // Mismo ancho que el botón de back para centrar el título
+  },
+  searchContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+  searchInput: {
+    flex: 1,
+    borderRadius: 8,
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    fontSize: 16,
+  },
+  addButton: {
+    padding: 4,
+  },
   container: {
     flex: 1,
     padding: 10,
@@ -349,20 +432,6 @@ const styles = StyleSheet.create({
   backButton: {
     padding: 8,
     marginRight: 10,
-  },
-  searchInput: {
-    flex: 1,
-    borderWidth: 1,
-    borderColor: 'rgba(0, 0, 0, 0.1)',
-    borderRadius: 8,
-    paddingHorizontal: 12,
-    paddingVertical: 8,
-    fontSize: 16,
-    marginHorizontal: 10,
-  },
-  addButton: {
-    padding: 4,
-    marginLeft: 10,
   },
   title: { fontSize: 20, fontWeight: "bold" },
   plus: { fontSize: 24, fontWeight: "bold" },
@@ -386,14 +455,6 @@ const styles = StyleSheet.create({
     paddingVertical: 10,
     borderRadius: 8,
     width: '30%',
-  },
-  searchContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: 12,
-    paddingVertical: 8,
-    borderRadius: 8,
-    width: '65%',
   },
   listContainer: {
     flexGrow: 1,
@@ -508,6 +569,16 @@ const styles = StyleSheet.create({
     position: 'absolute',
     right: 10,
     bottom: 10,
+  },
+  sectionHeader: {
+    paddingVertical: 8,
+    paddingHorizontal: 16,
+    borderBottomWidth: 1,
+    borderBottomColor: '#e0e0e0',
+  },
+  sectionHeaderText: {
+    fontSize: 16,
+    fontWeight: '600',
   },
 });
 

@@ -3,21 +3,11 @@ import { WorkhouseOrderData } from "@/app/modals/workhouse/AddWorkhouseForm";
 
 export const createWorkhouseOrder = async (orderData: WorkhouseOrderData) => {
   try {
-    const formData = new FormData();
-
-    // Agregar campos básicos
-    Object.entries(orderData).forEach(([key, value]) => {
-      if (value !== undefined && value !== null) {
-        formData.append(key, value.toString());
-      }
-    });
-
-    const response = await apiClient.post('/workhouse/', formData, {
+    const response = await apiClient.post('/workhouse/', orderData, {
       headers: {
-        'Content-Type': 'multipart/form-data',
+        'Content-Type': 'application/json', 
       },
     });
-
     return response.data;
   } catch (error: any) {
     let errorMessage = 'Unknown error';

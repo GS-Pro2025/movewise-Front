@@ -431,6 +431,7 @@ const OrderModal: React.FC<OrderModalProps> = ({ visible, onClose }) => {
         visible={infoModalVisible}
         onClose={() => setInfoModalVisible(false)}
         order={selectedOrderInfo}
+        isWorkhouse={false}
       />
       <AddOrderForm visible={addOrderVisible} onClose={() => setAddOrderVisible(false)} />
       {/* <UpdateOrder visible={updateOrderVisible} onClose={() => setUpdateOrderVisible(false)} orderData={selectedOrder || {}} /> */}
