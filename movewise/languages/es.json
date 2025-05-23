@@ -566,5 +566,12 @@
   "no_assignments": "Sin asignaciones",
   "enter_additional_costs":"Ingrese costo adicional",
   "new_freelance":"Crear Freelance",
-  "create_freelance":"Crear freelance"
+  "create_freelance":"Crear freelance",
+  "freelance_created":"Freelance Creado",
+  "freelance_not_found":"Freelance no encontrado",
+  "delete_freelance_warning" : "Esta seguro de eliminar el Freelancer?",
+  "edit_freelance" : "Editar freelance",
+  "update_freelance" : "Actualizar freelance",
+  "search_freelancers":"Buscar Freelancer"
+
 }

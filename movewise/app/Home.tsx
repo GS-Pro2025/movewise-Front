@@ -309,7 +309,7 @@ const Home: React.FC = () => {
               title={t("freelancers")}
               isDarkMode={isDarkMode}
               iconSource={require("../assets/images/personx.png")}
-              onPress={() => router.push("/modals/FreelancersList")}
+              onPress={() => router.push("/modals/freelancers/FreelanceListScreen")}
             />
             <ActionButton
               title={t("workhouse")}
