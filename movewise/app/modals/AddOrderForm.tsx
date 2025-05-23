@@ -19,10 +19,12 @@ import { DeleteOrder } from '@/hooks/api/DeleteOrder';
 import { CustomerFactory } from '@/hooks/api/CustomerFactoryClient';
 import CrossPlatformImageUpload from './CrossPlatformImageUpload';
 import { ImageInfo } from './CrossPlatformImageUpload';
-import { useRouter } from "expo-router";
+interface AddOrderModalProps {
+  visible: boolean;
+  onClose: () => void;
+}
 
-export default function AddOrderModal({ visible }: { visible: boolean }) {
-  const router = useRouter();
+export default function AddOrderModal({ visible, onClose }: AddOrderModalProps) {
   const { t } = useTranslation();
   const [open, setOpen] = useState(false);
   const [state, setState] = useState<string | null>(null);
@@ -50,12 +52,13 @@ export default function AddOrderModal({ visible }: { visible: boolean }) {
   
   const { saveOrder, isLoading, error } = AddOrderformApi();
 
-
   const handleSaveOperators = () => {
-    setOperatorModalVisible(false);
-    router.back(); // ← Aquí
+    console.log("Operators saved successfully! Closing both modals.");
+    setOperatorModalVisible(false); // close OperatorModal
+    if (onClose) {
+      onClose(); // close AddOrderForm
+    }
   };
-
 
   // Handler for deleting an order
   const handleDeleteOrder = (key: string) => {
@@ -76,7 +79,7 @@ export default function AddOrderModal({ visible }: { visible: boolean }) {
                 text2: t("order_deleted_successfully"),
               });
               // Close the modal after successful deletion
-              router.back();
+              onClose();
             } catch (error) {
               console.error(t("error_deleting_order"), error);
               Toast.show({
@@ -98,7 +101,7 @@ export default function AddOrderModal({ visible }: { visible: boolean }) {
       handleDeleteOrder(savedOrderKey);
     } else {
       // No order was created, just close the modal
-      router.back();
+      onClose();
     }
   };
 
@@ -316,7 +319,6 @@ export default function AddOrderModal({ visible }: { visible: boolean }) {
       justifyContent: 'center',
       borderBottomWidth: 2,
       borderBottomColor: colorScheme === 'dark' ? 'rgba(0, 0, 0, 0.2)' : 'rgba(0, 0, 0, 0.1)',
-      marginTop: 30,
     },
     image: {
       width: 50,

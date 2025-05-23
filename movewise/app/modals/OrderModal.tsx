@@ -3,7 +3,8 @@ import { useState, useEffect, useCallback } from "react";
 import { useRouter } from "expo-router";
 import DateTimePicker, { DateTimePickerEvent } from '@react-native-community/datetimepicker';
 import { Ionicons } from '@expo/vector-icons';
-
+import AddOrderForm from "./AddOrderForm";
+import UpdateOrder from "./UpdateOrder";
 import { getOrders } from "../../hooks/api/GetOrders";
 import { GestureHandlerRootView, Swipeable } from "react-native-gesture-handler";
 import { TouchableHighlight } from "react-native";
@@ -54,8 +55,11 @@ const OrderModal = () => {
   const isOperator = params.isOperator === "true"; 
 
   const { t } = useTranslation(); // Hook para traducción
+  const [addOrderVisible, setAddOrderVisible] = useState(false);
   const [infoModalVisible, setInfoModalVisible] = useState(false);
   const [selectedOrderInfo, setSelectedOrderInfo] = useState<Order | null>(null);
+  const [updateOrderVisible, setUpdateOrderVisible] = useState(false);
+  const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
   const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
@@ -92,7 +96,7 @@ const OrderModal = () => {
         expense: order.expense,
         income: order.income,
         weight: order.weight,
-        status: order.status.toUpperCase(),
+        status: order.status,
         payStatus: order.payStatus,
         state_usa: order.state_usa,
         person: {
@@ -364,7 +368,7 @@ const OrderModal = () => {
             <Ionicons name="search" size={20} color={isDarkMode ? colors.secondary : colors.primary} />
             <TextInput
               style={[styles.searchInput, { color: isDarkMode ? colors.darkText : colors.lightText }]}
-              placeholder={t("search_placeholder_key_ref")}
+              placeholder={t("search_placeholder")}
               placeholderTextColor={isDarkMode ? colors.placeholderDark : colors.placeholderLight}
               value={searchText}
               onChangeText={setSearchText}
@@ -428,6 +432,34 @@ const OrderModal = () => {
         visible={infoModalVisible}
         onClose={() => setInfoModalVisible(false)}
         order={selectedOrderInfo}
+      />
+      <AddOrderForm visible={addOrderVisible} onClose={() => setAddOrderVisible(false)} />
+      {/* <UpdateOrder visible={updateOrderVisible} onClose={() => setUpdateOrderVisible(false)} orderData={selectedOrder || {}} /> */}
+      <UpdateOrder
+        visible={updateOrderVisible}
+        onClose={() => setUpdateOrderVisible(false)}
+        orderData={{
+          key: selectedOrder?.key || '',
+          state_usa: selectedOrder?.state_usa || '',
+          date: selectedOrder?.date || null,
+          key_ref: selectedOrder?.key_ref || '',
+          person: {
+            first_name: selectedOrder?.person?.first_name || '',
+            last_name: selectedOrder?.person?.last_name || '',
+            email: selectedOrder?.person?.email || '',
+            phone: selectedOrder?.person?.phone || 0,
+            address: selectedOrder?.person?.address || '',
+          },
+          job: selectedOrder?.job,
+          weight: selectedOrder?.weight || '',
+          distance: selectedOrder?.distance || 0,
+          expense: selectedOrder?.expense || '',
+          income: selectedOrder?.income || '',
+          status: selectedOrder?.status,
+          payStatus: selectedOrder?.payStatus || 0,
+          customer_factory: selectedOrder?.customer_factory,
+          dispatch_ticket: selectedOrder?.dispatch_ticket || '',
+        }}
       />
       <Toast />
       </SafeAreaView>
