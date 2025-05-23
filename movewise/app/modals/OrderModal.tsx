@@ -169,7 +169,9 @@ const OrderModal = () => {
   };
 
   const handleEditOrder = (order: Order) => {
+    console.log("Editing order:", order);
     if (order) {
+      console.log("There is an order ")
       router.push(
         { pathname: '/modals/UpdateOrder',
           params: { order: JSON.stringify(order) } });
@@ -294,7 +296,6 @@ const OrderModal = () => {
   };
 
   return (
-    <Modal animationType="slide" transparent={false}>
       <SafeAreaView style={{ flex: 1 }}>
 
         {/* Encabezado */}
@@ -422,15 +423,15 @@ const OrderModal = () => {
           </View>
         )}
         {/* End of Back and Save Buttons */}
-      </SafeAreaView>
-      {/* Aquí controlamos la visibilidad de los modales AddOrderForm, UpdateOrder -> MODAL DE INFORMACION*/}
+        {/* Aquí controlamos la visibilidad de los modales AddOrderForm, UpdateOrder -> MODAL DE INFORMACION*/}
       <InfoOrderModal
         visible={infoModalVisible}
         onClose={() => setInfoModalVisible(false)}
         order={selectedOrderInfo}
       />
       <Toast />
-    </Modal>
+      </SafeAreaView>
+
   );
 };
 

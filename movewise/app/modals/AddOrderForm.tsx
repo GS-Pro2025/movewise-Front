@@ -380,8 +380,6 @@ export default function AddOrderModal({ visible }: { visible: boolean }) {
   });
 
   return (
-    <Modal visible={visible} transparent animationType="slide" statusBarTranslucent={true}
-      hardwareAccelerated={true}>
       <SafeAreaView style={{ flex: 1, backgroundColor: colorScheme === 'dark' ? '#112A4A' : '#FFFFFF' }}>
         <KeyboardAvoidingView behavior={Platform.OS === "ios" ? "padding" : "height"} style={{ flex: 1 }}>
           <ScrollView
@@ -612,8 +610,8 @@ export default function AddOrderModal({ visible }: { visible: boolean }) {
               onSave={handleSaveOperators} />
           </ScrollView>
         </KeyboardAvoidingView>
-      </SafeAreaView>
       <Toast />
-    </Modal>
+      </SafeAreaView>
+      
   );
 }
