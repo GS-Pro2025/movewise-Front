@@ -510,6 +510,5 @@
     "please_fill_all_required_fields": "Please fill all required fields",
     "how_would_you_like_to_add_a_photo":"How would you like to add a photo?",
     "upload_evidence":"Upload evidence",
-    "operator_saved_succesfully":"Operator saved successfully",
-    "search_placeholder_key_ref":"Search by customer or reference"
+    "operator_saved_succesfully":"Operator saved successfully"
 }
