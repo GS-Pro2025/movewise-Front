@@ -544,6 +544,5 @@
   "please_fill_all_required_fields": "Por favor completa todos los campos",
   "operator_saved_succesfully":"Operador guardado exitosamente",
   "logout_error": "Error al cerrar sesión",
-  "logout_success": "Sesión cerrada exitosamente",
-  "search_placeholder_key_ref": "Buscar por Cliente o Referencia"
+  "logout_success": "Sesión cerrada exitosamente"
 }

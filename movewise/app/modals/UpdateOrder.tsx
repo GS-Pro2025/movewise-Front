@@ -17,13 +17,12 @@ import * as FileSystem from 'expo-file-system';
 import Toast from 'react-native-toast-message';
 import OrderModal from './OrderModal';
 import { CustomerFactory } from '@/hooks/api/CustomerFactoryClient';
-import { useLocalSearchParams } from 'expo-router';
 
 interface Job {
   id: number;
   name: string;
 }
-/** 
+
 interface UpdateOrderModalProps {
   visible?: boolean;
   onClose?: () => void;
@@ -50,11 +49,8 @@ interface UpdateOrderModalProps {
     dispatch_ticket?: string;
   };
 }
-*/
-export default function UpdateOrderModal({ visible = true, onClose }: { visible?: boolean; onClose?: () => void }) {
-  const params = useLocalSearchParams();
-  const orderData = params.order ? JSON.parse(params.order as string) : null;
 
+export default function UpdateOrderModal({ visible = true, onClose, orderData }: UpdateOrderModalProps) {
   const { t } = useTranslation();
   const [companyList, setCompanyList] = useState<any[]>([]);
   const [stateList, setStateList] = useState<any[]>([]);
@@ -119,7 +115,7 @@ export default function UpdateOrderModal({ visible = true, onClose }: { visible?
         } as ImageInfo);
       }
     }
-  }, []);
+  }, [visible, orderData]);
 
   const fetchJobs = async () => {
     try {
@@ -181,8 +177,8 @@ export default function UpdateOrderModal({ visible = true, onClose }: { visible?
     if (!jobId) newErrors.job = t("job_required");
     if (!company) newErrors.company = t("company_required");
 
-    // Validar dispatch ticket !dispatchTicket && !hasExistingDispatchTicket
-    if (false) {
+    // Validar dispatch ticket
+    if (!dispatchTicket && !hasExistingDispatchTicket) {
       newErrors.dispatchTicket = t('dispatch_ticket_required');
     } else if (dispatchTicket && !hasExistingDispatchTicket) {
       // Solo verificar tamaño si es una nueva imagen
@@ -326,7 +322,7 @@ export default function UpdateOrderModal({ visible = true, onClose }: { visible?
           text1: t("success"),
           text2: t("order_updated_successfully")
         });
-        router.back();
+        if (onClose) onClose();
       } else {
         Toast.show({
           type: 'error',
