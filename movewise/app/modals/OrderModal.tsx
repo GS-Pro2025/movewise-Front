@@ -49,7 +49,7 @@ export interface Order {
 }
 
 
-const OrderModal: React.FC<OrderModalProps> = ({ visible, onClose }) => {
+const OrderModal = () => {
   const params = useLocalSearchParams();
   const isOperator = params.isOperator === "true"; 
 
@@ -124,7 +124,7 @@ const OrderModal: React.FC<OrderModalProps> = ({ visible, onClose }) => {
 
   useEffect(() => {
     loadOrders();
-  }, [visible, loadOrders]);
+  }, [loadOrders]);
 
   const onRefresh = useCallback(() => {
     loadOrders();
@@ -294,7 +294,7 @@ const OrderModal: React.FC<OrderModalProps> = ({ visible, onClose }) => {
   };
 
   return (
-    <Modal animationType="slide" transparent={false} visible={visible} onRequestClose={onClose}>
+    <Modal animationType="slide" transparent={false}>
       <SafeAreaView style={{ flex: 1 }}>
 
         {/* Encabezado */}
