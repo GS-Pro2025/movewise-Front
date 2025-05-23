@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { View, Text, TouchableOpacity, StyleSheet, FlatList, Image, ActivityIndicator, Alert, Modal } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 import { SearchParams, useRouter } from "expo-router"; // Importa useRouter para la navegación
 import WorkCost, { ListWorkCostByOrder } from "@/hooks/api/WorkCostListByOrder";
 import { useSearchParams } from "expo-router/build/hooks";
@@ -123,9 +124,9 @@ const ExtraCostScreen = () => {
         renderItem={({ item }) => renderItem({ item, isNew: item.isNew })}
         contentContainerStyle={styles.list}
       />
-
-      {/* Botones de guardar y cancelar */}
-      <View style={styles.buttonContainer}>
+    {/* Botones de guardar y cancelar */}
+    <SafeAreaView edges={['bottom']} style={{ backgroundColor: "#fff" }}>
+      <View style={[styles.buttonContainer, { marginBottom: 10 }]}>
         <TouchableOpacity style={styles.cancelButton} onPress={handleCancel}>
           <Text style={styles.cancelButtonText}>{t("cancel")}</Text>
         </TouchableOpacity>
@@ -133,7 +134,7 @@ const ExtraCostScreen = () => {
           <Text style={styles.saveButtonText}>{t("save")}</Text>
         </TouchableOpacity>
       </View>
-
+    </SafeAreaView>
       {/* Modal de confirmación */}
       <Modal visible={isCancelModalVisible} animationType="fade" transparent={true}>
         <View style={styles.modalOverlay}>
@@ -157,7 +158,7 @@ const ExtraCostScreen = () => {
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: "#fff", paddingHorizontal: 20, paddingTop: 20 },
-  header: { flexDirection: "row", justifyContent: "space-between", alignItems: "center", marginBottom: 10 },
+  header: { flexDirection: "row", justifyContent: "space-between", alignItems: "center", marginTop: 30 },
   title: { fontSize: 20, fontWeight: "bold", color: "#004080" },
   addButton: {
     backgroundColor: "#004080",
@@ -197,8 +198,7 @@ const styles = StyleSheet.create({
   buttonContainer: {
     flexDirection: "row",
     justifyContent: "space-between",
-    marginTop: 20,
-    marginBottom: 20,
+    marginBottom: 30,
   },
   cancelButton: {
     backgroundColor: "#FF5C5C", // Rojo para indicar cancelación

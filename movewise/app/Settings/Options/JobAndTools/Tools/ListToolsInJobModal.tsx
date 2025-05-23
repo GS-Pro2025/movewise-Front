@@ -162,13 +162,12 @@ const ListToolsInJobModal: React.FC<ListToolsInJobModalProps> = ({
             styles.toolItem,
             { backgroundColor: isDarkMode ? '#1E3A5F' : '#f5f5f5' }
           ]}>
-            <Image
-              source={require('../../../../../assets/images/hammer.png')}
-              style={[
-                styles.hammerImage,
-                { backgroundColor: isDarkMode ? '#FFFFFF' : '#f5f5f5' }
-              ]}
-            />
+              <Ionicons
+                name="hammer"
+                size={30}
+                color={isDarkMode ? '#0458AB' : '#0458AB'}
+                style={{ marginRight: 10 }}
+              />
             <View style={styles.toolDetails}>
               <Text style={[
                 styles.toolName,

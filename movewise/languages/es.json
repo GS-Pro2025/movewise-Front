@@ -545,5 +545,6 @@
   "operator_saved_succesfully":"Operador guardado exitosamente",
   "logout_error": "Error al cerrar sesión",
   "logout_success": "Sesión cerrada exitosamente",
-  "search_placeholder_key_ref": "Buscar por Cliente o Referencia"
+  "search_placeholder_key_ref": "Buscar por Cliente o Referencia",
+  "back_to_admin_login": "Volver al login de administrador"
 }
