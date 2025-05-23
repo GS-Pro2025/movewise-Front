@@ -26,6 +26,7 @@ export const CustomerFactory = async () => {
     throw error;
   }
 };
+
 export interface ModelCreateCustomerFactory {
   name: String;
 }

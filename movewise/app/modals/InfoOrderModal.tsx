@@ -34,9 +34,10 @@ interface InfoOrderModalProps {
   visible: boolean;
   onClose: () => void;
   order: Order | null;
+  isWorkhouse: boolean;
 }
 
-const InfoOrderModal: React.FC<InfoOrderModalProps> = ({ visible, onClose, order }) => {
+const InfoOrderModal: React.FC<InfoOrderModalProps> = ({ visible, onClose, order, isWorkhouse = false }) => {
   const { width } = Dimensions.get('window');
   const { t } = useTranslation();
   const colorScheme = useColorScheme();
@@ -318,23 +319,25 @@ const InfoOrderModal: React.FC<InfoOrderModalProps> = ({ visible, onClose, order
           </View>
 
           {/* Customer Card */}
-          <View style={[styles.card, { backgroundColor: cardBackground, borderColor }]}>
-            <View style={styles.cardHeader}>
-              <Ionicons name="person" size={20} color={primaryColor} style={styles.cardIcon} />
-              <Text style={[styles.cardTitle, { color: primaryColor }]}>{t("customer_info")}</Text>
-            </View>
+          {/* solo mostrar si la orden no es workhouse */}
+          {!isWorkhouse &&
+            <View style={[styles.card, { backgroundColor: cardBackground, borderColor }]}>
+              <View style={styles.cardHeader}>
+                <Ionicons name="person" size={20} color={primaryColor} style={styles.cardIcon} />
+                <Text style={[styles.cardTitle, { color: primaryColor }]}>{t("customer_info")}</Text>
+              </View>
 
-            <View style={styles.cardContent}>
-              {renderInfoItem(
-                t("name_info_order"),
-                `${order.person?.first_name || ''} ${order.person?.last_name || ''}`
-              )}
-              {renderInfoItem(t("email_info_order"), order.person?.email)}
-              {renderInfoItem(t("phone_info_order"), order.person?.phone)}
-              {renderInfoItem(t("address_info_order"), order.person?.address)}
+              <View style={styles.cardContent}>
+                {renderInfoItem(
+                  t("name_info_order"),
+                  `${order.person?.first_name || ''} ${order.person?.last_name || ''}`
+                )}
+                {renderInfoItem(t("email_info_order"), order.person?.email)}
+                {renderInfoItem(t("phone_info_order"), order.person?.phone)}
+                {renderInfoItem(t("address_info_order"), order.person?.address)}
+              </View>
             </View>
-          </View>
-
+          }
           {/* Technical Card */}
           <View style={[styles.card, { backgroundColor: cardBackground, borderColor }]}>
             <View style={styles.cardHeader}>

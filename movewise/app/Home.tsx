@@ -304,6 +304,21 @@ const Home: React.FC = () => {
               iconSource={require("../assets/images/personx.png")}
             />
           </View>
+          <View style={styles.row}>
+            <ActionButton
+              title={t("freelancers")}
+              isDarkMode={isDarkMode}
+              iconSource={require("../assets/images/personx.png")}
+              onPress={() => router.push("/modals/FreelancersList")}
+            />
+            <ActionButton
+              title={t("workhouse")}
+              isDarkMode={isDarkMode}
+              iconSource={require("../assets/images/work-house.png")}
+              onPress={() => router.push("/modals/workhouse/ListWorkHouse")}
+            />
+          </View>
+
         </View>
       </ScrollView>
 
