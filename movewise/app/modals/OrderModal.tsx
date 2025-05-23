@@ -170,10 +170,9 @@ const OrderModal: React.FC<OrderModalProps> = ({ visible, onClose }) => {
 
   const handleEditOrder = (order: Order) => {
     if (order) {
-      router.push({
-        pathname: './UpdateOrder',
-        params: { order: JSON.stringify(order) }
-      });
+      router.push(
+        { pathname: '/modals/UpdateOrder',
+          params: { order: JSON.stringify(order) } });
     } else {
       Alert.alert(t("error"), t("selected_order_null"));
     }
@@ -303,7 +302,7 @@ const OrderModal: React.FC<OrderModalProps> = ({ visible, onClose }) => {
           <Text style={[styles.title, { color: isDarkMode ? colors.darkText : colors.primary }]}>{t("Orders")}</Text>
           <TouchableOpacity
             style={[styles.addButton, { backgroundColor: isDarkMode ? colors.lightBackground : colors.primary }]}
-            onPress={() => router.push('./AddOrderForm')}
+            onPress={() => router.push('/modals/AddOrderForm')}
           >
             <Text style={[styles.plus, { color: isDarkMode ? colors.primary : colors.lightBackground }]}>+</Text>
           </TouchableOpacity>
