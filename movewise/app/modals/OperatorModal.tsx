@@ -140,7 +140,7 @@ const OperatorModal: React.FC<OperatorModalProps> = ({ visible, onClose, orderKe
         order: orderKey,
         rol: op.role?.toLowerCase() || '',
         additional_costs: op.additionalCosts || 0,
-        truck: op.role === "driver" ? op.truckId : null
+        truck: (op.role === "driver" || op.role === "leader") ? op.truckId : null
       }));
 
       // console.log("Payload enviado al backend para la asignación:", payload);
@@ -272,7 +272,21 @@ const OperatorModal: React.FC<OperatorModalProps> = ({ visible, onClose, orderKe
     }
     setRoleSelectorVisible(false);
   };
-
+  const assignTeamLeader = () => {
+    if (selectedOperatorIndex !== null) {
+      setOperators((prev) =>
+        prev.map((op, i) =>
+          i === selectedOperatorIndex ? {
+            ...op,
+            role: "leader",
+            truckId: undefined
+          } : op
+        )
+      );
+      setTimeout(() => setTruckModalVisible(true), 100);
+    }
+    setRoleSelectorVisible(false);
+  };
   const handleTruckSelection = (truckId: number) => {
     console.log("Índice actual:", selectedOperatorIndex);
     console.log("Operadores antes:", JSON.stringify(operators));
@@ -289,20 +303,6 @@ const OperatorModal: React.FC<OperatorModalProps> = ({ visible, onClose, orderKe
     setTruckModalVisible(false);
   };
 
-  const assignTeamLeader = () => {
-    if (selectedOperatorIndex !== null) {
-      setOperators((prev) =>
-        prev.map((op, i) =>
-          i === selectedOperatorIndex ? {
-            ...op,
-            role: "leader",
-            truckId: undefined
-          } : op
-        )
-      );
-    }
-    setRoleSelectorVisible(false);
-  };
   
   const renderOperatorItem = (operator: any, index: number, isAssigned: boolean) => {
     const renderRightActions = () => (

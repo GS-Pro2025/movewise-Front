@@ -187,34 +187,45 @@ const TruckModal: React.FC<TruckModalProps> = ({
 
   const handleSearch = async () => {
     console.log("TruckData handleSearch:", TruckData.number);
-    const truckData = await getTruckByNumberId(TruckData.number);
+    try{
+      const truckData = await getTruckByNumberId(TruckData.number);
     if (truckData) {
       setTruckData({
-        id: truckData.id_truck,
-        name: truckData.name,
-        number: truckData.number_truck,
-        category: truckData.category,
-        type: truckData.type,
-      });
+          id: truckData.id_truck,
+          name: truckData.name,
+          number: truckData.number_truck,
+          category: truckData.category,
+          type: truckData.type,
+        });
+        Toast.show({
+          text1: t("success"),
+          text2: t("truck_found"),
+          type: "success",
+        });
+        console.log(t("truck_found"), truckData);
+      } else {
+        setTruckData({
+          id: 0, // Campo vacío
+          name: "", // Campo vacío
+          number: "", // Campo vacío
+          category: "", // Campo vacío
+          type: "", // Campo vacío
+        });
+        Toast.show({
+          text1: t("error"),
+          text2: t("truck_not_found"),
+          type: "error",
+        });
+      }
+    }catch (error) {
+      console.error("Error al buscar el camión:", error);
       Toast.show({
-        text1: t("success"),
-        text2: t("truck_found"),
-        type: "success",
-      });
-      console.log(t("truck_found"), truckData);
-    } else {
-      setTruckData({
-        id: 0, // Campo vacío
-        name: "", // Campo vacío
-        number: "", // Campo vacío
-        category: "", // Campo vacío
-        type: "", // Campo vacío
-      });
-      Toast.show({
-        text1: t("error") + ": " + (truckData?.sms || t("truck_not_found")),
+        text1: t("error"),
+        text2: t("truck_not_found"),
         type: "error",
       });
     }
+    
   };
 
   const handleSave = () => {
