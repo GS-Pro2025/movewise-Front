@@ -55,6 +55,7 @@ const EditAssignmentsModal: React.FC<EditAssignmentsModalProps> = ({ visible, on
     }, [visible, workhouseKey]);
 
     const handleOpenAssign = () => {
+        onClose()
         setShowAssignModal(true);
     };
 
@@ -82,7 +83,7 @@ const EditAssignmentsModal: React.FC<EditAssignmentsModalProps> = ({ visible, on
     }, [onRefresh]);
 
     return (
-        <SafeAreaView>
+        <>
             <Modal visible={visible} transparent animationType="slide">
                 <View style={styles.modalContainer}>
                     <View style={[styles.modalContent, { backgroundColor: colors.lightBackground }]}>
@@ -157,7 +158,7 @@ const EditAssignmentsModal: React.FC<EditAssignmentsModalProps> = ({ visible, on
                 }}
                 workhouseKey={initialKeyRef.current}
             />
-        </SafeAreaView>
+        </>
     );
 };
 

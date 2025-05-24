@@ -174,9 +174,9 @@ const CreateFreelanceModal: React.FC<CreateFreelanceModalProps> = ({ visible, on
                                         selectedValue={newFreelance.type_id}
                                         onValueChange={value => setNewFreelance(prev => ({ ...prev, type_id: value }))}
                                     >
-                                        <Picker.Item label="Cédula" value="CC" />
-                                        <Picker.Item label="Pasaporte" value="PA" />
-                                        <Picker.Item label="Otro" value="OT" />
+                                        <Picker.Item label="social" value="CC" />
+                                        <Picker.Item label="passport" value="PA" />
+                                        <Picker.Item label="Driver licence" value="OT" />
                                     </Picker>
                                 </View>
                             </View>
@@ -256,7 +256,7 @@ const styles = StyleSheet.create({
     },
     label: {
         fontSize: 14,
-        color: colors.darkText,
+        color: colors.textLight,
         marginBottom: 5,
         flexDirection: 'row',
         alignItems: 'center',
