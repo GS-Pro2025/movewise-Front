@@ -71,6 +71,7 @@ const ExtraCostScreen = () => {
       console.log(t("save_response"), response);
       Alert.alert(t("success"), t("new_costs_saved"));
       setNewWorkCosts([]);
+      await fetchWorkCosts();
     } catch (err) {
       console.error(t("error_saving_costs"), err);
       Alert.alert(t("error"), t("error_saving_costs"));
