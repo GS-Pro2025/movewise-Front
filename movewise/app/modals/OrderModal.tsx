@@ -50,7 +50,7 @@ export interface Order {
 }
 
 
-const OrderModal: React.FC<OrderModalProps> = ({ visible, onClose }) => {
+const OrderModal = () => {
   const params = useLocalSearchParams();
   const isOperator = params.isOperator === "true"; 
 
@@ -128,7 +128,7 @@ const OrderModal: React.FC<OrderModalProps> = ({ visible, onClose }) => {
 
   useEffect(() => {
     loadOrders();
-  }, [visible, loadOrders]);
+  }, [loadOrders]);
 
   const onRefresh = useCallback(() => {
     loadOrders();
@@ -173,9 +173,12 @@ const OrderModal: React.FC<OrderModalProps> = ({ visible, onClose }) => {
   };
 
   const handleEditOrder = (order: Order) => {
+    console.log("Editing order:", order);
     if (order) {
-      setSelectedOrder(order);
-      setUpdateOrderVisible(true);
+      console.log("There is an order ")
+      router.push(
+        { pathname: '/modals/UpdateOrder',
+          params: { order: JSON.stringify(order) } });
     } else {
       Alert.alert(t("error"), t("selected_order_null"));
     }
@@ -297,7 +300,6 @@ const OrderModal: React.FC<OrderModalProps> = ({ visible, onClose }) => {
   };
 
   return (
-    <Modal animationType="slide" transparent={false} visible={visible} onRequestClose={onClose}>
       <SafeAreaView style={{ flex: 1 }}>
 
         {/* Encabezado */}
@@ -305,7 +307,7 @@ const OrderModal: React.FC<OrderModalProps> = ({ visible, onClose }) => {
           <Text style={[styles.title, { color: isDarkMode ? colors.darkText : colors.primary }]}>{t("Orders")}</Text>
           <TouchableOpacity
             style={[styles.addButton, { backgroundColor: isDarkMode ? colors.lightBackground : colors.primary }]}
-            onPress={() => setAddOrderVisible(true)}
+            onPress={() => router.push('/modals/AddOrderForm')}
           >
             <Text style={[styles.plus, { color: isDarkMode ? colors.primary : colors.lightBackground }]}>+</Text>
           </TouchableOpacity>
@@ -425,8 +427,7 @@ const OrderModal: React.FC<OrderModalProps> = ({ visible, onClose }) => {
           </View>
         )}
         {/* End of Back and Save Buttons */}
-      </SafeAreaView>
-      {/* Aquí controlamos la visibilidad de los modales AddOrderForm, UpdateOrder -> MODAL DE INFORMACION*/}
+        {/* Aquí controlamos la visibilidad de los modales AddOrderForm, UpdateOrder -> MODAL DE INFORMACION*/}
       <InfoOrderModal
         visible={infoModalVisible}
         onClose={() => setInfoModalVisible(false)}
@@ -462,7 +463,8 @@ const OrderModal: React.FC<OrderModalProps> = ({ visible, onClose }) => {
         }}
       />
       <Toast />
-    </Modal>
+      </SafeAreaView>
+
   );
 };
 

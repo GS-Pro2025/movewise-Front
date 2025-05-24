@@ -508,9 +508,9 @@
     "no_image_available": "No image available",
     "professional_info": "Professional Info",
     "please_fill_all_required_fields": "Please fill all required fields",
-    "how_would_you_like_to_add_a_photo": "How would you like to add a photo?",
-    "upload_evidence": "Upload evidence",
-    "operator_saved_succesfully": "Operator saved successfully",
+    "operator_saved_succesfully":"Operator saved successfully",
+    "search_placeholder_key_ref":"Search by customer or reference",
+    "back_to_admin_login":  "Back to Admin Login",
     "select_customer": "Select customer",
     "create_workhouse_error": "create workhouse error",
     "workhouse_created": "Workhouse created",
@@ -527,7 +527,7 @@
     "confirm_delete_assignment": "Are you sure you want to delete this assignment?",
     "assignment_deleted": "Assignment deleted",
     "no_assignments": "No assignments",
-  "enter_additional_costs":"Enter additional costs",
-  "new_freelance":"Create Freelance",
-  "create_freelance":"Create freelance"
+    "enter_additional_costs":"Enter additional costs",
+    "new_freelance":"Create Freelance",
+    "create_freelance":"Create freelance"
 }
