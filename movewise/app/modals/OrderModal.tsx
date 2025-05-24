@@ -14,7 +14,7 @@ import { DeleteOrder } from "@/hooks/api/DeleteOrder";
 import { useTranslation } from "react-i18next";
 import InfoOrderModal from './InfoOrderModal';
 import { useLocalSearchParams } from 'expo-router';
-
+import { useFocusEffect } from "expo-router"; 
 interface OrderModalProps {
   visible: boolean;
   onClose: () => void;
@@ -126,9 +126,11 @@ const OrderModal = () => {
     }
   }, []);
 
-  useEffect(() => {
-    loadOrders();
-  }, [loadOrders]);
+  useFocusEffect(
+    useCallback(() => {
+      loadOrders();
+    }, [loadOrders])
+  );
 
   const onRefresh = useCallback(() => {
     loadOrders();
