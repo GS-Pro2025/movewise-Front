@@ -145,6 +145,10 @@ const RegisterCompany = () => {
           <TouchableOpacity style={styles.button} onPress={handleRegister}>
             <Text style={styles.buttonText}>{t("register_company_button")}</Text>
           </TouchableOpacity>
+
+          <TouchableOpacity style={styles.backButton} onPress={() => router.replace("/Login")}>
+            <Text style={styles.buttonText}>{t("back")}</Text>
+          </TouchableOpacity>
         </View>
       </ImageBackground>
     </TouchableWithoutFeedback>
@@ -189,6 +193,14 @@ const styles = StyleSheet.create({
   button: {
     height: 48,
     backgroundColor: "#002366",
+    borderRadius: 10,
+    justifyContent: "center",
+    alignItems: "center",
+    marginTop: 16,
+  },
+  backButton: {
+    height: 48,
+    backgroundColor: "#FF0000",
     borderRadius: 10,
     justifyContent: "center",
     alignItems: "center",

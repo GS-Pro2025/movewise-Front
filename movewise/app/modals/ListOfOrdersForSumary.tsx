@@ -174,8 +174,28 @@ const ListOfOrdersForSummary: React.FC = () => {
 
   return (
     <SafeAreaView style={{ flex: 1 }}>
-      <View style={styles.header}>
-        <Text style={styles.title}>{t("orders")}</Text>
+      <View style={[styles.header, { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }]}>
+        {/* Back Button */}
+        <TouchableOpacity
+          onPress={() => router.back()}
+          style={{
+            width: 40,
+            height: 40,
+            borderRadius: 20,
+            borderWidth: 1,
+            alignItems: 'center',
+            justifyContent: 'center',
+            borderColor: '#FFF',
+            backgroundColor: '#0458AB',
+          }}
+        >
+          <Text style={{ fontSize: 20, fontWeight: 'bold', color: '#FFF' }}>←</Text>
+        </TouchableOpacity>
+        <Text style={[styles.title, { flex: 1, textAlign: 'center', marginLeft: 0 }]}>
+          {t("orders")}
+        </Text>
+        {/* Espacio para mantener el título centrado */}
+        <View style={{ width: 40 }} />
       </View>
       {/* Barra de búsqueda */}
       <View style={styles.searchContainer}>

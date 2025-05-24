@@ -116,7 +116,7 @@ const ListOfCustomersModal: React.FC<ListOfCustomersModalProps> = ({ visible, on
           <View style={[styles.jobItem, { backgroundColor: isDarkMode ? '#1E3A5F' : '#f5f5f5' }]}>
             <Ionicons
               size={30}
-              name="briefcase-outline"
+              name="business"
               color={isDarkMode ? '#ffffff' : '#000000'} // blanco en modo oscuro, negro en modo claro
             />
 

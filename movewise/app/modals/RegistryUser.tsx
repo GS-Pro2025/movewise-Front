@@ -11,6 +11,7 @@ import {
   TouchableWithoutFeedback,
   Keyboard
 } from "react-native";
+import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import Toast from "react-native-toast-message";
 import { CreateCompany } from "../../hooks/api/CompanyClient";
@@ -67,6 +68,8 @@ const RegistryUser = () => {
   const [userName, setUserName] = useState("");
   const [searchTerm, setSearchTerm] = useState(""); // Added state for search term
   const [isChecked, setIsChecked] = useState(false); // Estado para el checkbox
+  const insets = useSafeAreaInsets(); 
+
   const [errors, setErrors] = useState<{
     email?: string;
     password?: string;
@@ -462,16 +465,26 @@ const RegistryUser = () => {
             <TouchableOpacity style={styles.button} onPress={handleRegister}>
               <Text style={styles.buttonText}>{t("register_user_button")}</Text>
             </TouchableOpacity>
+            <TouchableOpacity style={styles.backButton} onPress={() => router.back()}>
+              <Text style={styles.buttonText}>{t("back")}</Text>
+            </TouchableOpacity>
           </View>
         </ScrollView>
         {/* Modal con WebView */}
+
         <Modal visible={termsVisible} onRequestClose={() => setTermsVisible(false)}>
-          <View style={{ flex: 1 }}>
-            <TouchableOpacity onPress={() => setTermsVisible(false)} style={styles.closeButton}>
+          <SafeAreaView style={{ flex: 1, backgroundColor: "#fff" }}>
+            <TouchableOpacity
+              onPress={() => setTermsVisible(false)}
+              style={[
+                styles.closeButton,
+                { zIndex: 10, marginTop: insets.top} 
+              ]}
+            >
               <Text style={styles.closeButtonText}>Cerrar</Text>
             </TouchableOpacity>
-            <WebView source={{ html: termsHtml }} />
-          </View>
+            <WebView source={{ html: termsHtml }} style={{ flex: 1 }} />
+          </SafeAreaView>
         </Modal>
         <Toast />
       </ImageBackground>
@@ -496,6 +509,14 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     marginTop: 20,
     marginBottom: 10
+  },
+  backButton: {
+    height: 48,
+    backgroundColor: "#FF0000",
+    borderRadius: 10,
+    justifyContent: "center",
+    alignItems: "center",
+    marginTop: 16,
   },
   section: {
     marginTop: 12,

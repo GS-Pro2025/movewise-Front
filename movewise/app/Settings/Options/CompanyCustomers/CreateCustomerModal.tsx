@@ -165,7 +165,7 @@ const styles = StyleSheet.create({
   // Puedes copiar los estilos de CreateJobModal aquí
   container: { flex: 1, backgroundColor: "#fff" },
   form: { paddingHorizontal: 16, paddingTop: 30 },
-  headerContainer: { paddingTop: 20, backgroundColor: "#fff" },
+  headerContainer: { paddingTop: 20, backgroundColor: "#fff", marginTop: 32, },
   headerText: { fontSize: 18, fontWeight: "bold", textAlign: "center", color: "#0458AB", marginBottom: 8 },
   divider: { height: 2, backgroundColor: "#ccc", shadowColor: "#000", shadowOffset: { width: 0, height: 1 }, shadowOpacity: 0.2, shadowRadius: 2, elevation: 2 },
   label: { fontSize: 14, color: "#0458AB", marginBottom: 4, marginTop: 12 },

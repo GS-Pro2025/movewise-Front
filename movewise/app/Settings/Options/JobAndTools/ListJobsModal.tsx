@@ -122,9 +122,11 @@ const ListJobsModal: React.FC<ListJobModalProps> = ({ visible, onClose }) => {
             }}
           >
             <View style={[styles.jobItem, { backgroundColor: isDarkMode ? '#1E3A5F' : '#f5f5f5' }]}>
-              <Image
-                source={require('../../../../assets/images/briefcase.png')}
-                style={[styles.briefcaseImage, { backgroundColor: isDarkMode ? '#FFFFFF' : '#f5f5f5' }]}
+              <Ionicons
+                name="briefcase-outline"
+                size={30}
+                color={isDarkMode ? '#0458AB' : '#0458AB'}
+                style={{ marginRight: 10 }}
               />
               <View style={styles.jobDetails}>
                 <Text style={[styles.jobTitle, { color: isDarkMode ? '#FFFFFF' : '#0458AB' }]}>

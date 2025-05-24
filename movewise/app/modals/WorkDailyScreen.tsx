@@ -100,7 +100,10 @@ const WorkDailyScreen = () => {
   };
 
   const renderItem = ({ item }: { item: Order }) => (
-    <View style={[styles.itemWrapper, { backgroundColor: colors.third }]}>
+    <View style={[
+        styles.itemWrapper,
+        { backgroundColor: isDarkMode ? colors.third : colors.lightBackground }
+      ]}>
       <TouchableOpacity
         style={[
           styles.itemContainer,
@@ -153,6 +156,22 @@ return (
   <>
     {/* Header and Date Picker */}
     <View style={[styles.header, { backgroundColor: isDarkMode ? colors.header : colors.lightBackground }]}>
+      {/* Back Button */}
+      <TouchableOpacity
+        onPress={() => router.back()}
+        style={{
+          width: 40,
+          height: 40,
+          borderRadius: 20,
+          borderWidth: 1,
+          marginLeft: 30,
+          alignItems: 'center',
+          justifyContent: 'center',
+          borderColor: isDarkMode ? '#FFF' : colors.primary,
+        }}
+      >
+        <Text style={{ fontSize: 20, fontWeight: 'bold', color: isDarkMode ? '#FFF' : colors.primary }}>←</Text>
+      </TouchableOpacity>
       <Text style={[styles.title, { color: isDarkMode ? colors.darkText : colors.primary }]}>{t("orders")}</Text>
 
       <View style={styles.dateContainer}>

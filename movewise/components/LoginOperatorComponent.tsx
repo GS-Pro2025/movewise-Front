@@ -112,6 +112,13 @@ const IdLoginScreen: React.FC = () => {
             <Text style={styles.buttonText}>{t("login_button")}</Text>
           )}
         </TouchableOpacity>
+        <TouchableOpacity 
+          style={styles.backButton}
+          onPress={() => router.replace("/Login")}>
+          <Text style={styles.buttonText}>
+            {t("back_to_admin_login")}
+          </Text>
+        </TouchableOpacity>
       </View>
     </ImageBackground>
   );
@@ -142,6 +149,15 @@ const styles = StyleSheet.create({
     marginBottom: 6,
     marginLeft: 4,
   },
+  backButton: {
+    height: 48,
+    backgroundColor: "#FF0000",
+    borderRadius: 10,
+    justifyContent: "center",
+    alignItems: "center",
+    marginTop: 16,
+  },
+  
   input: {
     height: 48,
     borderWidth: 1.5,
@@ -162,7 +178,7 @@ const styles = StyleSheet.create({
   },
   buttonText: {
     color: "#fff",
-    fontWeight: "bold",
     fontSize: 16,
-  },
+    fontWeight: "bold",
+  }, 
 });

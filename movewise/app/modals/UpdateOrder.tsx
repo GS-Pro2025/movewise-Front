@@ -50,6 +50,11 @@ interface UpdateOrderModalProps {
   };
 }
 
+export default function UpdateOrderModal() {
+  const params = useLocalSearchParams();
+  const orderData = params.order ? JSON.parse(params.order as string) : null;
+
+
 export default function UpdateOrderModal({ visible = true, onClose, orderData }: UpdateOrderModalProps) {
   const { t } = useTranslation();
   const [companyList, setCompanyList] = useState<any[]>([]);
@@ -210,7 +215,7 @@ export default function UpdateOrderModal({ visible = true, onClose, orderData }:
 
   const handleSaveOperators = () => {
     setAddOperatorVisible(false);
-    if (onClose) onClose();
+    router.back();
   };
 
   // Dentro de la función handleUpdate modifica esta parte
@@ -341,19 +346,10 @@ export default function UpdateOrderModal({ visible = true, onClose, orderData }:
   };
 
   const handleClose = () => {
-    if (onClose) onClose();
-    else router.back();
+    router.back();
   };
 
   return (
-    <Modal
-      visible={visible}
-      transparent
-      animationType="slide"
-      onRequestClose={handleClose}
-      statusBarTranslucent={true}
-      hardwareAccelerated={true}
-    >
       <View style={{ flex: 1, backgroundColor: isDarkMode ? '#112A4A' : '#FFFFFF' }}>
         <KeyboardAwareView style={{ flex: 1 }}>
           <ScrollView
@@ -692,9 +688,8 @@ export default function UpdateOrderModal({ visible = true, onClose, orderData }:
             </ThemedView>
           </ScrollView>
         </KeyboardAwareView>
+        <Toast />
       </View>
-      <Toast />
-    </Modal>
   );
 }
 

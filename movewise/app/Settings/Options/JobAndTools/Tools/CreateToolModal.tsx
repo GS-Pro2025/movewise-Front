@@ -211,7 +211,7 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
     textAlign: "center",
     color: "#0458AB",
-    marginBottom: 8,
+    marginTop: 32,
   },
   divider: {
     height: 2,

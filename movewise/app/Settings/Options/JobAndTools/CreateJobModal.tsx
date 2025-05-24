@@ -205,6 +205,7 @@ const styles = StyleSheet.create({
     headerContainer: {
     paddingTop: 20,
     backgroundColor: "#fff",
+    marginTop: 32,
   },
   headerText: {
     fontSize: 18,
