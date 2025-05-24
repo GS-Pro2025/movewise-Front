@@ -247,9 +247,11 @@ const AddWorkhouseForm: React.FC<AddWorkhouseFormProps> = ({ visible, onClose, o
             <CreateFreelanceModal
                 visible={showFreelanceForm}
                 onClose={() => setShowFreelanceForm(false)}
+                isFromFreelance={true}
                 onSuccess={() => {
                     // Lógica de éxito
                 }}
+                workHouseKey={workhouseKey}
             />
         </>
     );

@@ -1,6 +1,5 @@
-//modal para ver, editar y eliminar las asignaciones de un workhouse
-import { useState, useEffect } from 'react';
-import { View, Text, Modal, TouchableOpacity, StyleSheet, Alert, ActivityIndicator, ScrollView } from 'react-native';
+import { useState, useEffect, useCallback, useRef } from 'react';
+import { View, Text, Modal, TouchableOpacity, StyleSheet, ActivityIndicator, ScrollView, SafeAreaView, Alert } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import colors from '@/app/Colors';
 import { useTranslation } from 'react-i18next';
@@ -17,32 +16,50 @@ interface EditAssignmentsModalProps {
 
 const EditAssignmentsModal: React.FC<EditAssignmentsModalProps> = ({ visible, onClose, workhouseKey, onRefresh }) => {
     const { t } = useTranslation();
+    const initialKeyRef = useRef<string>('');
     const [assignments, setAssignments] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
     const [showAssignModal, setShowAssignModal] = useState(false);
+    const abortControllerRef = useRef<AbortController | null>(null);
 
     useEffect(() => {
         if (visible && workhouseKey) {
-            fetchAssignments();
+            const [validKey] = workhouseKey.split('|');
+            initialKeyRef.current = validKey;
+
+            const controller = new AbortController();
+            abortControllerRef.current = controller;
+
+            const loadData = async () => {
+                try {
+                    const data = await GetAssignedOperators(validKey);
+                    if (validKey === initialKeyRef.current) {
+                        setAssignments(data || []);
+                        setLoading(false);
+                    }
+                } catch (err) {
+                    if (!controller.signal.aborted) {
+                        setError(t("error_fetching_assignments"));
+                        setLoading(false);
+                    }
+                }
+            };
+
+            loadData();
         }
+
+        return () => {
+            abortControllerRef.current?.abort();
+        };
     }, [visible, workhouseKey]);
 
-    const fetchAssignments = async () => {
-        try {
-            setLoading(true);
-            const data = await GetAssignedOperators(workhouseKey);
-
-            setAssignments(data);
-            setError(null);
-        } catch (err) {
-            setError(t("error_fetching_assignments"));
-        } finally {
-            setLoading(false);
-        }
+    const handleOpenAssign = () => {
+        onClose()
+        setShowAssignModal(true);
     };
 
-    const handleDelete = async (assignmentId: number) => {
+    const handleDelete = useCallback(async (assignmentId: number) => {
         Alert.alert(
             t("confirm_delete"),
             t("confirm_delete_assignment"),
@@ -54,7 +71,7 @@ const EditAssignmentsModal: React.FC<EditAssignmentsModalProps> = ({ visible, on
                         try {
                             await deleteAssign(assignmentId);
                             onRefresh();
-                            fetchAssignments();
+                            setAssignments(prev => prev.filter(a => a.id_assign !== assignmentId));
                             Alert.alert(t("success"), t("assignment_deleted"));
                         } catch (error) {
                             Alert.alert(t("error"), t("delete_error"));
@@ -63,7 +80,7 @@ const EditAssignmentsModal: React.FC<EditAssignmentsModalProps> = ({ visible, on
                 }
             ]
         );
-    };
+    }, [onRefresh]);
 
     return (
         <>
@@ -73,7 +90,7 @@ const EditAssignmentsModal: React.FC<EditAssignmentsModalProps> = ({ visible, on
                         <ScrollView contentContainerStyle={styles.scrollContent}>
                             <View style={styles.header}>
                                 <Text style={styles.modalTitle}>{t("assigned_freelancers")}</Text>
-                                <TouchableOpacity onPress={onClose}>
+                                <TouchableOpacity style={{ padding: 15 }} onPress={onClose}>
                                     <Ionicons name="close" size={24} color={colors.primary} />
                                 </TouchableOpacity>
                             </View>
@@ -116,7 +133,7 @@ const EditAssignmentsModal: React.FC<EditAssignmentsModalProps> = ({ visible, on
 
                             <TouchableOpacity
                                 style={styles.assignButton}
-                                onPress={() => setShowAssignModal(true)}
+                                onPress={handleOpenAssign}
                             >
                                 <Ionicons name="add" size={20} color="#fff" />
                                 <Text style={styles.buttonText}>{t("assign_new_freelance")}</Text>
@@ -130,10 +147,16 @@ const EditAssignmentsModal: React.FC<EditAssignmentsModalProps> = ({ visible, on
                 visible={showAssignModal}
                 onClose={() => setShowAssignModal(false)}
                 onSuccess={() => {
-                    fetchAssignments();
-                    onRefresh();
+                    if (initialKeyRef.current) {
+                        setAssignments([]);
+                        setLoading(true);
+                        onRefresh();
+                        GetAssignedOperators(initialKeyRef.current)
+                            .then(data => setAssignments(data || []))
+                            .finally(() => setLoading(false));
+                    }
                 }}
-                workhouseKey={workhouseKey}
+                workhouseKey={initialKeyRef.current}
             />
         </>
     );
@@ -163,7 +186,7 @@ const styles = StyleSheet.create({
         fontWeight: 'bold',
         color: colors.primary,
     },
-     emptyContainer: {
+    emptyContainer: {
         flex: 1,
         justifyContent: 'center',
         alignItems: 'center',

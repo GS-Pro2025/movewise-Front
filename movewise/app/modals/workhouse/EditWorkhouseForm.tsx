@@ -23,7 +23,7 @@ interface EditWorkhouseFormProps {
 interface InitialState {
     customer: number | null;
     date: Date;
-    dispatchTicket: any | null; // Usar any temporalmente o definir tipo específico
+    dispatchTicket: any | null; 
 }
 
 const EditWorkhouseForm: React.FC<EditWorkhouseFormProps> = ({ visible, onClose, onSuccess, order }) => {
@@ -36,11 +36,30 @@ const EditWorkhouseForm: React.FC<EditWorkhouseFormProps> = ({ visible, onClose,
     const [validationError, setValidationError] = useState<string | null>(null);
     const [showDatePicker, setShowDatePicker] = useState(false);
     const [showAssignmentsModal, setShowAssignmentsModal] = useState(false);
+    const [keyForChild, setKeyForChild] = useState('');
     const [initialState, setInitialState] = useState<InitialState>({
         customer: null,
         date: new Date(),
         dispatchTicket: null
     });
+
+    const handleOpenAssignmentModal = () => {
+        const currentKey = order?.key || '';
+        onClose();
+        setTimeout(() => {
+            setKeyForChild(currentKey);
+            setShowAssignmentsModal(true)
+            console.log(`key que se establece al abrir: ${currentKey}`);
+        }, 100);
+    }
+
+
+    const handleCloseAssignmentModal = () => {
+        onClose();
+        setTimeout(() => {
+            setShowAssignmentsModal(false)
+        }, 100);
+    }
 
     const [hasChanges, setHasChanges] = useState(false);
 
@@ -124,108 +143,112 @@ const EditWorkhouseForm: React.FC<EditWorkhouseFormProps> = ({ visible, onClose,
     };
 
     return (
-        <Modal visible={visible} transparent animationType="slide">
-            <View style={styles.modalContainer}>
-                <View style={[styles.modalContent, { backgroundColor: colors.lightBackground }]}>
+        <>
+            <Modal visible={visible} transparent animationType="slide">
+                <View style={styles.modalContainer}>
+                    <View style={[styles.modalContent, { backgroundColor: colors.lightBackground }]}>
 
-                    <ScrollView
-                        contentContainerStyle={styles.scrollContent}
-                        showsVerticalScrollIndicator={false}
-                    >
-
-                        <View style={styles.header}>
-                            <Text style={styles.modalTitle}>{t("edit_workhouse_order")}</Text>
-                            <TouchableOpacity onPress={onClose}>
-                                <Ionicons name="close" size={24} color={colors.primary} />
-                            </TouchableOpacity>
-                        </View>
-
-                        {/* Selector de Customer Factory */}
-                        <View style={styles.dropdownContainer}>
-                            <Text style={styles.dropdownLabel}>{t("customer_factory")}</Text>
-                            <Picker
-                                selectedValue={selectedCustomer}
-                                onValueChange={(itemValue) => setSelectedCustomer(itemValue)}
-                                style={styles.picker}
-                                dropdownIconColor={colors.primary}
-                            >
-                                <Picker.Item label={t("select_customer")} value={null} />
-                                {customerFactories.map(customer => (
-                                    <Picker.Item
-                                        key={customer.id_factory}
-                                        label={customer.name}
-                                        value={customer.id_factory}
-                                    />
-                                ))}
-                            </Picker>
-                        </View>
-
-                        {/* Selector de Fecha */}
-                        <TouchableOpacity
-                            style={styles.datePicker}
-                            onPress={() => setShowDatePicker(true)}
+                        <ScrollView
+                            contentContainerStyle={styles.scrollContent}
+                            showsVerticalScrollIndicator={false}
                         >
-                            <Ionicons name="calendar" size={20} color={colors.primary} />
-                            <Text style={styles.dateText}>
-                                {date.toLocaleDateString()}
-                            </Text>
-                        </TouchableOpacity>
 
-                        {showDatePicker && (
-                            <DateTimePicker
-                                value={date}
-                                mode="date"
-                                display="spinner"
-                                onChange={(event, selectedDate) => {
-                                    setShowDatePicker(false);
-                                    if (selectedDate) setDate(selectedDate);
-                                }}
-                            />
-                        )}
-                        {/* Upload de Imagen */}
-                        <CrossPlatformImageUpload
-                            label={t("dispatch_ticket")}
-                            image={dispatchTicket}
-                            onImageSelected={setDispatchTicket}
-                            maxWidth={1024}
-                            maxHeight={1024}
-                            aspect={[4, 3]}
-                        />
+                            <View style={styles.header}>
+                                <Text style={styles.modalTitle}>{t("edit_workhouse_order")}</Text>
+                                <TouchableOpacity style={{ padding: 15 }} onPress={() => onClose()}>
+                                    <Ionicons name="close" size={24} color={colors.primary} />
+                                </TouchableOpacity>
+                            </View>
 
-                        {validationError && (
-                            <Text style={styles.errorText}>{validationError}</Text>
-                        )}
-                        <TouchableOpacity
-                            style={styles.editFreelancersButton}
-                            onPress={() => setShowAssignmentsModal(true)}
-                        >
-                            <Ionicons name="people-outline" size={16} color={colors.primary} />
-                            <Text style={styles.editFreelancersText}>{t("edit_freelancers")}</Text>
-                        </TouchableOpacity>
-                        {hasChanges && (
+                            {/* Selector de Customer Factory */}
+                            <View style={styles.dropdownContainer}>
+                                <Text style={styles.dropdownLabel}>{t("customer_factory")}</Text>
+                                <Picker
+                                    selectedValue={selectedCustomer}
+                                    onValueChange={(itemValue) => setSelectedCustomer(itemValue)}
+                                    style={styles.picker}
+                                    dropdownIconColor={colors.primary}
+                                >
+                                    <Picker.Item label={t("select_customer")} value={null} />
+                                    {customerFactories.map(customer => (
+                                        <Picker.Item
+                                            key={customer.id_factory}
+                                            label={customer.name}
+                                            value={customer.id_factory}
+                                        />
+                                    ))}
+                                </Picker>
+                            </View>
+
+                            {/* Selector de Fecha */}
                             <TouchableOpacity
-                                style={styles.submitButton}
-                                onPress={handleSubmit}
-                                disabled={loading}
+                                style={styles.datePicker}
+                                onPress={() => setShowDatePicker(true)}
                             >
-                                {loading ? (
-                                    <ActivityIndicator color="#fff" />
-                                ) : (
-                                    <Text style={styles.buttonText}>{t("save_changes")}</Text>
-                                )}
+                                <Ionicons name="calendar" size={20} color={colors.primary} />
+                                <Text style={styles.dateText}>
+                                    {date.toLocaleDateString()}
+                                </Text>
                             </TouchableOpacity>
-                        )}
-                    </ScrollView>
+
+                            {showDatePicker && (
+                                <DateTimePicker
+                                    value={date}
+                                    mode="date"
+                                    display="spinner"
+                                    onChange={(event, selectedDate) => {
+                                        setShowDatePicker(false);
+                                        if (selectedDate) setDate(selectedDate);
+                                    }}
+                                />
+                            )}
+                            {/* Upload de Imagen */}
+                            <CrossPlatformImageUpload
+                                label={t("dispatch_ticket")}
+                                image={dispatchTicket}
+                                onImageSelected={setDispatchTicket}
+                                maxWidth={1024}
+                                maxHeight={1024}
+                                aspect={[4, 3]}
+                            />
+
+                            {validationError && (
+                                <Text style={styles.errorText}>{validationError}</Text>
+                            )}
+                            <TouchableOpacity
+                                style={styles.editFreelancersButton}
+                                onPress={() => handleOpenAssignmentModal()}
+                            >
+                                <Ionicons name="people-outline" size={16} color={colors.primary} />
+                                <Text style={styles.editFreelancersText}>{t("edit_freelancers")}</Text>
+                            </TouchableOpacity>
+                            {hasChanges && (
+                                <TouchableOpacity
+                                    style={styles.submitButton}
+                                    onPress={handleSubmit}
+                                    disabled={loading}
+                                >
+                                    {loading ? (
+                                        <ActivityIndicator color="#fff" />
+                                    ) : (
+                                        <Text style={styles.buttonText}>{t("save_changes")}</Text>
+                                    )}
+                                </TouchableOpacity>
+                            )}
+                        </ScrollView>
+                    </View>
                 </View>
-            </View>
+            </Modal>
             <EditAssignmentsModal
                 visible={showAssignmentsModal}
-                onClose={() => setShowAssignmentsModal(false)}
-                workhouseKey={order?.key || ''}
+                onClose={() => {
+                    setShowAssignmentsModal(false);
+                    setKeyForChild(''); 
+                }}
+                workhouseKey={keyForChild}
                 onRefresh={onSuccess}
             />
-        </Modal>
-
+        </>
     );
 };
 
