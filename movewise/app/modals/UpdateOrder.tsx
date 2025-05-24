@@ -2,7 +2,7 @@ import { Modal, View, Text, ScrollView, TextInput, TouchableOpacity, StyleSheet,
 import DropDownPicker from "react-native-dropdown-picker";
 import { useState, useEffect } from 'react';
 import { ThemedView } from '../../components/ThemedView';
-import { useRouter } from "expo-router";
+import { useLocalSearchParams, useRouter } from "expo-router";
 import DateTimePickerModal from "react-native-modal-datetime-picker";
 import { KeyboardAwareView } from '../../components/KeyboardAwareView';
 import { ListJobs } from '@/hooks/api/JobClient';
@@ -117,7 +117,7 @@ export default function UpdateOrderModal() {
         } as ImageInfo);
       }
     }
-  }, [visible, orderData]);
+  }, []);
 
   const fetchJobs = async () => {
     try {
@@ -324,7 +324,7 @@ export default function UpdateOrderModal() {
           text1: t("success"),
           text2: t("order_updated_successfully")
         });
-        if (onClose) onClose();
+        router.back();
       } else {
         Toast.show({
           type: 'error',
