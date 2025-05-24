@@ -96,7 +96,7 @@ const OrderModal = () => {
         expense: order.expense,
         income: order.income,
         weight: order.weight,
-        status: order.status,
+        status: order.status.toUpperCase(),
         payStatus: order.payStatus,
         state_usa: order.state_usa,
         person: {
@@ -283,8 +283,8 @@ const OrderModal = () => {
               </View>
               <View style={styles.orderStatus}>
                 <Text style={[styles.statusText, {
-                  color: item.status === 'Pending' ? colors.pendingStatus :
-                    item.status === 'Completed' ? colors.completedStatus : colors.completedStatus
+                  color: item.status === 'PENDING' ? colors.pendingStatus :
+                    item.status === 'COMPLETED' ? colors.completedStatus : colors.completedStatus
                 }]}>
                   {t(item.status.toLowerCase())} {/* Traducción del estado */}
                 </Text>
@@ -433,34 +433,6 @@ const OrderModal = () => {
         onClose={() => setInfoModalVisible(false)}
         order={selectedOrderInfo}
         isWorkhouse={false}
-      />
-      <AddOrderForm visible={addOrderVisible} onClose={() => setAddOrderVisible(false)} />
-      {/* <UpdateOrder visible={updateOrderVisible} onClose={() => setUpdateOrderVisible(false)} orderData={selectedOrder || {}} /> */}
-      <UpdateOrder
-        visible={updateOrderVisible}
-        onClose={() => setUpdateOrderVisible(false)}
-        orderData={{
-          key: selectedOrder?.key || '',
-          state_usa: selectedOrder?.state_usa || '',
-          date: selectedOrder?.date || null,
-          key_ref: selectedOrder?.key_ref || '',
-          person: {
-            first_name: selectedOrder?.person?.first_name || '',
-            last_name: selectedOrder?.person?.last_name || '',
-            email: selectedOrder?.person?.email || '',
-            phone: selectedOrder?.person?.phone || 0,
-            address: selectedOrder?.person?.address || '',
-          },
-          job: selectedOrder?.job,
-          weight: selectedOrder?.weight || '',
-          distance: selectedOrder?.distance || 0,
-          expense: selectedOrder?.expense || '',
-          income: selectedOrder?.income || '',
-          status: selectedOrder?.status,
-          payStatus: selectedOrder?.payStatus || 0,
-          customer_factory: selectedOrder?.customer_factory,
-          dispatch_ticket: selectedOrder?.dispatch_ticket || '',
-        }}
       />
       <Toast />
       </SafeAreaView>
