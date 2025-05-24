@@ -3,6 +3,7 @@ import apiClient from "./apiClient";
 export interface FreelanceData {
     code: string;
     salary: number;
+    email:string;
     status: 'freelance';
     first_name: string;
     last_name: string;

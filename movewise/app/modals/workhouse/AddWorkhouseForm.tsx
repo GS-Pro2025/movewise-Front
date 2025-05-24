@@ -11,9 +11,9 @@ import CrossPlatformImageUpload from '../CrossPlatformImageUpload';
 import { CustomerFactory } from '@/hooks/api/CustomerFactoryClient';
 import { Order } from './ListWorkHouse';
 import { Picker } from '@react-native-picker/picker';
-import { CreateFreelance, FreelanceData } from '@/hooks/api/FreelanceClient';
-import { CreateAssignment, AssignmentData } from '@/hooks/api/AssignClient';
+import {  FreelanceData } from '@/hooks/api/FreelanceClient';
 import AssignFreelanceModal from './AssignFreelanceModal';
+import CreateFreelanceModal from './CreateFreelanceModal';
 
 interface AddWorkhouseFormProps {
     visible: boolean;
@@ -63,7 +63,7 @@ const AddWorkhouseForm: React.FC<AddWorkhouseFormProps> = ({ visible, onClose, o
         license_back?: any
     }>({});
 
-   
+
     useEffect(() => {
         const fetchCompanies = async () => {
             try {
@@ -144,203 +144,6 @@ const AddWorkhouseForm: React.FC<AddWorkhouseFormProps> = ({ visible, onClose, o
         });
         setFreelanceImages({});
     };
-
-    const handleCreateFreelance = async () => {
-        try {
-            const formData = new FormData();
-
-            // Campos obligatorios
-            formData.append('code', newFreelance.code!);
-            formData.append('salary', newFreelance.salary!.toString());
-            formData.append('first_name', newFreelance.first_name!);
-            formData.append('last_name', newFreelance.last_name!);
-            formData.append('type_id', newFreelance.type_id!);
-            formData.append('id_number', newFreelance.id_number!);
-            formData.append('status', 'freelance');
-
-            // Campos opcionales
-            if (newFreelance.address) formData.append('address', newFreelance.address);
-            if (newFreelance.phone) formData.append('phone', newFreelance.phone);
-
-            // Manejo de imágenes
-            const processImage = async (image: any, fieldName: string) => {
-                if (image) {
-                    const base64 = await FileSystem.readAsStringAsync(image.uri, {
-                        encoding: FileSystem.EncodingType.Base64,
-                    });
-                    formData.append(fieldName, `data:${image.type || 'image/jpeg'};base64,${base64}`);
-                }
-            };
-
-            await processImage(freelanceImages.photo, 'photo');
-            await processImage(freelanceImages.license_front, 'license_front');
-            await processImage(freelanceImages.license_back, 'license_back');
-
-            const response = await CreateFreelance(formData);
-
-
-            // Actualizar freelanceData con el nuevo freelance creado
-            setShowFreelanceForm(false);
-            setFreelanceData(response.data); // Asegurarse de usar response.data
-            setFreelanceCode(response.data.code);
-            setTimeout(() => scrollViewRef.current?.scrollToEnd(), 100);
-            setShowFreelanceForm(false);
-            Alert.alert(t("success"), t("freelance_created"));
-
-        } catch (error: any) {
-            Alert.alert(t("error"), error.message || t("create_freelance_error"));
-        }
-    };
-
-    const renderFreelanceForm = () => (
-        <Modal visible={showFreelanceForm} transparent animationType="slide">
-            <View style={styles.modalContainer}>
-                <View style={[styles.modalContent, { backgroundColor: colors.lightBackground }]}>
-                    <ScrollView contentContainerStyle={styles.scrollContent}>
-                        <View style={styles.header}>
-                            <Text style={styles.modalTitle}>{t("new_freelance")}</Text>
-                            <TouchableOpacity onPress={() => setShowFreelanceForm(false)}>
-                                <Ionicons name="close" size={24} color={colors.primary} />
-                            </TouchableOpacity>
-                        </View>
-
-                        {/* Campos del formulario con iconos */}
-                        <View style={styles.inputContainer}>
-                            <Text style={styles.label}>
-                                <Ionicons name="barcode-outline" size={16} color={colors.primary} /> {t("code")}
-                            </Text>
-                            <TextInput
-                                style={styles.input}
-                                placeholder="FRL-001"
-                                value={newFreelance.code}
-                                onChangeText={text => setNewFreelance(prev => ({ ...prev, code: text }))}
-                            />
-                        </View>
-
-                        <View style={styles.inputContainer}>
-                            <Text style={styles.label}>
-                                <Ionicons name="cash-outline" size={16} color={colors.primary} /> {t("salary")}
-                            </Text>
-                            <TextInput
-                                style={styles.input}
-                                placeholder="$0.00"
-                                value={newFreelance.salary?.toString()}
-                                onChangeText={text => setNewFreelance(prev => ({ ...prev, salary: parseFloat(text) || 0 }))}
-                                keyboardType="numeric"
-                            />
-                        </View>
-
-                        <View style={styles.inputContainer}>
-                            <Text style={styles.label}>
-                                <Ionicons name="person-outline" size={16} color={colors.primary} /> {t("first_name")}
-                            </Text>
-                            <TextInput
-                                style={styles.input}
-                                placeholder={t("first_name")}
-                                value={newFreelance.first_name}
-                                onChangeText={text => setNewFreelance(prev => ({ ...prev, first_name: text }))}
-                            />
-                        </View>
-
-                        <View style={styles.inputContainer}>
-                            <Text style={styles.label}>
-                                <Ionicons name="people-outline" size={16} color={colors.primary} /> {t("last_name")}
-                            </Text>
-                            <TextInput
-                                style={styles.input}
-                                placeholder={t("last_name")}
-                                value={newFreelance.last_name}
-                                onChangeText={text => setNewFreelance(prev => ({ ...prev, last_name: text }))}
-                            />
-                        </View>
-
-                        <View style={styles.inputContainer}>
-                            <Text style={styles.label}>
-                                <Ionicons name="person-outline" size={16} color={colors.primary} /> {t("address")}
-                            </Text>
-                            <TextInput
-                                style={styles.input}
-                                placeholder={t("address")}
-                                value={newFreelance.address}
-                                onChangeText={text => setNewFreelance(prev => ({ ...prev, address: text }))}
-                            />
-                        </View>
-
-                        <View style={styles.inputContainer}>
-                            <Text style={styles.label}>
-                                <Ionicons name="person-outline" size={16} color={colors.primary} /> {t("phone")}
-                            </Text>
-                            <TextInput
-                                style={styles.input}
-                                placeholder={t("phone")}
-                                value={newFreelance.phone}
-                                onChangeText={text => setNewFreelance(prev => ({ ...prev, phone: text }))}
-                            />
-                        </View>
-
-                        <View style={styles.inputContainer}>
-                            <Text style={styles.label}>
-                                <Ionicons name="id-card-outline" size={16} color={colors.primary} /> {t("id_type")}
-                            </Text>
-                            <View style={styles.pickerContainer}>
-                                <Picker
-                                    selectedValue={newFreelance.type_id}
-                                    onValueChange={value => setNewFreelance(prev => ({ ...prev, type_id: value }))}
-                                >
-                                    <Picker.Item label="Cédula" value="CC" />
-                                    <Picker.Item label="Pasaporte" value="PA" />
-                                    <Picker.Item label="Otro" value="OT" />
-                                </Picker>
-                            </View>
-                        </View>
-
-                        <View style={styles.inputContainer}>
-                            <Text style={styles.label}>
-                                <Ionicons name="images-outline" size={18} /> {t("documents")}
-                            </Text>
-                            <TextInput
-                                style={styles.input}
-                                placeholder="123456789"
-                                value={newFreelance.id_number}
-                                onChangeText={text => setNewFreelance(prev => ({ ...prev, id_number: text }))}
-                            />
-                        </View>
-
-                        {/* Sección de imágenes */}
-                        <Text style={styles.sectionTitle}>
-                            <Ionicons name="images-outline" size={18} /> {t("documents")}
-                        </Text>
-
-                        <CrossPlatformImageUpload
-                            label={t("photo")}
-                            image={freelanceImages.photo}
-                            onImageSelected={image => setFreelanceImages(prev => ({ ...prev, photo: image }))}
-                        />
-
-                        <CrossPlatformImageUpload
-                            label={t("license_front")}
-                            image={freelanceImages.license_front}
-                            onImageSelected={image => setFreelanceImages(prev => ({ ...prev, license_front: image }))}
-                        />
-
-                        <CrossPlatformImageUpload
-                            label={t("license_back")}
-                            image={freelanceImages.license_back}
-                            onImageSelected={image => setFreelanceImages(prev => ({ ...prev, license_back: image }))}
-                        />
-
-                        <TouchableOpacity
-                            style={[styles.submitButton, { marginTop: 20 }]}
-                            onPress={handleCreateFreelance}
-                        >
-                            <Ionicons name="save-outline" size={20} color="#fff" />
-                            <Text style={styles.buttonText}>{t("create_freelance")}</Text>
-                        </TouchableOpacity>
-                    </ScrollView>
-                </View>
-            </View>
-        </Modal>
-    );
 
     return (
         <>
@@ -441,7 +244,13 @@ const AddWorkhouseForm: React.FC<AddWorkhouseFormProps> = ({ visible, onClose, o
                     workhouseKey={workhouseKey || ''}
                 />
             </Modal>
-            {renderFreelanceForm()}
+            <CreateFreelanceModal
+                visible={showFreelanceForm}
+                onClose={() => setShowFreelanceForm(false)}
+                onSuccess={() => {
+                    // Lógica de éxito
+                }}
+            />
         </>
     );
 };

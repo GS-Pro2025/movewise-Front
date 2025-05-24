@@ -117,7 +117,7 @@ const AssignFreelanceModal: React.FC<AssignFreelanceModalProps> = ({ visible, on
         setAssignmentLoading(true);
         try {
             await CreateAssignment({
-                operator: freelanceData.id_operator,
+                operator: freelanceData.data.id_operator,
                 order: workhouseKey,
                 assigned_at: new Date().toISOString(),
                 rol: 'freelance',

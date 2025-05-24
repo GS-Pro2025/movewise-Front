@@ -1,0 +1,303 @@
+import { useState, useEffect } from 'react';
+import { View, Text, FlatList, TouchableOpacity, StyleSheet, Alert, TextInput } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
+import { Swipeable } from 'react-native-gesture-handler';
+import { useNavigation } from '@react-navigation/native';
+import colors from '@/app/Colors';
+import { useTranslation } from 'react-i18next';
+import { GetFreelancers } from '@/hooks/api/GetFreelancers';
+import { SoftDeleteOperator } from '@/hooks/api/SoftDeleteOperator';
+import CreateFreelanceModal from '../workhouse/CreateFreelanceModal';
+import { GestureHandlerRootView } from 'react-native-gesture-handler';
+import EditFreelanceModal from './EditFreelanceModal';
+import ViewFreelanceModal from './ViewFreelanceModal';
+
+const FreelanceListScreen = () => {
+    const { t } = useTranslation();
+    const navigation = useNavigation();
+    const [freelancers, setFreelancers] = useState<any[]>([]);
+    const [searchQuery, setSearchQuery] = useState('');
+    const [showCreateModal, setShowCreateModal] = useState(false);
+    const [showEditModal, setShowEditModal] = useState(false);
+    const [showViewModal, setShowViewModal] = useState(false);
+    const [selectedFreelancer, setSelectedFreelancer] = useState<any>(null);
+    const [refreshing, setRefreshing] = useState(false);
+
+    const loadFreelancers = async () => {
+        try {
+            setRefreshing(true);
+            const data = await GetFreelancers();
+            setFreelancers(data.results || []);
+        } catch (error) {
+            Alert.alert(t("error"), t("error_loading_freelancers"));
+        } finally {
+            setRefreshing(false);
+        }
+    };
+
+    useEffect(() => {
+        loadFreelancers();
+    }, []);
+
+    const handleDelete = async (operator_id: number) => {
+        Alert.alert(
+            t("confirm_delete"),
+            t("delete_freelance_warning"),
+            [
+                { text: t("cancel") },
+                {
+                    text: t("delete"),
+                    onPress: async () => {
+                        try {
+                            await SoftDeleteOperator(operator_id);
+                            loadFreelancers();
+                        } catch (error) {
+                            Alert.alert(t("error"), t("delete_error"));
+                        }
+                    }
+                }
+            ]
+        );
+    };
+
+    const handleEdit = (freelancer: any) => {
+        setSelectedFreelancer(freelancer);
+        setShowEditModal(true);
+    };
+
+    const handleView = (freelancer: any) => {
+        setSelectedFreelancer(freelancer);
+        setShowViewModal(true);
+    };
+
+    const renderRightActions = (operator_id: number) => (
+        <View style={styles.swipeActions}>
+            <TouchableOpacity
+                style={[styles.swipeButton, styles.deleteButton]}
+                onPress={() => handleDelete(operator_id)}
+            >
+                <Ionicons name="trash" size={20} color="white" />
+            </TouchableOpacity>
+        </View>
+    );
+
+    const renderLeftActions = (freelancer: any) => (
+        <View style={styles.swipeActions}>
+            <TouchableOpacity
+                style={[styles.swipeButton, styles.editButton]}
+                onPress={() => handleEdit(freelancer)}
+            >
+                <Ionicons name="pencil" size={20} color="white" />
+            </TouchableOpacity>
+        </View>
+    );
+
+    const filteredFreelancers = freelancers.filter(freelancer =>
+        `${freelancer.first_name} ${freelancer.last_name} ${freelancer.code}`
+            .toLowerCase()
+            .includes(searchQuery.toLowerCase())
+    );
+
+    return (
+        <GestureHandlerRootView style={{ flex: 1 }}>
+            <View style={styles.container}>
+                {/* Header mejorado */}
+                <View style={styles.header}>
+                    <TouchableOpacity onPress={() => navigation.goBack()}>
+                        <Ionicons name="arrow-back" size={24} color={colors.primary} />
+                    </TouchableOpacity>
+                    <Text style={styles.title}>{t("freelancers")}</Text>
+                    <TouchableOpacity onPress={() => setShowCreateModal(true)}>
+                        <Ionicons name="add" size={28} color={colors.primary} />
+                    </TouchableOpacity>
+                </View>
+
+                {/* Buscador */}
+                <TextInput
+                    style={styles.searchInput}
+                    placeholder={t("search_freelancers")}
+                    value={searchQuery}
+                    onChangeText={setSearchQuery}
+                    placeholderTextColor={colors.placeholderLight}
+                />
+
+                {/* Listado */}
+                <FlatList
+                    data={filteredFreelancers}
+                    keyExtractor={(item) => item.id_operator.toString()}
+                    refreshing={refreshing}
+                    onRefresh={loadFreelancers}
+                    renderItem={({ item }) => (
+                        <Swipeable
+                            friction={2}
+                            rightThreshold={40}
+                            containerStyle={styles.swipeContainer}
+                            renderRightActions={() => renderRightActions(item.id_operator)}
+                            renderLeftActions={() => renderLeftActions(item)}
+                        >
+                            <TouchableOpacity
+                                style={styles.freelanceCard}
+                                onPress={() => handleView(item)}
+                            >
+                                <View style={styles.operatorInfo}>
+                                    <Text style={styles.operatorName}>
+                                        {item.first_name} {item.last_name}
+                                    </Text>
+                                    <Text style={styles.operatorCode}>{item.code}</Text>
+                                </View>
+                                <View style={styles.details}>
+                                    <Text style={styles.salary}>${item.salary}</Text>
+                                    <View style={[
+                                        styles.statusBadge,
+                                        item.status === 'active' ? styles.activeBadge : styles.inactiveBadge
+                                    ]}>
+                                        <Text style={styles.statusText}>{item.status === 'active' ? t("operator") : item.status}</Text>
+                                    </View>
+                                </View>
+                            </TouchableOpacity>
+                        </Swipeable>
+                    )}
+                />
+
+                {/* Modal de creación */}
+                <CreateFreelanceModal
+                    visible={showCreateModal}
+                    onClose={() => setShowCreateModal(false)}
+                    onSuccess={loadFreelancers}
+                />
+
+                {/* Modal de edición */}
+                <EditFreelanceModal
+                    visible={showEditModal}
+                    freelancer={selectedFreelancer}
+                    onClose={() => {
+                        setShowEditModal(false);
+                        setSelectedFreelancer(null);
+                    }}
+                    onSuccess={loadFreelancers}
+                />
+
+                {/* Modal de visualización */}
+                <ViewFreelanceModal
+                    visible={showViewModal}
+                    freelancer={selectedFreelancer}
+                    onClose={() => {
+                        setShowViewModal(false);
+                        setSelectedFreelancer(null);
+                    }}
+                    onEdit={() => {
+                        setShowViewModal(false);
+                        setShowEditModal(true);
+                    }}
+                />
+            </View>
+        </GestureHandlerRootView>
+    );
+};
+
+const styles = StyleSheet.create({
+    swipeActions: {
+        flexDirection: 'row',
+        width: 160,  // Ancho para ambos botones
+        height: '100%',
+    },
+    deleteButton: {
+        backgroundColor: colors.swipeDelete,
+        borderTopRightRadius: 12,
+        borderBottomRightRadius: 12,
+        marginLeft: 'auto',  // Empuja el botón de eliminar a la derecha
+    },
+    editButton: {
+        backgroundColor: colors.swipeEdit,
+        borderTopLeftRadius: 12,
+        borderBottomLeftRadius: 12,
+        marginRight: 'auto',  // Empuja el botón de editar a la izquierda
+    },
+    swipeContainer: {
+        borderRadius: 12,
+        overflow: 'hidden',
+        marginBottom: 8,
+    },
+
+    swipeButton: {
+        width: 60,
+        justifyContent: 'center',
+        alignItems: 'center',
+        borderRadius: 0, // Eliminar bordes redondeados
+    },
+    container: {
+        flex: 1,
+        backgroundColor: colors.lightBackground,
+        padding: 16,
+    },
+    header: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        marginBottom: 20,
+        paddingVertical: 10,
+    },
+    title: {
+        fontSize: 24,
+        fontWeight: 'bold',
+        color: colors.primary,
+    },
+    searchInput: {
+        backgroundColor: '#fff',
+        borderRadius: 8,
+        padding: 12,
+        marginBottom: 16,
+        borderWidth: 1,
+        borderColor: colors.borderLight,
+        color: colors.textLight,
+    },
+    freelanceCard: {
+        backgroundColor: '#fff',
+        borderRadius: 12,
+        padding: 16,
+        marginBottom: 8,
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        elevation: 2,
+    },
+    operatorInfo: {
+        flex: 1,
+    },
+    operatorName: {
+        fontSize: 16,
+        fontWeight: '600',
+        color: colors.textLight,
+    },
+    operatorCode: {
+        fontSize: 14,
+        color: colors.neutralGray,
+    },
+    details: {
+        alignItems: 'flex-end',
+    },
+    salary: {
+        fontSize: 16,
+        fontWeight: 'bold',
+        color: colors.primary,
+    },
+    statusBadge: {
+        paddingHorizontal: 8,
+        paddingVertical: 4,
+        borderRadius: 12,
+        marginTop: 4,
+    },
+    activeBadge: {
+        backgroundColor: '#e8f5e8',
+    },
+    inactiveBadge: {
+        backgroundColor: '#ffebee',
+    },
+    statusText: {
+        fontSize: 12,
+        fontWeight: 'bold',
+        color: colors.blackText,
+    },
+});
+
+export default FreelanceListScreen;
