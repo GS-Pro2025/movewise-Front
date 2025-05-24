@@ -535,5 +535,8 @@
   "delete_freelance_warning": "Are you sure to delete this Freelancer?",
   "edit_freelance": "Edit Freelance",
   "update_freelance": "Update freelance",
-  "search_freelancers":"Search Freelancers"
+  "search_freelancers": "Search Freelancers",
+  "no_results_found": "No matches found",
+  "no_freelancers_available": "No freelancers registered",
+  "add_new_freelancer_prompt": "Click the + button to add a new freelancer"
 }

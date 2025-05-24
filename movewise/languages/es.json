@@ -564,14 +564,16 @@
   "confirm_delete_assignment": "Esta seguro de eliminar esta asignacion?",
   "assignment_deleted": "Asignacion Eliminada",
   "no_assignments": "Sin asignaciones",
-  "enter_additional_costs":"Ingrese costo adicional",
-  "new_freelance":"Crear Freelance",
-  "create_freelance":"Crear freelance",
-  "freelance_created":"Freelance Creado",
-  "freelance_not_found":"Freelance no encontrado",
-  "delete_freelance_warning" : "Esta seguro de eliminar el Freelancer?",
-  "edit_freelance" : "Editar freelance",
-  "update_freelance" : "Actualizar freelance",
-  "search_freelancers":"Buscar Freelancer"
-
+  "enter_additional_costs": "Ingrese costo adicional",
+  "new_freelance": "Crear Freelance",
+  "create_freelance": "Crear freelance",
+  "freelance_created": "Freelance Creado",
+  "freelance_not_found": "Freelance no encontrado",
+  "delete_freelance_warning": "Esta seguro de eliminar el Freelancer?",
+  "edit_freelance": "Editar freelance",
+  "update_freelance": "Actualizar freelance",
+  "search_freelancers": "Buscar Freelancer",
+  "no_results_found": "No se encontraron resultados",
+  "no_freelancers_available": "No hay freelancers registrados",
+  "add_new_freelancer_prompt": "Presiona el botón + para agregar uno nuevo"
 }

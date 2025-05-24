@@ -22,6 +22,7 @@ const FreelanceListScreen = () => {
     const [showViewModal, setShowViewModal] = useState(false);
     const [selectedFreelancer, setSelectedFreelancer] = useState<any>(null);
     const [refreshing, setRefreshing] = useState(false);
+    const [loadError, setLoadError] = useState(false);
 
     const loadFreelancers = async () => {
         try {
@@ -29,7 +30,8 @@ const FreelanceListScreen = () => {
             const data = await GetFreelancers();
             setFreelancers(data.results || []);
         } catch (error) {
-            Alert.alert(t("error"), t("error_loading_freelancers"));
+            setLoadError(true);
+            // Alert.alert(t("error"), t("error_loading_freelancers"));
         } finally {
             setRefreshing(false);
         }
@@ -127,6 +129,31 @@ const FreelanceListScreen = () => {
                     keyExtractor={(item) => item.id_operator.toString()}
                     refreshing={refreshing}
                     onRefresh={loadFreelancers}
+                    ListEmptyComponent={() => (
+                        <View style={styles.emptyContainer}>
+                            <Ionicons
+                                name="people-outline"
+                                size={60}
+                                color={colors.placeholderLight}
+                                style={styles.emptyIcon}
+                            />
+                            {loadError && (
+                                <Text style={styles.emptyText}>
+
+                                    {searchQuery
+                                        ? t("no_results_found")
+                                        : t("no_freelancers_available")
+                                    }
+
+                                </Text>
+                            )}
+                            {!searchQuery && (
+                                <Text style={styles.emptySubText}>
+                                    {t("add_new_freelancer_prompt")}
+                                </Text>
+                            )}
+                        </View>
+                    )}
                     renderItem={({ item }) => (
                         <Swipeable
                             friction={2}
@@ -233,13 +260,13 @@ const styles = StyleSheet.create({
         padding: 16,
     },
     header: {
-            flexDirection: 'row',
-            justifyContent: 'space-between',
-            alignItems: 'center',
-            paddingTop: 40, // Aumenta el alto superior
-            paddingVertical: 10,
-            marginBottom: 20,
-        },
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        paddingTop: 40, // Aumenta el alto superior
+        paddingVertical: 10,
+        marginBottom: 20,
+    },
     title: {
         fontSize: 24,
         fontWeight: 'bold',
@@ -300,6 +327,28 @@ const styles = StyleSheet.create({
         fontSize: 12,
         fontWeight: 'bold',
         color: colors.blackText,
+    },
+    emptyContainer: {
+        flex: 1,
+        alignItems: 'center',
+        justifyContent: 'center',
+        marginTop: 50,
+        paddingHorizontal: 20,
+    },
+    emptyIcon: {
+        opacity: 0.5,
+        marginBottom: 15,
+    },
+    emptyText: {
+        fontSize: 18,
+        color: colors.textLight,
+        textAlign: 'center',
+        marginBottom: 5,
+    },
+    emptySubText: {
+        fontSize: 14,
+        color: colors.placeholderLight,
+        textAlign: 'center',
     },
 });
 
