@@ -14,7 +14,7 @@ interface AssignFreelanceModalProps {
     visible: boolean;
     onClose: () => void;
     onSuccess: () => void;
-    workhouseKey: string;
+    workhouseKey?: string;
 }
 
 const AssignFreelanceModal: React.FC<AssignFreelanceModalProps> = ({ visible, onClose, workhouseKey, onSuccess }) => {
@@ -27,6 +27,7 @@ const AssignFreelanceModal: React.FC<AssignFreelanceModalProps> = ({ visible, on
     const [searchLoading, setSearchLoading] = useState(false);
     const [searchError, setSearchError] = useState<string | null>('');
     const scrollViewRef = useRef<ScrollView>(null);
+    
 
     const [newFreelance, setNewFreelance] = useState<Partial<FreelanceData>>({
         status: 'freelance',
@@ -98,12 +99,10 @@ const AssignFreelanceModal: React.FC<AssignFreelanceModalProps> = ({ visible, on
             const response = await CreateFreelance(formData);
 
 
-            // Actualizar freelanceData con el nuevo freelance creado
-            setShowFreelanceForm(false);
             setFreelanceData(response)
             setFreelanceCode(response.data.code);
             setTimeout(() => scrollViewRef.current?.scrollToEnd(), 100);
-            setShowFreelanceForm(false);
+            handleCloseRegisterFreelanceForm()
             Alert.alert(t("success"), t("freelance_created"));
 
         } catch (error: any) {
@@ -131,7 +130,18 @@ const AssignFreelanceModal: React.FC<AssignFreelanceModalProps> = ({ visible, on
             setAssignmentLoading(false);
         }
     };
+    const handleOpenRegisterFreelanceForm = () => {
+        onClose();
+        setTimeout(() => {
+            setShowFreelanceForm(true)
+        }, 100);
+    }
 
+    const handleCloseRegisterFreelanceForm = () => {
+        setTimeout(() => {
+            setShowFreelanceForm(false)
+        }, 100);
+    }
     const OperatorImage = ({ photo }: { photo: string | null }) => {
         const [imageError, setImageError] = useState(false);
 
@@ -260,7 +270,7 @@ const AssignFreelanceModal: React.FC<AssignFreelanceModalProps> = ({ visible, on
                                 style={styles.createNewButton}
                                 onPress={() => {
                                     setNewFreelance(prev => ({ ...prev, code: freelanceCode }));
-                                    setShowFreelanceForm(true);
+                                    handleOpenRegisterFreelanceForm();
                                 }}
                             >
                                 <Ionicons name="add-circle" size={20} color={colors.secondary} />
@@ -312,7 +322,7 @@ const AssignFreelanceModal: React.FC<AssignFreelanceModalProps> = ({ visible, on
                         <ScrollView contentContainerStyle={styles.scrollContent}>
                             <View style={styles.header}>
                                 <Text style={styles.modalTitle}>{t("new_freelance")}</Text>
-                                <TouchableOpacity onPress={() => setShowFreelanceForm(false)}>
+                                <TouchableOpacity onPress={() => handleCloseRegisterFreelanceForm()}>
                                     <Ionicons name="close" size={24} color={colors.primary} />
                                 </TouchableOpacity>
                             </View>
@@ -443,7 +453,7 @@ const AssignFreelanceModal: React.FC<AssignFreelanceModalProps> = ({ visible, on
                             />
 
                             <TouchableOpacity
-                                style={[styles.submitButton, { marginTop: 20, flexDirection:'row', justifyContent:'center' }]}
+                                style={[styles.submitButton, { marginTop: 20, flexDirection: 'row', justifyContent: 'center' }]}
                                 onPress={handleCreateFreelance}
                             >
                                 <Ionicons name="save-outline" size={20} color="#fff" />

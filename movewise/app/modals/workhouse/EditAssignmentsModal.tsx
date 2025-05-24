@@ -1,6 +1,6 @@
 //modal para ver, editar y eliminar las asignaciones de un workhouse
-import { useState, useEffect } from 'react';
-import { View, Text, Modal, TouchableOpacity, StyleSheet, Alert, ActivityIndicator, ScrollView } from 'react-native';
+import { useState, useEffect, useCallback, useRef } from 'react';
+import { View, Text, Modal, TouchableOpacity, StyleSheet, Alert, SafeAreaView, ActivityIndicator, ScrollView } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import colors from '@/app/Colors';
 import { useTranslation } from 'react-i18next';
@@ -15,30 +15,48 @@ interface EditAssignmentsModalProps {
     onRefresh: () => void;
 }
 
+
 const EditAssignmentsModal: React.FC<EditAssignmentsModalProps> = ({ visible, onClose, workhouseKey, onRefresh }) => {
+    console.log(`modal de edicion, key: ${workhouseKey}`);
+    
     const { t } = useTranslation();
+    const [storedKey, setStoredKey] = useState('');
+    const initialKeyRef = useRef('');
     const [assignments, setAssignments] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
     const [showAssignModal, setShowAssignModal] = useState(false);
 
     useEffect(() => {
-        if (visible && workhouseKey) {
+        if (visible && workhouseKey && !initialKeyRef.current) {
+            initialKeyRef.current = workhouseKey.split('|')[0]; // Extraer key real
+            setStoredKey(initialKeyRef.current);
+        }
+    }, [visible]);
+
+
+    const handleOpenAssign = () => {
+        onClose();
+        setTimeout(() => {
+            setShowAssignModal(true)
+        }, 100);
+    }
+
+    useEffect(() => {
+        if (storedKey) {
             fetchAssignments();
         }
     }, [visible, workhouseKey]);
 
     const fetchAssignments = async () => {
         try {
-            setLoading(true);
-            const data = await GetAssignedOperators(workhouseKey);
+            if (!storedKey) return;
 
+            const data = await GetAssignedOperators(storedKey);
             setAssignments(data);
-            setError(null);
+            setLoading(false)
         } catch (err) {
             setError(t("error_fetching_assignments"));
-        } finally {
-            setLoading(false);
         }
     };
 
@@ -67,74 +85,76 @@ const EditAssignmentsModal: React.FC<EditAssignmentsModalProps> = ({ visible, on
 
     return (
         <>
-            <Modal visible={visible} transparent animationType="slide">
-                <View style={styles.modalContainer}>
-                    <View style={[styles.modalContent, { backgroundColor: colors.lightBackground }]}>
-                        <ScrollView contentContainerStyle={styles.scrollContent}>
-                            <View style={styles.header}>
-                                <Text style={styles.modalTitle}>{t("assigned_freelancers")}</Text>
-                                <TouchableOpacity onPress={onClose}>
-                                    <Ionicons name="close" size={24} color={colors.primary} />
-                                </TouchableOpacity>
-                            </View>
-
-                            {loading ? (
-                                <ActivityIndicator size="large" color={colors.primary} />
-                            ) : error ? (
-                                <Text style={styles.errorText}>{error}</Text>
-                            ) : assignments.length === 0 ? (
-                                <View style={styles.emptyContainer}>
-                                    <Ionicons name="people-outline" size={40} color={colors.primary} />
-                                    <Text style={styles.emptyText}>{t("no_assignments")}</Text>
+            <SafeAreaView>
+                <Modal visible={visible} transparent animationType="slide">
+                    <View style={styles.modalContainer}>
+                        <View style={[styles.modalContent, { backgroundColor: colors.lightBackground }]}>
+                            <ScrollView contentContainerStyle={styles.scrollContent}>
+                                <View style={styles.header}>
+                                    <Text style={styles.modalTitle}>{t("assigned_freelancers")}</Text>
+                                    <TouchableOpacity style={{ padding: 15 }} onPress={onClose}>
+                                        <Ionicons name="close" size={24} color={colors.primary} />
+                                    </TouchableOpacity>
                                 </View>
-                            ) : (
-                                assignments.map((assignment) => (
-                                    <View key={assignment.id_assign} style={styles.assignmentCard}>
-                                        <View style={styles.assignmentHeader}>
-                                            <Ionicons name="person-circle" size={24} color={colors.primary} />
-                                            <Text style={styles.assignmentName}>
-                                                {assignment.first_name} {assignment.last_name}
-                                            </Text>
-                                        </View>
-                                        <View style={styles.assignmentDetails}>
-                                            <Text style={styles.detailText}>
-                                                ID: {assignment.id}
-                                            </Text>
-                                            <Text style={styles.detailText}>
-                                                {t("assigned_at")}: {new Date(assignment.assigned_at).toLocaleDateString()}
-                                            </Text>
-                                        </View>
-                                        <TouchableOpacity
-                                            style={styles.deleteButton}
-                                            onPress={() => handleDelete(assignment.id_assign)}
-                                        >
-                                            <Ionicons name="trash" size={20} color={colors.warning} />
-                                        </TouchableOpacity>
+
+                                {loading ? (
+                                    <ActivityIndicator size="large" color={colors.primary} />
+                                ) : error ? (
+                                    <Text style={styles.errorText}>{error}</Text>
+                                ) : assignments.length === 0 ? (
+                                    <View style={styles.emptyContainer}>
+                                        <Ionicons name="people-outline" size={40} color={colors.primary} />
+                                        <Text style={styles.emptyText}>{t("no_assignments")}</Text>
                                     </View>
-                                ))
-                            )}
+                                ) : (
+                                    assignments.map((assignment) => (
+                                        <View key={assignment.id_assign} style={styles.assignmentCard}>
+                                            <View style={styles.assignmentHeader}>
+                                                <Ionicons name="person-circle" size={24} color={colors.primary} />
+                                                <Text style={styles.assignmentName}>
+                                                    {assignment.first_name} {assignment.last_name}
+                                                </Text>
+                                            </View>
+                                            <View style={styles.assignmentDetails}>
+                                                <Text style={styles.detailText}>
+                                                    ID: {assignment.id}
+                                                </Text>
+                                                <Text style={styles.detailText}>
+                                                    {t("assigned_at")}: {new Date(assignment.assigned_at).toLocaleDateString()}
+                                                </Text>
+                                            </View>
+                                            <TouchableOpacity
+                                                style={styles.deleteButton}
+                                                onPress={() => handleDelete(assignment.id_assign)}
+                                            >
+                                                <Ionicons name="trash" size={20} color={colors.warning} />
+                                            </TouchableOpacity>
+                                        </View>
+                                    ))
+                                )}
 
-                            <TouchableOpacity
-                                style={styles.assignButton}
-                                onPress={() => setShowAssignModal(true)}
-                            >
-                                <Ionicons name="add" size={20} color="#fff" />
-                                <Text style={styles.buttonText}>{t("assign_new_freelance")}</Text>
-                            </TouchableOpacity>
-                        </ScrollView>
+                                <TouchableOpacity
+                                    style={styles.assignButton}
+                                    onPress={() => handleOpenAssign()}
+                                >
+                                    <Ionicons name="add" size={20} color="#fff" />
+                                    <Text style={styles.buttonText}>{t("assign_new_freelance")}</Text>
+                                </TouchableOpacity>
+                            </ScrollView>
+                        </View>
                     </View>
-                </View>
-            </Modal>
+                </Modal>
 
-            <AssignFreelanceModal
-                visible={showAssignModal}
-                onClose={() => setShowAssignModal(false)}
-                onSuccess={() => {
-                    fetchAssignments();
-                    onRefresh();
-                }}
-                workhouseKey={workhouseKey}
-            />
+                <AssignFreelanceModal
+                    visible={showAssignModal}
+                    onClose={() => setShowAssignModal(false)}
+                    onSuccess={() => {
+                        fetchAssignments();
+                        onRefresh();
+                    }}
+                    workhouseKey={storedKey}
+                />
+            </SafeAreaView>
         </>
     );
 };
@@ -163,7 +183,7 @@ const styles = StyleSheet.create({
         fontWeight: 'bold',
         color: colors.primary,
     },
-     emptyContainer: {
+    emptyContainer: {
         flex: 1,
         justifyContent: 'center',
         alignItems: 'center',

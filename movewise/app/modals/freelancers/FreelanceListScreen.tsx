@@ -164,6 +164,8 @@ const FreelanceListScreen = () => {
                     visible={showCreateModal}
                     onClose={() => setShowCreateModal(false)}
                     onSuccess={loadFreelancers}
+                    isFromFreelance={false}
+                    workHouseKey={null}
                 />
 
                 {/* Modal de edición */}
