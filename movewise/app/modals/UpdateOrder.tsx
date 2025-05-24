@@ -49,13 +49,10 @@ interface UpdateOrderModalProps {
     dispatch_ticket?: string;
   };
 }
-
 export default function UpdateOrderModal() {
   const params = useLocalSearchParams();
   const orderData = params.order ? JSON.parse(params.order as string) : null;
 
-
-export default function UpdateOrderModal({ visible = true, onClose, orderData }: UpdateOrderModalProps) {
   const { t } = useTranslation();
   const [companyList, setCompanyList] = useState<any[]>([]);
   const [stateList, setStateList] = useState<any[]>([]);
