@@ -231,12 +231,13 @@ const styles = StyleSheet.create({
         padding: 16,
     },
     header: {
-        flexDirection: 'row',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-        marginBottom: 20,
-        paddingVertical: 10,
-    },
+            flexDirection: 'row',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+            paddingTop: 40, // Aumenta el alto superior
+            paddingVertical: 10,
+            marginBottom: 20,
+        },
     title: {
         fontSize: 24,
         fontWeight: 'bold',
