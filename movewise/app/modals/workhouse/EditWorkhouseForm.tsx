@@ -23,7 +23,7 @@ interface EditWorkhouseFormProps {
 interface InitialState {
     customer: number | null;
     date: Date;
-    dispatchTicket: any | null; // Usar any temporalmente o definir tipo específico
+    dispatchTicket: any | null; 
 }
 
 const EditWorkhouseForm: React.FC<EditWorkhouseFormProps> = ({ visible, onClose, onSuccess, order }) => {
@@ -47,8 +47,9 @@ const EditWorkhouseForm: React.FC<EditWorkhouseFormProps> = ({ visible, onClose,
         const currentKey = order?.key || '';
         onClose();
         setTimeout(() => {
-            setShowAssignmentsModal(true)
             setKeyForChild(currentKey);
+            setShowAssignmentsModal(true)
+            console.log(`key que se establece al abrir: ${currentKey}`);
         }, 100);
     }
 

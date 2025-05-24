@@ -111,6 +111,8 @@ const AssignFreelanceModal: React.FC<AssignFreelanceModalProps> = ({ visible, on
     };
 
     const handleAssignFreelance = async () => {
+        console.log(`menasje de debugg: data - ${JSON.stringify(freelanceData)} | key : ${workhouseKey}`);
+        
         if (!freelanceData || !workhouseKey) return;
 
         setAssignmentLoading(true);
