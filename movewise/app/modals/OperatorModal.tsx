@@ -121,6 +121,7 @@ const OperatorModal: React.FC<OperatorModalProps> = ({ visible, onClose, orderKe
   };
 
   const handleSave = async () => {
+    console.log("Operadores antes de guardar:", operators);
     try {
       const token = await AsyncStorage.getItem("userToken");
       if (!token) throw new Error(t("authentication_required"));
@@ -140,7 +141,7 @@ const OperatorModal: React.FC<OperatorModalProps> = ({ visible, onClose, orderKe
         order: orderKey,
         rol: op.role?.toLowerCase() || '',
         additional_costs: op.additionalCosts || 0,
-        truck: op.role === "driver" ? op.truckId : null
+        truck: (op.role === "driver" || op.role === "leader") ? op.truckId : null
       }));
 
       // console.log("Payload enviado al backend para la asignación:", payload);
@@ -300,6 +301,7 @@ const OperatorModal: React.FC<OperatorModalProps> = ({ visible, onClose, orderKe
           } : op
         )
       );
+      setTimeout(() => setTruckModalVisible(true), 100);
     }
     setRoleSelectorVisible(false);
   };
