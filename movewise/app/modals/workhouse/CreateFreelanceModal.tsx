@@ -90,6 +90,7 @@ const CreateFreelanceModal: React.FC<CreateFreelanceModalProps> = ({ visible, on
                                     <Ionicons name="close" size={24} color={colors.primary} />
                                 </TouchableOpacity>
                             </View>
+                            <Text style={[styles.modalTitle, { fontSize: 10 }]}>{t("current_order")} {workHouseKey}</Text>
 
                             {/* Campos del formulario con iconos */}
                             <View style={styles.inputContainer}>

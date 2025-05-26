@@ -23,7 +23,7 @@ const IdLoginScreen: React.FC = () => {
 
   const handleLogin = async () => {
     console.log("🔍 ID ingresado:", id_number);
-  
+
     if (!id_number || !id_number.trim()) {
       Toast.show({
         type: "error",
@@ -32,41 +32,44 @@ const IdLoginScreen: React.FC = () => {
       });
       return;
     }
-  
+
     setLoading(true);
-  
+
     try {
       console.log("🔐 Iniciando autenticación...");
       const response = await loginUser({ id_number });
-  
+
       if (!response || !response.token) {
         throw new Error(t("login_failed"));
       }
-  
       console.log("✅ Token recibido:", response.token);
       await AsyncStorage.setItem("userToken", response.token);
-  
+
+      // establecer si es admin en el async
+      await AsyncStorage.setItem("isAdmin", JSON.stringify(response.isAdmin));
+
+
       // Espera corta para asegurar guardado
       await new Promise(resolve => setTimeout(resolve, 300));
-  
-  
+
+
       console.log("🔎 Buscando operador con ID:", id_number);
       const operatorData = await getOperatorByNumberId(id_number);
-  
+
       if (!operatorData || operatorData.error) {
         throw new Error(t("operator_not_found"));
       }
-  
+
       console.log("📦 Datos del operador:", JSON.stringify(operatorData).substring(0, 100) + "...");
-  
+
       await AsyncStorage.setItem("currentUser", JSON.stringify(operatorData));
-  
+
       Toast.show({
         type: "success",
         text1: t("login_successful"),
         text2: `${t("welcome")} ${operatorData.first_name ?? t("user")}`,
       });
-  
+
       router.push("/OperatorHome");
     } catch (error: any) {
       console.error("❌ Error en login operator:", error);
@@ -79,8 +82,8 @@ const IdLoginScreen: React.FC = () => {
       setLoading(false);
     }
   };
-  
-  
+
+
   return (
     <ImageBackground
       source={require("../assets/images/bg_login.jpg")}
@@ -101,8 +104,8 @@ const IdLoginScreen: React.FC = () => {
           onChangeText={setIdNumber}
         />
 
-        <TouchableOpacity 
-          style={styles.button} 
+        <TouchableOpacity
+          style={styles.button}
           onPress={handleLogin}
           disabled={loading}
         >
@@ -112,7 +115,7 @@ const IdLoginScreen: React.FC = () => {
             <Text style={styles.buttonText}>{t("login_button")}</Text>
           )}
         </TouchableOpacity>
-        <TouchableOpacity 
+        <TouchableOpacity
           style={styles.backButton}
           onPress={() => router.replace("/Login")}>
           <Text style={styles.buttonText}>
@@ -157,7 +160,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     marginTop: 16,
   },
-  
+
   input: {
     height: 48,
     borderWidth: 1.5,
@@ -180,5 +183,5 @@ const styles = StyleSheet.create({
     color: "#fff",
     fontSize: 16,
     fontWeight: "bold",
-  }, 
+  },
 });

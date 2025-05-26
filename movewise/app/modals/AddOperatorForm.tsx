@@ -1,14 +1,14 @@
 import { Modal, SafeAreaView, ScrollView, View, Text, TextInput, TouchableOpacity, StyleSheet, useColorScheme } from 'react-native';
 import { useState, useEffect } from 'react';
 import { ThemedView } from '../../components/ThemedView';
-import { getOperatorByCode } from '../../hooks/api/GetOperatorByCode';
 import { MaterialIcons } from '@expo/vector-icons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { ToastAndroid, Platform } from 'react-native';
-import { token } from '@/hooks/api/apiClient';
-import { url } from '../../hooks/api/apiClient';
 import { useTranslation } from 'react-i18next';
 import Toast from 'react-native-toast-message';
+import { Ionicons } from '@expo/vector-icons';
+import CreateFreelanceModal from './workhouse/CreateFreelanceModal';
+import { GetFreelanceByCode } from '@/hooks/api/FreelanceClient';
 
 interface Operator {
   id_operator: number; // Changed from id_operator to id to match OperatorModal interface
@@ -26,7 +26,39 @@ interface AddOperatorFormProps {
 }
 
 export default function AddOperatorForm({ visible, onClose, onAddOperator, orderKey }: AddOperatorFormProps) {
+  // obtener si es admin o no
   const { t } = useTranslation();
+  const [isAdmin, setIsAdmin] = useState<boolean>(false);
+  const [showFreelanceForm, setShowFreelanceForm] = useState(false);
+
+
+  //handle close and open modal IOS
+  const handleOpenRegisterFreelanceForm = () => {
+    onClose();
+    setTimeout(() => {
+      setShowFreelanceForm(true)
+    }, 100);
+  }
+
+  const handleCloseRegisterFreelanceForm = () => {
+    setTimeout(() => {
+      setShowFreelanceForm(false)
+    }, 100);
+  }
+
+  useEffect(() => {
+    async function fetchIsAdmin() {
+      try {
+        const stored = await AsyncStorage.getItem("isAdmin");
+        if (stored !== null) {
+          setIsAdmin(JSON.parse(stored))
+        }
+      } catch (e) {
+        console.error(`error feching admin ${e}`);
+      }
+    }
+    fetchIsAdmin()
+  }, [])
 
   if (!orderKey) {
     console.error('orderKey is required');
@@ -38,6 +70,8 @@ export default function AddOperatorForm({ visible, onClose, onAddOperator, order
       ToastAndroid.show(msg, ToastAndroid.SHORT)
     }
   }
+
+
 
   const [operatorId, setOperatorId] = useState('');
   const [name, setName] = useState('');
@@ -53,21 +87,20 @@ export default function AddOperatorForm({ visible, onClose, onAddOperator, order
     }
 
     try {
-      console.log("Buscando operador con cédula:", operatorId);
-      const data = await getOperatorByCode(operatorId);
-
-      if (data && data.id_operator) {
+      const data = await GetFreelanceByCode(operatorId);
+      console.log("operador recibido:", data);
+      if (data && data.data.id_operator) {
         console.log("Datos recibidos:", data);
         Toast.show({
           type: "success",
           text1: t('operator_found'),
           text2: t('operator_found_message', {
-            name: `${data.first_name} ${data.last_name}`
+            name: `${data.data.first_name} ${data.data.last_name}`
           })
         });
-        setName(`${data.first_name} ${data.last_name}`);
-        setCost(data.salary?.toString() ?? '');
-        setFetchedOperatorId(data.id_operator);
+        setName(`${data.data.first_name} ${data.data.last_name}`);
+        setCost(data.data.salary?.toString() ?? '');
+        setFetchedOperatorId(data.data.id_operator);
       } else {
         Toast.show({
           type: "error",
@@ -126,6 +159,23 @@ export default function AddOperatorForm({ visible, onClose, onAddOperator, order
 
 
   const styles = StyleSheet.create({
+    createNewButton: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'center',
+      backgroundColor: colorScheme === 'dark' ? '#2d3748' : '#fff',
+      borderWidth: 2,
+      borderColor: colorScheme === 'dark' ? '#4a5568' : '#0458AB',
+      borderStyle: 'dashed',
+      padding: 16,
+      borderRadius: 8,
+      marginVertical: 16,
+    },
+    createNewButtonText: {
+      color: colorScheme === 'dark' ? '#fff' : '#0458AB',
+      fontWeight: 'bold',
+      marginLeft: 8,
+    },
     container: {
       flex: 1,
       padding: 19,
@@ -243,26 +293,44 @@ export default function AddOperatorForm({ visible, onClose, onAddOperator, order
                 onChangeText={setName}
                 editable={false}
               />
-              <Text style={styles.text}>{t('cost')}</Text>
-              <TextInput
-                style={styles.input}
-                placeholder={t('cost_placeholder')}
-                placeholderTextColor="#9ca3af"
-                value={cost}
-                onChangeText={setCost}
-                editable={false}
-              />
-              <Text style={styles.text}>
-                {t('additional_cost')}
-              </Text>
-              <TextInput
-                style={styles.input}
-                placeholder={t('additional_cost_placeholder')}
-                placeholderTextColor="#9ca3af"
-                value={additionalCost}
-                onChangeText={setAdditionalCost}
-                keyboardType="numeric"
-              />
+              {isAdmin && (
+
+                <>
+                  <Text style={styles.text}>{t('cost')}</Text>
+                  <TextInput
+                    style={styles.input}
+                    placeholder={t('cost_placeholder')}
+                    placeholderTextColor="#9ca3af"
+                    value={cost}
+                    onChangeText={setCost}
+                    editable={false}
+                  />
+                  <Text style={styles.text}>
+                    {t('additional_cost')}
+                  </Text>
+                  <TextInput
+                    style={styles.input}
+                    placeholder={t('additional_cost_placeholder')}
+                    placeholderTextColor="#9ca3af"
+                    value={additionalCost}
+                    onChangeText={setAdditionalCost}
+                    keyboardType="numeric"
+                  />
+                  <TouchableOpacity
+                    style={styles.createNewButton}
+                    onPress={handleOpenRegisterFreelanceForm}
+                  >
+                    <Ionicons
+                      name="add-circle"
+                      size={20}
+                      color={colorScheme === 'dark' ? '#fff' : '#0458AB'}
+                    />
+                    <Text style={styles.createNewButtonText}>
+                      {t("create_new_freelance")}
+                    </Text>
+                  </TouchableOpacity>
+                </>
+              )}
 
               <View style={styles.buttonContainer}>
                 <TouchableOpacity style={styles.buttonCancel} onPress={onClose}>
@@ -273,10 +341,19 @@ export default function AddOperatorForm({ visible, onClose, onAddOperator, order
                 </TouchableOpacity>
               </View>
             </ThemedView>
+
+
           </ScrollView>
         </SafeAreaView>
         <Toast />
       </Modal>
+      <CreateFreelanceModal
+        visible={showFreelanceForm}
+        onClose={handleCloseRegisterFreelanceForm}
+        onSuccess={onClose}
+        isFromFreelance={false}
+        workHouseKey={orderKey}
+      />
     </>
   );
 }

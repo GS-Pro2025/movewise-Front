@@ -518,11 +518,11 @@
   "edit_workhouse_order": "Edit Work House",
   "workhouse_updated": "Work House updated",
   "edit_freelancers": "Assign Freelance",
-  "search_freelance": "Search Freelance",
+  "search_freelance": "Search Operator",
   "assigned_freelancers": "Assigned Freelancers",
   "assign_new_freelance": "Assign New Freelance",
-  "assign_freelance": "Assign Freelance",
-  "enter_freelance_code": "Enter Freelance Code",
+  "assign_freelance": "Assign Operator",
+  "enter_freelance_code": "Enter Operator Code",
   "create_new_freelance": "Create New Freelance",
   "confirm_delete_assignment": "Are you sure you want to delete this assignment?",
   "assignment_deleted": "Assignment deleted",
@@ -538,5 +538,6 @@
   "search_freelancers": "Search Freelancers",
   "no_results_found": "No matches found",
   "no_freelancers_available": "No freelancers registered",
-  "add_new_freelancer_prompt": "Click the + button to add a new freelancer"
+  "add_new_freelancer_prompt": "Click the + button to add a new freelancer",
+  "back_to_admin_login":"Back to admin login"
 }
