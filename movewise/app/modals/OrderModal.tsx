@@ -15,7 +15,6 @@ import { useTranslation } from "react-i18next";
 import InfoOrderModal from './InfoOrderModal';
 import { useLocalSearchParams } from 'expo-router';
 import { useFocusEffect } from "expo-router"; 
-
 interface OrderModalProps {
   visible: boolean;
   onClose: () => void;

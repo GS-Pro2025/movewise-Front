@@ -544,5 +544,8 @@
   "no_freelancers_available": "No freelancers registered",
   "add_new_freelancer_prompt": "Click the + button to add a new freelancer",
   "back_to_admin_login": "Back to admin login",
-  "update_success":"Update success"
+  "update_success":"Update success",
+  "passwords_do_not_match": "Passwords do not match",
+  "confirm_password_required": "Confirm Password is required.",
+  "confirm_password_placeholder": "Confirm Password",
 }
