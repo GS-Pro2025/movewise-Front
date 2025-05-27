@@ -31,6 +31,8 @@ import * as FileSystem from "expo-file-system";
 import * as Linking from "expo-linking";
 import * as WebBrowser from "expo-web-browser";
 import { WebView } from "react-native-webview";
+import { Ionicons } from "@expo/vector-icons";
+
 const RegistryUser = () => {
   const { t } = useTranslation();
 
@@ -49,8 +51,12 @@ const RegistryUser = () => {
   const [termsVisible, setTermsVisible] = useState(false);
   const [termsHtml, setTermsHtml] = useState("");
 
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
   const [birthDate, setBirthDate] = useState("");
@@ -73,6 +79,7 @@ const RegistryUser = () => {
   const [errors, setErrors] = useState<{
     email?: string;
     password?: string;
+    confirmPassword?: string;
     userName?: string; 
     firstName?: string;
     lastName?: string;
@@ -110,6 +117,7 @@ const RegistryUser = () => {
     const newErrors: {
       email?: string;
       password?: string;
+      confirmPassword?: string;
       userName?: string; 
       firstName?: string;
       lastName?: string;
@@ -128,11 +136,15 @@ const RegistryUser = () => {
     } else if (!/\S+@\S+\.\S+/.test(email)) {
       newErrors.email = t("email_invalid_format");
     }
-
     if (!password.trim()) {
       newErrors.password = t("password_required");
     } else if (password.length < 6) {
       newErrors.password = t("password_min_length");
+    }
+    if (!confirmPassword.trim()) {
+      newErrors.confirmPassword = t("confirm_password_required");
+    } else if (password !== confirmPassword) {
+      newErrors.confirmPassword = t("passwords_do_not_match");
     }
     if (!userName.trim()) {
       newErrors.userName = t("username_required");
@@ -297,14 +309,41 @@ const RegistryUser = () => {
               onChangeText={setUserName}
             />
             {errors.password && <Text style={styles.errorText}>{errors.password}</Text>}
-            <TextInput
-              style={[styles.input, errors.password && styles.inputError]}
-              placeholder={t("password_placeholder")}
-              placeholderTextColor="#888"
-              value={password}
-              onChangeText={setPassword}
-              secureTextEntry
-            />
+            <View style={{ position: "relative" }}>
+              <TextInput
+                style={[styles.input, errors.password && styles.inputError]}
+                placeholder={t("password_placeholder")}
+                placeholderTextColor="#888"
+                value={password}
+                onChangeText={setPassword}
+                secureTextEntry={!showPassword}
+                autoCapitalize="none"
+              />
+              <TouchableOpacity
+                style={{ position: "absolute", right: 16, top: 13 }}
+                onPress={() => setShowPassword((prev) => !prev)}
+              >
+                <Ionicons name={showPassword ? "eye-off" : "eye"} size={24} color="#888" />
+              </TouchableOpacity>
+            </View>
+            {errors.confirmPassword && <Text style={styles.errorText}>{errors.confirmPassword}</Text>}
+            <View style={{ position: "relative" }}>
+              <TextInput
+                style={[styles.input, errors.confirmPassword && styles.inputError]}
+                placeholder={t("confirm_password_placeholder")}
+                placeholderTextColor="#888"
+                value={confirmPassword}
+                onChangeText={setConfirmPassword}
+                secureTextEntry={!showConfirmPassword}
+                autoCapitalize="none"
+              />
+              <TouchableOpacity
+                style={{ position: "absolute", right: 16, top: 13 }}
+                onPress={() => setShowConfirmPassword((prev) => !prev)}
+              >
+                <Ionicons name={showConfirmPassword ? "eye-off" : "eye"} size={24} color="#888" />
+              </TouchableOpacity>
+            </View>
           </View>
           <View style={styles.separator} />
           {/* Resto de campos */}
