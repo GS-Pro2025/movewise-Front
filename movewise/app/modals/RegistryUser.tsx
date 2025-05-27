@@ -34,6 +34,7 @@ import * as Linking from "expo-linking";
 import * as WebBrowser from "expo-web-browser";
 import { WebView } from "react-native-webview";
 import { Ionicons } from "@expo/vector-icons";
+import CrossPlatformImageUpload, { ImageInfo } from './CrossPlatformImageUpload';
 
 const RegistryUser = () => {
   const { t } = useTranslation();
@@ -77,7 +78,8 @@ const RegistryUser = () => {
   const [searchTerm, setSearchTerm] = useState(""); // Added state for search term
   const [isChecked, setIsChecked] = useState(false); // Estado para el checkbox
   const insets = useSafeAreaInsets(); 
-
+  const [profilePhoto, setProfilePhoto] = useState<ImageInfo | null>(null); 
+  
   const [errors, setErrors] = useState<{
     email?: string;
     password?: string;
@@ -93,6 +95,7 @@ const RegistryUser = () => {
     zipCode?: string;
     adressPerson?: string;
     phone?: string;
+    profilePhoto?: string;
   }>({});
 
 
@@ -131,6 +134,7 @@ const RegistryUser = () => {
       zipCode?: string;
       adressPerson?: string;
       phone?: string;
+      profilePhoto?: string;
     } = {};
 
     if (!email.trim()) {
@@ -493,6 +497,13 @@ const RegistryUser = () => {
               keyboardType="numeric"
               value={phone}
               onChangeText={setPhone}
+            />
+            <CrossPlatformImageUpload
+              label={t("profile_photo")}
+              image={profilePhoto}
+              onImageSelected={setProfilePhoto}
+              error={errors.profilePhoto}
+              required={false}
             />
               {/* Checkbox de Términos y Condiciones */}
               <View style={styles.termsContainer}>
