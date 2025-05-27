@@ -576,5 +576,9 @@
   "no_results_found": "No se encontraron resultados",
   "no_freelancers_available": "No hay freelancers registrados",
   "add_new_freelancer_prompt": "Presiona el botón + para agregar uno nuevo",
-  "back_to_admin_login": "Volver"
+  "back_to_admin_login": "Volver",
+  "passwords_do_not_match": "Las contraseñas no coinciden.",
+  "confirm_password_required": "Se requiere confirmar la contraseña.",
+  "confirm_password_placeholder": "Confirmar contraseña",
+  "profile_photo": "Foto de perfil"
 }
