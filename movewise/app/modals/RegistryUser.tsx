@@ -9,7 +9,9 @@ import {
   ImageBackground,
   Modal,
   TouchableWithoutFeedback,
-  Keyboard
+  Keyboard,
+  KeyboardAvoidingView,
+  Platform
 } from "react-native";
 import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
 import { useLocalSearchParams, useRouter } from "expo-router";
@@ -283,6 +285,11 @@ const RegistryUser = () => {
         style={styles.background}
         resizeMode="cover"
       >
+        <KeyboardAvoidingView
+        style={{ flex: 1 }}
+        behavior={Platform.OS === "ios" ? "padding" : "height"}
+        keyboardVerticalOffset={Platform.OS === "ios" ? 0 : 24}
+      >
         <ScrollView contentContainerStyle={styles.container}>
           <Text style={styles.title}>{t("register_user_admin", { companyName: companyData?.name })}</Text>
     
@@ -509,6 +516,7 @@ const RegistryUser = () => {
             </TouchableOpacity>
           </View>
         </ScrollView>
+        </KeyboardAvoidingView>
         {/* Modal con WebView */}
 
         <Modal visible={termsVisible} onRequestClose={() => setTermsVisible(false)}>
@@ -565,14 +573,15 @@ const styles = StyleSheet.create({
     flexGrow: 1,
     paddingHorizontal: 32,
     justifyContent: "center",
-    paddingBottom: 80,
-    marginTop: 50
+    paddingBottom: 10,
+    marginTop: 10
   },
   title: {
     fontSize: 24,
     fontWeight: "bold",
     textAlign: "center",
     marginBottom: 16,
+    marginTop: 80
   },
   input: {
     height: 50,
