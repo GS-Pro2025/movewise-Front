@@ -312,7 +312,7 @@ const InfoOrderModal: React.FC<InfoOrderModalProps> = ({ visible, onClose, order
 
             <View style={styles.cardContent}>
               {renderInfoItem(t("date_info_order"), formatDate(order.date))}
-              {renderInfoItem(t("weight_info_order"), `${order.weight} kg`)}
+              {renderInfoItem(t("weight_info_order"), `${order.weight} Lb`)}
               {renderInfoItem(t("job_info_order"), `#${order.job} - ${order.job_name}`)}
               {renderInfoItem(t("state_info_order"), order.state_usa)}
             </View>

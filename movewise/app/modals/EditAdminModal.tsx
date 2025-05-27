@@ -21,6 +21,9 @@ import { useRouter } from 'expo-router';
 import apiClient from '@/hooks/api/apiClient';
 import { AdminInfo, PersonInfo } from '@/hooks/api/GetAdminByToken';
 import { getPersonIdFromToken } from '@/utils/decodeToken';
+import CrossPlatformImageUpload, { ImageInfo } from './CrossPlatformImageUpload';
+import * as FileSystem from 'expo-file-system';
+
 interface AdminFormData {
   user_name: string;
   password?: string;
@@ -42,6 +45,7 @@ const EditAdminModal: React.FC<EditAdminModalProps> = ({ visible, onClose, admin
   const router = useRouter();
   const colorScheme = useColorScheme();
   const isDarkMode = colorScheme === "dark";
+  const [profilePhoto, setProfilePhoto] = useState<ImageInfo | null>(null);
   const [formData, setFormData] = useState<AdminFormData>({
     user_name: '',
     password: '',
@@ -75,6 +79,9 @@ const EditAdminModal: React.FC<EditAdminModalProps> = ({ visible, onClose, admin
           type_id: admin.person.type_id
         }
       });
+      if (admin.photo) {
+        setProfilePhoto({ uri: admin.photo });
+      }
     }
   }, [admin]);
 
@@ -101,13 +108,36 @@ const EditAdminModal: React.FC<EditAdminModalProps> = ({ visible, onClose, admin
 
     setLoading(true);
     try {
+      let base64Image = null;
+
+      // Convertir imagen a base64
+      if (profilePhoto?.uri) {
+        try {
+          const fileInfo = await FileSystem.getInfoAsync(profilePhoto.uri);
+          if (fileInfo.exists) {
+            const base64 = await FileSystem.readAsStringAsync(profilePhoto.uri, {
+              encoding: FileSystem.EncodingType.Base64,
+            });
+            base64Image = `data:image/jpeg;base64,${base64}`;
+          }
+        } catch (error) {
+          console.error('Error convirtiendo imagen:', error);
+          Toast.show({
+            type: 'error',
+            text1: t('image_conversion_error'),
+          });
+          return;
+        }
+      }
+
       const payload = {
-        ...formData,
+        user_name: formData.user_name,
+        password: formData.password || undefined,
         person: {
           ...formData.person,
           phone: Number(formData.person.phone),
         },
-        password: formData.password || undefined
+        photo: base64Image 
       };
 
       const token = await AsyncStorage.getItem('userToken');
@@ -120,9 +150,11 @@ const EditAdminModal: React.FC<EditAdminModalProps> = ({ visible, onClose, admin
 
       const response = await apiClient.patch(`/profile/${personId}/`, payload, {
         headers: {
-          Authorization: `Bearer ${token}`
+          Authorization: `Bearer ${token}`,
+          'Content-Type': 'application/json', 
         }
       });
+
       if (response.data.session_invalidated) {
         await AsyncStorage.clear();
         Toast.show({
@@ -201,6 +233,14 @@ const EditAdminModal: React.FC<EditAdminModalProps> = ({ visible, onClose, admin
 
         <ScrollView contentContainerStyle={styles.content}>
           <View style={[styles.card, { backgroundColor: cardBackground, borderColor }]}>
+
+            <CrossPlatformImageUpload
+              label={t("profile_photo")}
+              image={profilePhoto}
+              onImageSelected={(image) => setProfilePhoto(image)}
+              required={false}
+            />
+
             <Text style={[styles.sectionTitle, { color: primaryColor }]}>{t("account_settings")}</Text>
 
             <TextInput

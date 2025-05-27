@@ -15,7 +15,6 @@ import CrossPlatformImageUpload from './CrossPlatformImageUpload';
 import { ImageInfo } from './CrossPlatformImageUpload';
 import * as FileSystem from 'expo-file-system';
 import Toast from 'react-native-toast-message';
-import OrderModal from './OrderModal';
 import { CustomerFactory } from '@/hooks/api/CustomerFactoryClient';
 
 interface Job {

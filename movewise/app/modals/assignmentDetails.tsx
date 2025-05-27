@@ -405,7 +405,7 @@ const AssignmentDetails: React.FC<Props> = ({
                                     styles.detailValue,
                                     { color: isDarkMode ? '#FFFFFF' : '#333333' }
                                 ]}>
-                                    {assignment?.data_order.weight} kg
+                                    {assignment?.data_order.weight} Lb
                                 </Text>
                             </View>
                         )}
