@@ -7,6 +7,7 @@ export interface LoginRequest {
 
 export interface LoginResponse {
   token?: string;
+  isAdmin?:boolean;
   name?: string;
   message?: string;
 }

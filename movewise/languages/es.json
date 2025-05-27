@@ -556,11 +556,11 @@
   "workhouse_updated": "Work house actualizado",
   "edit_freelancers": "Asignar Freelance ",
   "assigned_freelancers": "Freelances asignados",
-  "assign_new_freelance": "Asignar nuevo Freelance",
-  "assign_freelance": "Asignar Freelance / Operator",
-  "enter_freelance_code": "Ingresar código de Freelance",
+  "assign_new_freelance": "Asignar nuevo Operador",
+  "assign_freelance": "Asignar Operador",
+  "enter_freelance_code": "Ingresar código de operador",
   "create_new_freelance": "Crear nuevo Freelance",
-  "search_freelance": "Buscar Freelance",
+  "search_freelance": "Buscar Operador",
   "confirm_delete_assignment": "Esta seguro de eliminar esta asignacion?",
   "assignment_deleted": "Asignacion Eliminada",
   "no_assignments": "Sin asignaciones",
@@ -575,5 +575,6 @@
   "search_freelancers": "Buscar Freelancer",
   "no_results_found": "No se encontraron resultados",
   "no_freelancers_available": "No hay freelancers registrados",
-  "add_new_freelancer_prompt": "Presiona el botón + para agregar uno nuevo"
+  "add_new_freelancer_prompt": "Presiona el botón + para agregar uno nuevo",
+  "back_to_admin_login": "Volver"
 }

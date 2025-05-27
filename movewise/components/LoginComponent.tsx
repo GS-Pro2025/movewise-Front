@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from "react";
-import jwtDecode from "jwt-decode";
 import {
   View,
   Text,
@@ -103,6 +102,7 @@ const LoginComponent: React.FC = () => {
       const token = response.token;
       console.log("✅ Token recibido:", token);
       await AsyncStorage.setItem("userToken", token);
+      await AsyncStorage.setItem("isAdmin", JSON.stringify(response.isAdmin));
 
       // 2. Decodificar token
       const personId = getPersonIdFromToken(token);

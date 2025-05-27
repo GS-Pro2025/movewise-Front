@@ -5,6 +5,7 @@ export interface LoginRequest {
 }
 
 export interface LoginResponse {
+  isAdmin?:boolean;
   token?: string;
   name?: string;
   message?: string;
