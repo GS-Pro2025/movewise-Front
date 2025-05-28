@@ -100,14 +100,14 @@ const LoginComponent: React.FC = () => {
         throw new Error(t("login_failed"));
       }
       const token = response.token;
-      console.log("✅ Token recibido:", token);
+      // console.log("✅ Token recibido:", token);
       await AsyncStorage.setItem("userToken", token);
       await AsyncStorage.setItem("isAdmin", JSON.stringify(response.isAdmin));
 
       // 2. Decodificar token
       const personId = getPersonIdFromToken(token);
       const adminFlag = isAdmin(token);
-      console.log("🔍 person_id extraído:", personId, "– isAdmin:", adminFlag);
+      // console.log("🔍 person_id extraído:", personId, "– isAdmin:", adminFlag);
 
       // 3. Obtener datos del operador/admin
       // Asumo que tu API requiere el person_id como string:
@@ -115,7 +115,7 @@ const LoginComponent: React.FC = () => {
       if (!operatorData || operatorData.error) {
         throw new Error(t("admin_not_found"));
       }
-      console.log("📦 Datos del admin:", operatorData);
+      // console.log("📦 Datos del admin:", operatorData);
 
       // 4. Guardar en AsyncStorage
       await AsyncStorage.setItem("currentUser", JSON.stringify(operatorData));

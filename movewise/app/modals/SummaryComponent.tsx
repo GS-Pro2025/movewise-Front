@@ -32,7 +32,7 @@ const SummaryCostCard: React.FC = ({}) => {
         }
 
         const response = await getSummary(order as string);
-        console.log(t("api_response"), response);
+        // console.log(t("api_response"), response);
 
         // Accede a los datos dentro de la propiedad `data`
         const data = response.data;
@@ -60,7 +60,7 @@ const SummaryCostCard: React.FC = ({}) => {
 
   // Observa los cambios en el estado summary
   useEffect(() => {
-    console.log(t("updated_summary"), summary);
+    // console.log(t("updated_summary"), summary);
   }, [summary]);
 
   if (loading) {

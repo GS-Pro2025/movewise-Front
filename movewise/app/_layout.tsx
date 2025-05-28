@@ -39,8 +39,9 @@ export default function RootLayout() {
         <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
           <Stack screenOptions={{ headerShown: false }}>
             <Stack.Screen name="index" />
+            {/* <Stack.Screen name="home" /> */}
             <Stack.Screen name="+not-found" />
-            <Stack.Screen name="/modals/OperatorView" options={{ presentation: 'modal' }} />
+            <Stack.Screen name="screens/operators/OperatorView" options={{ presentation: 'modal' }} />
           </Stack>
           <StatusBar style="auto" />
         </ThemeProvider>

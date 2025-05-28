@@ -48,8 +48,8 @@ const UpdateOrderFormApi = () => {
       const data = await response.json();
 
       if (!response.ok) {
-        console.log('Error response:', response);
-        console.log('Error data:', data);
+        // console.log('Error response:', response);
+        // console.log('Error data:', data);
         setErrorData(data);
         return { success: false, errorMessage: data.messDev || 'Error updating the order' };
       }

@@ -516,11 +516,13 @@
   "upload_evidence": "Upload evidence",
   "operator_saved_succesfully": "Operator saved successfully",
   "select_customer": "Select customer",
-  "create_workhouse_error": "create workhouse error",
-  "workhouse_created": "Workhouse created",
-  "no_workhouse_orders": "No workhouse orders",
-  "edit_workhouse_order": "Edit Work House",
-  "workhouse_updated": "Work House updated",
+  "workhouse":"WareHouse",
+  "new_workhouse_order": "New WareHouse",
+  "create_workhouse_error": "create WareHouse error",
+  "workhouse_created": "WareHouse created",
+  "no_workhouse_orders": "No Warehouse orders",
+  "edit_workhouse_order": "Edit WareHouse",
+  "workhouse_updated": "WareHouse updated",
   "edit_freelancers": "Assign Freelance",
   "search_freelance": "Search Operator",
   "assigned_freelancers": "Assigned Freelancers",
@@ -547,5 +549,7 @@
   "update_success":"Update success",
   "passwords_do_not_match": "Passwords do not match",
   "confirm_password_required": "Confirm Password is required.",
-  "confirm_password_placeholder": "Confirm Password"
+  "confirm_password_placeholder": "Confirm Password",
+  "assign_new_operator":"Assign New Operator",
+  "assignment_created":"Assignment Created"
 }

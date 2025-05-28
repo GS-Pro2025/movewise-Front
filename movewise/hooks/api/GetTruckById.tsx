@@ -15,7 +15,6 @@ export const getTruckById = async (truck_id: number) => {
                 sms: "truck not found"
             }
         }
-        console.log('truck', response.data)
         return response.data;
     } catch {
         return null;

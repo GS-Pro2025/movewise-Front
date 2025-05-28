@@ -3,14 +3,16 @@ import { useState, useEffect, useCallback } from "react";
 import { Ionicons } from '@expo/vector-icons';
 import { GestureHandlerRootView, Swipeable } from "react-native-gesture-handler";
 import { TouchableHighlight } from "react-native";
-import { ListTruck, DeleteTruck, UpdateTruckStatus } from "../hooks/api/TruckClient"; // Import TruckClient methods
-import CreateTruckScreen from "../app/modals/CreateTruck";
-import UpdateTruckModal from "../app/modals/UpdateTruckModal"; // Modal for updating a truck
-import CreateTruckModal from "../app/modals/CreateTruck";
+import { ListTruck, DeleteTruck, UpdateTruckStatus, CreateTruck } from "../hooks/api/TruckClient"; // Import TruckClient methods
+// import CreateTruckScreen from "../app/modals/CreateTruck";
+
+
 import Toast from "react-native-toast-message";
 import Truck from "@/hooks/api/TruckClient"
 import { useTranslation } from "react-i18next";
 import { router } from "expo-router";
+import UpdateTruckModal from "@/app/screens/trucks/UpdateTruckModal";
+import CreateTruckModal from "@/app/screens/trucks/CreateTruckModal";
 
 interface ListTruckModalProps {
   visible: boolean;

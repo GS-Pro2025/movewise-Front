@@ -21,7 +21,7 @@ import { useRouter } from 'expo-router';
 import apiClient from '@/hooks/api/apiClient';
 import { AdminInfo, PersonInfo } from '@/hooks/api/GetAdminByToken';
 import { getPersonIdFromToken } from '@/utils/decodeToken';
-import CrossPlatformImageUpload, { ImageInfo } from './CrossPlatformImageUpload';
+import CrossPlatformImageUpload, { ImageInfo } from '@/components/CrossPlatformImageUpload';
 import * as FileSystem from 'expo-file-system';
 
 interface AdminFormData {

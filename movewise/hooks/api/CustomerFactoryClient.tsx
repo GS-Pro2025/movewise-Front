@@ -19,7 +19,7 @@ export interface Customer {
 export const CustomerFactory = async () => {
   try {
     const response = await apiClient.get('/customer-factories/');
-    console.log("lista de customers", response.data);
+    // console.log("lista de customers", response.data);
     return response.data;
   } catch (error) {
     console.error('Error to get customer factory:', error);

@@ -10,7 +10,6 @@ interface WorkCost {
 export const BulkCreateWorkCost = async (data: WorkCost[]): Promise<WorkCost[]> => {
     try {
         const response = await apiClient.post("/workCost/bulkCreate/", data);
-        console.log("Response from BulkCreateWorkCost:", response.data);
         return response.data;
     } catch (error) {
         console.error("Error creating work costs:", error);
