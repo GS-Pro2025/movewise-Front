@@ -585,5 +585,7 @@
   "update_success":"Actualizacion Exitosa",
   "passwords_do_not_match": "Las contraseñas no coinciden.",
   "confirm_password_required": "Se requiere confirmar la contraseña.",
-  "confirm_password_placeholder": "Confirmar contraseña"
+  "confirm_password_placeholder": "Confirmar contraseña",
+  "assign_new_operator":"Asignar nuevo Operador",
+  "assignment_created":"Asignacion Creada"
 }

@@ -1,4 +1,4 @@
-//formulario de edicion de workhouse
+// formulario de edicion de workhouse
 import { useState, useEffect } from 'react';
 import { View, Text, Modal, TouchableOpacity, StyleSheet, Alert, ActivityIndicator, ScrollView } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
@@ -11,22 +11,25 @@ import CrossPlatformImageUpload from '@/components/CrossPlatformImageUpload';
 import { CustomerFactory } from '@/hooks/api/CustomerFactoryClient';
 import { Order } from './ListWorkHouse';
 import { UpdateWorkhouseOrder } from '@/hooks/api/UpdateWorkhouseOrder';
-import EditAssignmentsModal from './EditAssignmentsModal'; //modal to show assigned operators to work house 
+import { useRouter } from 'expo-router'; // Importamos el router
+import FreelanceAssignmentScreen from './freelance-assignment';
 
 interface EditWorkhouseFormProps {
     visible: boolean;
     onClose: () => void;
     onSuccess: () => void;
     order: Order | null;
+    onOpenAssignment: (order: Order) => void;
 }
 
 interface InitialState {
     customer: number | null;
     date: Date;
-    dispatchTicket: any | null; 
+    dispatchTicket: any | null;
 }
 
-const EditWorkhouseForm: React.FC<EditWorkhouseFormProps> = ({ visible, onClose, onSuccess, order }) => {
+const EditWorkhouseForm: React.FC<EditWorkhouseFormProps> = ({ visible, onClose, onSuccess, order, onOpenAssignment }) => {
+    const router = useRouter(); // Añadimos el router
     const { t } = useTranslation();
     const [date, setDate] = useState(new Date());
     const [customerFactories, setCustomerFactories] = useState<any[]>([]);
@@ -35,31 +38,23 @@ const EditWorkhouseForm: React.FC<EditWorkhouseFormProps> = ({ visible, onClose,
     const [loading, setLoading] = useState(false);
     const [validationError, setValidationError] = useState<string | null>(null);
     const [showDatePicker, setShowDatePicker] = useState(false);
-    const [showAssignmentsModal, setShowAssignmentsModal] = useState(false);
-    const [keyForChild, setKeyForChild] = useState('');
+    const [assignmentModalVisible, setAssignmentModalVisible] = useState(false);
     const [initialState, setInitialState] = useState<InitialState>({
         customer: null,
         date: new Date(),
         dispatchTicket: null
     });
 
-    const handleOpenAssignmentModal = () => {
-        const currentKey = order?.key || '';
+    const handleCloseModal = () => {
+        visible = false;
         onClose();
-        setTimeout(() => {
-            setKeyForChild(currentKey);
-            setShowAssignmentsModal(true)
-            // console.log(`key que se establece al abrir: ${currentKey}`);
-        }, 100);
-    }
+    };
 
-
-    const handleCloseAssignmentModal = () => {
-        onClose();
-        setTimeout(() => {
-            setShowAssignmentsModal(false)
-        }, 100);
-    }
+    const handleOpenAssignmentScreen = () => {
+        if (order) {
+            setAssignmentModalVisible(true);
+        }
+    };
 
     const [hasChanges, setHasChanges] = useState(false);
 
@@ -76,7 +71,7 @@ const EditWorkhouseForm: React.FC<EditWorkhouseFormProps> = ({ visible, onClose,
                     setInitialState({
                         customer: order.customer_factory,
                         date: initialDate,
-                        dispatchTicket: ticket // { uri: string } | null
+                        dispatchTicket: ticket
                     });
 
                     setSelectedCustomer(order.customer_factory);
@@ -89,7 +84,6 @@ const EditWorkhouseForm: React.FC<EditWorkhouseFormProps> = ({ visible, onClose,
         };
         fetchCompanies();
     }, [order]);
-
 
     useEffect(() => {
         const changesDetected =
@@ -143,112 +137,111 @@ const EditWorkhouseForm: React.FC<EditWorkhouseFormProps> = ({ visible, onClose,
     };
 
     return (
-        <>
-            <Modal visible={visible} transparent animationType="slide">
-                <View style={styles.modalContainer}>
-                    <View style={[styles.modalContent, { backgroundColor: colors.lightBackground }]}>
+        <Modal visible={visible} transparent animationType="slide">
+            <View style={styles.modalContainer}>
+                <View style={[styles.modalContent, { backgroundColor: colors.lightBackground }]}>
+                    <ScrollView
+                        contentContainerStyle={styles.scrollContent}
+                        showsVerticalScrollIndicator={false}
+                    >
+                        <View style={styles.header}>
+                            <Text style={styles.modalTitle}>{t("edit_workhouse_order")}</Text>
+                            <TouchableOpacity style={{ padding: 15 }} onPress={() => onClose()}>
+                                <Ionicons name="close" size={24} color={colors.primary} />
+                            </TouchableOpacity>
+                        </View>
 
-                        <ScrollView
-                            contentContainerStyle={styles.scrollContent}
-                            showsVerticalScrollIndicator={false}
+                        {/* Selector de Customer Factory */}
+                        <View style={styles.dropdownContainer}>
+                            <Text style={styles.dropdownLabel}>{t("customer_factory")}</Text>
+                            <Picker
+                                selectedValue={selectedCustomer}
+                                onValueChange={(itemValue) => setSelectedCustomer(itemValue)}
+                                style={styles.picker}
+                                dropdownIconColor={colors.primary}
+                            >
+                                <Picker.Item label={t("select_customer")} value={null} />
+                                {customerFactories.map(customer => (
+                                    <Picker.Item
+                                        key={customer.id_factory}
+                                        label={customer.name}
+                                        value={customer.id_factory}
+                                    />
+                                ))}
+                            </Picker>
+                        </View>
+
+                        {/* Selector de Fecha */}
+                        <TouchableOpacity
+                            style={styles.datePicker}
+                            onPress={() => setShowDatePicker(true)}
                         >
+                            <Ionicons name="calendar" size={20} color={colors.primary} />
+                            <Text style={styles.dateText}>
+                                {date.toLocaleDateString()}
+                            </Text>
+                        </TouchableOpacity>
 
-                            <View style={styles.header}>
-                                <Text style={styles.modalTitle}>{t("edit_workhouse_order")}</Text>
-                                <TouchableOpacity style={{ padding: 15 }} onPress={() => onClose()}>
-                                    <Ionicons name="close" size={24} color={colors.primary} />
-                                </TouchableOpacity>
-                            </View>
-
-                            {/* Selector de Customer Factory */}
-                            <View style={styles.dropdownContainer}>
-                                <Text style={styles.dropdownLabel}>{t("customer_factory")}</Text>
-                                <Picker
-                                    selectedValue={selectedCustomer}
-                                    onValueChange={(itemValue) => setSelectedCustomer(itemValue)}
-                                    style={styles.picker}
-                                    dropdownIconColor={colors.primary}
-                                >
-                                    <Picker.Item label={t("select_customer")} value={null} />
-                                    {customerFactories.map(customer => (
-                                        <Picker.Item
-                                            key={customer.id_factory}
-                                            label={customer.name}
-                                            value={customer.id_factory}
-                                        />
-                                    ))}
-                                </Picker>
-                            </View>
-
-                            {/* Selector de Fecha */}
-                            <TouchableOpacity
-                                style={styles.datePicker}
-                                onPress={() => setShowDatePicker(true)}
-                            >
-                                <Ionicons name="calendar" size={20} color={colors.primary} />
-                                <Text style={styles.dateText}>
-                                    {date.toLocaleDateString()}
-                                </Text>
-                            </TouchableOpacity>
-
-                            {showDatePicker && (
-                                <DateTimePicker
-                                    value={date}
-                                    mode="date"
-                                    display="spinner"
-                                    onChange={(event, selectedDate) => {
-                                        setShowDatePicker(false);
-                                        if (selectedDate) setDate(selectedDate);
-                                    }}
-                                />
-                            )}
-                            {/* Upload de Imagen */}
-                            <CrossPlatformImageUpload
-                                label={t("dispatch_ticket")}
-                                image={dispatchTicket}
-                                onImageSelected={setDispatchTicket}
-                                maxWidth={1024}
-                                maxHeight={1024}
-                                aspect={[4, 3]}
+                        {showDatePicker && (
+                            <DateTimePicker
+                                value={date}
+                                mode="date"
+                                display="spinner"
+                                onChange={(event, selectedDate) => {
+                                    setShowDatePicker(false);
+                                    if (selectedDate) setDate(selectedDate);
+                                }}
                             />
+                        )}
 
-                            {validationError && (
-                                <Text style={styles.errorText}>{validationError}</Text>
-                            )}
+                        {/* Upload de Imagen */}
+                        <CrossPlatformImageUpload
+                            label={t("dispatch_ticket")}
+                            image={dispatchTicket}
+                            onImageSelected={setDispatchTicket}
+                            maxWidth={1024}
+                            maxHeight={1024}
+                            aspect={[4, 3]}
+                        />
+
+                        {validationError && (
+                            <Text style={styles.errorText}>{validationError}</Text>
+                        )}
+
+                        <TouchableOpacity
+                            style={styles.editFreelancersButton}
+                            onPress={handleOpenAssignmentScreen}
+                        >
+                            <Ionicons name="people-outline" size={16} color={colors.primary} />
+                            <Text style={styles.editFreelancersText}>{t("edit_freelancers")}</Text>
+                        </TouchableOpacity>
+
+                        {hasChanges && (
                             <TouchableOpacity
-                                style={styles.editFreelancersButton}
-                                onPress={() => handleOpenAssignmentModal()}
+                                style={styles.submitButton}
+                                onPress={handleSubmit}
+                                disabled={loading}
                             >
-                                <Ionicons name="people-outline" size={16} color={colors.primary} />
-                                <Text style={styles.editFreelancersText}>{t("edit_freelancers")}</Text>
+                                {loading ? (
+                                    <ActivityIndicator color="#fff" />
+                                ) : (
+                                    <Text style={styles.buttonText}>{t("save_changes")}</Text>
+                                )}
                             </TouchableOpacity>
-                            {hasChanges && (
-                                <TouchableOpacity
-                                    style={styles.submitButton}
-                                    onPress={handleSubmit}
-                                    disabled={loading}
-                                >
-                                    {loading ? (
-                                        <ActivityIndicator color="#fff" />
-                                    ) : (
-                                        <Text style={styles.buttonText}>{t("save_changes")}</Text>
-                                    )}
-                                </TouchableOpacity>
-                            )}
-                        </ScrollView>
-                    </View>
+                        )}
+                    </ScrollView>
+                    <FreelanceAssignmentScreen
+                        workhouseKey={order?.key}
+                        visible={assignmentModalVisible}
+                        onClose={() => setAssignmentModalVisible(false)}
+                        onSuccess={() => {
+                            setAssignmentModalVisible(false);
+                            Alert.alert(t("success"), t("assignment_updated"));
+                        }}
+                    />
                 </View>
-            </Modal>
-            <EditAssignmentsModal
-                visible={showAssignmentsModal}
-                onClose={() => {
-                    setShowAssignmentsModal(false);
-                    setKeyForChild(''); 
-                }}
-                workhouseKey={keyForChild}
-                onRefresh={onSuccess}
-            />
-        </>
+            </View>
+        </Modal>
     );
 };
 

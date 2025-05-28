@@ -64,6 +64,18 @@ const WorkhouseModal: React.FC<WorkhouseModalProps> = ({ visible, onClose }) => 
   const isDarkMode = colorScheme === "dark";
   const router = useRouter();
 
+  const handleOpenAssignmentScreen = (order: Order) => {
+    // Cerramos el modal actual
+    onClose();
+
+    // Navegamos después de un pequeño retraso para asegurar el desmontaje
+    setTimeout(() => {
+      router.push({
+        pathname: '/freelance-assignment',
+        params: { workhouseKey: order.key }
+      });
+    }, 50);
+  };
 
   const loadOrders = useCallback(async () => {
     try {
@@ -348,15 +360,13 @@ const WorkhouseModal: React.FC<WorkhouseModalProps> = ({ visible, onClose }) => 
         {/* Modal para editar workhouse */}
         <EditWorkhouseForm
           visible={editModalVisible}
-          onClose={() => {
-            setEditModalVisible(false);
-            setSelectedOrderForEdit(null);
-          }}
+          onClose={() => setEditModalVisible(false)} // Pasamos función directa
           onSuccess={() => {
             loadOrders();
             setEditModalVisible(false);
           }}
           order={selectedOrderForEdit}
+          onOpenAssignment={handleOpenAssignmentScreen} // Pasamos la función correcta
         />
 
         <InfoOrderModal

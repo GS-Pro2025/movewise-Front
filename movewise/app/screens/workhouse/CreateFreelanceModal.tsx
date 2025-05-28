@@ -55,7 +55,7 @@ const CreateFreelanceModal: React.FC<CreateFreelanceModalProps> = ({ visible, on
                     const base64 = await FileSystem.readAsStringAsync(image.uri, {
                         encoding: FileSystem.EncodingType.Base64,
                     });
-                    formData.append(fieldName, `data:${image.type || 'image/jpeg'};base64,${base64}`);
+                    formData.append(fieldName, `data:${image.type || 'image/jpg'};base64,${base64}`);
                 }
             };
 
