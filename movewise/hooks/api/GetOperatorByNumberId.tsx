@@ -1,7 +1,6 @@
 import apiClient from "./apiClient";
 
 export const getOperatorByNumberId = async (number_id: string) => {
-  console.log("📨 ID recibido para búsqueda de operador:", number_id);
   try {
     const response = await apiClient.get(`/operators/${number_id}/`);
     return response.data;

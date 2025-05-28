@@ -7,9 +7,8 @@ export const PostOperator = async (formData: FormData) => {
   try {
     const token = await AsyncStorage.getItem("userToken");
     if (!token) throw new Error("Token not found");
-    console.log(`ruta de envio operador: ${url}/operators/create/`);
-    console.log(`info enviada como cuerpo: ${JSON.stringify(formData)}`);
     
+    // Agregar orderKey al formulario
     
     const response = await axios.post(`${url}/operators/create/`, formData, {
       headers: {
@@ -18,7 +17,6 @@ export const PostOperator = async (formData: FormData) => {
       },
     });
 
-    console.log("Operator Created:", response.data);
     return response.data;
   } catch (error: any) {
     console.error("Error creating operator:", error.response?.data || error.message);
@@ -26,8 +24,6 @@ export const PostOperator = async (formData: FormData) => {
     // Handle different types of errors
     if (error.response) {
       const errorData = error.response.data;
-      console.log('Full error response:', errorData);
-
       // Handle validation errors
       if (errorData.errors) {
         let errorMessage = 'Validation Errors:\n';
@@ -80,7 +76,6 @@ export const PostOperator = async (formData: FormData) => {
 
 
 export const UpdateOperator = async (id: number, formData: FormData) => {
-  console.log('opeartor to edit: '+ formData)
   try {
     const token = await AsyncStorage.getItem("userToken");
     if (!token) throw new Error("Token not found");

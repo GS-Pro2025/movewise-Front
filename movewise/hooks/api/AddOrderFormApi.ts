@@ -14,8 +14,8 @@ const AddOrderformApi = () => {
 
     try {
       const token = await AsyncStorage.getItem("userToken"); // Obtener el token de AsyncStorage
-      console.log(`token al enviar orden: ${token}`);
-      console.log(`ruta que se usa: ${url}orders/`);
+      // console.log(`token al enviar orden: ${token}`);
+      // console.log(`ruta que se usa: ${url}orders/`);
       
       const response = await fetch(url + '/orders/', {
         method: 'POST',
@@ -29,7 +29,7 @@ const AddOrderformApi = () => {
       const data = await response.json();
 
       if (!response.ok) {
-        console.log('error', response);
+        // console.log('error', response);
         const errorMessage = data.error || 'Error al guardar la orden';
         throw new Error(errorMessage);
       }

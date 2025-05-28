@@ -1,0 +1,629 @@
+import React, { useState, useEffect } from 'react';
+import { View, Text, FlatList, TouchableOpacity, StyleSheet, Modal, Image, ActivityIndicator, SafeAreaView, Alert } from 'react-native';
+import { GestureHandlerRootView, Swipeable } from "react-native-gesture-handler";
+import { Ionicons } from '@expo/vector-icons';
+import { ListOperators } from '@/hooks/api/Get_listOperator';
+import { SoftDeleteOperator } from '@/hooks/api/SoftDeleteOperator'; // Import the new function
+import CreateOperator from './CreateOperator';
+import { Operator, FormData } from './Types';
+import { router, useGlobalSearchParams } from 'expo-router';
+import { useTranslation } from 'react-i18next';
+import { Toast, ALERT_TYPE } from 'react-native-alert-notification';
+
+// Interface for pagination response
+interface PaginatedResponse {
+  count: number;
+  next: string | null;
+  previous: string | null;
+  results: Operator[];
+}
+
+const OperatorList = () => {
+  const { t } = useTranslation(); // Hook para traducción
+  const { isEdit } = useGlobalSearchParams<{ isEdit: string }>();
+  const isCreating = isEdit === 'false'; // ahora esto sí funciona
+  console.log(isCreating);
+  const [successModalVisible, setSuccessModalVisible] = useState(false);
+  const [operators, setOperators] = useState<Operator[]>([]);
+  const [selectedOperator, setSelectedOperator] = useState<Operator | null>(null);
+  const [modalVisible, setModalVisible] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [loadingMore, setLoadingMore] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [pagination, setPagination] = useState<{
+    count: number;
+    next: string | null;
+    previous: string | null;
+  }>({
+    count: 0,
+    next: null,
+    previous: null,
+  });
+  const [currentPage, setCurrentPage] = useState<number>(1);
+  // Track open swipeable to close it when needed
+  const [activeSwipeable, setActiveSwipeable] = useState<Swipeable | null>(null);
+
+  useEffect(() => {
+    if (!isCreating) {
+      loadOperators();
+    }
+  }, [isCreating]);
+
+  //open if IsCREATing mode
+  useEffect(() => {
+    if (isCreating) {
+      setModalVisible(true);
+    }
+  }, [isCreating]);
+
+  const loadOperators = async (page = 1, reset = true) => {
+    try {
+      if (page === 1) {
+        setLoading(true);
+      } else {
+        setLoadingMore(true);
+      }
+
+      // Assuming your API supports page parameter
+      const response = await ListOperators(page);
+
+      // Handle different response structures
+      if (response) {
+        let newOperators: Operator[] = [];
+        let paginationInfo = { ...pagination };
+
+        if (response.results && Array.isArray(response.results)) {
+          // Standard pagination structure
+          newOperators = response.results;
+          paginationInfo = {
+            count: response.count || 0,
+            next: response.next,
+            previous: response.previous,
+          };
+        } else if (Array.isArray(response)) {
+          // Direct array response
+          newOperators = response;
+          // Without pagination info, we can't determine if there are more pages
+          paginationInfo = {
+            count: response.length,
+            next: null,
+            previous: null,
+          };
+        }
+
+        setPagination(paginationInfo);
+
+        if (reset) {
+          setOperators(newOperators);
+        } else {
+          setOperators(prev => [...prev, ...newOperators]);
+        }
+
+        setCurrentPage(page);
+        setError(null);
+      }
+    } catch (error) {
+      console.error(t("error_loading_operators"), error);
+      setError(t("could_not_load_operators"));
+    } finally {
+      setLoading(false);
+      setLoadingMore(false);
+    }
+  };
+
+  const loadMoreOperators = () => {
+    if (pagination.next && !loadingMore && !loading) {
+      loadOperators(currentPage + 1, false);
+    }
+  };
+
+  // Function to map Operator to FormData
+  const mapOperatorToFormData = (op: Operator): FormData => ({
+    id_operator: op.id_operator ?? 0,
+    first_name: op.first_name ?? '',
+    last_name: op.last_name ?? '',
+    birth_date: op.birth_date ?? '',
+    type_id: op.type_id ?? '',
+    id_number: op.id_number != null ? String(op.id_number) : '',
+    address: op.address ?? '',
+    phone: op.phone ?? '',
+    email: op.email ?? '',
+    number_licence: op.number_licence ?? '',
+    zipcode: op.zipcode ?? '', 
+    code: op.code ?? '',
+    has_minors: Array.isArray(op.sons) && op.sons.length > 0,
+    n_children: op.n_children ?? 0,
+    sons: Array.isArray(op.sons)
+      ? op.sons.map(son => ({
+          name: son.name ?? '',
+          birth_date: son.birth_date ?? '',
+          gender: son.gender ?? 'M',
+        }))
+      : [],
+    salary: op.salary ?? '',
+    size_t_shift: op.size_t_shift ?? '',
+    name_t_shift: op.name_t_shift ?? '',
+    photo: op.photo ? { uri: op.photo, name: '', type: '' } : null,
+    license_front: op.license_front ? { uri: op.license_front, name: '', type: '' } : null,
+    license_back: op.license_back ? { uri: op.license_back, name: '', type: '' } : null,
+    status: op.status ?? '',
+  });
+
+  // Handler for soft delete
+  const handleSoftDelete = async (operatorId: number) => {
+    try {
+      // Close the active swipeable if any
+      if (activeSwipeable) {
+        activeSwipeable.close();
+        setActiveSwipeable(null);
+      }
+      
+      // Show confirmation dialog
+      Alert.alert(
+        t("delete_operator"),
+        t("delete_operator_confirmation"),
+        [
+          {
+            text: t("cancel"),
+            style: "cancel"
+          },
+          {
+            text: t("delete"),
+            style: "destructive",
+            onPress: async () => {
+              try {
+                // Show loading indicator or disable UI while deleting
+                setLoading(true);
+                
+                // Call the API
+                const response = await SoftDeleteOperator(operatorId);
+                
+                // Show success message
+                Alert.alert(
+                  t("success"),
+                  t("operator_deleted_successfully"),
+                  [{ text: t("ok") }]
+                );
+                
+                // Refresh the operator list
+                loadOperators();
+              } catch (error) {
+                console.error('Error deleting operator:', error);
+                Alert.alert(
+                  t("error"),
+                  t("failed_to_delete_operator"),
+                  [{ text: t("ok") }]
+                );
+              } finally {
+                setLoading(false);
+              }
+            }
+          }
+        ]
+      );
+    } catch (error) {
+      console.error('Error in delete handler:', error);
+      Alert.alert(
+        t("error"),
+        t("an_unexpected_error_occurred"),
+        [{ text: t("ok") }]
+      );
+    }
+  };
+
+  const renderLeftActions = (operator: Operator) => (
+    <View style={styles.swipeActions}>
+      <TouchableOpacity
+        style={styles.editButton}
+        onPress={() => {
+          setSelectedOperator(operator);
+          setModalVisible(true);
+        }}
+      >
+        <Ionicons name="create-outline" size={24} color="#fff" />
+      </TouchableOpacity>
+    </View>
+  );
+
+  // Add the right actions for delete functionality
+  const renderRightActions = (operator: Operator) => (
+    <View style={styles.swipeActions}>
+      <TouchableOpacity
+        style={styles.deleteButton}
+        onPress={() => {
+          if (operator.id_operator) {
+            handleSoftDelete(operator.id_operator);
+          }
+        }}
+      >
+        <Ionicons name="trash-outline" size={24} color="#fff" />
+      </TouchableOpacity>
+    </View>
+  );
+
+  const handleBackPress = () => {
+    if (router && router.back) {
+      router.back();
+    }
+  };
+
+  // Update renderOperatorItem to include the renderRightActions and track the active swipeable
+  const renderOperatorItem = ({ item }: { item: Operator }) => {
+    let swipeableRef: Swipeable | null = null;
+    
+    return (
+      <GestureHandlerRootView>
+        <Swipeable
+          ref={ref => {
+            swipeableRef = ref;
+          }}
+          renderLeftActions={() => renderLeftActions(item)}
+          renderRightActions={() => renderRightActions(item)}
+          onSwipeableOpen={() => {
+            // Close previously opened swipeable
+            if (activeSwipeable && activeSwipeable !== swipeableRef) {
+              activeSwipeable.close();
+            }
+            // Set the current swipeable as active
+            if (swipeableRef) {
+              setActiveSwipeable(swipeableRef);
+            }
+          }}
+        >
+          <TouchableOpacity
+            style={styles.listItem}
+            onPress={() => {
+              setSelectedOperator(item);
+              setModalVisible(true);
+            }}
+          >
+            <View style={styles.avatarContainer}>
+              {item.photo ? (
+                <Image source={{ uri: item.photo }} style={styles.avatar} />
+              ) : (
+                <View style={[styles.avatar, styles.noAvatar]}>
+                  <Text style={styles.avatarText}>
+                    {(item.first_name?.[0] || '') + (item.last_name?.[0] || '')}
+                  </Text>
+                </View>
+              )}
+            </View>
+            <View style={styles.operatorInfo}>
+              <Text style={styles.operatorName}>{item.first_name} {item.last_name}</Text>
+              <Text style={styles.operatorDetail}>{item.type_id} {item.id_number}</Text>
+              <Text style={styles.operatorDetail}>
+                <Ionicons name="call-outline" size={14} color="#666" /> {item.phone}
+              </Text>
+              <View style={styles.statusContainer}>
+                <View style={[styles.statusIndicator, { backgroundColor: item.status === 'activo' ? '#4CAF50' : '#FF9800' }]} />
+                <Text style={styles.statusText}>{item.status || t("not_available")}</Text>
+              </View>
+            </View>
+          </TouchableOpacity>
+        </Swipeable>
+      </GestureHandlerRootView>
+    );
+  };
+
+  const renderFooter = () => {
+    if (!loadingMore) return null;
+
+    return (
+      <View style={styles.footerLoader}>
+        <ActivityIndicator size="small" color="#3498db" />
+        <Text style={styles.footerText}>{t("loading_more_operators")}</Text>
+      </View>
+    );
+  };
+
+const handleSuccess = () => {
+  loadOperators(1, true);
+  setModalVisible(false);
+  setSelectedOperator(null);
+  Toast.show({
+      type: ALERT_TYPE.DANGER,
+      title: t("error"),
+      textBody: t("error_sending_data"),
+      autoClose: 3000,
+  });
+  setTimeout(() => setSuccessModalVisible(true), 400); // Espera a que se cierre el modal de creación
+};
+
+  return (
+    <SafeAreaView style={styles.safeArea}>
+      <View style={styles.container}>
+        {/* Header */}
+        <View style={styles.header}>
+          <TouchableOpacity style={styles.backButton} onPress={handleBackPress}>
+            <Ionicons name="arrow-back" size={24} color="#333" />
+          </TouchableOpacity>
+          <Text style={styles.headerTitle}>{t("operators")}</Text>
+          <TouchableOpacity
+            style={styles.addButton}
+            onPress={() => {
+              setSelectedOperator(null);
+              setModalVisible(true);
+            }}
+          >
+            <Ionicons name="add" size={24} color="#fff" />
+          </TouchableOpacity>
+        </View>
+
+        {/* Content */}
+        <View style={styles.content}>
+          {loading && operators.length === 0 ? (
+            <View style={styles.centerContent}>
+              <ActivityIndicator size="large" color="#3498db" />
+              <Text style={styles.loadingText}>{t("loading_operators")}</Text>
+            </View>
+          ) : error ? (
+            <View style={styles.centerContent}>
+              <Ionicons name="alert-circle-outline" size={50} color="#e74c3c" />
+              <Text style={styles.errorText}>{error}</Text>
+              <TouchableOpacity style={styles.retryButton} onPress={() => loadOperators()}>
+                <Text style={styles.retryText}>{t("retry")}</Text>
+              </TouchableOpacity>
+            </View>
+          ) : operators.length === 0 ? (
+            <View style={styles.centerContent}>
+              <Ionicons name="people-outline" size={50} color="#95a5a6" />
+              <Text style={styles.noDataText}>{t("no_operators_available")}</Text>
+              <TouchableOpacity
+                style={styles.addFirstButton}
+                onPress={() => setModalVisible(true)}
+              >
+                <Text style={styles.addFirstText}>{t("add_operator")}</Text>
+              </TouchableOpacity>
+            </View>
+          ) : (
+            <View style={styles.listWrapper}>
+              <FlatList
+                data={operators}
+                keyExtractor={(item, index) => (item.id_operator ? item.id_operator.toString() : index.toString())}
+                renderItem={renderOperatorItem}
+                contentContainerStyle={styles.listContainer}
+                refreshing={loading}
+                onRefresh={() => loadOperators(1, true)}
+                onEndReached={loadMoreOperators}
+                onEndReachedThreshold={0.3}
+                ListFooterComponent={renderFooter}
+              />
+              {/* Pagination info */}
+              <View style={styles.paginationInfo}>
+                <Text style={styles.paginationText}>
+                  {t("showing")} {operators.length} {t("of")} {pagination.count} {t("operators")}
+                </Text>
+              </View>
+            </View>
+          )}
+        </View>
+
+        {/* Modal for Create/Edit Operator */}
+        <Modal visible={modalVisible} animationType="slide">
+          <CreateOperator
+            isEditing={!!selectedOperator}
+            initialData={selectedOperator ? mapOperatorToFormData(selectedOperator) : undefined}
+            onClose={handleSuccess}
+          />
+        </Modal>
+
+      </View>
+    </SafeAreaView>
+  );
+};
+
+
+const styles = StyleSheet.create({
+  safeArea: {
+    flex: 1,
+    backgroundColor: '#f9f9f9',
+  },
+  container: {
+    flex: 1,
+  },
+  header: {
+    flexDirection: 'row',
+    alignItems: 'flex-end',         // baja los ítems al fondo del header
+    justifyContent: 'space-between',
+    backgroundColor: '#fff',
+    paddingTop: 30,                  // más espacio arriba
+    paddingBottom: 10,               // menos espacio abajo
+    paddingHorizontal: 16,
+    borderBottomWidth: 1,
+    borderBottomColor: '#eee',
+    elevation: 2,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.1,
+    shadowRadius: 1,
+    marginTop: 30,
+  },
+  backButton: {
+    padding: 8,
+  },
+  headerTitle: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    color: '#333',
+    marginBottom:10,
+  },
+  addButton: {
+    backgroundColor: '#3498db',
+    borderRadius: 30,
+    width: 40,
+    height: 40,
+    justifyContent: 'center',
+    alignItems: 'center',
+    elevation: 3,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.2,
+    shadowRadius: 2,
+  },
+  content: {
+    flex: 1,
+  },
+  listWrapper: {
+    flex: 1,
+    position: 'relative',
+  },
+  listContainer: {
+    paddingVertical: 8,
+    paddingBottom: 60, // Add extra padding at bottom for pagination info
+  },
+  listItem: {
+    backgroundColor: '#fff',
+    borderRadius: 8,
+    marginHorizontal: 16,
+    marginVertical: 6,
+    padding: 16,
+    flexDirection: 'row',
+    alignItems: 'center',
+    elevation: 2,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.2,
+    shadowRadius: 2,
+  },
+  avatarContainer: {
+    marginRight: 16,
+  },
+  avatar: {
+    width: 50,
+    height: 50,
+    borderRadius: 25,
+  },
+  noAvatar: {
+    backgroundColor: '#3498db',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  avatarText: {
+    color: '#fff',
+    fontSize: 18,
+    fontWeight: 'bold',
+  },
+  operatorInfo: {
+    flex: 1,
+  },
+  operatorName: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    color: '#333',
+    marginBottom: 4,
+  },
+  operatorDetail: {
+    fontSize: 14,
+    color: '#666',
+    marginBottom: 2,
+  },
+  statusContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginTop: 4,
+  },
+  statusIndicator: {
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+    marginRight: 6,
+  },
+  statusText: {
+    fontSize: 12,
+    color: '#666',
+    textTransform: 'capitalize',
+  },
+  centerContent: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 20,
+  },
+  loadingText: {
+    marginTop: 10,
+    color: '#666',
+  },
+  errorText: {
+    marginTop: 10,
+    color: '#e74c3c',
+    textAlign: 'center',
+  },
+  noDataText: {
+    marginTop: 10,
+    color: '#666',
+    textAlign: 'center',
+  },
+  retryButton: {
+    marginTop: 16,
+    backgroundColor: '#3498db',
+    paddingHorizontal: 20,
+    paddingVertical: 10,
+    borderRadius: 8,
+  },
+  retryText: {
+    color: '#fff',
+    fontWeight: 'bold',
+  },
+  addFirstButton: {
+    marginTop: 16,
+    backgroundColor: '#3498db',
+    paddingHorizontal: 20,
+    paddingVertical: 10,
+    borderRadius: 8,
+  },
+  addFirstText: {
+    color: '#fff',
+    fontWeight: 'bold',
+  },
+  swipeActions: {
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: 16,
+    marginVertical: 6,
+  },
+  editButton: {
+    backgroundColor: '#3498db',
+    justifyContent: 'center',
+    alignItems: 'center',
+    width: 70,
+    height: '90%',
+    borderRadius: 8,
+    left: 15,
+  },
+  footerLoader: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 10,
+  },
+  footerText: {
+    marginLeft: 8,
+    color: '#666',
+  },
+  paginationInfo: {
+    position: 'absolute',
+    bottom: 0,
+    left: 0,
+    right: 0,
+    backgroundColor: 'rgba(255, 255, 255, 0.9)',
+    padding: 8,
+    alignItems: 'center',
+    borderTopWidth: 1,
+    borderTopColor: '#eee',
+  },
+  paginationText: {
+    fontSize: 12,
+    color: '#666',
+  },
+  deleteButton: {
+    backgroundColor: '#e74c3c',
+    justifyContent: 'center',
+    alignItems: 'center',
+    width: 70,
+    height: '100%',
+    borderTopRightRadius: 8,
+    borderBottomRightRadius: 8,
+  },
+});
+
+export default OperatorList;

@@ -84,7 +84,7 @@ export interface CreateToolModel{
 export const listToolsByJob = async (jobId: number,page: number, pageSize: number): Promise<ToolListResponse> => {
     try {
         const response = await apiClient.get<ToolListResponse>(`/toolsByJob/${jobId}/?page=${page}&page_size=${pageSize}`);
-        console.log("Tools response:", response.data);
+        // console.log("Tools response:", response.data);
         return response.data;
     } catch (error) {
         console.error("Error fetching tools:", error);
@@ -95,7 +95,7 @@ export const listToolsByJob = async (jobId: number,page: number, pageSize: numbe
 export const getToolById = async (id: number): Promise<Tool> => {
     try {
         const response = await apiClient.get<Tool>(`/tools/${id}/`);
-        console.log("Tool response:", response.data);
+        // console.log("Tool response:", response.data);
         return response.data;
     } catch (error) {
         console.error("Error fetching tool:", error);
@@ -106,7 +106,7 @@ export const getToolById = async (id: number): Promise<Tool> => {
 export const createTool = async (tool: CreateToolModel): Promise<Tool> => {
     try {
         const response = await apiClient.post<Tool>('/tools/create/', tool);
-        console.log("Tool created:", response.data);
+        // console.log("Tool created:", response.data);
         return response.data;
     } catch (error) {
         console.error("Error creating tool:", error);
@@ -117,7 +117,7 @@ export const createTool = async (tool: CreateToolModel): Promise<Tool> => {
 export const deleteTool = async (id: number): Promise<void> => { 
     try {
         await apiClient.patch(`/tools/${id}/delete/`);
-        console.log("Tool deleted:", id);
+        // console.log("Tool deleted:", id);
     } catch (error) {
         console.error("Error deleting tool:", error);
         throw error;

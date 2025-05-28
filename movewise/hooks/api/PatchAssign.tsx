@@ -23,7 +23,6 @@ export const PatchAssign = async (id: number, formData: FormData) => {
                 "Content-Type": "multipart/form-data",
             },
         });
-        console.log("Response from PatchAssign:", response.data);
         return response.data;
     } catch (error) {
         console.error("Error updating operator:", error);

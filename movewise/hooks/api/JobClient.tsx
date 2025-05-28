@@ -9,7 +9,6 @@ export interface CreateJobModel{
 export const ListJobs = async () => {
   try {
     const response = await apiClient.get('/jobs/');
-    console.log('Jobs list:', response.data); // Log the response data for debugging
     return response.data;
   } catch (error) {
     console.error('Error al listar jobs:', error);
@@ -20,7 +19,6 @@ export const ListJobs = async () => {
 export const createJob = async (job: CreateJobModel) => {
   try {
     const response = await apiClient.post('/jobs/', job);
-    console.log('Job created:', response.data); // Log the response data for debugging
     return response.data;
   } catch (error) {
     console.error('Error creating job:', error);
@@ -31,7 +29,6 @@ export const createJob = async (job: CreateJobModel) => {
 export const deleteJob = async (jobId: number) => {
   try {
     const response = await apiClient.patch(`/job/${jobId}/delete/`);
-    console.log('Job deleted:', response.data); // Log the response data for debugging
     return response.data;
   } catch (error) {
     console.error('Error deleting job:', error);

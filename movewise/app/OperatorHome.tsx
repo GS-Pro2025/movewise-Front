@@ -10,14 +10,15 @@ import {
     useColorScheme,
     ScrollView,
 } from "react-native";
-import { useRouter } from "expo-router";
+import { useRouter, useLocalSearchParams } from "expo-router";
+import { useNavigation } from "@react-navigation/native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { decodeToken, getPersonIdFromToken, isAdmin } from "@/utils/decodeToken";
 import { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import Toast from "react-native-toast-message";
-import InfoOperatorModal from "./modals/operatorInfo/InfoOperatorModal";
-import EditOperatorModal from "./modals/operatorInfo/EditOperatorModal";
+import InfoOperatorModal from "./screens/operators/InfoOperatorModal";
+import EditOperatorModal from "./screens/operators/EditOperatorModal";
 import colors from "./Colors";
 import Ionicons from 'react-native-vector-icons/Ionicons';
 
@@ -172,7 +173,7 @@ const Home: React.FC = () => {
                             isDarkMode={isDarkMode}
                             iconSource={require("../assets/images/paquete.png")}
                             onPress={() => router.push({
-                                pathname: "/modals/OrderModal",
+                                pathname: "/screens/orders/OrderModal",
                                 params: { isOperator: "true" }
                             })}
                         />
@@ -181,7 +182,7 @@ const Home: React.FC = () => {
                             isDarkMode={isDarkMode}
                             iconSource={require("../assets/images/workDailyIcon.png")}
                             onPress={() => router.push({
-                                pathname: "/modals/OperatorView",
+                                pathname: "./screens/operators/OperatorView",
                                 params: {
                                     type: "work",
                                     operatorId: operator?.id_operator
@@ -193,7 +194,7 @@ const Home: React.FC = () => {
                             isDarkMode={isDarkMode}
                             iconSource={require("../assets/images/truck.png")}
                             onPress={() => router.push({
-                                pathname: "/modals/OperatorView",
+                                pathname: "./screens/operators/OperatorView",
                                 params: {
                                     type: "truck",
                                     operatorId: operator?.id_operator

@@ -60,7 +60,7 @@ const OperatorsScreen = () => {
 
   const assignRole = (role: RoleType) => {
     if (selectedOperator) {
-      console.log(t('assigned_role', { role, name: selectedOperator.name }));
+      // console.log(t('assigned_role', { role, name: selectedOperator.name }));
     }
     setModalVisible(false);
   };

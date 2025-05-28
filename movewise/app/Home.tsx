@@ -10,7 +10,8 @@ import {
   useColorScheme,
   ScrollView,
 } from "react-native";
-import { useRouter } from "expo-router";
+import { useRouter, useLocalSearchParams } from "expo-router";
+import { useNavigation } from "@react-navigation/native";
 import colors from "./Colors";
 import Toast from "react-native-toast-message";
 import AsyncStorage from "@react-native-async-storage/async-storage";
@@ -19,6 +20,7 @@ import SettingsModal from "./Settings/SettingsModal";
 import ListJobsModal from "./Settings/Options/JobAndTools/ListJobsModal";
 import ListOfCustomersModal from "./Settings/Options/CompanyCustomers/ListOfCustomersModal";
 import { GetAdminInfo } from "@/hooks/api/GetAdminByToken";
+// import InfoAdminModal from "./modals/InfoAdminModal";
 import InfoAdminModal from "./modals/InfoAdminModal";
 import EditAdminModal from "./modals/EditAdminModal";
 import { AdminInfo } from '@/hooks/api/GetAdminByToken';
@@ -71,10 +73,10 @@ const Home: React.FC = () => {
 
         // Obtener datos de la API
         const response = await GetAdminInfo();
-        console.log('API Response:', response);
+        // console.log('API Response:', response);
 
         if (response) {
-          console.log('Datos recibidos del API:', response);
+          // console.log('Datos recibidos del API:', response);
           setAdminDetails(response);
 
           setAdmin({
@@ -187,7 +189,7 @@ const Home: React.FC = () => {
             <TouchableOpacity
               style={styles.avatarContainer}
               onPress={() => {
-                console.log('Opening info modal with data:', adminDetails);
+                // console.log('Opening info modal with data:', adminDetails);
                 setIsInfoModalVisible(true);
               }}
             >
@@ -262,7 +264,7 @@ const Home: React.FC = () => {
               title={t("create_daily")}
               isDarkMode={isDarkMode}
               iconSource={require("../assets/images/paquete.png")}
-              onPress={() => router.push("/modals/OrderModal")}
+              onPress={() => router.push("../screens/orders/OrderModal")}
             />
           </View>
           <View style={styles.row}>
@@ -270,13 +272,13 @@ const Home: React.FC = () => {
               title={t("resume_order")}
               isDarkMode={isDarkMode}
               iconSource={require("../assets/images/paper.png")}
-              onPress={() => router.push("/modals/ListOfOrdersForSumary")}
+              onPress={() => router.push("../screens/orders/ListOfOrdersForSumary")}
             />
             <ActionButton
               title={t("add_extra_cost")}
               isDarkMode={isDarkMode}
               iconSource={require("../assets/images/dolar.png")}
-              onPress={() => router.push("/modals/WorkDailyScreen")}
+              onPress={() => router.push("../screens/orders/WorkDailyScreen")}
             />
           </View>
           <View style={styles.row}>
@@ -284,7 +286,7 @@ const Home: React.FC = () => {
               title={t("create_truck")}
               isDarkMode={isDarkMode}
               iconSource={require("../assets/images/truck.png")}
-              onPress={() => router.push("/modals/ListTruckScreen")}
+              onPress={() => router.push("../screens/trucks/ListTruckScreen")}
             />
             <ActionButton
               title={t("operator_edit")}
@@ -292,7 +294,7 @@ const Home: React.FC = () => {
               iconSource={require("../assets/images/Pencil.png")}
               onPress={() =>
                 router.push({
-                  pathname: "/modals/OperatorList",
+                  pathname: "../screens/operators/OperatorList",
                   params: { isEdit: "true" },
                 })
               }
@@ -305,7 +307,7 @@ const Home: React.FC = () => {
               iconSource={require("../assets/images/logo.png")}
               onPress={() =>
                 router.push({
-                  pathname: "/modals/OperatorList",
+                  pathname: "../screens/operators/OperatorList",
                   params: { isEdit: "false" },
                 })
               }
@@ -321,13 +323,13 @@ const Home: React.FC = () => {
               title={t("freelancers")}
               isDarkMode={isDarkMode}
               iconSource={require("../assets/images/personx.png")}
-              onPress={() => router.push("/modals/freelancers/FreelanceListScreen")}
+              onPress={() => router.push("../screens/freelancers/FreelanceListScreen")}
             />
             <ActionButton
               title={t("workhouse")}
               isDarkMode={isDarkMode}
               iconSource={require("../assets/images/work-house.png")}
-              onPress={() => router.push("/modals/workhouse/ListWorkHouse")}
+              onPress={() => router.push("../screens/workhouse/ListWorkHouse")}
             />
           </View>
 

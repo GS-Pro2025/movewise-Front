@@ -2,6 +2,7 @@ import apiClient from "./apiClient";
 
 export interface AssignmentData {
     operator: number;
+    workhouse_key?: string;
     truck?: number | null;
     order: string;
     assigned_at: string;
