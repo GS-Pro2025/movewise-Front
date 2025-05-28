@@ -528,6 +528,10 @@
   "failed_complete_work": "Error al completar el trabajo. Por favor intente nuevamente.",
   "customer_client": "Empresa Cliente",
   "edit_profile": "Editar Perfil",
+  "profile_photo":"Foto de Perfil",
+  "delete_account":"Eliminar cuenta",
+  "delete_account_confirmation":"Todos los datos relacionados con su cuenta seran borrados, esta seguro de eliminar su cuenta?",
+  "account_deleted": "Cuenta Eliminada",
   "customer_first_name": "Nombre del cliente",
   "could_not_delete_assignation": "No se pudo eliminar la asignacion",
   "select_image_source": "Seleccionar Origen de Imagen",
@@ -577,8 +581,8 @@
   "no_freelancers_available": "No hay freelancers registrados",
   "add_new_freelancer_prompt": "Presiona el botón + para agregar uno nuevo",
   "back_to_admin_login": "Volver",
+  "update_success":"Actualizacion Exitosa",
   "passwords_do_not_match": "Las contraseñas no coinciden.",
   "confirm_password_required": "Se requiere confirmar la contraseña.",
-  "confirm_password_placeholder": "Confirmar contraseña",
-  "profile_photo": "Foto de perfil"
+  "confirm_password_placeholder": "Confirmar contraseña"
 }

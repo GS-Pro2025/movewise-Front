@@ -17,6 +17,7 @@ export interface AdminInfo {
   person: PersonInfo;
   created_at: string;
   updated_at: string;
+  photo:string;
 }
 
 // En GetAdminByToken.ts

@@ -494,6 +494,10 @@
   "failed_complete_work": "Error completing the work. Please try again.",
   "customer_client": "customer client",
   "edit_profile": "Edit Profile",
+  "profile_photo": "Profile Photo",
+  "delete_account": "Delete Account",
+  "delete_account_confirmation": "All data related to your account will be deleted. Are you sure you want to delete your account?",
+  "account_deleted": "Account Deleted",
   "could_not_delete_assignation": "could not delete assignation",
   "permission_required": "Permission Required",
   "camera_permission_needed": "Camera access is needed to take photos.",
@@ -539,9 +543,9 @@
   "no_results_found": "No matches found",
   "no_freelancers_available": "No freelancers registered",
   "add_new_freelancer_prompt": "Click the + button to add a new freelancer",
-  "back_to_admin_login":"Back to admin login",
+  "back_to_admin_login": "Back to admin login",
+  "update_success":"Update success",
   "passwords_do_not_match": "Passwords do not match",
   "confirm_password_required": "Confirm Password is required.",
-  "confirm_password_placeholder": "Confirm Password",
-  "profile_photo": "Profile Photo"
+  "confirm_password_placeholder": "Confirm Password"
 }

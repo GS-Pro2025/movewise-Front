@@ -22,6 +22,7 @@ import { GetAdminInfo } from "@/hooks/api/GetAdminByToken";
 import InfoAdminModal from "./modals/InfoAdminModal";
 import EditAdminModal from "./modals/EditAdminModal";
 import { AdminInfo } from '@/hooks/api/GetAdminByToken';
+import Ionicons from 'react-native-vector-icons/Ionicons';
 
 interface Admin {
   id: number;
@@ -30,6 +31,7 @@ interface Admin {
   last_name: string;
   status: string;
   phone: number | null;
+  photo: string;
   address: string | null;
   id_number: string | null;
 }
@@ -77,6 +79,7 @@ const Home: React.FC = () => {
 
           setAdmin({
             id: response.person.id_company,
+            photo: response.photo,
             user_name: response.user_name,
             first_name: response.person.first_name,
             last_name: response.person.last_name,
@@ -137,6 +140,7 @@ const Home: React.FC = () => {
       setAdmin({
         id: updatedAdmin.person.id_company,
         user_name: updatedAdmin.user_name,
+        photo: updatedAdmin.photo,
         first_name: updatedAdmin.person.first_name,
         last_name: updatedAdmin.person.last_name,
         status: "active",
@@ -181,19 +185,27 @@ const Home: React.FC = () => {
         <View style={styles.header}>
           <View style={styles.userInfo}>
             <TouchableOpacity
+              style={styles.avatarContainer}
               onPress={() => {
                 console.log('Opening info modal with data:', adminDetails);
                 setIsInfoModalVisible(true);
               }}
-              style={styles.avatarContainer}
             >
-              <Image
-                source={require("../assets/images/logo.png")}
-                style={[
-                  styles.userIcono,
-                  { tintColor: isDarkMode ? colors.darkText : colors.primary }
-                ]}
-              />
+              {admin?.photo ? (
+                <Image
+                  source={{ uri: admin.photo }}
+                  style={[styles.avatarImage, isDarkMode && styles.darkBorder]}
+                  onError={() => console.log("Error loading admin photo")}
+                />
+              ) : (
+                <Ionicons
+                  name="person-circle-outline"
+                  size={40}
+                  color={isDarkMode ? colors.darkText : colors.primary}
+                />
+              )
+
+              }
             </TouchableOpacity>
 
             <View style={styles.userTextContainer}>
@@ -394,22 +406,21 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
-    padding: 10,
+    padding: 15,
   },
   userInfo: {
     flexDirection: "row",
     alignItems: "center",
     flex: 1,
   },
-  avatarContainer: {
-    marginRight: 10,
-  },
+  avatarContainer: { width: 40, height: 40, borderRadius: 20, overflow: "hidden" },
   userIcono: {
     width: 40,
     height: 40,
     resizeMode: "contain",
   },
   userTextContainer: {
+    paddingLeft:10,
     flexShrink: 1,
   },
   userName: {
@@ -431,6 +442,17 @@ const styles = StyleSheet.create({
   actionButton: { flex: 1, padding: 15, alignItems: "center", borderRadius: 10, marginHorizontal: 5 },
   actionButtonIcon: { width: 40, height: 40, marginBottom: 5 },
   actionButtonText: { fontSize: 14, textAlign: "center" },
+  avatarImage: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    borderWidth: 1,
+    overflow: "hidden",
+    marginRight: 10,
+  },
+  darkBorder: {
+    borderColor: "#333333",
+  },
 });
 
 export default Home;
