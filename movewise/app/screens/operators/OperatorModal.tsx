@@ -9,6 +9,7 @@ import {
   Alert,
   ActivityIndicator,
   ScrollView,
+  Platform,
 } from "react-native";
 import { GestureHandlerRootView, Swipeable } from "react-native-gesture-handler";
 import AddOperatorForm from "./AddOperatorForm";
@@ -343,26 +344,29 @@ const OperatorModal: React.FC<OperatorModalProps> = ({ visible, onClose, orderKe
 
   return (
     <Modal animationType="slide" visible={visible} onRequestClose={onClose}>
-      <View style={{ flex: 1, backgroundColor: "#A1C6EA" }}>
+      <View style={{ flex: 1, backgroundColor: "#A1C6EA", paddingTop: Platform.OS === 'ios' ? 40 : 0 }}>
         <View style={[styles.header, { backgroundColor: isDarkMode ? "#112A4A" : "#ffffff" }]}>
-          <TouchableOpacity onPress={onClose} style={styles.backButton}>
-            <Ionicons
-              name="arrow-back"
-              size={24}
-              color={isDarkMode ? "#FFFFFF" : "#0458AB"}
-            />
-          </TouchableOpacity>
+          <View style={styles.statusBarSpacer} />
+          <View style={styles.headerContent}>
+            <TouchableOpacity onPress={onClose} style={styles.backButton}>
+              <Ionicons
+                name="arrow-back"
+                size={24}
+                color={isDarkMode ? "#FFFFFF" : "#0458AB"}
+              />
+            </TouchableOpacity>
 
-          <Text style={[styles.title, { color: isDarkMode ? "#FFFFFF" : "#0458AB" }]}>
-            {t("operators")}
-          </Text>
+            <Text style={[styles.title, { color: isDarkMode ? "#FFFFFF" : "#0458AB" }]}>
+              {t("operators")}
+            </Text>
 
-          <TouchableOpacity
-            style={[styles.addButton, { backgroundColor: isDarkMode ? "#FFF" : "#0458AB" }]}
-            onPress={() => setAddOperatorVisible(true)}
-          >
-            <Text style={[styles.plus, { color: isDarkMode ? "#0458AB" : "#FFF" }]}>+</Text>
-          </TouchableOpacity>
+            <TouchableOpacity
+              style={[styles.addButton, { backgroundColor: isDarkMode ? "#FFF" : "#0458AB" }]}
+              onPress={() => setAddOperatorVisible(true)}
+            >
+              <Text style={[styles.plus, { color: isDarkMode ? "#0458AB" : "#FFF" }]}>+</Text>
+            </TouchableOpacity>
+          </View>
         </View>
 
         <ScrollView style={styles.scrollContainer}>
@@ -449,14 +453,20 @@ const styles = StyleSheet.create({
     padding: 20,
   },
   header: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-    paddingBottom: 20,
-    paddingTop: 30,
+    flexDirection: "column",
+    paddingBottom: 15,
     borderBottomWidth: 2,
     width: "100%",
     paddingHorizontal: 20,
+  },
+  headerContent: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    marginTop: 10,
+  },
+  statusBarSpacer: {
+    height: Platform.OS === 'ios' ? 20 : 0,
   },
   backButton: {
     padding: 8,

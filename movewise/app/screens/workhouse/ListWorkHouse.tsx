@@ -111,7 +111,7 @@ const WorkhouseModal: React.FC<WorkhouseModalProps> = ({ visible, onClose }) => 
         }));
         setOrders(mappedOrders);
       } else {
-        console.error("La respuesta no es un array:", response);
+        // console.error("La respuesta no es un array:", response);
       }
     } catch (error) {
       console.error("Error detallado:", error);

@@ -1,5 +1,5 @@
 import { View, Text, TouchableOpacity, Modal, StyleSheet, useColorScheme, FlatList, TextInput, ActivityIndicator, RefreshControl, Alert, SafeAreaView } from "react-native";
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useMemo } from "react";
 import { useRouter } from "expo-router";
 import DateTimePicker, { DateTimePickerEvent } from '@react-native-community/datetimepicker';
 import { Ionicons } from '@expo/vector-icons';
@@ -13,8 +13,9 @@ import { useTranslation } from "react-i18next";
 import InfoOrderModal from './InfoOrderModal';
 import { useLocalSearchParams } from 'expo-router';
 import { useFocusEffect } from "expo-router"; 
-import { getOrders } from "@/hooks/api/GetOrders";
+import { getOrders, OrdersResponse } from "@/hooks/api/GetOrders";
 import colors from "@/app/Colors";
+
 interface OrderModalProps {
   visible: boolean;
   onClose: () => void;
@@ -49,12 +50,11 @@ export interface Order {
   customer_factory_name: string | null;
 }
 
-
 const OrderModal = () => {
   const params = useLocalSearchParams();
   const isOperator = params.isOperator === "true"; 
 
-  const { t } = useTranslation(); // Hook para traducción
+  const { t } = useTranslation();
   const [addOrderVisible, setAddOrderVisible] = useState(false);
   const [infoModalVisible, setInfoModalVisible] = useState(false);
   const [selectedOrderInfo, setSelectedOrderInfo] = useState<Order | null>(null);
@@ -62,29 +62,36 @@ const OrderModal = () => {
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
   const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
+  const [loadingMore, setLoadingMore] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
   const [searchText, setSearchText] = useState('');
   const [startDate, setStartDate] = useState<Date | null>(null);
   const [endDate, setEndDate] = useState<Date | null>(null);
   const [showStartDatePicker, setShowStartDatePicker] = useState(false);
   const [showEndDatePicker, setShowEndDatePicker] = useState(false);
+  const [pagination, setPagination] = useState({
+    next: null as string | null,
+    previous: null as string | null,
+    count: 0,
+  });
   const colorScheme = useColorScheme();
   const isDarkMode = colorScheme === "dark";
   const router = useRouter();
+
   const loadOrders = useCallback(async () => {
     setLoading(true);
     setRefreshing(true);
     try {
       const response = await getOrders();
 
-      // Make sure response is an array before using filter/map
-      if (!Array.isArray(response)) {
-        console.error("La respuesta no es un array:", response);
+      // Verificar estructura de respuesta
+      if (!response || !response.results || !Array.isArray(response.results)) {
+        console.error("Estructura de respuesta inválida:", response);
         setOrders([]);
         return;
       }
 
-      const filteredResponse = response.filter((order: Order) =>
+      const filteredResponse = response.results.filter((order: Order) =>
         order.status && order.status.toLowerCase() !== 'inactive'
       );
 
@@ -107,15 +114,19 @@ const OrderModal = () => {
           address: order.person?.address || null,
         },
         job: order.job,
-        job_name: order.job_name,                       // ← nuevo
+        job_name: order.job_name,
         evidence: order.evidence || null,
         dispatch_ticket: order.dispatch_ticket,
         customer_factory: order.customer_factory,
-        customer_factory_name: order.customer_factory_name, // ← nuevo
+        customer_factory_name: order.customer_factory_name,
       }));
 
-
       setOrders(mappedOrders);
+      setPagination({
+        next: response.next,
+        previous: response.previous,
+        count: response.count,
+      });
     } catch (error) {
       console.error(t("error_loading_orders"), error);
       Alert.alert(t("error"), t("could_not_load_orders"));
@@ -124,7 +135,62 @@ const OrderModal = () => {
       setLoading(false);
       setRefreshing(false);
     }
-  }, []);
+  }, [t]);
+
+  const handleLoadMore = useCallback(async () => {
+    if (loadingMore || !pagination.next) return;
+    setLoadingMore(true);
+    try {
+      const response = await getOrders(pagination.next);
+      
+      if (!response || !response.results || !Array.isArray(response.results)) {
+        console.error("Estructura de respuesta inválida en load more:", response);
+        return;
+      }
+
+      const filteredResponse = response.results.filter((order: Order) =>
+        order.status && order.status.toLowerCase() !== 'inactive'
+      );
+
+      const newOrders = filteredResponse.map((order: Order) => ({
+        key: order.key,
+        key_ref: order.key_ref,
+        date: order.date,
+        distance: order.distance,
+        expense: order.expense,
+        income: order.income,
+        weight: order.weight,
+        status: order.status.toUpperCase(),
+        payStatus: order.payStatus,
+        state_usa: order.state_usa,
+        person: {
+          email: order.person?.email || '',
+          first_name: order.person?.first_name || null,
+          last_name: order.person?.last_name || null,
+          phone: order.person?.phone || null,
+          address: order.person?.address || null,
+        },
+        job: order.job,
+        job_name: order.job_name,
+        evidence: order.evidence || null,
+        dispatch_ticket: order.dispatch_ticket,
+        customer_factory: order.customer_factory,
+        customer_factory_name: order.customer_factory_name,
+      }));
+      
+      setOrders(prev => [...prev, ...newOrders]);
+      setPagination({
+        next: response.next,
+        previous: response.previous,
+        count: response.count,
+      });
+    } catch (error) {
+      console.error(t("error_loading_orders"), error);
+      Alert.alert(t("error"), t("could_not_load_orders"));
+    } finally {
+      setLoadingMore(false);
+    }
+  }, [loadingMore, pagination.next, t]);
 
   useFocusEffect(
     useCallback(() => {
@@ -136,45 +202,47 @@ const OrderModal = () => {
     loadOrders();
   }, [loadOrders]);
 
-  const normalizeDate = (date: Date) => {
+  const normalizeDate = useCallback((date: Date) => {
     const d = new Date(date);
     d.setHours(0, 0, 0, 0);
     return d;
-  };
+  }, []);
 
-  const filteredOrders = orders.filter(order => {
-    const orderDate = order.date ? normalizeDate(new Date(order.date)) : null;
+  const filteredOrders = useMemo(() => {
+    return orders.filter(order => {
+      const orderDate = order.date ? normalizeDate(new Date(order.date)) : null;
 
-    const isDateMatch = (!startDate && !endDate) ||
-      (orderDate && startDate && endDate && orderDate >= startDate && orderDate <= endDate) ||
-      (orderDate && startDate && !endDate && orderDate >= startDate) ||
-      (orderDate && !startDate && endDate && orderDate <= endDate);
+      const isDateMatch = (!startDate && !endDate) ||
+        (orderDate && startDate && endDate && orderDate >= startDate && orderDate <= endDate) ||
+        (orderDate && startDate && !endDate && orderDate >= startDate) ||
+        (orderDate && !startDate && endDate && orderDate <= endDate);
 
-    const searchLower = searchText.toLowerCase();
-    const fullName = `${order.person?.first_name || ''} ${order.person?.last_name || ''}`.trim().toLowerCase();
+      const searchLower = searchText.toLowerCase();
+      const fullName = `${order.person?.first_name || ''} ${order.person?.last_name || ''}`.trim().toLowerCase();
 
-    const isTextMatch = !searchText ||
-      order.key_ref.toLowerCase().includes(searchLower) ||
-      fullName.includes(searchLower);
+      const isTextMatch = !searchText ||
+        order.key_ref.toLowerCase().includes(searchLower) ||
+        fullName.includes(searchLower);
 
-    return isDateMatch && isTextMatch;
-  });
+      return isDateMatch && isTextMatch;
+    });
+  }, [orders, searchText, startDate, endDate, normalizeDate]);
 
-  const onStartDateChange = (event: DateTimePickerEvent, selectedDate?: Date) => {
+  const onStartDateChange = useCallback((event: DateTimePickerEvent, selectedDate?: Date) => {
     setShowStartDatePicker(false);
     if (selectedDate) {
       setStartDate(selectedDate);
     }
-  };
+  }, []);
 
-  const onEndDateChange = (event: DateTimePickerEvent, selectedDate?: Date) => {
+  const onEndDateChange = useCallback((event: DateTimePickerEvent, selectedDate?: Date) => {
     setShowEndDatePicker(false);
     if (selectedDate) {
       setEndDate(selectedDate);
     }
-  };
+  }, []);
 
-  const handleEditOrder = (order: Order) => {
+  const handleEditOrder = useCallback((order: Order) => {
     if (order) {
       router.push(
         { pathname: './UpdateOrder',
@@ -182,9 +250,9 @@ const OrderModal = () => {
     } else {
       Alert.alert(t("error"), t("selected_order_null"));
     }
-  };
+  }, [router, t]);
 
-  const handleDeleteOrder = (Key: string) => {
+  const handleDeleteOrder = useCallback((Key: string) => {
     Alert.alert(
       t("confirm_delete"),
       t("delete_order_confirmation"),
@@ -196,7 +264,7 @@ const OrderModal = () => {
             try {
               console.log(t("deleting_order"), Key);
               await DeleteOrder(Key);
-              setOrders((prev) => prev.filter((order) => order.key !== Key));
+              setOrders(prev => prev.filter(order => order.key !== Key));
               Toast.show({
                 type: "success",
                 text1: t("order_deleted"),
@@ -215,9 +283,9 @@ const OrderModal = () => {
         }
       ]
     );
-  };
+  }, [t, loadOrders]);
 
-  const renderItem = ({ item }: { item: Order }) => {
+  const renderItem = useCallback(({ item }: { item: Order }) => {
     const renderLeftActions = !isOperator ? () => (
       <View style={styles.leftSwipeActions}>
         <TouchableOpacity
@@ -286,7 +354,7 @@ const OrderModal = () => {
                   color: item.status === 'PENDING' ? colors.pendingStatus :
                     item.status === 'COMPLETED' ? colors.completedStatus : colors.completedStatus
                 }]}>
-                  {t(item.status.toLowerCase())} {/* Traducción del estado */}
+                  {t(item.status.toLowerCase())}
                 </Text>
                 <Text style={[styles.dateText, { color: isDarkMode ? colors.placeholderDark : colors.placeholderLight }]}>
                   {formatDate(item.date)}
@@ -297,12 +365,12 @@ const OrderModal = () => {
         </Swipeable>
       </GestureHandlerRootView>
     );
-  };
+  }, [isOperator, isDarkMode, handleEditOrder, handleDeleteOrder, t]);
 
   return (
       <SafeAreaView style={{ flex: 1 }}>
 
-        {/* Encabezado */}
+        {/* Header */}
         <View style={[styles.header, { backgroundColor: isDarkMode ? colors.third : colors.lightBackground, borderBottomColor: isDarkMode ? colors.borderDark : colors.borderLight }]}>
           <Text style={[styles.title, { color: isDarkMode ? colors.darkText : colors.primary }]}>{t("Orders")}</Text>
           <TouchableOpacity
@@ -313,9 +381,7 @@ const OrderModal = () => {
           </TouchableOpacity>
         </View>
 
-
-        {/* Date Pickers for Start and End Dates */}
-
+        {/* Date Pickers */}
         <View style={[styles.datePickerContainer, { flexDirection: 'row', justifyContent: 'space-between', backgroundColor: isDarkMode ? colors.third : colors.highlightLight, borderRadius: 0, padding: 10 }]}>
 
           <TouchableOpacity
@@ -323,7 +389,7 @@ const OrderModal = () => {
             onPress={() => setShowStartDatePicker(true)}
           >
             <Text style={{ color: isDarkMode ? colors.darkText : colors.lightText, fontSize: 16 }}>
-              {startDate ? startDate.toLocaleDateString() : t("start_date")} {/* Handle null date */}
+              {startDate ? startDate.toLocaleDateString() : t("start_date")}
             </Text>
             <Ionicons name="calendar" size={20} color={isDarkMode ? colors.secondary : colors.primary} />
           </TouchableOpacity>
@@ -344,7 +410,7 @@ const OrderModal = () => {
             onPress={() => setShowEndDatePicker(true)}
           >
             <Text style={{ color: isDarkMode ? colors.darkText : colors.lightText, fontSize: 16 }}>
-              {endDate ? endDate.toLocaleDateString() : t("end_date")} {/* Handle null date */}
+              {endDate ? endDate.toLocaleDateString() : t("end_date")}
             </Text>
             <Ionicons name="calendar" size={20} color={isDarkMode ? colors.secondary : colors.primary} />
           </TouchableOpacity>
@@ -362,7 +428,6 @@ const OrderModal = () => {
         </View>
 
         {/* Search Bar */}
-
         <View style={[styles.filtersContainer, { backgroundColor: isDarkMode ? colors.third : colors.lightBackground }]}>
           <View style={{ flexDirection: 'row', alignItems: 'center' }}>
             <Ionicons name="search" size={20} color={isDarkMode ? colors.secondary : colors.primary} />
@@ -381,23 +446,33 @@ const OrderModal = () => {
           </View>
         </View>
 
-        {/* Lista de órdenes */}
-
+        {/* Orders List */}
         {loading ? (
           <View style={styles.loadingContainer}>
             <ActivityIndicator size="large" color={colors.primary} />
           </View>
         ) : (
-          <FlatList style={{ backgroundColor: isDarkMode ? colors.darkBackground : colors.lightBackground }}
+          <FlatList 
+            style={{ backgroundColor: isDarkMode ? colors.darkBackground : colors.lightBackground }}
             data={filteredOrders}
-            keyExtractor={(item, index) => `${item.key_ref}-${index}`}
+            keyExtractor={(item) => item.key}
             renderItem={renderItem}
             contentContainerStyle={styles.listContainer}
+            onEndReached={handleLoadMore}
+            onEndReachedThreshold={0.5}
+            ListFooterComponent={
+              loadingMore ? (
+                <View style={{ padding: 10, alignItems: 'center' }}>
+                  <ActivityIndicator size="small" color={colors.primary} />
+                </View>
+              ) : null
+            }
             refreshControl={
               <RefreshControl
                 refreshing={refreshing}
                 onRefresh={onRefresh}
                 colors={[colors.primary]}
+                tintColor={colors.primary}
               />
             }
             ListEmptyComponent={
@@ -410,9 +485,8 @@ const OrderModal = () => {
           />
         )}
 
-        {/* Back and Save Buttons */}
-
-        {loading ? null : (
+        {/* Back Button */}
+        {!loading && (
           <View style={[styles.container, { backgroundColor: isDarkMode ? colors.third : colors.lightBackground, paddingVertical: 10 }]}>
             <View style={[styles.buttonContainer, { justifyContent: 'center', alignItems: 'flex-end', marginHorizontal: 10 }]}>
               <TouchableOpacity
@@ -426,17 +500,16 @@ const OrderModal = () => {
             </View>
           </View>
         )}
-        {/* End of Back and Save Buttons */}
-        {/* Aquí controlamos la visibilidad de los modales AddOrderForm, UpdateOrder -> MODAL DE INFORMACION*/}
-      <InfoOrderModal
-        visible={infoModalVisible}
-        onClose={() => setInfoModalVisible(false)}
-        order={selectedOrderInfo}
-        isWorkhouse={false}
-      />
-      <Toast />
+        
+        {/* Info Modal */}
+        <InfoOrderModal
+          visible={infoModalVisible}
+          onClose={() => setInfoModalVisible(false)}
+          order={selectedOrderInfo}
+          isWorkhouse={false}
+        />
+        <Toast />
       </SafeAreaView>
-
   );
 };
 
