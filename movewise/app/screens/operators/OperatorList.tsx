@@ -5,7 +5,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { ListOperators } from '@/hooks/api/Get_listOperator';
 import { SoftDeleteOperator } from '@/hooks/api/SoftDeleteOperator'; // Import the new function
 import CreateOperator from './CreateOperator';
-import { Operator, FormData } from './Types';
+import { Operator, FormData } from '@/types/operator.types';
 import { router, useGlobalSearchParams } from 'expo-router';
 import { useTranslation } from 'react-i18next';
 import { Toast, ALERT_TYPE } from 'react-native-alert-notification';

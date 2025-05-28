@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { ScrollView, View, Text, TouchableOpacity } from 'react-native';
-import { FormInput, DropdownInput } from '../HelperComponents';
-import { styles } from '../FormStyle';
-import { StepProps } from '../Types';
+import { FormInput, DropdownInput } from '@/app/components/operators/HelperComponents';
+import styles from '@/app/components/operators/FormStyle';
+import { StepProps } from '@/types/operator.types';
 import { ALERT_TYPE, Toast } from 'react-native-alert-notification';
 import { useTranslation } from 'react-i18next';
 import CrossPlatformImageUpload  from '@/components/CrossPlatformImageUpload';

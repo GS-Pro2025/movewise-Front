@@ -2,14 +2,15 @@ import { PostOperator, UpdateOperator } from '@/hooks/api/PostOperator';
 import { ALERT_TYPE, Dialog, Toast } from 'react-native-alert-notification';
 import { Platform } from 'react-native';
 import React, { useState } from 'react';
-import { SafeAreaView, Button, ActivityIndicator } from 'react-native';
+import { SafeAreaView, ActivityIndicator } from 'react-native';
 import { AlertNotificationRoot } from 'react-native-alert-notification';
-import { styles } from './FormStyle';
+
 import Step1Form from './FormSteps/Step1Form';
 import Step2Form from './FormSteps/Step2Form';
 import Step3Form from './FormSteps/Step3Form';
-import { CreateOperatorProps, FormData, ImageInfo } from './Types';
+import { FormData, Operator, CreateOperatorProps, ImageInfo } from '@/types/operator.types';
 import 'react-native-get-random-values';
+import styles from '@/app/components/operators/FormStyle';
 
 const FormDataCtor = global.FormData as typeof FormData;
 

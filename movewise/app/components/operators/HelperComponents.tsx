@@ -12,8 +12,8 @@ import {
 import DateTimePicker from '@react-native-community/datetimepicker';
 import * as ImagePicker from 'expo-image-picker';
 import { ALERT_TYPE, Toast } from 'react-native-alert-notification';
-import { FormInputProps, DateInputProps, DropdownInputProps, RadioGroupProps, ImageUploadProps, ImageInfo } from './Types';
-import { styles } from './FormStyle';
+import { FormInputProps, DateInputProps, DropdownInputProps, RadioGroupProps, ImageUploadProps, ImageInfo } from '@/types/operator.types';
+import styles from '@/app/components/operators/FormStyle';
 import { useTranslation } from 'react-i18next';
 import { useActionSheet } from '@expo/react-native-action-sheet';
 import { Linking } from 'react-native';
@@ -299,6 +299,14 @@ const uploadModalStyles = StyleSheet.create({
 });
 
 export {
+  FormInput,
+  DateInput,
+  DropdownInput,
+  RadioGroup,
+  ImageUpload
+};
+
+export default {
   FormInput,
   DateInput,
   DropdownInput,

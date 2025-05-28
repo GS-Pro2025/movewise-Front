@@ -95,7 +95,7 @@ const OperatorModal: React.FC<OperatorModalProps> = ({ visible, onClose, orderKe
       }));
 
 
-      console.log(`operadores asignados: ${JSON.stringify(formattedData)}`);
+      // console.log(`operadores asignados: ${JSON.stringify(formattedData)}`);
 
       setAssignedOperators(formattedData);
     } catch (error) {

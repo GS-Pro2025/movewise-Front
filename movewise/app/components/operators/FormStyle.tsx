@@ -1,6 +1,6 @@
 import { StyleSheet } from 'react-native';
 
-export const styles = StyleSheet.create({
+const styles = StyleSheet.create({
   // En tu FormStyle.ts
   // En FormStyle.ts
 disabled: {
@@ -287,3 +287,5 @@ placeholder: {
     borderColor: 'red'
   }
 });
+
+export default styles;

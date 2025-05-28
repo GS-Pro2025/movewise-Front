@@ -11,9 +11,9 @@ import { useRouter } from 'expo-router';
 import { PostOperator } from '@/hooks/api/PostOperator';
 import { useTranslation } from 'react-i18next';
 import { Toast, ALERT_TYPE } from 'react-native-alert-notification';
-import { FormData, ImageInfo, CreateOperatorProps } from './Types';
+import { FormData, Operator, CreateOperatorProps, ImageInfo } from '@/types/operator.types';
 
-export default function CreateOperator({ onClose, isEditing, initialData, orderKey }: CreateOperatorProps) {
+export default function CreateOperator({ onClose, isEditing = false, initialData, orderKey }: CreateOperatorProps) {
   const router = useRouter();
   const { t } = useTranslation();
   const [formData, setFormData] = useState<FormData>(() => ({

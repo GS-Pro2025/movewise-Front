@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { ScrollView, Platform, View, Text, TouchableOpacity } from 'react-native';
-import { FormInput, DateInput, DropdownInput } from '../HelperComponents';
-import { styles } from '../FormStyle';
-import { StepProps, Operator } from '../Types';
+import { FormInput, DateInput, DropdownInput } from '@/app/components/operators/HelperComponents';
+import styles from '@/app/components/operators/FormStyle';
+import { StepProps, Operator } from '@/types/operator.types';
 import { ALERT_TYPE, Toast } from 'react-native-alert-notification';
 import { ListOperators } from '@/hooks/api/Get_listOperator';
 import { router } from 'expo-router';
@@ -38,6 +38,38 @@ const Step1Form = ({ formData, updateFormData, onNext, isEditing }: StepProps) =
 
     // Errores de validación
     const [errors, setErrors] = useState<Record<string, string>>({});
+
+    const handleFirstNameChange = (text: string) => {
+        updateFormData({ first_name: text });
+    };
+
+    const handleLastNameChange = (text: string) => {
+        updateFormData({ last_name: text });
+    };
+
+    const handleBirthDateChange = (date: string) => {
+        updateFormData({ birth_date: date });
+    };
+
+    const handleTypeIdChange = (value: string) => {
+        updateFormData({ type_id: value });
+    };
+
+    const handleIdNumberChange = (text: string) => {
+        updateFormData({ id_number: text });
+    };
+
+    const handleAddressChange = (text: string) => {
+        updateFormData({ address: text });
+    };
+
+    const handlePhoneChange = (text: string) => {
+        updateFormData({ phone: text });
+    };
+
+    const handleEmailChange = (text: string) => {
+        updateFormData({ email: text });
+    };
 
     const handleChange = (field: string, value: string): void => {
 
