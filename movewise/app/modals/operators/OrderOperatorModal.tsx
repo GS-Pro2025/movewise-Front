@@ -1,21 +1,23 @@
-import { View, Text, TouchableOpacity, Modal, StyleSheet, useColorScheme, FlatList, TextInput, ActivityIndicator, RefreshControl, Alert, SafeAreaView, TextStyle, Platform } from "react-native";
+import { View, Text, TouchableOpacity, Modal, StyleSheet, useColorScheme, FlatList, TextInput, ActivityIndicator, RefreshControl, Alert, SafeAreaView } from "react-native";
 import { useState, useEffect, useCallback, memo } from "react";
 import { useRouter } from "expo-router";
 import DateTimePicker, { DateTimePickerEvent } from '@react-native-community/datetimepicker';
 import { Ionicons } from '@expo/vector-icons';
-import AddOrderForm from "./AddOrderForm";
-import UpdateOrder from "./UpdateOrder";
+// import AddOrderForm from "./AddOrderForm";
+import AddOrderForm from '@/app/screens/orders/AddOrderForm';
+import UpdateOrder from '@/app/screens/orders/UpdateOrder';
 import { GestureHandlerRootView, Swipeable } from "react-native-gesture-handler";
 import { TouchableHighlight } from "react-native";
 import Toast from "react-native-toast-message";
 import { DeleteOrder } from "@/hooks/api/DeleteOrder";
 import { useTranslation } from "react-i18next";
-import InfoOrderModal from './InfoOrderModal';
+import InfoOrderModal from '@/app/screens/orders/InfoOrderModal';
 import { useLocalSearchParams } from 'expo-router';
-import { useFocusEffect } from "expo-router";
+import { useFocusEffect } from "expo-router"; 
 import { getOrdersAllStatus, OrdersResponse } from "@/hooks/api/GetOrders";
 import colors from "@/app/Colors";
 import { Picker } from '@react-native-picker/picker';
+
 
 interface OrderModalProps {
   visible: boolean;
@@ -195,7 +197,7 @@ const OrderModal = () => {
   const handleEditOrder = useCallback((order: Order) => {
     if (order && order.status !== 'FINISHED') {
       router.push({
-        pathname: './UpdateOrder',
+        pathname: '../../screens/orders/UpdateOrder',
         params: { order: JSON.stringify(order) }
       });
     } else if (order.status === 'FINISHED') {
@@ -341,7 +343,7 @@ const OrderModal = () => {
         <Text style={[styles.title, { ...(isDarkMode ? { color: colors.darkText } : { color: colors.primary }) }]}>{t("Orders")}</Text>
         <TouchableOpacity
           style={[styles.addButton, { backgroundColor: isDarkMode ? colors.lightBackground : colors.primary }]}
-          onPress={() => router.push('./AddOrderForm')}
+          onPress={() => router.push('../../screens/orders/AddOrderForm')}
         >
           <Text style={[styles.plus, { color: isDarkMode ? colors.primary : colors.lightBackground }]}>+</Text>
         </TouchableOpacity>
@@ -470,7 +472,6 @@ const OrderModal = () => {
         visible={infoModalVisible}
         onClose={() => setInfoModalVisible(false)}
         order={selectedOrderInfo}
-        userRole={"admin"}
         isWorkhouse={false}
       />
       <Toast />

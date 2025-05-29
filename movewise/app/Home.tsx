@@ -264,7 +264,7 @@ const Home: React.FC = () => {
               title={t("create_daily")}
               isDarkMode={isDarkMode}
               iconSource={require("../assets/images/paquete.png")}
-              onPress={() => router.push("../screens/orders/OrderModal")}
+              onPress={() => router.push("./screens/orders/OrderModal")}
             />
           </View>
           <View style={styles.row}>
@@ -272,13 +272,13 @@ const Home: React.FC = () => {
               title={t("resume_order")}
               isDarkMode={isDarkMode}
               iconSource={require("../assets/images/paper.png")}
-              onPress={() => router.push("../screens/orders/ListOfOrdersForSumary")}
+              onPress={() => router.push("./screens/orders/ListOfOrdersForSumary")}
             />
             <ActionButton
               title={t("add_extra_cost")}
               isDarkMode={isDarkMode}
               iconSource={require("../assets/images/dolar.png")}
-              onPress={() => router.push("../screens/orders/WorkDailyScreen")}
+              onPress={() => router.push("./screens/orders/WorkDailyScreen")}
             />
           </View>
           <View style={styles.row}>
@@ -286,7 +286,7 @@ const Home: React.FC = () => {
               title={t("create_truck")}
               isDarkMode={isDarkMode}
               iconSource={require("../assets/images/truck.png")}
-              onPress={() => router.push("../screens/trucks/ListTruckScreen")}
+              onPress={() => router.push("./screens/trucks/ListTruckScreen")}
             />
             <ActionButton
               title={t("operator_edit")}
@@ -294,7 +294,7 @@ const Home: React.FC = () => {
               iconSource={require("../assets/images/Pencil.png")}
               onPress={() =>
                 router.push({
-                  pathname: "../screens/operators/OperatorList",
+                  pathname: "./screens/operators/OperatorList",
                   params: { isEdit: "true" },
                 })
               }
@@ -307,7 +307,7 @@ const Home: React.FC = () => {
               iconSource={require("../assets/images/logo.png")}
               onPress={() =>
                 router.push({
-                  pathname: "../screens/operators/OperatorList",
+                  pathname: "./screens/operators/OperatorList",
                   params: { isEdit: "false" },
                 })
               }
@@ -323,13 +323,13 @@ const Home: React.FC = () => {
               title={t("freelancers")}
               isDarkMode={isDarkMode}
               iconSource={require("../assets/images/personx.png")}
-              onPress={() => router.push("../screens/freelancers/FreelanceListScreen")}
+              onPress={() => router.push("./screens/freelancers/FreelanceListScreen")}
             />
             <ActionButton
               title={t("workhouse")}
               isDarkMode={isDarkMode}
               iconSource={require("../assets/images/work-house.png")}
-              onPress={() => router.push("../screens/workhouse/ListWorkHouse")}
+              onPress={() => router.push("./screens/workhouse/ListWorkHouse")}
             />
           </View>
 

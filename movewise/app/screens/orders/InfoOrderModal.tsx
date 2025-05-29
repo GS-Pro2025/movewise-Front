@@ -10,7 +10,8 @@ import {
   StyleSheet,
   ActivityIndicator,
   Linking,
-  Dimensions
+  Dimensions,
+  Alert
 } from 'react-native';
 import { useColorScheme } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
@@ -18,7 +19,11 @@ import { useTranslation } from 'react-i18next';
 import colors from '@/app/Colors';
 import { Order } from './OrderModal';
 import { GetAssignedOperators } from '@/hooks/api/GetAssignedOperators';
-
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import Toast from 'react-native-toast-message';
+import { url } from "@/hooks/api/apiClient";
+import CrossPlatformImageUpload from '@/components/CrossPlatformImageUpload';
+import { ImageInfo } from '@/components/CrossPlatformImageUpload';
 
 interface Operator {
   id_assign: number;
@@ -29,15 +34,21 @@ interface Operator {
   rol: string;
 }
 
-
 interface InfoOrderModalProps {
   visible: boolean;
   onClose: () => void;
   order: Order | null;
   isWorkhouse: boolean;
+  userRole?: string; // Add user role prop
 }
 
-const InfoOrderModal: React.FC<InfoOrderModalProps> = ({ visible, onClose, order, isWorkhouse = false }) => {
+const InfoOrderModal: React.FC<InfoOrderModalProps> = ({
+  visible,
+  onClose,
+  order,
+  isWorkhouse = false,
+  userRole
+}) => {
   const { width } = Dimensions.get('window');
   const { t } = useTranslation();
   const colorScheme = useColorScheme();
@@ -49,6 +60,12 @@ const InfoOrderModal: React.FC<InfoOrderModalProps> = ({ visible, onClose, order
 
   const [operators, setOperators] = useState<Operator[]>([]);
   const [loadingOperators, setLoadingOperators] = useState(true);
+
+
+  // Admin complete work states
+  const [completeWorkModalVisible, setCompleteWorkModalVisible] = useState(false);
+  const [evidence, setEvidence] = useState<ImageInfo | null>(null);
+  const [uploading, setUploading] = useState(false);
 
   const fetchOperators = async (orderKey: string) => {
     try {
@@ -124,6 +141,7 @@ const InfoOrderModal: React.FC<InfoOrderModalProps> = ({ visible, onClose, order
   const getStatusColor = (status: string) => {
     switch (status.toLowerCase()) {
       case 'completed':
+      case 'finished':
         return '#4CAF50';
       case 'pending':
         return '#FF9800';
@@ -131,6 +149,97 @@ const InfoOrderModal: React.FC<InfoOrderModalProps> = ({ visible, onClose, order
         return '#F44336';
       default:
         return primaryColor;
+    }
+  };
+
+  const handleEvidenceSelected = (image: ImageInfo) => {
+    setEvidence(image);
+  };
+
+  const handleCompleteWork = () => {
+    if (order?.status === 'finished') {
+      Toast.show({
+        type: 'error',
+        text1: t("error"),
+        text2: t("order_already_completed"),
+        position: 'bottom',
+        visibilityTime: 4000,
+      });
+      return;
+    }
+    setCompleteWorkModalVisible(true);
+  };
+
+  const removeDashes = (str: string | undefined | null) => {
+    return str ? str.replace(/-/g, '') : '';
+  };
+
+  const completeWorkAction = async () => {
+    if (!order) return;
+
+    try {
+      setUploading(true);
+
+      const formData = new FormData();
+      formData.append('status', 'finished');
+
+      // Add evidence if provided (optional for admin)
+      if (evidence) {
+        console.log(`agregando evidencia evidence ${evidence}`);
+        const localUri = evidence.uri;
+        const filename = localUri.split('/').pop() || 'evidence.jpg';
+        const match = /\.(\w+)$/.exec(filename);
+        const type = match ? `image/${match[1]}` : `image/jpeg`;
+
+        formData.append('evidence', {
+          uri: localUri,
+          name: filename,
+          type,
+        } as any);
+      }
+
+      const token = await AsyncStorage.getItem('userToken');
+      if (!token) throw new Error(t("no_auth_token"));
+      // console.log(`key en info ${removeDashes(order.key)}`);
+      const response = await fetch(
+        `${url}/orders/status/${removeDashes(order.key)}/`,
+        {
+          method: 'PATCH',
+          headers: {
+            'Content-Type': 'multipart/form-data',
+            'Authorization': `Bearer ${token}`,
+          },
+          body: formData,
+        }
+      );
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.detail || t("failed_complete_work"));
+      }
+
+      setCompleteWorkModalVisible(false);
+      onClose();
+
+      Toast.show({
+        type: 'success',
+        text1: t("success"),
+        text2: t("work_completed_success"),
+        position: 'bottom',
+        visibilityTime: 4000,
+      });
+
+      setEvidence(null);
+    } catch (error: any) {
+      Toast.show({
+        type: 'error',
+        text1: t("error"),
+        text2: error.message || t("failed_complete_work"),
+        position: 'bottom',
+        visibilityTime: 4000,
+      });
+    } finally {
+      setUploading(false);
     }
   };
 
@@ -215,7 +324,6 @@ const InfoOrderModal: React.FC<InfoOrderModalProps> = ({ visible, onClose, order
     );
   };
 
-
   const renderImageSection = (url: string | null, type: 'dispatchTicket' | 'evidence') => {
     const status = imageStatus[type];
     const label = type === 'dispatchTicket' ? t('dispatch_ticket') : t('evidence');
@@ -271,6 +379,48 @@ const InfoOrderModal: React.FC<InfoOrderModalProps> = ({ visible, onClose, order
     );
   };
 
+  // Render Admin Actions Card
+  const renderAdminActions = () => {
+    const isAdmin = userRole === 'admin';
+    const isEditableStatus = order?.status &&
+      order.status.toLowerCase() !== 'finished' &&
+      order.status.toLowerCase() !== 'inactive';
+
+    if (!isAdmin || !isEditableStatus) return null;
+
+    return (
+      <View style={[styles.card, { backgroundColor: cardBackground, borderColor }]}>
+        <View style={styles.cardHeader}>
+          <Ionicons name="shield-checkmark" size={20} color={primaryColor} style={styles.cardIcon} />
+          <Text style={[styles.cardTitle, { color: primaryColor }]}>{t("admin_actions")}</Text>
+        </View>
+
+        <View style={styles.cardContent}>
+          <TouchableOpacity
+            style={[
+              styles.adminActionButton,
+              {
+                backgroundColor: order?.status === 'finished' ? '#cccccc' : '#4CAF50',
+                opacity: order?.status === 'finished' ? 0.6 : 1
+              }
+            ]}
+            onPress={order?.status === 'finished' ? undefined : handleCompleteWork}
+            disabled={order?.status === 'finished'}
+          >
+            <Ionicons
+              name={order?.status === 'finished' ? "checkmark-done" : "checkmark-circle-outline"}
+              size={20}
+              color="#FFFFFF"
+            />
+            <Text style={styles.adminActionButtonText}>
+              {order?.status === 'finished' ? t("completed") : t("complete_work")}
+            </Text>
+          </TouchableOpacity>
+        </View>
+      </View>
+    );
+  };
+
   if (!order) return null;
 
   return (
@@ -303,6 +453,9 @@ const InfoOrderModal: React.FC<InfoOrderModalProps> = ({ visible, onClose, order
             </View>
           </View>
 
+          {/* Admin Actions */}
+          {renderAdminActions()}
+
           {/* Basic Info Card */}
           <View style={[styles.card, { backgroundColor: cardBackground, borderColor }]}>
             <View style={styles.cardHeader}>
@@ -319,7 +472,6 @@ const InfoOrderModal: React.FC<InfoOrderModalProps> = ({ visible, onClose, order
           </View>
 
           {/* Customer Card */}
-          {/* solo mostrar si la orden no es workhouse */}
           {!isWorkhouse &&
             <View style={[styles.card, { backgroundColor: cardBackground, borderColor }]}>
               <View style={styles.cardHeader}>
@@ -338,6 +490,7 @@ const InfoOrderModal: React.FC<InfoOrderModalProps> = ({ visible, onClose, order
               </View>
             </View>
           }
+
           {/* Technical Card */}
           <View style={[styles.card, { backgroundColor: cardBackground, borderColor }]}>
             <View style={styles.cardHeader}>
@@ -355,6 +508,80 @@ const InfoOrderModal: React.FC<InfoOrderModalProps> = ({ visible, onClose, order
           {renderImageSection(order.evidence, 'evidence')}
           {renderOperators()}
         </ScrollView>
+
+        {/* Complete Work Modal */}
+        <Modal
+          animationType="slide"
+          transparent={true}
+          visible={completeWorkModalVisible}
+          onRequestClose={() => setCompleteWorkModalVisible(false)}
+          statusBarTranslucent={true}
+          hardwareAccelerated={true}
+        >
+          <View style={styles.modalOverlay}>
+            <View style={[
+              styles.modalContainer,
+              { backgroundColor: isDarkMode ? '#1C3A5A' : '#2A4B8D' }
+            ]}>
+              <View style={styles.modalHeader}>
+                <Text style={styles.modalTitle}>
+                  {t("complete_work")} - {order?.key_ref}
+                </Text>
+                <TouchableOpacity
+                  onPress={() => setCompleteWorkModalVisible(false)}
+                  style={styles.modalClose}
+                >
+                  <Ionicons name="close" size={24} color="#FFFFFF" />
+                </TouchableOpacity>
+              </View>
+
+              <View style={styles.modalContent}>
+                <Text style={[styles.modalInfoText, { color: '#FFFFFF', marginBottom: 16 }]}>
+                  {t("admin_complete_work_info")}
+                </Text>
+
+                <Text style={[styles.modalInfoText, { color: '#FFFFFF', marginTop: 10 }]}>
+                  {t('evidence')} ({t("optional")})
+                </Text>
+                <CrossPlatformImageUpload
+                  label={t("upload_evidence")}
+                  image={evidence}
+                  onImageSelected={handleEvidenceSelected}
+                  required={false}
+                />
+              </View>
+
+              <View style={styles.modalButtonContainer}>
+                <TouchableOpacity
+                  style={[styles.modalButton, styles.cancelButton]}
+                  onPress={() => setCompleteWorkModalVisible(false)}
+                >
+                  <Text style={[styles.modalButtonText, { color: '#666666' }]}>
+                    {t('cancel')}
+                  </Text>
+                </TouchableOpacity>
+
+                <TouchableOpacity
+                  style={[
+                    styles.modalButton,
+                    styles.confirmButton,
+                    { opacity: uploading ? 0.7 : 1 }
+                  ]}
+                  onPress={completeWorkAction}
+                  disabled={uploading}
+                >
+                  {uploading ? (
+                    <ActivityIndicator color="#FFFFFF" />
+                  ) : (
+                    <Text style={styles.modalButtonText}>
+                      {t('complete_work')}
+                    </Text>
+                  )}
+                </TouchableOpacity>
+              </View>
+            </View>
+          </View>
+        </Modal>
       </SafeAreaView>
     </Modal>
   );
@@ -477,6 +704,21 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '500',
   },
+  // Admin Actions Styles
+  adminActionButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 12,
+    paddingHorizontal: 20,
+    borderRadius: 8,
+  },
+  adminActionButtonText: {
+    color: '#FFFFFF',
+    fontWeight: '600',
+    fontSize: 16,
+    marginLeft: 8,
+  },
   imageContainer: {
     height: 220,
     width: '100%',
@@ -554,6 +796,64 @@ const styles = StyleSheet.create({
     fontSize: 10,
     textTransform: 'uppercase',
     marginTop: 4,
+  },
+  // Modal Styles
+  modalOverlay: {
+    flex: 1,
+    justifyContent: 'flex-end',
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+  },
+  modalContainer: {
+    borderTopLeftRadius: 20,
+    borderTopRightRadius: 20,
+    paddingBottom: 40,
+  },
+  modalHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    padding: 20,
+  },
+  modalTitle: {
+    fontSize: 18,
+    color: '#FFFFFF',
+    fontWeight: 'bold',
+    flex: 1,
+  },
+  modalClose: {
+    padding: 5,
+  },
+  modalContent: {
+    paddingHorizontal: 20,
+    paddingBottom: 20,
+  },
+  modalInfoText: {
+    color: '#FFFFFF',
+    fontSize: 14,
+    marginBottom: 8,
+  },
+  modalButtonContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    paddingHorizontal: 20,
+    marginTop: 10,
+  },
+  modalButton: {
+    paddingVertical: 12,
+    paddingHorizontal: 20,
+    borderRadius: 25,
+    width: '45%',
+    alignItems: 'center',
+  },
+  modalButtonText: {
+    fontWeight: 'bold',
+    fontSize: 14,
+  },
+  cancelButton: {
+    backgroundColor: '#F0F0F0',
+  },
+  confirmButton: {
+    backgroundColor: '#4CAF50',
   },
 });
 

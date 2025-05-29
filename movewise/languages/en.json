@@ -166,6 +166,8 @@
   "could_not_load_orders": "Could not load orders",
   "no_orders_available": "No orders available",
   "no_matching_orders": "No matching orders found",
+  "no_matching_orders_today": "No matching orders found for today",
+  "all_statuses": "All statuses",
   "trucks": "Trucks",
   "search_placeholder_truck": "Search by number or category",
   "edit": "Edit",
@@ -551,5 +553,7 @@
   "confirm_password_required": "Confirm Password is required.",
   "confirm_password_placeholder": "Confirm Password",
   "assign_new_operator":"Assign New Operator",
-  "assignment_created":"Assignment Created"
+  "assignment_created":"Assignment Created",
+  "admin_actions":"Admin Actions",
+  "admin_complete_work_info":"Once completed, the order cannot be modified"
 }
