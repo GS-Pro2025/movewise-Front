@@ -172,10 +172,7 @@ const Home: React.FC = () => {
                             title={t("create_daily")}
                             isDarkMode={isDarkMode}
                             iconSource={require("../assets/images/paquete.png")}
-                            onPress={() => router.push({
-                                pathname: "/screens/orders/OrderModal",
-                                params: { isOperator: "true" }
-                            })}
+                            onPress={() => router.push("../modals/operators/OrderOperatorModal")}
                         />
                         <ActionButton
                             title={t("operator_work_daily")}

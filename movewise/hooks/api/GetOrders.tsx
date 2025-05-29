@@ -56,4 +56,50 @@ export const getOrders = async (url?: string): Promise<OrdersResponse> => {
   }
 };
 
+// hooks/api/GetOrders.ts
+export const getOrdersAllStatus = async (
+  url?: string,
+  filters?: {
+    date?: Date | null;
+    status?: string | null;
+    search?: string | null;
+  }
+): Promise<OrdersResponse> => {
+  try {
+    let endpoint = url || '/orders-all-status/';
+    const params = new URLSearchParams();
+
+    if (filters?.date) {
+      params.append('date', filters.date.toISOString().split('T')[0]); // Formato YYYY-MM-DD
+    }
+    if (filters?.status) {
+      params.append('status', filters.status);
+    }
+    if (filters?.search) {
+      params.append('search', filters.search);
+    }
+
+    // Si hay parámetros, añadirlos al endpoint
+    if (params.toString()) {
+      endpoint += `?${params.toString()}`;
+    }
+
+    const response = await apiClient.get<{
+      status: string;
+      data: OrdersResponse;
+    }>(endpoint);
+
+    return response.data.data;
+  } catch (error) {
+    console.error("Error fetching orders:", error);
+    return {
+      count: 0,
+      next: null,
+      previous: null,
+      results: []
+    };
+  }
+};
+
+
 export default Order;

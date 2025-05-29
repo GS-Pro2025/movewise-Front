@@ -10,13 +10,15 @@ import {
   SafeAreaView,
   TouchableOpacity,
   TextInput,
+  useColorScheme,
 } from "react-native";
 import { useRouter } from "expo-router";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { Ionicons } from "@expo/vector-icons";
 import DateTimePicker, { DateTimePickerEvent } from "@react-native-community/datetimepicker";
 import { useTranslation } from "react-i18next";
-import { GetOrderWithAllStatus } from "@/hooks/api/GetOrderWithAllStatus";
+import { getOrdersAllStatus, OrdersResponse } from "@/hooks/api/GetOrders";
+import colors from "@/app/Colors"; // Asegúrate de importar tus colores
 
 interface OrderPerson {
   email: string;
@@ -38,26 +40,36 @@ interface Order {
   person: OrderPerson;
   job: number;
 }
+
 const ListOfOrdersForSummary: React.FC = () => {
-  const { t } = useTranslation(); // Hook para traducción
+  const { t } = useTranslation();
   const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
-  const [startDate, setStartDate] = useState<Date | null>(null);
-  const [endDate, setEndDate] = useState<Date | null>(null);
-  const [showStartDatePicker, setShowStartDatePicker] = useState(false);
-  const [showEndDatePicker, setShowEndDatePicker] = useState(false);
+  const [selectedDate, setSelectedDate] = useState<Date | null>(null);
+  const [showDatePicker, setShowDatePicker] = useState(false);
   const [searchText, setSearchText] = useState("");
   const router = useRouter();
+  const colorScheme = useColorScheme();
+  const isDarkMode = colorScheme === "dark";
 
-  // Función para cargar órdenes
+  // Función para cargar órdenes con filtros
   const loadOrders = useCallback(async () => {
     setLoading(true);
     setRefreshing(true);
     try {
-      const response = await GetOrderWithAllStatus();
-      const ordersData = Array.isArray(response) ? response : response?.data || [];
-      setOrders(ordersData);
+      // Formatear fecha para el backend
+      const formattedDate = selectedDate 
+        ? selectedDate.toISOString().split('T')[0] 
+        : undefined;
+      
+      const response = await getOrdersAllStatus(undefined, {
+        date: formattedDate ? new Date(formattedDate) : null,
+        search: searchText,
+        status: null // No status filter
+      });
+      
+      setOrders(response?.results || []);
     } catch (error) {
       console.error(t("error_loading_orders"), error);
       Alert.alert(t("error"), t("could_not_load_orders"));
@@ -65,50 +77,21 @@ const ListOfOrdersForSummary: React.FC = () => {
       setLoading(false);
       setRefreshing(false);
     }
-  }, [t]);
+  }, [t, selectedDate, searchText]);
 
   useEffect(() => {
     loadOrders();
   }, [loadOrders]);
 
-  // Normalizar fechas para comparación
-  const normalizeDate = (date: Date) => {
-    const d = new Date(date);
-    d.setHours(0, 0, 0, 0);
-    return d;
-  };
-
-  // Filtrar órdenes según rango de fechas y búsqueda
-  const filteredOrders = orders.filter((order) => {
-    const orderDate = order.date ? normalizeDate(new Date(order.date)) : null;
-
-    const isDateMatch =
-      (!startDate && !endDate) ||
-      (orderDate && startDate && endDate && orderDate >= startDate && orderDate <= endDate) ||
-      (orderDate && startDate && !endDate && orderDate >= startDate) ||
-      (orderDate && !startDate && endDate && orderDate <= endDate);
-
-    const isSearchMatch =
-      order.key_ref.toLowerCase().includes(searchText.toLowerCase()) ||
-      `${order.person.first_name || ""} ${order.person.last_name || ""}`
-        .toLowerCase()
-        .includes(searchText.toLowerCase());
-
-    return isDateMatch && isSearchMatch;
-  });
-
-  const onStartDateChange = (event: DateTimePickerEvent, selectedDate?: Date) => {
-    setShowStartDatePicker(false);
-    if (selectedDate) {
-      setStartDate(selectedDate);
+  const onDateChange = (event: DateTimePickerEvent, date?: Date) => {
+    setShowDatePicker(false);
+    if (date) {
+      setSelectedDate(date);
     }
   };
 
-  const onEndDateChange = (event: DateTimePickerEvent, selectedDate?: Date) => {
-    setShowEndDatePicker(false);
-    if (selectedDate) {
-      setEndDate(selectedDate);
-    }
+  const clearDateFilter = () => {
+    setSelectedDate(null);
   };
 
   const renderItem = ({ item }: { item: Order }) => {
@@ -125,10 +108,10 @@ const ListOfOrdersForSummary: React.FC = () => {
     return (
       <GestureHandlerRootView>
         <TouchableHighlight
-          underlayColor="#e0e0e0"
+          underlayColor={isDarkMode ? colors.highlightDark : colors.highlightLight}
           onPress={() =>
             router.push({
-              pathname: "./SummaryComponent",
+              pathname: "../../modals/SummaryComponent",
               params: {
                 order: item.key,
                 key_ref: item.key_ref,
@@ -138,13 +121,19 @@ const ListOfOrdersForSummary: React.FC = () => {
             })
           }
         >
-          <View style={styles.orderItem}>
+          <View style={[styles.orderItem, { backgroundColor: isDarkMode ? colors.third : colors.lightBackground }]}>
             <View style={styles.orderIconContainer}>
-              <Ionicons name="cube-outline" size={24} color="#0458AB" />
+              <Ionicons 
+                name="cube-outline" 
+                size={24} 
+                color={isDarkMode ? colors.secondary : colors.primary} 
+              />
             </View>
             <View style={styles.orderDetails}>
-              <Text style={styles.orderRef}>{item.key_ref}</Text>
-              <Text style={styles.customerName}>
+              <Text style={[styles.orderRef, { color: isDarkMode ? colors.darkText : colors.primary }]}>
+                {item.key_ref}
+              </Text>
+              <Text style={[styles.customerName, { color: isDarkMode ? colors.placeholderDark : colors.lightText }]}>
                 {`${item.person?.first_name || ""} ${item.person?.last_name || ""}`}
               </Text>
             </View>
@@ -153,18 +142,17 @@ const ListOfOrdersForSummary: React.FC = () => {
                 style={[
                   styles.statusText,
                   {
-                    color:
-                      item.status.toLocaleLowerCase() === 'pending'
-                        ? "#f39c12"
-                        : item.status.toLocaleLowerCase() === t("completed")
-                        ? "#48dc33"
-                        : "#48dc33",
+                    color: 
+                      item.status.toLowerCase() === 'pending' ? colors.pendingStatus :
+                      item.status.toLowerCase() === 'completed' ? colors.completedStatus : colors.completedStatus
                   },
                 ]}
               >
                 {t(item.status.toLowerCase())}
               </Text>
-              <Text style={styles.dateText}>{formatDate(item.date)}</Text>
+              <Text style={[styles.dateText, { color: isDarkMode ? colors.placeholderDark : colors.placeholderLight }]}>
+                {formatDate(item.date)}
+              </Text>
             </View>
           </View>
         </TouchableHighlight>
@@ -174,92 +162,127 @@ const ListOfOrdersForSummary: React.FC = () => {
 
   return (
     <SafeAreaView style={{ flex: 1 }}>
-      <View style={[styles.header, { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }]}>
-        {/* Back Button */}
+      {/* Header con espacio aumentado para iOS */}
+      <View style={[styles.header, { 
+        backgroundColor: isDarkMode ? colors.third : colors.lightBackground,
+        minHeight: 70,
+        paddingVertical: 20,
+        borderBottomColor: isDarkMode ? colors.borderDark : colors.borderLight,
+      }]}>
         <TouchableOpacity
           onPress={() => router.back()}
           style={{
             width: 40,
             height: 40,
             borderRadius: 20,
-            borderWidth: 1,
             alignItems: 'center',
             justifyContent: 'center',
-            borderColor: '#FFF',
-            backgroundColor: '#0458AB',
+            backgroundColor: isDarkMode ? colors.secondary : colors.primary,
           }}
         >
-          <Text style={{ fontSize: 20, fontWeight: 'bold', color: '#FFF' }}>←</Text>
+          <Ionicons 
+            name="arrow-back" 
+            size={24} 
+            color={isDarkMode ? colors.darkText : colors.lightText} 
+          />
         </TouchableOpacity>
-        <Text style={[styles.title, { flex: 1, textAlign: 'center', marginLeft: 0 }]}>
+        <Text style={[styles.title, { 
+          flex: 1, 
+          textAlign: 'center', 
+          marginLeft: 0,
+          color: isDarkMode ? colors.darkText : colors.primary
+        }]}>
           {t("orders")}
         </Text>
-        {/* Espacio para mantener el título centrado */}
         <View style={{ width: 40 }} />
       </View>
+      
       {/* Barra de búsqueda */}
-      <View style={styles.searchContainer}>
+      <View style={[styles.searchContainer, { 
+        backgroundColor: isDarkMode ? colors.third : colors.lightBackground 
+      }]}>
+        <Ionicons 
+          name="search" 
+          size={20} 
+          color={isDarkMode ? colors.secondary : colors.primary} 
+        />
         <TextInput
-          style={styles.searchInput}
+          style={[styles.searchInput, { 
+            color: isDarkMode ? colors.darkText : colors.lightText 
+          }]}
           placeholder={t("search_placeholder")}
+          placeholderTextColor={isDarkMode ? colors.placeholderDark : colors.placeholderLight}
           value={searchText}
           onChangeText={setSearchText}
         />
-      </View>
-      {/* Filtros de fecha */}
-      <View style={styles.datePickerContainer}>
-        <TouchableOpacity
-          style={styles.datePickerButton}
-          onPress={() => setShowStartDatePicker(true)}
-        >
-          <Text style={styles.datePickerText}>
-            {startDate ? startDate.toLocaleDateString() : t("start_date")}
-          </Text>
-          <Ionicons name="calendar" size={20} color="#0458AB" />
-        </TouchableOpacity>
-        {showStartDatePicker && (
-          <DateTimePicker
-            value={startDate || new Date()}
-            mode="date"
-            display="default"
-            onChange={onStartDateChange}
-          />
+        {searchText.length > 0 && (
+          <TouchableOpacity onPress={() => setSearchText('')}>
+            <Ionicons 
+              name="close-circle" 
+              size={18} 
+              color={isDarkMode ? colors.secondary : colors.primary} 
+            />
+          </TouchableOpacity>
         )}
+      </View>
+
+      {/* Filtro de fecha única */}
+      <View style={[styles.datePickerContainer, { 
+        backgroundColor: isDarkMode ? colors.third : colors.lightBackground 
+      }]}>
         <TouchableOpacity
-          style={styles.datePickerButton}
-          onPress={() => setShowEndDatePicker(true)}
+          style={[styles.datePickerButton, {
+            borderColor: isDarkMode ? colors.secondary : colors.primary,
+            backgroundColor: isDarkMode ? colors.third : colors.highlightLight,
+          }]}
+          onPress={() => setShowDatePicker(true)}
         >
-          <Text style={styles.datePickerText}>
-            {endDate ? endDate.toLocaleDateString() : t("end_date")}
+          <Text style={{ color: isDarkMode ? colors.darkText : colors.lightText }}>
+            {selectedDate ? selectedDate.toLocaleDateString() : t("select_date")}
           </Text>
-          <Ionicons name="calendar" size={20} color="#0458AB" />
+          <Ionicons 
+            name="calendar" 
+            size={20} 
+            color={isDarkMode ? colors.secondary : colors.primary} 
+          />
         </TouchableOpacity>
-        {showEndDatePicker && (
+        {selectedDate && (
+          <TouchableOpacity onPress={clearDateFilter} style={{ marginLeft: 10 }}>
+            <Ionicons 
+              name="close-circle" 
+              size={20} 
+              color={isDarkMode ? colors.secondary : colors.primary} 
+            />
+          </TouchableOpacity>
+        )}
+        {showDatePicker && (
           <DateTimePicker
-            value={endDate || new Date()}
+            value={selectedDate || new Date()}
             mode="date"
             display="default"
-            onChange={onEndDateChange}
+            onChange={onDateChange}
           />
         )}
       </View>
 
       {loading ? (
         <View style={styles.loadingContainer}>
-          <ActivityIndicator size="large" color="#0458AB" />
+          <ActivityIndicator size="large" color={colors.primary} />
         </View>
       ) : (
         <FlatList
-          data={filteredOrders}
-          keyExtractor={(item, index) => `${item.key_ref}-${index}`}
+          data={orders}
+          keyExtractor={(item) => item.key}
           renderItem={renderItem}
           contentContainerStyle={styles.listContainer}
           refreshing={refreshing}
           onRefresh={loadOrders}
           ListEmptyComponent={
             <View style={styles.emptyContainer}>
-              <Text style={styles.emptyText}>
-                {orders.length === 0 ? t("no_orders_available") : t("no_matching_orders")}
+              <Text style={[styles.emptyText, { 
+                color: isDarkMode ? colors.emptyTextDark : colors.emptyTextLight 
+              }]}>
+                {t("no_matching_orders")}
               </Text>
             </View>
           }
@@ -271,112 +294,91 @@ const ListOfOrdersForSummary: React.FC = () => {
 
 const styles = StyleSheet.create({
   header: {
-    marginTop: 40,
-    padding: 16,
-    backgroundColor: "#0458AB",
-    alignItems: "center",
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: 15,
+    borderBottomWidth: 1,
   },
   title: {
     fontSize: 20,
-    fontWeight: "bold",
-    color: "#fff",
+    fontWeight: 'bold',
+  },
+  searchContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 15,
+    paddingVertical: 10,
+  },
+  searchInput: {
+    flex: 1,
+    height: 40,
+    marginLeft: 10,
+    paddingHorizontal: 10,
   },
   datePickerContainer: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    padding: 16,
-    backgroundColor: "#f5f5f5",
+    flexDirection: 'row',
+    alignItems: 'center',
+    padding: 15,
   },
   datePickerButton: {
-    flexDirection: "row",
-    alignItems: "center",
-    padding: 10,
-    borderWidth: 1,
-    borderColor: "#0458AB",
-    borderRadius: 8,
-    flex: 1,
-    marginHorizontal: 5,
-  },
-  datePickerText: {
-    flex: 1,
-    fontSize: 16,
-    color: "#333",
-  },
-  listContainer: {
-    backgroundColor: "#fff",
-    flexGrow: 1,
-    paddingHorizontal: 16,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: 10,
     paddingVertical: 8,
-  },
-  loadingContainer: {
+    borderRadius: 5,
+    borderWidth: 1,
     flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  emptyContainer: {
-    flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
-    padding: 20,
-  },
-  emptyText: {
-    fontSize: 16,
-    textAlign: "center",
   },
   orderItem: {
-    flexDirection: "row",
-    padding: 16,
-    marginVertical: 8,
-    borderRadius: 8,
-    backgroundColor: "#f5f5f5",
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.2,
-    shadowRadius: 2,
-    elevation: 2,
+    flexDirection: 'row',
+    padding: 15,
+    borderBottomWidth: 1,
+    borderBottomColor: '#e0e0e0',
   },
   orderIconContainer: {
-    marginRight: 12,
-    justifyContent: "center",
+    marginRight: 15,
   },
   orderDetails: {
     flex: 1,
-    justifyContent: "center",
   },
   orderRef: {
+    fontWeight: 'bold',
     fontSize: 16,
-    fontWeight: "bold",
-    color: "#0458AB",
   },
   customerName: {
     fontSize: 14,
     marginTop: 4,
-    color: "#333",
   },
   orderStatus: {
-    justifyContent: "center",
-    alignItems: "flex-end",
+    alignItems: 'flex-end',
   },
   statusText: {
+    fontWeight: 'bold',
     fontSize: 14,
-    fontWeight: "bold",
   },
   dateText: {
     fontSize: 12,
     marginTop: 4,
-    color: "#666",
   },
-  searchContainer: {
-    padding: 16,
-    backgroundColor: "#f5f5f5",
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
-  searchInput: {
-    height: 40,
-    borderWidth: 1,
-    borderColor: "#0458AB",
-    borderRadius: 8,
-    paddingHorizontal: 8,
+  emptyContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 20,
+  },
+  emptyText: {
     fontSize: 16,
+    textAlign: 'center',
+  },
+  listContainer: {
+    paddingBottom: 20,
   },
 });
 

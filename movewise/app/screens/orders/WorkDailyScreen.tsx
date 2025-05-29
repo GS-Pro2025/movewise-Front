@@ -10,7 +10,7 @@ import { useTranslation } from 'react-i18next';
 import { Ionicons } from '@expo/vector-icons';
 
 const WorkDailyScreen = () => {
-  
+
   const { t } = useTranslation(); // Hook para traducción
   const router = useRouter();
   const theme = useColorScheme(); // Detect the current theme
@@ -36,14 +36,14 @@ const WorkDailyScreen = () => {
       // console.log(t("api_response"), response);
 
       if (page === 1) {
-        // Replace data for the first page
-        setOrders(response);
+        // Replace data for the first page - use response.results to get the Order[]
+        setOrders(response.results);
       } else {
         // Append data for subsequent pages
-        setOrders((prev) => [...prev, ...response]);
+        setOrders((prev) => [...prev, ...response.results]);
       }
-      // Actualizar la URL de la siguiente página (si aplica)
-      setNextPage(null); // Suponiendo que la paginación no está implementada aún
+      // Update next page URL from the response
+      setNextPage(response.next);
     } catch (err) {
       console.error(t("error_fetching_orders"), err);
       // Manejar error de página inválida
@@ -195,11 +195,11 @@ const WorkDailyScreen = () => {
       >
         <FlatList
           data={orders}
-          keyExtractor={(item) => item.key.toString()} // Usa 'key' como clave única
+          keyExtractor={(item, index) => `${item.key}_${index}`} // Combine key and index for uniqueness
           renderItem={renderItem}
           contentContainerStyle={styles.list}
-          onEndReached={loadMoreData} // Activar loadMoreData al llegar al final
-          onEndReachedThreshold={0.5} // Activar cuando el 50% de la lista sea visible
+          onEndReached={loadMoreData}
+          onEndReachedThreshold={0.5}
           ListFooterComponent={
             isLoadingMore ? (
               <ActivityIndicator size="small" color={isDarkMode ? colors.secondary : colors.primary} />
