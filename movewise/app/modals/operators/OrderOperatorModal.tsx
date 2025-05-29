@@ -55,7 +55,7 @@ export interface Order {
 
 const OrderModal = () => {
   const params = useLocalSearchParams();
-  const isOperator = false;
+  const isOperator = true;
 
   const { t } = useTranslation();
   const [infoModalVisible, setInfoModalVisible] = useState(false);
@@ -244,6 +244,10 @@ const OrderModal = () => {
   }, [t, loadOrders]);
 
   const OrderItem = memo(({ item }: { item: Order }) => {
+    const handlePress = useCallback(() => {
+      handleOpenInfoModal(item);
+    }, [item]);
+    
     const formatDate = (dateString: string | null) => {
       if (!dateString) return '';
       return new Date(dateString).toLocaleDateString('en-US', {
@@ -286,10 +290,7 @@ const OrderModal = () => {
         >
           <TouchableHighlight
             underlayColor={isDarkMode ? colors.highlightDark : colors.highlightLight}
-            onPress={() => {
-              setSelectedOrderInfo(item);
-              setInfoModalVisible(true);
-            }}
+            onPress={handlePress}
           >
             <View style={[styles.orderItem, { backgroundColor: isDarkMode ? colors.third : colors.lightBackground }]}>
               <View style={styles.orderIconContainer}>
@@ -327,6 +328,13 @@ const OrderModal = () => {
 
   const clearDateFilter = useCallback(() => {
     setSelectedDate(null);
+  }, []);
+
+  const handleOpenInfoModal = useCallback((order: Order) => {
+    setSelectedOrderInfo(order);
+    setTimeout(() => {
+      setInfoModalVisible(true);
+    }, 100);
   }, []);
 
   return (
@@ -434,7 +442,7 @@ const OrderModal = () => {
         <FlatList
           style={{ backgroundColor: isDarkMode ? colors.darkBackground : colors.lightBackground }}
           data={orders}
-          keyExtractor={(item) => item.key}
+          keyExtractor={(item, index) => `${item.key}-${index}`}
           renderItem={({ item }) => <OrderItem item={item} />}
           contentContainerStyle={styles.listContainer}
           onEndReached={handleLoadMore}

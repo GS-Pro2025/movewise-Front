@@ -432,7 +432,7 @@ const OrderModal = () => {
         <FlatList
           style={{ backgroundColor: isDarkMode ? colors.darkBackground : colors.lightBackground }}
           data={orders}
-          keyExtractor={(item) => item.key}
+          keyExtractor={(item, index) => `${item.key}-${index}`}
           renderItem={({ item }) => <OrderItem item={item} />}
           contentContainerStyle={styles.listContainer}
           onEndReached={handleLoadMore}
