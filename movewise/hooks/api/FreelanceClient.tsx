@@ -1,7 +1,7 @@
 import apiClient from "./apiClient";
 
 export interface FreelanceData {
-    code: string;
+    // code: string;
     salary: number;
     email:string;
     status: 'freelance';
@@ -29,7 +29,7 @@ export const GetFreelanceByCode = async (code: string) => {
 
 export const CreateFreelance = async (data: FormData) => {
     try {
-        const response = await apiClient.post('/operators/create/', data, {
+        const response = await apiClient.post('/operators/create-freelance/', data, {
             headers: {
                 'Content-Type': 'multipart/form-data',
             },

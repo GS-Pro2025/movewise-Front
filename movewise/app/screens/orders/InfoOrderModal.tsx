@@ -123,18 +123,37 @@ const InfoOrderModal: React.FC<InfoOrderModalProps> = ({
 
   const formatDate = (dateString: string | null) => {
     if (!dateString) return t('not_found');
-    return new Date(dateString).toLocaleDateString('en-US', {
+    
+    // Crear la fecha en la zona horaria local
+    const date = new Date(dateString);
+    
+    // Ajustar por la diferencia de zona horaria para obtener la fecha correcta
+    const adjustedDate = new Date(date.getTime() + (date.getTimezoneOffset() * 60000));
+    
+    // Formatear la fecha ajustada
+    return adjustedDate.toLocaleDateString('en-US', {
       year: 'numeric',
       month: 'long',
-      day: 'numeric'
+      day: 'numeric',
+      timeZone: 'UTC' // Usar UTC para evitar ajustes adicionales
     });
   };
 
   const formatGroupedDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('en-US', {
+    if (!dateString) return '';
+    
+    // Crear la fecha en la zona horaria local
+    const date = new Date(dateString);
+    
+    // Ajustar por la diferencia de zona horaria para obtener la fecha correcta
+    const adjustedDate = new Date(date.getTime() + (date.getTimezoneOffset() * 60000));
+    
+    // Formatear la fecha ajustada
+    return adjustedDate.toLocaleDateString('en-US', {
       year: 'numeric',
       month: 'long',
-      day: 'numeric'
+      day: 'numeric',
+      timeZone: 'UTC' // Usar UTC para evitar ajustes adicionales
     });
   }
 
@@ -200,7 +219,7 @@ const InfoOrderModal: React.FC<InfoOrderModalProps> = ({
 
       const token = await AsyncStorage.getItem('userToken');
       if (!token) throw new Error(t("no_auth_token"));
-      // console.log(`key en info ${removeDashes(order.key)}`);
+      
       const response = await fetch(
         `${url}/orders/status/${removeDashes(order.key)}/`,
         {
@@ -218,18 +237,27 @@ const InfoOrderModal: React.FC<InfoOrderModalProps> = ({
         throw new Error(errorData.detail || t("failed_complete_work"));
       }
 
-      setCompleteWorkModalVisible(false);
-      onClose();
-
-      Toast.show({
-        type: 'success',
-        text1: t("success"),
-        text2: t("work_completed_success"),
-        position: 'bottom',
-        visibilityTime: 4000,
-      });
-
+      // Limpiar estados antes de cerrar
       setEvidence(null);
+      setUploading(false);
+      
+      // Cerrar el modal de confirmación primero
+      setCompleteWorkModalVisible(false);
+      
+      // Pequeño retraso para permitir la animación del modal
+      setTimeout(() => {
+        // Cerrar el modal principal
+        onClose();
+        
+        // Mostrar el toast después de que los modales se hayan cerrado
+        Toast.show({
+          type: 'success',
+          text1: t("success"),
+          text2: t("work_completed_success"),
+          position: 'bottom',
+          visibilityTime: 4000,
+        });
+      }, 300); // Tiempo suficiente para la animación del modal
     } catch (error: any) {
       Toast.show({
         type: 'error',
@@ -241,6 +269,23 @@ const InfoOrderModal: React.FC<InfoOrderModalProps> = ({
     } finally {
       setUploading(false);
     }
+  };
+
+  // Efecto para limpiar estados cuando el modal se cierra
+  useEffect(() => {
+    if (!visible) {
+      // Resetear estados cuando el modal se cierra
+      setCompleteWorkModalVisible(false);
+      setEvidence(null);
+      setUploading(false);
+    }
+  }, [visible]);
+
+  const handleClose = () => {
+    // Limpiar estados antes de cerrar
+    setCompleteWorkModalVisible(false);
+    setEvidence(null);
+    onClose();
   };
 
   const renderInfoItem = (label: string, value: string | number | undefined | null) => {
@@ -424,10 +469,17 @@ const InfoOrderModal: React.FC<InfoOrderModalProps> = ({
   if (!order) return null;
 
   return (
-    <Modal visible={visible} animationType="slide" transparent={false}>
+    <Modal 
+      visible={visible} 
+      animationType="slide" 
+      transparent={false}
+      onRequestClose={handleClose}
+      statusBarTranslucent={true}
+      hardwareAccelerated={true}
+    >
       <SafeAreaView style={[styles.container, { backgroundColor }]}>
         <View style={[styles.header, { borderBottomColor: borderColor }]}>
-          <TouchableOpacity onPress={onClose} style={styles.closeButton}>
+          <TouchableOpacity onPress={handleClose} style={styles.closeButton}>
             <Ionicons name="arrow-back" size={24} color={primaryColor} />
           </TouchableOpacity>
           <Text style={[styles.headerTitle, { color: primaryColor }]}>

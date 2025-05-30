@@ -80,7 +80,6 @@ const AssignFreelanceModal: React.FC<AssignFreelanceModalProps> = ({ visible, on
             const formData = new FormData();
 
             // Campos obligatorios
-            formData.append('code', newFreelance.code!);
             formData.append('salary', newFreelance.salary!.toString());
             formData.append('first_name', newFreelance.first_name!);
             formData.append('last_name', newFreelance.last_name!);
@@ -127,7 +126,7 @@ const AssignFreelanceModal: React.FC<AssignFreelanceModalProps> = ({ visible, on
             await CreateAssignment({
                 operator: freelanceData.data.id_operator,
                 order: workhouseKey,
-                assigned_at: new Date().toISOString(),
+                // assigned_at: new Date().toISOString(),
                 rol: 'freelance',
                 additional_costs: additionalCosts
             });
@@ -347,17 +346,6 @@ const AssignFreelanceModal: React.FC<AssignFreelanceModalProps> = ({ visible, on
                             </View>
 
                             {/* Campos del formulario con iconos */}
-                            <View style={styles.inputContainer}>
-                                <Text style={styles.label}>
-                                    <Ionicons name="barcode-outline" size={16} color={colors.primary} /> {t("code")}
-                                </Text>
-                                <TextInput
-                                    style={styles.input}
-                                    placeholder="FRL-001"
-                                    value={newFreelance.code}
-                                    onChangeText={text => setNewFreelance(prev => ({ ...prev, code: text }))}
-                                />
-                            </View>
 
                             <View style={styles.inputContainer}>
                                 <Text style={styles.label}>

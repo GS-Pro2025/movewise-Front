@@ -17,7 +17,7 @@ import { CustomerFactory } from '@/hooks/api/CustomerFactoryClient';
 import { Order } from './ListWorkHouse';
 import { Picker } from '@react-native-picker/picker';
 import {  FreelanceData } from '@/hooks/api/FreelanceClient';
-import AssignFreelanceModal from './AssignFreelanceModal';
+import FreelanceAssignmentScreen from './freelance-assignment';
 import CreateFreelanceModal from './CreateFreelanceModal';
 import CrossPlatformImageUpload from '@/components/CrossPlatformImageUpload';
 
@@ -245,14 +245,19 @@ const AddWorkhouseForm: React.FC<AddWorkhouseFormProps> = ({ visible, onClose, o
                         </ScrollView>
                     </View>
                 </View>
-                <AssignFreelanceModal
+                <FreelanceAssignmentScreen
                     visible={showFreelanceModal}
-                    onClose={() => setShowFreelanceModal(false)}
-                    onSuccess={() => {
+                    onClose={() => {
+                        setShowFreelanceModal(false);
                         onSuccess();
                         resetForm();
                     }}
-                    workhouseKey={workhouseKey || ''}
+                    workhouseKey={workhouseKey || undefined}
+                    onSuccess={() => {
+                        setShowFreelanceModal(false);
+                        onSuccess();
+                        resetForm();
+                    }}
                 />
             </Modal>
             <CreateFreelanceModal

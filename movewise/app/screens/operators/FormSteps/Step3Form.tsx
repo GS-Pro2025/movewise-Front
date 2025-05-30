@@ -57,6 +57,10 @@ const Step3Form = ({ formData, updateFormData, onBack, onSubmit, isEditing }: St
             newErrors.name_t_shift = t("tshirt_name_required");
         }
 
+        if (!localData.status) {
+            newErrors.status = t("status_required");
+        }
+
         /*if (!localData.photo) {
             newErrors.photo = t("photo_required");
         }**/
@@ -134,17 +138,18 @@ const Step3Form = ({ formData, updateFormData, onBack, onSubmit, isEditing }: St
                 />
 
                 <DropdownInput
-                    label={t("status")}
+                    label={`${t("status")} (*)`}
                     value={
                         localData.status === "active"
                             ? t("active")
                             : localData.status === "inactive"
                                 ? t("inactive")
-                                : ""
+                                : t("select_option")
                     }
                     onChange={(value) => handleChange("status", value)}
                     options={["active", "inactive"]}
                     error={errors.status}
+                    required={true}
                 />
 
 
