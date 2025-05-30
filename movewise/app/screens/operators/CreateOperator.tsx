@@ -96,7 +96,7 @@ const CreateOperator: React.FC<CreateOperatorProps> = ({
           } 
           // Handle other data types
           else if (typeof value !== 'object') {
-            console.log(`adding ${key}:`, value);
+            // console.log(`adding ${key}:`, value);  
             apiFormData.append(key, value.toString());
           }
         }

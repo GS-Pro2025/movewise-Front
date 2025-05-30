@@ -5,7 +5,7 @@ export interface AssignmentData {
     workhouse_key?: string;
     truck?: number | null;
     order: string;
-    assigned_at: string;
+    // assigned_at: string;
     rol: 'driver' | 'freelance';
     additional_costs: string;
 }

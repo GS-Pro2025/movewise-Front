@@ -40,11 +40,45 @@ function DateInput({ label, value, onChangeDate, error, required = false }: Date
   const [showDatePicker, setShowDatePicker] = useState(false);
   const { t } = useTranslation();
 
+  // Helper function to format date as YYYY-MM-DD
+  const formatDate = (date: Date): string => {
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+  };
+
+  // Parse date string to Date object in local timezone
+  const parseDateString = (dateString: string): Date => {
+    const [year, month, day] = dateString.split('-').map(Number);
+    // Create date in local timezone
+    return new Date(year, month - 1, day);
+  };
+
   const handleDateChange = (event: any, selectedDate?: Date): void => {
     setShowDatePicker(Platform.OS === 'ios');
     if (selectedDate) {
-      onChangeDate(selectedDate.toISOString().split('T')[0]);
+      // Format the date as YYYY-MM-DD without timezone conversion
+      const formattedDate = formatDate(selectedDate);
+      onChangeDate(formattedDate);
     }
+  };
+
+  // Get the current date value as a Date object
+  const getCurrentDate = (): Date => {
+    if (!value) return new Date();
+    try {
+      return parseDateString(value);
+    } catch (e) {
+      return new Date();
+    }
+  };
+
+  // Format the displayed date (DD/MM/YYYY for display)
+  const formatDisplayDate = (dateStr: string): string => {
+    if (!dateStr) return '';
+    const [year, month, day] = dateStr.split('-');
+    return `${day}/${month}/${year}`;
   };
 
   return (
@@ -54,15 +88,17 @@ function DateInput({ label, value, onChangeDate, error, required = false }: Date
         style={[styles.textInputContainer, error ? styles.inputError : null]}
         onPress={() => setShowDatePicker(true)}
       >
-        <Text style={value ? styles.dateText : styles.placeholderText}>{value || t("select_date")}</Text>
+        <Text style={value ? styles.dateText : styles.placeholderText}>
+          {value ? formatDisplayDate(value) : t("select_date")}
+        </Text>
         <Text style={styles.dateIcon}>📅</Text>
       </TouchableOpacity>
       {error && <Text style={styles.errorText}>{error}</Text>}
       {showDatePicker && (
         <DateTimePicker
-          value={value ? new Date(value) : new Date()}
+          value={getCurrentDate()}
           mode="date"
-          display="default"
+          display={Platform.OS === 'ios' ? 'spinner' : 'default'}
           onChange={handleDateChange}
         />
       )}

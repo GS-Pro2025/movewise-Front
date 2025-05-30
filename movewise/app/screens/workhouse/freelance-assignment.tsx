@@ -178,7 +178,6 @@ const FreelanceAssignmentScreen: React.FC<FreelanceAssignmentScreenProps> = ({
             await CreateAssignment({
                 operator: freelanceData.data.id_operator,
                 order: processedWorkhouseKey,
-                assigned_at: new Date().toISOString(),
                 rol: 'freelance',
                 additional_costs: additionalCosts
             });
@@ -208,7 +207,6 @@ const FreelanceAssignmentScreen: React.FC<FreelanceAssignmentScreenProps> = ({
             const formData = new FormData();
 
             // Campos obligatorios
-            formData.append('code', newFreelance.code!);
             formData.append('salary', newFreelance.salary!.toString());
             formData.append('first_name', newFreelance.first_name!);
             formData.append('last_name', newFreelance.last_name!);
@@ -527,18 +525,6 @@ const FreelanceAssignmentScreen: React.FC<FreelanceAssignmentScreenProps> = ({
                             {showCreateForm && (
                                 <View style={styles.createFormContainer}>
                                     <Text style={styles.sectionTitle}>{t("new_freelance")}</Text>
-
-                                    <View style={styles.inputContainer}>
-                                        <Text style={styles.label}>
-                                            <Ionicons name="barcode-outline" size={16} color={colors.primary} /> {t("code")}
-                                        </Text>
-                                        <TextInput
-                                            style={styles.input}
-                                            placeholder="FRL-001"
-                                            value={newFreelance.code}
-                                            onChangeText={text => setNewFreelance(prev => ({ ...prev, code: text }))}
-                                        />
-                                    </View>
 
                                     <View style={styles.inputContainer}>
                                         <Text style={styles.label}>

@@ -21,7 +21,6 @@ const EditFreelanceModal: React.FC<EditFreelanceModalProps> = ({ visible, freela
 
     const { t } = useTranslation();
     const [freelanceData, setFreelanceData] = useState<Partial<FreelanceData>>({
-        code: '',
         salary: 0,
         first_name: '',
         last_name: '',
@@ -58,7 +57,6 @@ const EditFreelanceModal: React.FC<EditFreelanceModalProps> = ({ visible, freela
             // console.log('Datos procesados:', apiData);
 
             setFreelanceData({
-                code: apiData.code || '',
                 salary: parseFloat(apiData.salary) || 0,
                 first_name: apiData.first_name || '',
                 last_name: apiData.last_name || '',
@@ -95,7 +93,7 @@ const EditFreelanceModal: React.FC<EditFreelanceModalProps> = ({ visible, freela
 
     const handleUpdateFreelance = async () => {
         // Validar campos requeridos
-        if (!freelanceData.code || !freelanceData.first_name || !freelanceData.last_name || !freelanceData.id_number) {
+        if (!freelanceData.first_name || !freelanceData.last_name || !freelanceData.id_number) {
             Alert.alert(t("error"), t("please_fill_required_fields"));
             return;
         }
@@ -105,7 +103,6 @@ const EditFreelanceModal: React.FC<EditFreelanceModalProps> = ({ visible, freela
             const formData = new FormData();
 
             // Campos obligatorios
-            formData.append('code', freelanceData.code!);
             formData.append('salary', freelanceData.salary!.toString());
             formData.append('first_name', freelanceData.first_name!);
             formData.append('last_name', freelanceData.last_name!);
@@ -146,7 +143,6 @@ const EditFreelanceModal: React.FC<EditFreelanceModalProps> = ({ visible, freela
 
     const resetForm = () => {
         setFreelanceData({
-            code: '',
             salary: 0,
             first_name: '',
             last_name: '',
@@ -193,18 +189,6 @@ const EditFreelanceModal: React.FC<EditFreelanceModalProps> = ({ visible, freela
                         ) : (
                             <>
                                 {/* Campos del formulario con iconos */}
-                                <View style={styles.inputContainer}>
-                                    <Text style={styles.label}>
-                                        <Ionicons name="barcode-outline" size={16} color={colors.textLight} /> {t("code")} *
-                                    </Text>
-                                    <TextInput
-                                        style={styles.input}
-                                        placeholder="FRL-001"
-                                        value={freelanceData.code}
-                                        onChangeText={text => updateField('code', text)}
-                                    />
-                                </View>
-
                                 <View style={styles.inputContainer}>
                                     <Text style={styles.label}>
                                         <Ionicons name="cash-outline" size={16} color={colors.textLight} /> {t("salary")} *
