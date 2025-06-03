@@ -78,7 +78,7 @@ const RegisterCompany = () => {
       });
 
       router.push({
-        pathname: "/modals/RegistryUser",
+        pathname: "../modals/company/RegistryUser",
         params: {
           license: license,
           company_name: companyName,
@@ -98,7 +98,7 @@ const RegisterCompany = () => {
   return (
     <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
       <ImageBackground
-        source={require("../assets/images/bg_login.jpg")}
+        source={require(".././assets/images/bg_login.jpg")}
         style={styles.background}
         resizeMode="cover"
       >
