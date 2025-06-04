@@ -10,7 +10,7 @@ import colors from "@/app/Colors";
 import Toast from "react-native-toast-message";
 import { useTranslation } from "react-i18next";
 import AddWorkhouseForm from "./AddWorkhouseForm";
-import { ListWorkHouse } from "@/hooks/api/GetWorkhouse";
+import { ListWorkHouse, WorkHouseResponse } from "@/hooks/api/GetWorkhouse";
 import { DeleteOrder } from "@/hooks/api/DeleteOrder";
 import EditWorkhouseForm from "./EditWorkhouseForm";
 import InfoOrderModal from "../orders/InfoOrderModal"
@@ -48,7 +48,6 @@ export interface Order {
   customer_factory_name: string | null;
 }
 
-
 const WorkhouseModal: React.FC<WorkhouseModalProps> = ({ visible, onClose }) => {
   const { t } = useTranslation();
   const [addModalVisible, setAddModalVisible] = useState(false);
@@ -58,8 +57,12 @@ const WorkhouseModal: React.FC<WorkhouseModalProps> = ({ visible, onClose }) => 
   const [selectedOrderForEdit, setSelectedOrderForEdit] = useState<Order | null>(null);
   const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
+  const [loadingMore, setLoadingMore] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
   const [searchText, setSearchText] = useState('');
+  const [currentPage, setCurrentPage] = useState(1);
+  const [hasNextPage, setHasNextPage] = useState(true);
+  const [totalCount, setTotalCount] = useState(0);
   const colorScheme = useColorScheme();
   const isDarkMode = colorScheme === "dark";
   const router = useRouter();
@@ -77,14 +80,22 @@ const WorkhouseModal: React.FC<WorkhouseModalProps> = ({ visible, onClose }) => 
     }, 50);
   };
 
-  const loadOrders = useCallback(async () => {
+  const loadOrders = useCallback(async (page: number = 1, isRefresh: boolean = false) => {
     try {
-      setLoading(true);
-      const response = await ListWorkHouse();
+      // console.log(`Loading orders, page: ${page}, isRefresh: ${isRefresh}`);
 
-      // Mapea solo si response es un array
-      if (Array.isArray(response)) {
-        const mappedOrders = response.map((order: Order) => ({
+      if (page === 1) {
+        setLoading(true);
+        setOrders([]); // Clear existing orders on refresh
+      } else {
+        setLoadingMore(true);
+      }
+
+      const response: WorkHouseResponse = await ListWorkHouse(page);
+      // console.log('Workhouse API response:', response);
+
+      if (response && Array.isArray(response.results)) {
+        const mappedOrders = response.results.map((order: any) => ({
           key: order.key,
           key_ref: order.key_ref,
           date: order.date,
@@ -95,56 +106,64 @@ const WorkhouseModal: React.FC<WorkhouseModalProps> = ({ visible, onClose }) => 
           status: order.status,
           payStatus: order.payStatus,
           state_usa: order.state_usa,
-          person: {
-            email: order.person?.email || '',
-            first_name: order.person?.first_name || null,
-            last_name: order.person?.last_name || null,
-            phone: order.person?.phone || null,
-            address: order.person?.address || null,
-          },
+          person: order.person,
           job: order.job,
-          job_name: order.job_name,                       // ← nuevo
-          evidence: order.evidence || null,
+          job_name: order.job_name,
+          evidence: order.evidence,
           dispatch_ticket: order.dispatch_ticket,
           customer_factory: order.customer_factory,
-          customer_factory_name: order.customer_factory_name || null, // ← nuevo
+          customer_factory_name: order.customer_factory_name,
         }));
-        setOrders(mappedOrders);
+
+        setOrders(prev => isRefresh ? mappedOrders : [...prev, ...mappedOrders]);
+        setTotalCount(response.count || 0);
+        setHasNextPage(!!response.next);
+        setCurrentPage(page);
       } else {
-        // console.error("La respuesta no es un array:", response);
+        console.error('Unexpected response format:', response);
+        Toast.show({
+          type: 'error',
+          text1: 'Error',
+          text2: 'Received unexpected data format from server',
+        });
       }
     } catch (error) {
-      console.error("Error detallado:", error);
-      Alert.alert(t("error"), t("could_not_load_orders"));
+      console.error('Error loading workhouses:', error);
+      Toast.show({
+        type: 'error',
+        text1: 'Error',
+        text2: 'Failed to load workhouses. Please try again.',
+      });
     } finally {
       setLoading(false);
+      setLoadingMore(false);
+      setRefreshing(false);
     }
-  }, [t]);
+  }, []);
 
+  // useEffect(() => {
+  //   console.log('ListWorkHouse state:', {
+  //     loading,
+  //     loadingMore,
+  //     refreshing,
+  //     ordersCount: orders.length,
+  //     currentPage,
+  //     hasNextPage,
+  //     totalCount,
+  //   });
+  // }, [loading, loadingMore, refreshing, orders.length, currentPage, hasNextPage, totalCount]);
+
+  // Initial load
   useEffect(() => {
-    loadOrders();
-  }, [loadOrders]); // Añade loadOrders como dependencia
+    // console.log('Workhouse modal became visible, loading data...');
+    loadOrders(1, true);
+  }, [loadOrders]);
 
-  const filteredSections = () => {
-    const searchLower = searchText.toLowerCase();
-
-    const active = orders.filter(order =>
-      order.status.toLowerCase() !== 'inactive' &&
-      (order.key_ref.toLowerCase().includes(searchLower) ||
-        order.customer_factory_name?.toLowerCase()?.includes(searchLower))
-    );
-
-    const inactive = orders.filter(order =>
-      order.status.toLowerCase() === 'inactive' &&
-      (order.key_ref.toLowerCase().includes(searchLower) ||
-        order.customer_factory_name?.toLowerCase()?.includes(searchLower))
-    );
-
-    return [
-      { title: t('active_orders'), data: active },
-      { title: t('inactive_orders'), data: inactive },
-    ].filter(section => section.data.length > 0);  // Filtra secciones vacías
-  };
+  const loadMoreOrders = useCallback(async () => {
+    if (!loadingMore && hasNextPage) {
+      await loadOrders(currentPage + 1);
+    }
+  }, [loadOrders, currentPage, hasNextPage, loadingMore]);
 
   const handleDelete = async (key: string) => {
     Alert.alert(
@@ -159,7 +178,8 @@ const WorkhouseModal: React.FC<WorkhouseModalProps> = ({ visible, onClose }) => 
               await DeleteOrder(key);
               setOrders(prev => prev.filter(order => order.key !== key));
               Toast.show({ type: "success", text1: t("order_deleted") });
-              loadOrders()
+              // Recargar desde la primera página para mantener consistencia
+              loadOrders(1, true);
             } catch (error) {
               Toast.show({ type: "error", text1: t("delete_error") });
             }
@@ -181,7 +201,9 @@ const WorkhouseModal: React.FC<WorkhouseModalProps> = ({ visible, onClose }) => 
 
   const handleRefresh = useCallback(async () => {
     setRefreshing(true);
-    await loadOrders();
+    setCurrentPage(1);
+    setHasNextPage(true);
+    await loadOrders(1, true);
     setRefreshing(false);
   }, [loadOrders]);
 
@@ -237,10 +259,10 @@ const WorkhouseModal: React.FC<WorkhouseModalProps> = ({ visible, onClose }) => 
               <View style={styles.orderStatus}>
                 <Text style={[styles.statusText, {
                   color: item.status.toLowerCase() === 'inactive'
-                    ? colors.warning // Rojo para inactivo
+                    ? colors.warning
                     : item.status.toLowerCase() === 'pending'
-                      ? colors.completedStatus // Verde para pendiente
-                      : colors.pendingStatus // Color por defecto para otros estados
+                      ? colors.completedStatus
+                      : colors.pendingStatus
                 }]}>
                   {t(item.status.toLowerCase())}
                 </Text>
@@ -270,6 +292,67 @@ const WorkhouseModal: React.FC<WorkhouseModalProps> = ({ visible, onClose }) => 
     </View>
   );
 
+  const renderFooter = () => {
+    if (!loadingMore) return null;
+
+    return (
+      <View style={styles.footerLoader}>
+        <ActivityIndicator size="small" color={colors.primary} />
+        <Text style={[styles.loadingMoreText, { color: isDarkMode ? colors.darkText : colors.lightText }]}>
+          {t("loading_more")}...
+        </Text>
+      </View>
+    );
+  };
+
+  const handleEndReached = () => {
+    // console.log('handleEndReached llamado:', { hasNextPage, loadingMore, loading });
+    if (hasNextPage && !loadingMore && !loading && orders.length > 0) {
+      // console.log('Cargando más órdenes...');
+      loadMoreOrders();
+    }
+  };
+
+  const filteredSections = () => {
+    const searchLower = searchText.toLowerCase();
+
+    // Primero filtramos por búsqueda
+    const filtered = orders.filter(order => 
+      order.key_ref.toLowerCase().includes(searchLower) ||
+      (order.customer_factory_name?.toLowerCase() || '').includes(searchLower)
+    );
+
+    // Luego separamos en activos e inactivos
+    const active = filtered.filter(order => order.status?.toLowerCase() !== 'inactive');
+    const inactive = filtered.filter(order => order.status?.toLowerCase() === 'inactive');
+
+    const sections = [];
+    
+    // Solo mostramos la sección de activos si hay resultados o si no hay búsqueda
+    if (active.length > 0 || searchText === '') {
+      sections.push({ 
+        title: t('active_orders'), 
+        data: active,
+        key: 'active'
+      });
+    }
+    
+    // Solo mostramos inactivos si hay resultados
+    if (inactive.length > 0) {
+      sections.push({ 
+        title: t('inactive_orders'), 
+        data: inactive,
+        key: 'inactive'
+      });
+    }
+
+    return sections;
+  };
+
+  const keyExtractor = (item: any, index: number) => {
+    return `${item.key}_${index}`; // Aseguramos una clave única
+  };
+
   return (
     <Modal animationType="slide" transparent={false} visible={visible} onRequestClose={onClose}>
       <SafeAreaView style={[styles.safeArea, { backgroundColor: isDarkMode ? colors.darkBackground : colors.lightBackground }]}>
@@ -284,7 +367,7 @@ const WorkhouseModal: React.FC<WorkhouseModalProps> = ({ visible, onClose }) => 
             </TouchableOpacity>
 
             <Text style={[styles.headerTitle, { color: isDarkMode ? colors.darkText : colors.primary }]}>
-              {t("workhouse")}
+              {t("workhouse")} ({totalCount})
             </Text>
 
             <View style={styles.emptySpace} />
@@ -322,19 +405,19 @@ const WorkhouseModal: React.FC<WorkhouseModalProps> = ({ visible, onClose }) => 
         ) : (
           <SectionList
             sections={filteredSections()}
-            keyExtractor={(item) => item.key}
+            keyExtractor={keyExtractor}
             renderItem={renderItem}
             renderSectionHeader={renderSectionHeader}
             refreshControl={
               <RefreshControl
                 refreshing={refreshing}
-                onRefresh={() => {
-                  setRefreshing(true);
-                  loadOrders().finally(() => setRefreshing(false));
-                }}
+                onRefresh={handleRefresh}
                 colors={[colors.primary]}
               />
             }
+            onEndReached={handleEndReached}
+            onEndReachedThreshold={0.1}
+            ListFooterComponent={renderFooter}
             ListEmptyComponent={
               <View style={styles.emptyContainer}>
                 <Ionicons name="sad-outline" size={40} color={colors.primary} />
@@ -352,7 +435,7 @@ const WorkhouseModal: React.FC<WorkhouseModalProps> = ({ visible, onClose }) => 
           visible={addModalVisible}
           onClose={() => setAddModalVisible(false)}
           onSuccess={() => {
-            loadOrders();
+            handleRefresh(); // Usar handleRefresh en lugar de loadOrders
             setAddModalVisible(false);
           }}
         />
@@ -360,13 +443,13 @@ const WorkhouseModal: React.FC<WorkhouseModalProps> = ({ visible, onClose }) => 
         {/* Modal para editar workhouse */}
         <EditWorkhouseForm
           visible={editModalVisible}
-          onClose={() => setEditModalVisible(false)} // Pasamos función directa
+          onClose={() => setEditModalVisible(false)}
           onSuccess={() => {
-            loadOrders();
+            handleRefresh(); // Usar handleRefresh en lugar de loadOrders
             setEditModalVisible(false);
           }}
           order={selectedOrderForEdit}
-          onOpenAssignment={handleOpenAssignmentScreen} // Pasamos la función correcta
+          onOpenAssignment={handleOpenAssignmentScreen}
         />
 
         <InfoOrderModal
@@ -407,7 +490,7 @@ const styles = StyleSheet.create({
     marginHorizontal: 8,
   },
   emptySpace: {
-    width: 24, // Mismo ancho que el botón de back para centrar el título
+    width: 24,
   },
   searchContainer: {
     flexDirection: 'row',
@@ -589,6 +672,16 @@ const styles = StyleSheet.create({
   sectionHeaderText: {
     fontSize: 16,
     fontWeight: '600',
+  },
+  footerLoader: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingVertical: 20,
+    gap: 8,
+  },
+  loadingMoreText: {
+    fontSize: 14,
   },
 });
 

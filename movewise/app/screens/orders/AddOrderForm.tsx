@@ -20,10 +20,17 @@ import CrossPlatformImageUpload from '@/components/CrossPlatformImageUpload';
 import { ImageInfo } from '@/components/CrossPlatformImageUpload';
 import { useRouter } from 'expo-router';
 import OperatorModal from '../operators/OperatorModal';
+import { getTodayDate, formatDateForAPI } from '@/utils/handleDate';
 
 export default function AddOrderModal() {
   const router = useRouter();
   const { t } = useTranslation();
+  
+  // Formatear la fecha como YYYY-MM-DD - ACTUALIZADO para usar la nueva utilidad
+  const formatDate = (date: Date): string => {
+    return formatDateForAPI(date);
+  };
+
   const [open, setOpen] = useState(false);
   const [state, setState] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState<string>(''); // State for search term
@@ -31,7 +38,8 @@ export default function AddOrderModal() {
   const [job, setJob] = useState<string | null>(null);
   const [openCompany, setOpenCompany] = useState(false);
   const [company, setCompany] = useState<number | null>(null);
-  const [date, setDate] = useState<string | null>(null);
+  // CAMBIO PRINCIPAL: Usar getTodayDate() y formatear correctamente
+  const [date, setDate] = useState<string>(formatDateForAPI(getTodayDate()));
   const [isDatePickerVisible, setDatePickerVisibility] = useState(false);
   const [keyReference, setKeyReference] = useState('');
   const [customerName, setCustomerName] = useState('');
@@ -378,238 +386,239 @@ export default function AddOrderModal() {
   });
 
   return (
-      <SafeAreaView style={{ flex: 1, backgroundColor: colorScheme === 'dark' ? '#112A4A' : '#FFFFFF' }}>
-        <KeyboardAvoidingView behavior={Platform.OS === "ios" ? "padding" : "height"} style={{ flex: 1 }}>
-          <ScrollView
-            contentContainerStyle={{ flexGrow: 1 }}
-            keyboardShouldPersistTaps="handled"
-            nestedScrollEnabled={true}
-          >
-            <View style={styles.header}>
-              <Image source={imageSource} style={styles.image} />
-              <Text style={styles.textLarge}>{t('add_order')}</Text>
+    <SafeAreaView style={{ flex: 1, backgroundColor: colorScheme === 'dark' ? '#112A4A' : '#FFFFFF' }}>
+      <KeyboardAvoidingView behavior={Platform.OS === "ios" ? "padding" : "height"} style={{ flex: 1 }}>
+        <ScrollView
+          contentContainerStyle={{ flexGrow: 1 }}
+          keyboardShouldPersistTaps="handled"
+          nestedScrollEnabled={true}
+        >
+          <View style={styles.header}>
+            <Image source={imageSource} style={styles.image} />
+            <Text style={styles.textLarge}>{t('add_order')}</Text>
+          </View>
+
+          <ThemedView style={styles.container}>
+            <View style={{ zIndex: 3000 }}>
+              <Text style={styles.text}>{t('state')} <Text style={styles.required}>(*)</Text></Text>
+              <DropDownPicker
+                open={open}
+                value={state || ""}
+                items={stateList.map((stateItem) => ({
+                  label: `${stateItem.name} (${stateItem.code})`,
+                  value: stateItem.code,
+                  key: stateItem.code
+                }))}
+                setOpen={setOpen}
+                setValue={setState}
+                placeholder={t('select_state')}
+                placeholderStyle={{ color: '#9ca3af' }}
+                style={[styles.input, { borderColor: errors.state ? "red" : "#0458AB" }]}
+                listMode="MODAL"
+                modalTitle={t('select_state')}
+                searchable={true}
+                searchPlaceholder={t('search')}
+                searchPlaceholderTextColor="#9ca3af"
+                scrollViewProps={{ nestedScrollEnabled: true }}
+                dropDownContainerStyle={{ maxHeight: 500 }}
+              />
             </View>
 
-            <ThemedView style={styles.container}>
-              <View style={{ zIndex: 3000 }}>
-                <Text style={styles.text}>{t('state')} <Text style={styles.required}>(*)</Text></Text>
-                <DropDownPicker
-                  open={open}
-                  value={state || ""}
-                  items={stateList.map((stateItem) => ({
-                    label: `${stateItem.name} (${stateItem.code})`,
-                    value: stateItem.code,
-                    key: stateItem.code
-                  }))}
-                  setOpen={setOpen}
-                  setValue={setState}
-                  placeholder={t('select_state')}
-                  placeholderStyle={{ color: '#9ca3af' }}
-                  style={[styles.input, { borderColor: errors.state ? "red" : "#0458AB" }]}
-                  listMode="MODAL"
-                  modalTitle={t('select_state')}
-                  searchable={true}
-                  searchPlaceholder={t('search')}
-                  searchPlaceholderTextColor="#9ca3af"
-                  scrollViewProps={{ nestedScrollEnabled: true }}
-                  dropDownContainerStyle={{ maxHeight: 500 }}
-                />
-              </View>
+            <View style={{ zIndex: 2000, marginTop: 16 }}>
+              <Text style={styles.text}>{t('date')} <Text style={styles.required}>(*)</Text></Text>
+              <TouchableOpacity onPress={() => setDatePickerVisibility(true)} style={[styles.input, { flexDirection: "row", alignItems: "center", justifyContent: "space-between" }]}>
+                <Text style={{ color: date ? (colorScheme === 'dark' ? "#ffffff" : "#000") : "#9ca3af" }}>{date ? date : t('select_date')}</Text>
+                <MaterialIcons name="calendar-today" size={20} color="#9ca3af" />
+              </TouchableOpacity>
 
-              <View style={{ zIndex: 2000, marginTop: 16 }}>
-                <Text style={styles.text}>{t('date')} <Text style={styles.required}>(*)</Text></Text>
-                <TouchableOpacity onPress={() => setDatePickerVisibility(true)} style={[styles.input, { flexDirection: "row", alignItems: "center", justifyContent: "space-between" }]}>
-                  <Text style={{ color: date ? (colorScheme === 'dark' ? "#ffffff" : "#000") : "#9ca3af" }}>{date ? date : t('select_date')}</Text>
-                  <MaterialIcons name="calendar-today" size={20} color="#9ca3af" />
-                </TouchableOpacity>
-
-                <DateTimePickerModal
-                  isVisible={isDatePickerVisible}
-                  mode="date"
-                  onConfirm={(selectedDate) => {
-                    setDatePickerVisibility(false);
-                    setDate(selectedDate.toISOString().split('T')[0]);
-                  }}
-                  onCancel={() => setDatePickerVisibility(false)}
-                />
-              </View>
-
-              <View style={{ zIndex: 2000, marginTop: 16 }}>
-                <Text style={styles.text}>{t('company_customer')} <Text style={styles.required}>(*)</Text></Text>
-                <DropDownPicker
-                  open={openCompany}
-                  value={company}
-                  items={companyList.map((companyItem) => ({
-                    label: companyItem.name,
-                    value: companyItem.id_factory,
-                    key: companyItem.id_factory.toString()
-                  }))}
-                  setOpen={setOpenCompany}
-                  setValue={(val) => {
-                    // console.log("Company selected:", val);
-                    // console.log("Company type:", typeof val);
-                    // Asegurar que sea numérico
-                    if (val !== null) {
-                      const numericVal = typeof val === 'string' ? parseInt(val, 10) : val;
-                      setCompany(numericVal);
-                      // console.log("Company set to:", numericVal, "type:", typeof numericVal);
-                    } else {
-                      setCompany(null);
-                    }
-                  }}
-                  placeholder={t('select_company')}
-                  placeholderStyle={{ color: '#9ca3af' }}
-                  style={[styles.input, { borderColor: errors.company ? "red" : "#0458AB" }]}
-                  listMode="SCROLLVIEW"
-                  dropDownContainerStyle={{ maxHeight: 200 }}
-                />
-              </View>
-
-              <Text style={styles.textLarge}>{t('general_data')}</Text>
-
-              {[{
-                label: t('key_reference'),
-                state: keyReference,
-                setState: setKeyReference,
-                keyboardType: "default",
-                errorKey: "keyReference"
-              }, {
-                label: t('customer_name'),
-                state: customerName,
-                setState: setCustomerName,
-                keyboardType: "default",
-                errorKey: "customerName"
-              }, {
-                label: t('customer_last_name'),
-                state: customerLastName,
-                setState: setCustomerLastName,
-                keyboardType: "default",
-                errorKey: "customerLastName"
-              }].map((input, index) => (
-                <View key={index}>
-                  <Text style={styles.text}>{input.label} <Text style={styles.required}>(*)</Text></Text>
-                  <TextInput
-                    style={[styles.input, { borderColor: errors[input.errorKey] ? "red" : (colorScheme === 'dark' ? '#64748b' : '#0458AB') }]}
-                    placeholder={input.label}
-                    placeholderTextColor="#9ca3af"
-                    value={input.state}
-                    onChangeText={input.setState}
-                    keyboardType={input.keyboardType as "default" | "numeric"}
-                  />
-                </View>
-              ))}
-
-              <Text style={styles.text}>{t('cell_phone')}</Text>
-              <TextInput
-                style={styles.input}
-                placeholder={t('cell_phone')}
-                placeholderTextColor="#9ca3af"
-                value={cellPhone}
-                onChangeText={setCellPhone}
-                keyboardType="numeric"
+              <DateTimePickerModal
+                isVisible={isDatePickerVisible}
+                mode="date"
+                date={date ? new Date(date) : getTodayDate()} // CAMBIO: usar getTodayDate() como fallback
+                onConfirm={(selectedDate) => {
+                  setDatePickerVisibility(false);
+                  setDate(formatDateForAPI(selectedDate)); // CAMBIO: usar formatDateForAPI()
+                }}
+                onCancel={() => setDatePickerVisibility(false)}
               />
+            </View>
 
-              <Text style={styles.text}>{t('address')}</Text>
-              <TextInput
-                style={styles.input}
-                placeholder={t('address')}
-                placeholderTextColor="#9ca3af"
-                value={address}
-                onChangeText={setAddress}
+            <View style={{ zIndex: 2000, marginTop: 16 }}>
+              <Text style={styles.text}>{t('company_customer')} <Text style={styles.required}>(*)</Text></Text>
+              <DropDownPicker
+                open={openCompany}
+                value={company}
+                items={companyList.map((companyItem) => ({
+                  label: companyItem.name,
+                  value: companyItem.id_factory,
+                  key: companyItem.id_factory.toString()
+                }))}
+                setOpen={setOpenCompany}
+                setValue={(val) => {
+                  // console.log("Company selected:", val);
+                  // console.log("Company type:", typeof val);
+                  // Asegurar que sea numérico
+                  if (val !== null) {
+                    const numericVal = typeof val === 'string' ? parseInt(val, 10) : val;
+                    setCompany(numericVal);
+                    // console.log("Company set to:", numericVal, "type:", typeof numericVal);
+                  } else {
+                    setCompany(null);
+                  }
+                }}
+                placeholder={t('select_company')}
+                placeholderStyle={{ color: '#9ca3af' }}
+                style={[styles.input, { borderColor: errors.company ? "red" : "#0458AB" }]}
+                listMode="SCROLLVIEW"
+                dropDownContainerStyle={{ maxHeight: 200 }}
               />
+            </View>
 
-              <Text style={styles.text}>{t('email')} <Text style={styles.required}>(*)</Text>
+            <Text style={styles.textLarge}>{t('general_data')}</Text>
+
+            {[{
+              label: t('key_reference'),
+              state: keyReference,
+              setState: setKeyReference,
+              keyboardType: "default",
+              errorKey: "keyReference"
+            }, {
+              label: t('customer_name'),
+              state: customerName,
+              setState: setCustomerName,
+              keyboardType: "default",
+              errorKey: "customerName"
+            }, {
+              label: t('customer_last_name'),
+              state: customerLastName,
+              setState: setCustomerLastName,
+              keyboardType: "default",
+              errorKey: "customerLastName"
+            }].map((input, index) => (
+              <View key={index}>
+                <Text style={styles.text}>{input.label} <Text style={styles.required}>(*)</Text></Text>
+                <TextInput
+                  style={[styles.input, { borderColor: errors[input.errorKey] ? "red" : (colorScheme === 'dark' ? '#64748b' : '#0458AB') }]}
+                  placeholder={input.label}
+                  placeholderTextColor="#9ca3af"
+                  value={input.state}
+                  onChangeText={input.setState}
+                  keyboardType={input.keyboardType as "default" | "numeric"}
+                />
+              </View>
+            ))}
+
+            <Text style={styles.text}>{t('cell_phone')}</Text>
+            <TextInput
+              style={styles.input}
+              placeholder={t('cell_phone')}
+              placeholderTextColor="#9ca3af"
+              value={cellPhone}
+              onChangeText={setCellPhone}
+              keyboardType="numeric"
+            />
+
+            <Text style={styles.text}>{t('address')}</Text>
+            <TextInput
+              style={styles.input}
+              placeholder={t('address')}
+              placeholderTextColor="#9ca3af"
+              value={address}
+              onChangeText={setAddress}
+            />
+
+            <Text style={styles.text}>{t('email')} <Text style={styles.required}>(*)</Text>
+            </Text>
+            {errors.email && (
+              <Text style={{ color: 'red', marginTop: 4, marginBottom: 8 }}>
+                {errors.email}
               </Text>
-              {errors.email && (
-                <Text style={{ color: 'red', marginTop: 4, marginBottom: 8 }}>
-                  {errors.email}
-                </Text>
-              )}
-              <TextInput
-                style={[styles.input, { borderColor: errors.email ? "red" : (colorScheme === 'dark' ? '#64748b' : '#0458AB') }]}
-                placeholder={t('email')}
-                placeholderTextColor="#9ca3af"
-                value={email}
-                onChangeText={setEmail}
-                keyboardType="email-address"
-                autoCapitalize="none"
+            )}
+            <TextInput
+              style={[styles.input, { borderColor: errors.email ? "red" : (colorScheme === 'dark' ? '#64748b' : '#0458AB') }]}
+              placeholder={t('email')}
+              placeholderTextColor="#9ca3af"
+              value={email}
+              onChangeText={setEmail}
+              keyboardType="email-address"
+              autoCapitalize="none"
+            />
+
+            <View style={{ zIndex: 1000 }}>
+              <Text style={styles.text}>{t('job')} <Text style={styles.required}>(*)</Text></Text>
+              <DropDownPicker
+                open={openJob}
+                value={job}
+                items={jobList.map((jobItem) => ({
+                  label: jobItem.name,
+                  value: jobItem.id.toString(),
+                  key: jobItem.id.toString()
+                }))}
+                setOpen={setOpenJob}
+                setValue={(val) => {
+                  // console.log("Job selected:", val);
+                  setJob(val);
+                }}
+                placeholder={t('select_job')}
+                placeholderStyle={{ color: '#9ca3af' }}
+                style={[styles.input, { borderColor: errors.job ? "red" : "#0458AB" }]}
+                listMode="SCROLLVIEW"
+                dropDownContainerStyle={{ maxHeight: 200 }}
               />
+            </View>
 
-              <View style={{ zIndex: 1000 }}>
-                <Text style={styles.text}>{t('job')} <Text style={styles.required}>(*)</Text></Text>
-                <DropDownPicker
-                  open={openJob}
-                  value={job}
-                  items={jobList.map((jobItem) => ({
-                    label: jobItem.name,
-                    value: jobItem.id.toString(),
-                    key: jobItem.id.toString()
-                  }))}
-                  setOpen={setOpenJob}
-                  setValue={(val) => {
-                    // console.log("Job selected:", val);
-                    setJob(val);
-                  }}
-                  placeholder={t('select_job')}
-                  placeholderStyle={{ color: '#9ca3af' }}
-                  style={[styles.input, { borderColor: errors.job ? "red" : "#0458AB" }]}
-                  listMode="SCROLLVIEW"
-                  dropDownContainerStyle={{ maxHeight: 200 }}
-                />
-              </View>
+            <Text style={styles.text}>{t('weight')} (kg) <Text style={styles.required}>(*)</Text></Text>
+            <TextInput
+              style={[styles.input, { borderColor: errors.weight ? "red" : (colorScheme === 'dark' ? '#64748b' : '#0458AB') }]}
+              placeholder={t('weight')}
+              placeholderTextColor="#9ca3af"
+              value={weight}
+              onChangeText={setWeight}
+              keyboardType="numeric"
+            />
 
-              <Text style={styles.text}>{t('weight')} (kg) <Text style={styles.required}>(*)</Text></Text>
-              <TextInput
-                style={[styles.input, { borderColor: errors.weight ? "red" : (colorScheme === 'dark' ? '#64748b' : '#0458AB') }]}
-                placeholder={t('weight')}
-                placeholderTextColor="#9ca3af"
-                value={weight}
-                onChangeText={setWeight}
-                keyboardType="numeric"
+            <View style={{ zIndex: 50, marginTop: 16 }}>
+              <Text style={styles.text}>{t('dispatch_ticket')} <Text style={styles.required}>(*)</Text></Text>
+              <CrossPlatformImageUpload
+                label={t("upload_dispatch_ticket")}
+                image={dispatchTicket || null}
+                onImageSelected={(image) => handleChange("dispatch_ticket", image)}
+                error={errors.dispatchTicket}
+                required={true}
               />
+            </View>
+            <View style={styles.buttonContainer}>
+              <TouchableOpacity style={styles.buttonCancel} onPress={handleCancel}>
+                <Text style={styles.buttonTextCancel}>{t('cancel')}</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={[
+                  styles.buttonSave,
+                  isLoading && { opacity: 0.7 }
+                ]}
+                onPress={handleSave}
+                disabled={isLoading}
+              >
+                {isLoading ? (
+                  <ActivityIndicator
+                    color={colorScheme === 'dark' ? '#0458AB' : '#FFFFFF'}
+                  />
+                ) : (
+                  <Text style={styles.buttonTextSave}>{t('save')}</Text>
+                )}
+              </TouchableOpacity>
+            </View>
+          </ThemedView>
 
-              <View style={{ zIndex: 50, marginTop: 16 }}>
-                <Text style={styles.text}>{t('dispatch_ticket')} <Text style={styles.required}>(*)</Text></Text>
-                <CrossPlatformImageUpload
-                  label={t("upload_dispatch_ticket")}
-                  image={dispatchTicket || null}
-                  onImageSelected={(image) => handleChange("dispatch_ticket", image)}
-                  error={errors.dispatchTicket}
-                  required={true}
-                />
-              </View>
-              <View style={styles.buttonContainer}>
-                <TouchableOpacity style={styles.buttonCancel} onPress={handleCancel}>
-                  <Text style={styles.buttonTextCancel}>{t('cancel')}</Text>
-                </TouchableOpacity>
-                <TouchableOpacity
-                  style={[
-                    styles.buttonSave,
-                    isLoading && { opacity: 0.7 }
-                  ]}
-                  onPress={handleSave}
-                  disabled={isLoading}
-                >
-                  {isLoading ? (
-                    <ActivityIndicator
-                      color={colorScheme === 'dark' ? '#0458AB' : '#FFFFFF'}
-                    />
-                  ) : (
-                    <Text style={styles.buttonTextSave}>{t('save')}</Text>
-                  )}
-                </TouchableOpacity>
-              </View>
-            </ThemedView>
-
-            {/* Operator Modal */}
-            <OperatorModal visible={operatorModalVisible}
-              onClose={() => setOperatorModalVisible(false)}
-              orderKey={savedOrderKey || 'There is no key'}
-              onSave={handleSaveOperators} />
-          </ScrollView>
-        </KeyboardAvoidingView>
+          {/* Operator Modal */}
+          <OperatorModal visible={operatorModalVisible}
+            onClose={() => setOperatorModalVisible(false)}
+            orderKey={savedOrderKey || 'There is no key'}
+            onSave={handleSaveOperators} />
+        </ScrollView>
+      </KeyboardAvoidingView>
       <Toast />
-      </SafeAreaView>
-      
+    </SafeAreaView>
+
   );
 }

@@ -7,7 +7,6 @@ import colors from '@/app/Colors';
 import { useTranslation } from 'react-i18next';
 import { createWorkhouseOrder } from '@/hooks/api/CreateWorkHouse';
 import * as FileSystem from 'expo-file-system';
-
 interface FreelanceImages {
     photo?: string;
     license_front?: string;
@@ -20,6 +19,7 @@ import {  FreelanceData } from '@/hooks/api/FreelanceClient';
 import FreelanceAssignmentScreen from './freelance-assignment';
 import CreateFreelanceModal from './CreateFreelanceModal';
 import CrossPlatformImageUpload from '@/components/CrossPlatformImageUpload';
+import { formatDateForAPI, getTodayDate } from '@/utils/handleDate';
 
 interface AddWorkhouseFormProps {
     visible: boolean;
@@ -43,7 +43,8 @@ export interface WorkhouseOrderData {
 
 const AddWorkhouseForm: React.FC<AddWorkhouseFormProps> = ({ visible, onClose, onSuccess }) => {
     const { t } = useTranslation();
-    const [date, setDate] = useState(new Date());
+    // Usar getTodayDate() en lugar de new Date()
+    const [date, setDate] = useState(getTodayDate());
     const [showDatePicker, setShowDatePicker] = useState(false);
     const [customerFactories, setCustomerFactories] = useState<any[]>([]);
     const [selectedCustomer, setSelectedCustomer] = useState<number | null>(null);
@@ -108,7 +109,8 @@ const AddWorkhouseForm: React.FC<AddWorkhouseFormProps> = ({ visible, onClose, o
         setLoading(true);
         try {
             const payload: WorkhouseOrderData = {
-                date: date.toISOString().split('T')[0],
+                // Usar formatDateForAPI en lugar de toISOString().split('T')[0]
+                date: formatDateForAPI(date),
                 status: "Pending",
                 person_id: 7,
                 job: 5,
@@ -140,7 +142,8 @@ const AddWorkhouseForm: React.FC<AddWorkhouseFormProps> = ({ visible, onClose, o
     };
 
     const resetForm = () => {
-        setDate(new Date());
+        // Usar getTodayDate() en lugar de new Date()
+        setDate(getTodayDate());
         setSelectedCustomer(null);
         setDispatchTicket(null);
         setValidationError(null);
