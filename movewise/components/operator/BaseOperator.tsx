@@ -100,7 +100,6 @@ const BaseOperatorView: React.FC<BaseOperatorViewProps> = ({
             // console.log("API response:", response);
 
             if (response?.status === "success") {
-                console.log(`guardado en el estado: ${JSON.stringify(response.data)}`);
                 
                 setAssignments(response.data || []);
             } else {

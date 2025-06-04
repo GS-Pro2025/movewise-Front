@@ -11,9 +11,9 @@ export const ListWorkHouse = async (page: number = 1): Promise<WorkHouseResponse
     console.log(`Fetching workhouse data, page: ${page}`);
     
     try {
-        console.log('Making API call to /workhouse/');
+        // console.log('Making API call to /workhouse/');
         const response = await apiClient.get(`/workhouse/?page=${page}`);
-        console.log('API Response:', JSON.stringify(response.data, null, 2));
+        // console.log('API Response:', JSON.stringify(response.data, null, 2));
         
         // Check if the response has the expected structure
         if (response.data && response.data.data) {
