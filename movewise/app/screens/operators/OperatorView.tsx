@@ -11,13 +11,26 @@ import BaseOperatorView, { Assignment } from "../../../components/operator/BaseO
 import AssignmentItem from "../../../components/operator/AssignmentItem";
 import AssignmentDetails from '../orders/assignmentDetails';
 import TruckDetail from '../trucks/TruckDetail';
-const OperatorView = () => {
-    const { t } = useTranslation(); // Hook para traducción
-    const params = useLocalSearchParams();
-    const router = useRouter();
-    const type = params.type as string;
-    const operatorId = params.operatorId as string;
 
+interface OperatorViewProps {
+    params: {
+      type: string;
+      operatorId: string;
+    };
+  }
+
+const OperatorView: React.FC<OperatorViewProps> = ({ params }) => {
+    const { t } = useTranslation(); // Hook para traducción
+    const router = useRouter();
+    const { type = 'defaultType', operatorId } = params;
+    if (!operatorId) {
+        console.error("No operator ID provided");
+        return (
+            <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+                <Text>Error: No operator ID provided</Text>
+            </View>
+        );
+    }
     const [selectedDate, setSelectedDate] = useState(new Date());
     const colorScheme = useColorScheme();
     const isDarkMode = colorScheme === 'dark';
@@ -25,7 +38,7 @@ const OperatorView = () => {
     const [modalVisible, setModalVisible] = useState(false);
     const [selected, setSelected] = useState<Assignment | null>(null);
     const isTruckView = type === 'truck';
-    const filterRole  = isTruckView
+    const filterRole = isTruckView
         ? (role: string) => role.toLowerCase() === 'driver'
         : (role: string) => role.toLowerCase() !== 'driver' && !role.toLowerCase().includes('driver');
     const emptyMessage = isTruckView
@@ -49,7 +62,7 @@ const OperatorView = () => {
             { backgroundColor: isDarkMode ? '#112A4A' : '#FFFFFF' }
         ]}>
             {/* Encabezado */}
-            <View style={[
+            {/* <View style={[
                 styles.header,
                 { backgroundColor: isDarkMode ? '#0A1C30' : '#0458AB' },
                 Platform.OS === 'ios' ? styles.iosHeader : {}
@@ -58,7 +71,7 @@ const OperatorView = () => {
                     <Ionicons name="arrow-back" size={24} color="#FFFFFF" />
                 </TouchableOpacity>
                 <Text style={[styles.headerTitle, { marginLeft: 10 }]}>{screenTitle}</Text>
-            </View>
+            </View> */}
 
             {/* Lista de asignaciones */}
 

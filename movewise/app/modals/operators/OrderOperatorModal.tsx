@@ -341,7 +341,7 @@ const OrderModal = () => {
     <SafeAreaView style={{ flex: 1 }}>
 
       {/* Header */}
-      <View style={[styles.header, { backgroundColor: isDarkMode ? colors.third : colors.lightBackground, borderBottomColor: isDarkMode ? colors.borderDark : colors.borderLight, minHeight: 100 }]}>
+      {/* <View style={[styles.header, { backgroundColor: isDarkMode ? colors.third : colors.lightBackground, borderBottomColor: isDarkMode ? colors.borderDark : colors.borderLight, minHeight: 100 }]}>
         <TouchableOpacity
           style={[styles.backButton]}
           onPress={() => router.back()}
@@ -355,7 +355,7 @@ const OrderModal = () => {
         >
           <Text style={[styles.plus, { color: isDarkMode ? colors.primary : colors.lightBackground }]}>+</Text>
         </TouchableOpacity>
-      </View>
+      </View> */}
 
       {/* Filtros combinados: Fecha + Estado */}
       <View style={[styles.filtersRow, { backgroundColor: isDarkMode ? colors.third : colors.lightBackground }]}>

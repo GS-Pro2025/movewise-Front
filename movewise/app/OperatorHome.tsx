@@ -1,6 +1,5 @@
-import React from "react";
+import React, { useState, useEffect, useRef } from "react";
 import {
-    Image,
     View,
     Text,
     StyleSheet,
@@ -9,12 +8,13 @@ import {
     StatusBar,
     useColorScheme,
     ScrollView,
+    Dimensions,
+    Image,
+    Platform,
+    ActivityIndicator
 } from "react-native";
-import { useRouter, useLocalSearchParams } from "expo-router";
-import { useNavigation } from "@react-navigation/native";
+import { useRouter } from "expo-router";1
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { decodeToken, getPersonIdFromToken, isAdmin } from "@/utils/decodeToken";
-import { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import Toast from "react-native-toast-message";
 import InfoOperatorModal from "./screens/operators/InfoOperatorModal";
@@ -22,14 +22,20 @@ import EditOperatorModal from "./screens/operators/EditOperatorModal";
 import colors from "./Colors";
 import Ionicons from 'react-native-vector-icons/Ionicons';
 
-interface ActionButtonProps {
-    title: string;
-    iconSource?: any;
-    isDarkMode: boolean;
-    onPress?: () => void;
+// Importar las vistas existentes
+import OrderOperatorModal from '@/app/modals/operators/OrderOperatorModal';
+import OperatorView from '@/app/screens/operators/OperatorView';
+
+// Tipos para las props de OperatorView
+interface OperatorViewProps {
+    params: {
+        type: string;
+        operatorId: string;
+    };
 }
 
-// En tu archivo de interfaces o en el mismo componente
+const { width: screenWidth, height: screenHeight } = Dimensions.get('window');
+
 interface Son {
     name: string;
     birth_date: string;
@@ -60,14 +66,25 @@ interface Operator {
     sons: Son[];
 }
 
+interface TabItem {
+    id: string;
+    title: string;
+    icon: string;
+    component: React.ComponentType<any>;
+}
+
 const Home: React.FC = () => {
-    const { t, i18n } = useTranslation();
+    const { t } = useTranslation();
     const router = useRouter();
     const theme = useColorScheme();
     const isDarkMode = theme === "dark";
+    const scrollViewRef = useRef<ScrollView>(null);
+
+    const [activeTab, setActiveTab] = useState(0);
     const [isInfoModalVisible, setIsInfoModalVisible] = useState(false);
     const [isEditModalVisible, setIsEditModalVisible] = useState(false);
     const [operator, setOperator] = useState<Operator | null>(null);
+    const [loading, setLoading] = useState(true);
 
     useEffect(() => {
         const loadOperator = async () => {
@@ -80,11 +97,12 @@ const Home: React.FC = () => {
             } catch (error) {
                 console.error("Error loading operator:", error);
                 Toast.show({ type: "error", text1: t("load_error") });
+            } finally {
+                setLoading(false);
             }
         };
         loadOperator();
-    }, [])
-
+    }, []);
 
     const handleUpdate = async (updatedOperator: Operator) => {
         setOperator(updatedOperator);
@@ -94,12 +112,12 @@ const Home: React.FC = () => {
 
     const handleLogout = async () => {
         try {
-            await AsyncStorage.clear(); // Limpia todos los datos almacenados
+            await AsyncStorage.clear();
             Toast.show({
                 type: "success",
                 text1: t("logout_success"),
             });
-            router.replace("/Login"); // Redirige al login
+            router.replace("/Login");
         } catch (error) {
             Toast.show({
                 type: "error",
@@ -107,177 +125,311 @@ const Home: React.FC = () => {
             });
         }
     };
+
+    // Componente de carga
+    const LoadingIndicator = () => (
+        <View style={styles.placeholderContainer}>
+            <ActivityIndicator size="large" color={isDarkMode ? colors.secondary : colors.primary} />
+            <Text style={[styles.placeholderText, { color: isDarkMode ? colors.darkText : colors.primary }]}>
+                {t("loading")}...
+            </Text>
+        </View>
+    );
+
+    // Componente para la vista de Work Daily
+    const WorkDailyView = () => {
+        if (!operator?.id_operator) {
+            return <LoadingIndicator />;
+        }
+
+        return (
+            <View style={styles.tabContent}>
+                <OperatorView
+                    params={{
+                        type: "work",
+                        operatorId: operator.id_operator.toString()
+                    }}
+                />
+            </View>
+        );
+    };
+
+    // Componente para la vista de Truck Daily
+    const TruckDailyView = () => {
+        if (!operator?.id_operator) {
+            return <LoadingIndicator />;
+        }
+
+        return (
+            <View style={styles.tabContent}>
+                <OperatorView
+                    params={{
+                        type: "truck",
+                        operatorId: operator.id_operator.toString()
+                    }}
+                />
+            </View>
+        );
+    };
+
+    // Componente para la vista de Orders
+    const OrdersView = () => (
+        <View style={styles.tabContent}>
+            <OrderOperatorModal/>
+        </View>
+    );
+
+    // Componente para la vista de History
+    const HistoryView = () => (
+        <View style={styles.tabContent}>
+            <View style={styles.placeholderContainer}>
+                <Ionicons
+                    name="time-outline"
+                    size={60}
+                    color={isDarkMode ? colors.darkText : colors.primary}
+                />
+                <Text style={[styles.placeholderText, { color: isDarkMode ? colors.darkText : colors.primary }]}>
+                    {t("operator_work_history")}
+                </Text>
+                <Text style={[styles.placeholderSubtext, { color: isDarkMode ? colors.placeholderDark : colors.placeholderLight }]}>
+                    {t("coming_soon")}
+                </Text>
+            </View>
+        </View>
+    );
+
+    const tabs: TabItem[] = [
+        {
+            id: 'orders',
+            title: t("orders"),
+            icon: 'cube-outline',
+            component: OrdersView
+        },
+        {
+            id: 'work',
+            title: t("work_daily"),
+            icon: 'briefcase-outline',
+            component: WorkDailyView
+        },
+        {
+            id: 'truck',
+            title: t("truck_daily"),
+            icon: 'car-outline',
+            component: TruckDailyView
+        },
+        {
+            id: 'history',
+            title: t("history"),
+            icon: 'time-outline',
+            component: HistoryView
+        }
+    ];
+
+    const handleTabPress = (index: number) => {
+        setActiveTab(index);
+        scrollViewRef.current?.scrollTo({
+            x: index * screenWidth,
+            animated: true
+        });
+    };
+
+    if (loading) {
+        return (
+            <SafeAreaView style={[styles.container, isDarkMode ? styles.darkBackground : styles.lightBackground]}>
+                <LoadingIndicator />
+            </SafeAreaView>
+        );
+    }
+
     return (
         <SafeAreaView
             style={[styles.container, isDarkMode ? styles.darkBackground : styles.lightBackground]}
         >
             <StatusBar barStyle={isDarkMode ? "light-content" : "dark-content"} />
 
-            <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
-                {/* Header */}
-                <View style={styles.header}>
-                    <TouchableOpacity
-                        onPress={() => setIsInfoModalVisible(true)}
-                        style={styles.avatarContainer}
-                    >
-                        {operator?.photo ? (
-                            <Image
-                                source={{ uri: operator.photo }}
-                                style={[styles.avatarImage, isDarkMode && styles.darkBorder]}
-                                onError={() => console.log("Error cargando foto del operador")}
-                            />
-                        ) : (
-                            <Ionicons
-                                name="person-circle-outline"
-                                size={40}
-                                color={isDarkMode ? colors.darkText : colors.primary}
-                            />
-                        )}
-                    </TouchableOpacity>
-
-                    <View style={styles.userTextContainer}>
-                        <Text style={[styles.userName, { color: isDarkMode ? "#FFFFFF" : "#0458AB" }]}>
-                            {operator?.first_name} {operator?.last_name}
-                        </Text>
-                        <Text style={[styles.userId, { color: isDarkMode ? "#CCCCCC" : "#888888" }]}>
-                            {operator?.code || t("no_code_available")}
-                        </Text>
-                    </View>
-
-                    <TouchableOpacity
-                        onPress={handleLogout}
-                        style={styles.logoutButton}
-                    >
+            {/* Header */}
+            <View style={[styles.header, {
+                backgroundColor: isDarkMode ? colors.third : colors.lightBackground,
+                paddingTop: Platform.OS === 'ios' ? 40 : 20
+            }]}>
+                <TouchableOpacity
+                    onPress={() => setIsInfoModalVisible(true)}
+                    style={styles.avatarContainer}
+                >
+                    {operator?.photo ? (
+                        <Image
+                            source={{ uri: operator.photo }}
+                            style={[styles.avatarImage, isDarkMode && styles.darkBorder]}
+                            onError={() => console.log("Error cargando foto del operador")}
+                        />
+                    ) : (
                         <Ionicons
-                            name="log-out-outline"
-                            size={28}
+                            name="person-circle-outline"
+                            size={40}
                             color={isDarkMode ? colors.darkText : colors.primary}
                         />
-                    </TouchableOpacity>
+                    )}
+                </TouchableOpacity>
+
+                <View style={styles.userTextContainer}>
+                    <Text style={[styles.userName, { color: isDarkMode ? "#FFFFFF" : "#0458AB" }]}>
+                        {operator?.first_name} {operator?.last_name}
+                    </Text>
+                    <Text style={[styles.userId, { color: isDarkMode ? "#CCCCCC" : "#888888" }]}>
+                        {operator?.code || t("no_code_available")}
+                    </Text>
                 </View>
 
-                <View style={styles.divider} />
-
-                <View style={styles.imageContainer}>
-                    <Image
-                        source={require("../assets/images/LOGOPNG.png")}
-                        style={[styles.userLogo, { tintColor: isDarkMode ? "#FFFFFF" : "#0458AB" }]}
+                <TouchableOpacity
+                    onPress={handleLogout}
+                    style={styles.logoutButton}
+                >
+                    <Ionicons
+                        name="log-out-outline"
+                        size={28}
+                        color={isDarkMode ? colors.darkText : colors.primary}
                     />
-                </View>
+                </TouchableOpacity>
+            </View>
 
-                {/* Grid de botones */}
-                <View style={styles.gridContainer}>
-                    <View style={styles.row}>
-                        <ActionButton
-                            title={t("create_daily")}
-                            isDarkMode={isDarkMode}
-                            iconSource={require("../assets/images/paquete.png")}
-                            onPress={() => router.push("../modals/operators/OrderOperatorModal")}
-                        />
-                        <ActionButton
-                            title={t("operator_work_daily")}
-                            isDarkMode={isDarkMode}
-                            iconSource={require("../assets/images/workDailyIcon.png")}
-                            onPress={() => router.push({
-                                pathname: "./screens/operators/OperatorView",
-                                params: {
-                                    type: "work",
-                                    operatorId: operator?.id_operator
+            {/* Contenido principal */}
+            <View style={styles.contentContainer}>
+                {tabs.map((tab, index) => {
+                    const TabComponent = tab.component;
+                    return (
+                        <View
+                            key={tab.id}
+                            style={[
+                                styles.tabPage,
+                                {
+                                    display: activeTab === index ? 'flex' : 'none',
+                                    width: screenWidth
                                 }
-                            })}
-                        />
-                        <ActionButton
-                            title={t("operator_truck_daily")}
-                            isDarkMode={isDarkMode}
-                            iconSource={require("../assets/images/truck.png")}
-                            onPress={() => router.push({
-                                pathname: "./screens/operators/OperatorView",
-                                params: {
-                                    type: "truck",
-                                    operatorId: operator?.id_operator
-                                }
-                            })}
-                        />
-                    </View>
-                    <View style={styles.row}>
-                        <ActionButton
-                            title={t("operator_work_history")}
-                            isDarkMode={isDarkMode}
-                            iconSource={require("../assets/images/historyIcon.png")}
-                        />
-                    </View>
-                </View>
-                {/* Modales */}
-                {operator && (
-                    <>
-                        <InfoOperatorModal
-                            visible={isInfoModalVisible}
-                            onClose={() => setIsInfoModalVisible(false)}
-                            operator={operator}
-                            onEdit={() => {
-                                setIsInfoModalVisible(false);
-                                setIsEditModalVisible(true);
-                            }}
-                        />
+                            ]}
+                        >
+                            <TabComponent />
+                        </View>
+                    );
+                })}
+            </View>
 
-                        <EditOperatorModal
-                            visible={isEditModalVisible}
-                            onClose={() => setIsEditModalVisible(false)}
-                            operator={operator}
-                            onUpdate={handleUpdate}
-                        />
-                    </>
-                )}
-            </ScrollView>
+            {/* Bottom Tab Bar con indicador de tab activo */}
+            <View style={[styles.tabBar, {
+                backgroundColor: isDarkMode ? colors.third : colors.lightBackground,
+                height: 70,
+                paddingBottom: Platform.OS === 'ios' ? 20 : 10
+            }]}>
+                {tabs.map((tab, index) => (
+                    <TouchableOpacity
+                        key={tab.id}
+                        style={[
+                            styles.tabItem,
+                            activeTab === index && styles.activeTabItem
+                        ]}
+                        onPress={() => handleTabPress(index)}
+                    >
+                        <View style={styles.tabIconContainer}>
+                            <Ionicons
+                                name={tab.icon as any}
+                                size={24}
+                                color={
+                                    activeTab === index
+                                        ? colors.secondary
+                                        : (isDarkMode ? colors.placeholderDark : colors.placeholderLight)
+                                }
+                            />
+                            {/* Indicador de tab activo */}
+                            {activeTab === index && (
+                                <View style={[styles.activeIndicator, {
+                                    backgroundColor: colors.secondary
+                                }]} />
+                            )}
+                        </View>
+                        <Text
+                            style={[
+                                styles.tabText,
+                                {
+                                    color: activeTab === index
+                                        ? colors.secondary
+                                        : (isDarkMode ? colors.placeholderDark : colors.placeholderLight)
+                                }
+                            ]}
+                        >
+                            {tab.title}
+                        </Text>
+                    </TouchableOpacity>
+                ))}
+            </View>
+
+            {/* Modales */}
+            {operator && (
+                <>
+                    <InfoOperatorModal
+                        visible={isInfoModalVisible}
+                        onClose={() => setIsInfoModalVisible(false)}
+                        operator={operator}
+                        onEdit={() => {
+                            setIsInfoModalVisible(false);
+                            setIsEditModalVisible(true);
+                        }}
+                    />
+
+                    <EditOperatorModal
+                        visible={isEditModalVisible}
+                        onClose={() => setIsEditModalVisible(false)}
+                        operator={operator}
+                        onUpdate={handleUpdate}
+                    />
+                </>
+            )}
         </SafeAreaView>
     );
 };
 
-const ActionButton: React.FC<ActionButtonProps> = ({ title, iconSource, isDarkMode, onPress }) => {
-    return (
-        <TouchableOpacity
-            style={[styles.actionButton, isDarkMode ? styles.darkButton : styles.lightButton]}
-            onPress={onPress}
-        >
-            {iconSource ? (
-                <Image
-                    source={iconSource}
-                    style={[styles.actionButtonIcon, { tintColor: isDarkMode ? "#112A4A" : "#FFFFFF" }]}
-                />
-            ) : null}
-            <Text style={[styles.actionButtonText, isDarkMode ? styles.darkText : styles.lightText]}>
-                {title}
-            </Text>
-        </TouchableOpacity>
-    );
-};
 const styles = StyleSheet.create({
-    container: { flex: 1 },
-    darkBackground: { backgroundColor: "#112A4A" },
-    lightBackground: { backgroundColor: "#FFF" },
-    scrollContent: { flexGrow: 1, padding: 20 },
-    header: { flexDirection: "row", justifyContent: "space-between", alignItems: "center" },
-    userInfo: { flexDirection: "row", alignItems: "center" },
-    avatarContainer: { width: 40, height: 40, borderRadius: 20, overflow: "hidden" },
-    userIcono: { width: 40, height: 40 },
-    userTextContainer: { marginLeft: 10 },
-    userName: { fontSize: 18, fontWeight: "bold", color: "#ffff" },
-    shareButton: { padding: 10 },
-    divider: { height: 1, backgroundColor: "#ccc", marginVertical: 10 },
-    imageContainer: { alignItems: "center", marginVertical: 10 },
-    userLogo: { width: 100, height: 100 },
-    gridContainer: { marginTop: 10 },
-    row: { flexDirection: "row", justifyContent: "space-between", marginBottom: 10 },
-    actionButton: { flex: 1, padding: 15, alignItems: "center", borderRadius: 10, marginHorizontal: 5 },
-    darkButton: { backgroundColor: "#FFF" },
-    lightButton: { backgroundColor: "#0458AB" },
-    actionButtonIcon: { width: 40, height: 40, marginBottom: 5 },
-    actionButtonText: { fontSize: 14, textAlign: "center" },
-    darkText: { color: "#112A4A" },
-    lightText: { color: "#ffff" },
-    userId: { fontSize: 11 },
+    container: {
+        flex: 1,
+    },
+    darkBackground: {
+        backgroundColor: "#112A4A"
+    },
+    lightBackground: {
+        backgroundColor: "#FFF"
+    },
+    header: {
+        flexDirection: "row",
+        alignItems: "center",
+        paddingHorizontal: 16,
+        paddingBottom: 15,
+        backgroundColor: '#0458AB',
+        elevation: 4,
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.15,
+        shadowRadius: 3.84,
+    },
+    avatarContainer: {
+        width: 40,
+        height: 40,
+        borderRadius: 20,
+        overflow: "hidden",
+        backgroundColor: '#F0F0F0'
+    },
+    userTextContainer: {
+        flex: 1,
+        marginLeft: 15
+    },
+    userName: {
+        fontSize: 18,
+        fontWeight: "bold",
+        color: '#FFF'
+    },
+    userId: {
+        fontSize: 12,
+        marginTop: 2,
+        color: '#E0E0E0'
+    },
     logoutButton: {
-        marginLeft: 10,
         padding: 6,
         borderRadius: 4,
     },
@@ -286,12 +438,74 @@ const styles = StyleSheet.create({
         height: 40,
         borderRadius: 20,
         borderWidth: 1,
-        overflow: "hidden",
-        marginRight: 10,
+        borderColor: '#FFF'
     },
     darkBorder: {
         borderColor: "#333333",
     },
+    contentContainer: {
+        flex: 1,
+    },
+    tabPage: {
+        flex: 1,
+        width: '100%'
+    },
+    tabContent: {
+        flex: 1,
+        padding: 0
+    },
+    placeholderContainer: {
+        flex: 1,
+        justifyContent: 'center',
+        alignItems: 'center',
+        padding: 40
+    },
+    placeholderText: {
+        fontSize: 20,
+        fontWeight: 'bold',
+        marginTop: 20,
+        textAlign: 'center'
+    },
+    placeholderSubtext: {
+        fontSize: 16,
+        marginTop: 10,
+        textAlign: 'center'
+    },
+    tabBar: {
+        flexDirection: 'row',
+        borderTopWidth: 1,
+        borderTopColor: '#e0e0e0',
+        paddingTop: 8,
+        paddingHorizontal: 5
+    },
+    tabItem: {
+        flex: 1,
+        alignItems: 'center',
+        paddingVertical: 8,
+        paddingHorizontal: 4
+    },
+    tabIconContainer: {
+        position: 'relative',
+        marginBottom: 4
+    },
+    activeTabItem: {
+        // Estilo adicional si es necesario
+    },
+    activeIndicator: {
+        position: 'absolute',
+        bottom: -6,
+        left: '50%',
+        marginLeft: -4,
+        width: 8,
+        height: 8,
+        borderRadius: 4,
+    },
+    tabText: {
+        fontSize: 11,
+        marginTop: 4,
+        textAlign: 'center',
+        fontWeight: '500'
+    }
 });
 
 export default Home;
