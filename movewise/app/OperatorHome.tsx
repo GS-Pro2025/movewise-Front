@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useCallback } from "react";
 import {
     View,
     Text,
@@ -11,17 +11,19 @@ import {
     Dimensions,
     Image,
     Platform,
-    ActivityIndicator
+    ActivityIndicator,
+    Modal,
+    Animated
 } from "react-native";
-import { useRouter } from "expo-router";1
+import { useRouter } from "expo-router";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useTranslation } from "react-i18next";
 import Toast from "react-native-toast-message";
 import InfoOperatorModal from "./screens/operators/InfoOperatorModal";
 import EditOperatorModal from "./screens/operators/EditOperatorModal";
-import colors from "./Colors";
+import colors from "./Colors";  
 import Ionicons from 'react-native-vector-icons/Ionicons';
-
+import AddOrderForm from "./screens/orders/AddOrderForm";
 // Importar las vistas existentes
 import OrderOperatorModal from '@/app/modals/operators/OrderOperatorModal';
 import OperatorView from '@/app/screens/operators/OperatorView';
@@ -79,12 +81,16 @@ const Home: React.FC = () => {
     const theme = useColorScheme();
     const isDarkMode = theme === "dark";
     const scrollViewRef = useRef<ScrollView>(null);
+    const menuRef = useRef<View>(null);
 
     const [activeTab, setActiveTab] = useState(0);
     const [isInfoModalVisible, setIsInfoModalVisible] = useState(false);
     const [isEditModalVisible, setIsEditModalVisible] = useState(false);
+    const [isMoreMenuVisible, setIsMoreMenuVisible] = useState(false);
     const [operator, setOperator] = useState<Operator | null>(null);
     const [loading, setLoading] = useState(true);
+    const slideAnim = useRef(new Animated.Value(0)).current;
+    const opacityAnim = useRef(new Animated.Value(0)).current;
 
     useEffect(() => {
         const loadOperator = async () => {
@@ -136,8 +142,8 @@ const Home: React.FC = () => {
         </View>
     );
 
-    // Componente para la vista de Work Daily
-    const WorkDailyView = () => {
+    // Memorizar los componentes para evitar re-renders innecesarios
+    const WorkDailyView = useCallback(() => {
         if (!operator?.id_operator) {
             return <LoadingIndicator />;
         }
@@ -152,10 +158,9 @@ const Home: React.FC = () => {
                 />
             </View>
         );
-    };
+    }, [operator?.id_operator]);
 
-    // Componente para la vista de Truck Daily
-    const TruckDailyView = () => {
+    const TruckDailyView = useCallback(() => {
         if (!operator?.id_operator) {
             return <LoadingIndicator />;
         }
@@ -170,17 +175,21 @@ const Home: React.FC = () => {
                 />
             </View>
         );
-    };
+    }, [operator?.id_operator]);
 
-    // Componente para la vista de Orders
-    const OrdersView = () => (
+    const OrdersView = useCallback(() => (
         <View style={styles.tabContent}>
             <OrderOperatorModal/>
         </View>
-    );
+    ), []);
 
-    // Componente para la vista de History
-    const HistoryView = () => (
+    const AddOrderView = useCallback(() => (
+        <View style={styles.tabContent}>
+            <AddOrderForm />
+        </View>
+    ), []);
+
+    const HistoryView = useCallback(() => (
         <View style={styles.tabContent}>
             <View style={styles.placeholderContainer}>
                 <Ionicons
@@ -196,7 +205,7 @@ const Home: React.FC = () => {
                 </Text>
             </View>
         </View>
-    );
+    ), [isDarkMode, t]);
 
     const tabs: TabItem[] = [
         {
@@ -222,15 +231,166 @@ const Home: React.FC = () => {
             title: t("history"),
             icon: 'time-outline',
             component: HistoryView
+        },
+        {
+            id: 'add-order',
+            title: t("add_order") || "Add Order",
+            icon: 'add-circle-outline',
+            component: AddOrderView
         }
     ];
 
-    const handleTabPress = (index: number) => {
+    const MAX_VISIBLE_TABS = 4;
+    const visibleTabs = tabs.slice(0, MAX_VISIBLE_TABS - 1);
+    const hiddenTabs = tabs.slice(MAX_VISIBLE_TABS - 1);
+    const hasMoreTabs = tabs.length > MAX_VISIBLE_TABS;
+
+    const handleTabPress = useCallback((index: number) => {
         setActiveTab(index);
+        closeMoreMenu(); // Cerrar el menú al cambiar de tab
         scrollViewRef.current?.scrollTo({
             x: index * screenWidth,
             animated: true
         });
+    }, [screenWidth]);
+
+    const closeMoreMenu = useCallback(() => {
+        if (!isMoreMenuVisible) return;
+        
+        Animated.parallel([
+            Animated.timing(slideAnim, {
+                toValue: 0,
+                duration: 250,
+                useNativeDriver: true,
+            }),
+            Animated.timing(opacityAnim, {
+                toValue: 0,
+                duration: 200,
+                useNativeDriver: true,
+            })
+        ]).start(() => setIsMoreMenuVisible(false));
+    }, [isMoreMenuVisible, slideAnim, opacityAnim]);
+
+    const openMoreMenu = useCallback(() => {
+        setIsMoreMenuVisible(true);
+        Animated.parallel([
+            Animated.spring(slideAnim, {
+                toValue: 1,
+                tension: 100,
+                friction: 8,
+                useNativeDriver: true,
+            }),
+            Animated.timing(opacityAnim, {
+                toValue: 1,
+                duration: 300,
+                useNativeDriver: true,
+            })
+        ]).start();
+    }, [slideAnim, opacityAnim]);
+
+    const toggleMoreMenu = useCallback((e?: any) => {
+        // Prevent event propagation
+        e?.stopPropagation?.();
+        e?.preventDefault?.();
+        
+        if (isMoreMenuVisible) {
+            closeMoreMenu();
+        } else {
+            openMoreMenu();
+        }
+    }, [isMoreMenuVisible, closeMoreMenu, openMoreMenu]);
+
+    // Handle clicks outside the menu to close it
+    const handleContainerPress = useCallback((e: any) => {
+        if (isMoreMenuVisible) {
+            closeMoreMenu();
+        }
+    }, [isMoreMenuVisible, closeMoreMenu]);
+
+    const renderMoreMenu = () => (
+        isMoreMenuVisible && (
+            <Animated.View 
+                ref={menuRef}
+                style={[
+                    styles.moreMenuBubble,
+                    {
+                        backgroundColor: isDarkMode ? colors.third : colors.lightBackground,
+                        opacity: opacityAnim,
+                        transform: [
+                            {
+                                translateY: slideAnim.interpolate({
+                                    inputRange: [0, 1],
+                                    outputRange: [50, 0],
+                                })
+                            },
+                            {
+                                scale: slideAnim.interpolate({
+                                    inputRange: [0, 1],
+                                    outputRange: [0.8, 1],
+                                })
+                            }
+                        ]
+                    }
+                ]}
+            >
+                {/* Flecha apuntando hacia abajo */}
+                <View style={[
+                    styles.bubbleArrow,
+                    { borderTopColor: isDarkMode ? colors.third : colors.lightBackground }
+                ]} />
+                
+                {hiddenTabs.map((tab, index) => {
+                    const tabIndex = MAX_VISIBLE_TABS - 1 + index;
+                    return (
+                        <TouchableOpacity
+                            key={tab.id}
+                            style={[
+                                styles.bubbleMenuItem,
+                                activeTab === tabIndex && styles.activeBubbleMenuItem,
+                                index === hiddenTabs.length - 1 && styles.lastBubbleMenuItem
+                            ]}
+                            onPress={() => handleTabPress(tabIndex)}
+                        >
+                            <View style={styles.bubbleItemContent}>
+                                <Ionicons
+                                    name={tab.icon as any}
+                                    size={20}
+                                    color={
+                                        activeTab === tabIndex
+                                            ? colors.secondary
+                                            : (isDarkMode ? colors.darkText : colors.primary)
+                                    }
+                                />
+                                <Text
+                                    style={[
+                                        styles.bubbleMenuText,
+                                        {
+                                            color: activeTab === tabIndex
+                                                ? colors.secondary
+                                                : (isDarkMode ? colors.darkText : colors.primary)
+                                        }
+                                    ]}
+                                >
+                                    {tab.title}
+                                </Text>
+                            </View>
+                            {activeTab === tabIndex && (
+                                <View style={[styles.bubbleActiveIndicator, {
+                                    backgroundColor: colors.secondary
+                                }]} />
+                            )}
+                        </TouchableOpacity>
+                    );
+                })}
+            </Animated.View>
+        )
+    );
+
+    const getCurrentTabTitle = () => {
+        if (activeTab < tabs.length) {
+            return tabs[activeTab].title;
+        }
+        return "";
     };
 
     if (loading) {
@@ -249,7 +409,7 @@ const Home: React.FC = () => {
 
             {/* Header */}
             <View style={[styles.header, {
-                backgroundColor: isDarkMode ? colors.third : colors.lightBackground,
+                backgroundColor: isDarkMode ? colors.third : colors.primary,
                 paddingTop: Platform.OS === 'ios' ? 40 : 20
             }]}>
                 <TouchableOpacity
@@ -266,17 +426,17 @@ const Home: React.FC = () => {
                         <Ionicons
                             name="person-circle-outline"
                             size={40}
-                            color={isDarkMode ? colors.darkText : colors.primary}
+                            color={isDarkMode ? colors.darkText : "#FFFFFF"}
                         />
                     )}
                 </TouchableOpacity>
 
                 <View style={styles.userTextContainer}>
-                    <Text style={[styles.userName, { color: isDarkMode ? "#FFFFFF" : "#0458AB" }]}>
+                    <Text style={[styles.userName, { color: "#FFFFFF" }]}>
                         {operator?.first_name} {operator?.last_name}
                     </Text>
-                    <Text style={[styles.userId, { color: isDarkMode ? "#CCCCCC" : "#888888" }]}>
-                        {operator?.code || t("no_code_available")}
+                    <Text style={[styles.currentTabTitle, { color: "#E0E0E0" }]}>
+                        {getCurrentTabTitle()}
                     </Text>
                 </View>
 
@@ -287,10 +447,19 @@ const Home: React.FC = () => {
                     <Ionicons
                         name="log-out-outline"
                         size={28}
-                        color={isDarkMode ? colors.darkText : colors.primary}
+                        color="#FFFFFF"
                     />
                 </TouchableOpacity>
             </View>
+
+            {/* Overlay para cerrar el menú */}
+            {isMoreMenuVisible && (
+                <TouchableOpacity
+                    style={styles.overlay}
+                    activeOpacity={1}
+                    onPress={handleContainerPress}
+                />
+            )}
 
             {/* Contenido principal */}
             <View style={styles.contentContainer}>
@@ -313,52 +482,85 @@ const Home: React.FC = () => {
                 })}
             </View>
 
-            {/* Bottom Tab Bar con indicador de tab activo */}
-            <View style={[styles.tabBar, {
-                backgroundColor: isDarkMode ? colors.third : colors.lightBackground,
-                height: 70,
-                paddingBottom: Platform.OS === 'ios' ? 20 : 10
-            }]}>
-                {tabs.map((tab, index) => (
-                    <TouchableOpacity
-                        key={tab.id}
-                        style={[
-                            styles.tabItem,
-                            activeTab === index && styles.activeTabItem
-                        ]}
-                        onPress={() => handleTabPress(index)}
-                    >
-                        <View style={styles.tabIconContainer}>
-                            <Ionicons
-                                name={tab.icon as any}
-                                size={24}
-                                color={
-                                    activeTab === index
-                                        ? colors.secondary
-                                        : (isDarkMode ? colors.placeholderDark : colors.placeholderLight)
-                                }
-                            />
-                            {/* Indicador de tab activo */}
-                            {activeTab === index && (
-                                <View style={[styles.activeIndicator, {
-                                    backgroundColor: colors.secondary
-                                }]} />
-                            )}
-                        </View>
-                        <Text
+            {/* Bottom Tab Bar con menú expandible integrado */}
+            <View style={styles.tabBarContainer}>
+                {/* Menú burbuja flotante */}
+                {renderMoreMenu()}
+                
+                <View style={[styles.tabBar, {
+                    backgroundColor: isDarkMode ? colors.third : colors.lightBackground,
+                    height: 70,
+                    paddingBottom: Platform.OS === 'ios' ? 20 : 10
+                }]}>
+                    {/* Tabs visibles */}
+                    {visibleTabs.map((tab, index) => (
+                        <TouchableOpacity
+                            key={tab.id}
                             style={[
-                                styles.tabText,
-                                {
-                                    color: activeTab === index
-                                        ? colors.secondary
-                                        : (isDarkMode ? colors.placeholderDark : colors.placeholderLight)
-                                }
+                                styles.tabItem,
+                                activeTab === index && styles.activeTabItem
                             ]}
+                            onPress={() => handleTabPress(index)}
                         >
-                            {tab.title}
-                        </Text>
-                    </TouchableOpacity>
-                ))}
+                            <View style={styles.tabIconContainer}>
+                                <Ionicons
+                                    name={tab.icon as any}
+                                    size={24}
+                                    color={
+                                        activeTab === index
+                                            ? colors.secondary
+                                            : (isDarkMode ? colors.placeholderDark : colors.placeholderLight)
+                                    }
+                                />
+                                {activeTab === index && (
+                                    <View style={[styles.activeIndicator, {
+                                        backgroundColor: colors.secondary
+                                    }]} />
+                                )}
+                            </View>
+                        </TouchableOpacity>
+                    ))}
+
+                    {/* Botón "Más" si hay tabs ocultos */}
+                    {hasMoreTabs && (
+                        <TouchableOpacity
+                            style={[
+                                styles.tabItem,
+                                styles.moreButton,
+                                (activeTab >= MAX_VISIBLE_TABS - 1 || isMoreMenuVisible) && styles.activeTabItem
+                            ]}
+                            onPress={toggleMoreMenu}
+                        >
+                            <View style={styles.tabIconContainer}>
+                                <Animated.View
+                                    style={{
+                                        transform: [{
+                                            rotate: slideAnim.interpolate({
+                                                inputRange: [0, 1],
+                                                outputRange: ['0deg', '180deg'],
+                                            })
+                                        }]
+                                    }}
+                                >
+                                    <Ionicons
+                                        name="chevron-up"
+                                        size={24}
+                                        color={
+                                            (activeTab >= MAX_VISIBLE_TABS - 1 || isMoreMenuVisible)
+                                                ? colors.secondary
+                                                : (isDarkMode ? colors.placeholderDark : colors.placeholderLight)
+                                        }
+                                    />
+                                </Animated.View>
+                                {(activeTab >= MAX_VISIBLE_TABS - 1) && (
+                                    <View style={[styles.activeIndicator, {
+                                        backgroundColor: colors.secondary
+                                    }]} />
+                                )}
+                            </View>
+                        </TouchableOpacity>
+                    )}
+                </View>
             </View>
 
             {/* Modales */}
@@ -389,6 +591,7 @@ const Home: React.FC = () => {
 const styles = StyleSheet.create({
     container: {
         flex: 1,
+        position: 'relative',
     },
     darkBackground: {
         backgroundColor: "#112A4A"
@@ -396,12 +599,20 @@ const styles = StyleSheet.create({
     lightBackground: {
         backgroundColor: "#FFF"
     },
+    overlay: {
+        position: 'absolute',
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0,
+        backgroundColor: 'transparent',
+        zIndex: 999,
+    },
     header: {
         flexDirection: "row",
         alignItems: "center",
         paddingHorizontal: 16,
         paddingBottom: 15,
-        backgroundColor: '#0458AB',
         elevation: 4,
         shadowColor: '#000',
         shadowOffset: { width: 0, height: 2 },
@@ -413,7 +624,7 @@ const styles = StyleSheet.create({
         height: 40,
         borderRadius: 20,
         overflow: "hidden",
-        backgroundColor: '#F0F0F0'
+        backgroundColor: 'rgba(255,255,255,0.2)'
     },
     userTextContainer: {
         flex: 1,
@@ -424,9 +635,10 @@ const styles = StyleSheet.create({
         fontWeight: "bold",
         color: '#FFF'
     },
-    userId: {
-        fontSize: 12,
+    currentTabTitle: {
+        fontSize: 14,
         marginTop: 2,
+        fontWeight: '500',
         color: '#E0E0E0'
     },
     logoutButton: {
@@ -478,11 +690,17 @@ const styles = StyleSheet.create({
         paddingTop: 8,
         paddingHorizontal: 5
     },
+    tabBarContainer: {
+        position: 'relative',
+    },
     tabItem: {
         flex: 1,
         alignItems: 'center',
         paddingVertical: 8,
         paddingHorizontal: 4
+    },
+    moreButton: {
+        position: 'relative',
     },
     tabIconContainer: {
         position: 'relative',
@@ -500,12 +718,64 @@ const styles = StyleSheet.create({
         height: 8,
         borderRadius: 4,
     },
-    tabText: {
-        fontSize: 11,
-        marginTop: 4,
-        textAlign: 'center',
-        fontWeight: '500'
-    }
+    moreMenuBubble: {
+        position: 'absolute',
+        bottom: 75,
+        right: 20,
+        minWidth: 160,
+        borderRadius: 12,
+        elevation: 8,
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 0.25,
+        shadowRadius: 8,
+        zIndex: 1000,
+    },
+    bubbleArrow: {
+        position: 'absolute',
+        bottom: -8,
+        right: 20,
+        width: 0,
+        height: 0,
+        borderLeftWidth: 8,
+        borderRightWidth: 8,
+        borderTopWidth: 8,
+        borderLeftColor: 'transparent',
+        borderRightColor: 'transparent',
+    },
+    bubbleMenuItem: {
+        paddingHorizontal: 16,
+        paddingVertical: 12,
+        borderBottomWidth: 1,
+        borderBottomColor: 'rgba(0,0,0,0.05)',
+        position: 'relative',
+    },
+    lastBubbleMenuItem: {
+        borderBottomWidth: 0,
+        borderBottomLeftRadius: 12,
+        borderBottomRightRadius: 12,
+    },
+    activeBubbleMenuItem: {
+        backgroundColor: 'rgba(79, 172, 254, 0.1)',
+    },
+    bubbleItemContent: {
+        flexDirection: 'row',
+        alignItems: 'center',
+    },
+    bubbleMenuText: {
+        fontSize: 14,
+        marginLeft: 12,
+        fontWeight: '500',
+    },
+    bubbleActiveIndicator: {
+        position: 'absolute',
+        right: 12,
+        top: '50%',
+        marginTop: -4,
+        width: 8,
+        height: 8,
+        borderRadius: 4,
+    },
 });
 
 export default Home;
