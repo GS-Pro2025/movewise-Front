@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { View, Text, FlatList, TouchableOpacity, StyleSheet, Alert, TextInput } from 'react-native';
+import { View, Text, FlatList, TouchableOpacity,useColorScheme, StyleSheet, Alert, TextInput } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { Swipeable } from 'react-native-gesture-handler';
 import { useNavigation } from '@react-navigation/native';
@@ -11,7 +11,7 @@ import CreateFreelanceModal from '../workhouse/CreateFreelanceModal';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import EditFreelanceModal from './EditFreelanceModal';
 import ViewFreelanceModal from './ViewFreelanceModal';
-
+import Colors from '@/app/Colors';
 const FreelanceListScreen = () => {
     const { t } = useTranslation();
     const navigation = useNavigation();
@@ -23,7 +23,8 @@ const FreelanceListScreen = () => {
     const [selectedFreelancer, setSelectedFreelancer] = useState<any>(null);
     const [refreshing, setRefreshing] = useState(false);
     const [loadError, setLoadError] = useState(false);
-
+    const colorScheme = useColorScheme();
+    const isDarkMode = colorScheme === 'dark';
     const loadFreelancers = async () => {
         try {
             setRefreshing(true);
@@ -102,21 +103,21 @@ const FreelanceListScreen = () => {
 
     return (
         <GestureHandlerRootView style={{ flex: 1 }}>
-            <View style={styles.container}>
+            <View style={[styles.container, { backgroundColor: isDarkMode ? colors.backgroundDark : colors.backgroundLight }]}>
                 {/* Header mejorado */}
-                <View style={styles.header}>
+                <View style={[styles.header, { backgroundColor: isDarkMode ? colors.backgroundDark : colors.backgroundLight }]}>
                     <TouchableOpacity onPress={() => navigation.goBack()}>
-                        <Ionicons name="arrow-back" size={24} color={colors.primary} />
+                        <Ionicons name="arrow-back" size={24} color={isDarkMode ? colors.darkText : colors.primary} />
                     </TouchableOpacity>
-                    <Text style={styles.title}>{t("freelancers")}</Text>
+                    <Text style={[styles.title, { color: isDarkMode ? colors.darkText : colors.primary }]}>{t("freelancers")}</Text>
                     <TouchableOpacity onPress={() => setShowCreateModal(true)}>
-                        <Ionicons name="add" size={28} color={colors.primary} />
+                        <Ionicons name="add" size={28} color={isDarkMode ? colors.darkText : colors.primary} />
                     </TouchableOpacity>
                 </View>
 
                 {/* Buscador */}
                 <TextInput
-                    style={styles.searchInput}
+                    style={[styles.searchInput, { color: isDarkMode ? colors.darkText : colors.primary }]}
                     placeholder={t("search_freelancers")}
                     value={searchQuery}
                     onChangeText={setSearchQuery}
@@ -130,7 +131,7 @@ const FreelanceListScreen = () => {
                     refreshing={refreshing}
                     onRefresh={loadFreelancers}
                     ListEmptyComponent={() => (
-                        <View style={styles.emptyContainer}>
+                        <View style={[styles.emptyContainer, { backgroundColor: isDarkMode ? colors.backgroundDark : colors.backgroundLight }]}>
                             <Ionicons
                                 name="people-outline"
                                 size={60}
@@ -138,7 +139,7 @@ const FreelanceListScreen = () => {
                                 style={styles.emptyIcon}
                             />
                             {loadError && (
-                                <Text style={styles.emptyText}>
+                                <Text style={[styles.emptyText, { color: isDarkMode ? colors.darkText : colors.primary }]}>
 
                                     {searchQuery
                                         ? t("no_results_found")
@@ -148,7 +149,7 @@ const FreelanceListScreen = () => {
                                 </Text>
                             )}
                             {!searchQuery && (
-                                <Text style={styles.emptySubText}>
+                                <Text style={[styles.emptySubText, { color: isDarkMode ? colors.darkText : colors.primary }]}>
                                     {t("add_new_freelancer_prompt")}
                                 </Text>
                             )}
@@ -158,27 +159,27 @@ const FreelanceListScreen = () => {
                         <Swipeable
                             friction={2}
                             rightThreshold={40}
-                            containerStyle={styles.swipeContainer}
+                            containerStyle={[styles.swipeContainer, { backgroundColor: isDarkMode ? colors.backgroundDark : colors.backgroundLight }]}
                             renderRightActions={() => renderRightActions(item.id_operator)}
                             renderLeftActions={() => renderLeftActions(item)}
                         >
                             <TouchableOpacity
-                                style={styles.freelanceCard}
+                                style={[styles.freelanceCard, { backgroundColor: isDarkMode ? colors.backgroundDark : colors.backgroundLight }]}
                                 onPress={() => handleView(item)}
                             >
-                                <View style={styles.operatorInfo}>
-                                    <Text style={styles.operatorName}>
+                                <View style={[styles.operatorInfo, { backgroundColor: isDarkMode ? colors.backgroundDark : colors.backgroundLight }]}>
+                                    <Text style={[styles.operatorName, { color: isDarkMode ? colors.darkText : colors.primary }]}>
                                         {item.first_name} {item.last_name}
                                     </Text>
-                                    <Text style={styles.operatorCode}>{item.code}</Text>
+                                    <Text style={[styles.operatorCode, { color: isDarkMode ? colors.darkText : colors.primary }]}>{item.code}</Text>
                                 </View>
-                                <View style={styles.details}>
-                                    <Text style={styles.salary}>${item.salary}</Text>
+                                <View style={[styles.details, { backgroundColor: isDarkMode ? colors.backgroundDark : colors.backgroundLight }]}>
+                                    <Text style={[styles.salary, { color: isDarkMode ? colors.darkText : colors.primary }]}>${item.salary}</Text>
                                     <View style={[
                                         styles.statusBadge,
                                         item.status === 'active' ? styles.activeBadge : styles.inactiveBadge
                                     ]}>
-                                        <Text style={styles.statusText}>{item.status === 'active' ? t("operator") : item.status}</Text>
+                                        <Text style={[styles.statusText, { color: isDarkMode ? colors.darkText : colors.primary }]}>{item.status === 'active' ? t("operator") : item.status}</Text>
                                     </View>
                                 </View>
                             </TouchableOpacity>

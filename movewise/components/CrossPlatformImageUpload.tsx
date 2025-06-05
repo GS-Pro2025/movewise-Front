@@ -8,11 +8,13 @@ import {
   Alert,
   Image,
   ActivityIndicator,
-  Linking
+  Linking,
+  useColorScheme
 } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
 import { useTranslation } from 'react-i18next';
 import { useActionSheet } from '@expo/react-native-action-sheet';
+import colors from '@/app/Colors';
 
 export interface ImageInfo {
   uri: string;
@@ -54,6 +56,8 @@ const CrossPlatformImageUpload: React.FC<ImageUploadProps> = ({
   const { t } = useTranslation();
   const [isLoading, setIsLoading] = useState(false);
   const { showActionSheetWithOptions } = useActionSheet();
+  const colorScheme = useColorScheme();
+  const isDarkMode = colorScheme === 'dark';
 
   /**
    * Normalizes image information to be consistent across platforms
@@ -257,8 +261,8 @@ const CrossPlatformImageUpload: React.FC<ImageUploadProps> = ({
   };
 
   return (
-    <View style={styles.container}>
-      <Text style={styles.label}>
+    <View style={[styles.container, { backgroundColor: isDarkMode ? colors.backgroundDark : colors.lightBackground }]}>
+      <Text style={[styles.label, { color: isDarkMode ? colors.textDark : colors.primary }]}>
         {label} {required && <Text style={styles.requiredMark}>*</Text>}
       </Text>
 
@@ -266,7 +270,8 @@ const CrossPlatformImageUpload: React.FC<ImageUploadProps> = ({
         style={[
           styles.uploadButton,
           error ? styles.uploadButtonError : null,
-          image ? styles.uploadButtonWithImage : null
+          image ? styles.uploadButtonWithImage : null,
+          { backgroundColor: isDarkMode ? colors.backgroundDark : colors.lightBackground }
         ]}
         onPress={handleImageSelection}
         disabled={isLoading}
@@ -278,7 +283,7 @@ const CrossPlatformImageUpload: React.FC<ImageUploadProps> = ({
         ) : (
           <View style={styles.placeholderContainer}>
             <Text style={styles.placeholderIcon}>📷</Text>
-            <Text style={styles.placeholderText}>{t('upload_image')}</Text>
+            <Text style={[styles.placeholderText, { color: isDarkMode ? colors.textDark : colors.primary }]}>{t('upload_image')}</Text>
           </View>
         )}
       </TouchableOpacity>
@@ -305,7 +310,6 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: '#ccc',
     borderRadius: 8,
-    backgroundColor: '#f9f9f9',
     overflow: 'hidden',
     height: 120,
     justifyContent: 'center',

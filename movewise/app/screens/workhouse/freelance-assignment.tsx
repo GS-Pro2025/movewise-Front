@@ -10,7 +10,8 @@ import {
     TextInput,
     Image,
     SafeAreaView,
-    Modal
+    Modal,
+    useColorScheme
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import colors from '@/app/Colors';
@@ -41,6 +42,8 @@ const FreelanceAssignmentScreen: React.FC<FreelanceAssignmentScreenProps> = ({
     onSuccess
 }) => {
     const { t } = useTranslation();
+    const colorScheme = useColorScheme();
+    const isDarkMode = colorScheme === 'dark';
     const [creatingFreelance, setCreatingFreelance] = useState(false);
     const [freelanceCode, setFreelanceCode] = useState('');
     const [freelanceData, setFreelanceData] = useState<any>(null);
@@ -305,15 +308,15 @@ const FreelanceAssignmentScreen: React.FC<FreelanceAssignmentScreenProps> = ({
             presentationStyle="pageSheet" // iOS specific - better modal presentation
             onRequestClose={handleClose}
         >
-            <SafeAreaView style={styles.container}>
+            <SafeAreaView style={[styles.container, { backgroundColor: isDarkMode ? colors.backgroundDark : colors.lightBackground }]}>
                 {/* Header */}
-                <View style={styles.header}>
+                <View style={[styles.header, { backgroundColor: isDarkMode ? colors.backgroundDark : colors.lightBackground }]}>
                     {currentView === 'main' ? (
                         <>
                             <TouchableOpacity onPress={handleClose} style={styles.headerButton}>
                                 <Ionicons name="close" size={24} color={colors.primary} />
                             </TouchableOpacity>
-                            <Text style={styles.title}>{t("assign_freelance")}</Text>
+                            <Text style={[styles.title, { color: isDarkMode ? colors.darkText : colors.primary }]}>{t("assign_freelance")}</Text>
                             <View style={styles.headerSpacer} />
                         </>
                     ) : (
@@ -321,7 +324,7 @@ const FreelanceAssignmentScreen: React.FC<FreelanceAssignmentScreenProps> = ({
                             <TouchableOpacity onPress={goBackToMain} style={styles.headerButton}>
                                 <Ionicons name="arrow-back" size={24} color={colors.primary} />
                             </TouchableOpacity>
-                            <Text style={styles.title}>{t("assign_new_operator")}</Text>
+                            <Text style={[styles.title, { color: isDarkMode ? colors.darkText : colors.primary }]}>{t("assign_new_operator")}</Text>
                             <TouchableOpacity onPress={handleClose} style={styles.headerButton}>
                                 <Ionicons name="close" size={24} color={colors.primary} />
                             </TouchableOpacity>
@@ -334,45 +337,46 @@ const FreelanceAssignmentScreen: React.FC<FreelanceAssignmentScreenProps> = ({
                     contentContainerStyle={styles.scrollContent}
                     showsVerticalScrollIndicator={false}
                     keyboardShouldPersistTaps="handled"
+                    style={{ backgroundColor: isDarkMode ? colors.backgroundDark : colors.backgroundLight }}
                 >
                     {currentView === 'main' ? (
                         <>
                             {/* Vista principal - Lista de asignados */}
-                            <Text style={styles.sectionTitle}>{t("assigned_freelancers")}</Text>
+                            <Text style={[styles.sectionTitle, { color: isDarkMode ? colors.darkText : colors.primary }]}>{t("assigned_freelancers")}</Text>
 
                             {loadingAssignments ? (
-                                <View style={styles.loadingContainer}>
+                                <View style={[styles.loadingContainer, { backgroundColor: isDarkMode ? colors.backgroundDark : colors.backgroundLight }]}>
                                     <ActivityIndicator size="large" color={colors.primary} />
                                 </View>
                             ) : assignmentsError ? (
-                                <View style={styles.errorContainer}>
+                                <View style={[styles.errorContainer, { backgroundColor: isDarkMode ? colors.backgroundDark : colors.backgroundLight }]}>
                                     <Ionicons name="alert-circle" size={16} color={colors.warning} />
                                     <Text style={styles.errorText}>{assignmentsError}</Text>
                                 </View>
                             ) : assignments.length === 0 ? (
-                                <View style={styles.emptyContainer}>
-                                    <Ionicons name="people-outline" size={40} color={colors.primary} />
-                                    <Text style={styles.emptyText}>{t("no_assignments")}</Text>
+                                <View style={[styles.emptyContainer, { backgroundColor: isDarkMode ? colors.backgroundDark : colors.backgroundLight }]}>
+                                    <Ionicons name="people-outline" size={40} color={isDarkMode ? colors.darkText : colors.primary} />
+                                    <Text style={[styles.emptyText, { color: isDarkMode ? colors.darkText : colors.primary }]}>{t("no_assignments")}</Text>
                                 </View>
                             ) : (
                                 assignments.map((assignment) => (
-                                    <View key={assignment.id_assign} style={styles.assignmentCard}>
-                                        <View style={styles.assignmentHeader}>
+                                    <View key={assignment.id_assign} style={[styles.assignmentCard, { backgroundColor: isDarkMode ? colors.backgroundDark : colors.backgroundLight }]}>
+                                        <View style={[styles.assignmentHeader, { backgroundColor: isDarkMode ? colors.backgroundDark : colors.backgroundLight }]}>
                                             <Ionicons name="person-circle" size={24} color={colors.primary} />
-                                            <Text style={styles.assignmentName}>
+                                            <Text style={[styles.assignmentName, { color: isDarkMode ? colors.darkText : colors.primary }]}>
                                                 {assignment.first_name} {assignment.last_name}
                                             </Text>
                                         </View>
-                                        <View style={styles.assignmentDetails}>
-                                            <Text style={styles.detailText}>
+                                        <View style={[styles.assignmentDetails, { backgroundColor: isDarkMode ? colors.backgroundDark : colors.backgroundLight }]}>
+                                            <Text style={[styles.detailText, { color: isDarkMode ? colors.darkText : colors.primary }]}>
                                                 ID: {assignment.id}
                                             </Text>
-                                            <Text style={styles.detailText}>
+                                            <Text style={[styles.detailText, { color: isDarkMode ? colors.darkText : colors.primary }]}>
                                                 {t("assigned_at")}: {new Date(assignment.assigned_at).toLocaleDateString()}
                                             </Text>
                                         </View>
                                         <TouchableOpacity
-                                            style={styles.deleteButton}
+                                            style={[styles.deleteButton, { backgroundColor: isDarkMode ? colors.backgroundDark : colors.backgroundLight }]}
                                             onPress={() => handleDeleteAssignment(assignment.id_assign)}
                                         >
                                             <Ionicons name="trash" size={20} color={colors.warning} />
@@ -393,10 +397,10 @@ const FreelanceAssignmentScreen: React.FC<FreelanceAssignmentScreenProps> = ({
                     ) : (
                         <>
                             {/* Vista de asignación - Búsqueda y creación */}
-                            <Text style={styles.sectionTitle}>{t("search_freelance")}</Text>
+                            <Text style={[styles.sectionTitle, { color: isDarkMode ? colors.darkText : colors.primary }]}>{t("search_freelance")}</Text>
 
-                            <View style={styles.searchContainer}>
-                                <View style={styles.searchInputContainer}>
+                            <View style={[styles.searchContainer, { backgroundColor: isDarkMode ? colors.backgroundDark : colors.backgroundLight }]}>
+                                <View style={[styles.searchInputContainer, { backgroundColor: isDarkMode ? colors.backgroundDark : colors.backgroundLight }]}>
                                     <TextInput
                                         style={styles.searchInput}
                                         value={freelanceCode}
@@ -425,31 +429,31 @@ const FreelanceAssignmentScreen: React.FC<FreelanceAssignmentScreenProps> = ({
                             </View>
 
                             {searchError && (
-                                <View style={styles.errorContainer}>
+                                <View style={[styles.errorContainer, { backgroundColor: isDarkMode ? colors.backgroundDark : colors.backgroundLight }]}>
                                     <Ionicons name="alert-circle" size={16} color={colors.warning} />
-                                    <Text style={styles.errorText}>{searchError}</Text>
+                                    <Text style={[styles.errorText, { color: isDarkMode ? colors.darkText : colors.primary }]}>{searchError}</Text>
                                 </View>
                             )}
 
                             {freelanceData && (
-                                <View style={styles.freelanceCard}>
+                                <View style={[styles.freelanceCard, { backgroundColor: isDarkMode ? colors.backgroundDark : colors.backgroundLight }]}>
                                     <OperatorImage photo={freelanceData.data?.photo} />
-                                    <View style={styles.operatorInfoContainer}>
-                                        <View style={styles.infoRow}>
+                                    <View style={[styles.operatorInfoContainer, { backgroundColor: isDarkMode ? colors.backgroundDark : colors.backgroundLight }]}>
+                                        <View style={[styles.infoRow, { backgroundColor: isDarkMode ? colors.backgroundDark : colors.backgroundLight }]}>
                                             <Ionicons name="person-outline" size={20} color={colors.primary} />
-                                            <Text style={styles.infoText}>
+                                            <Text style={[styles.infoText, { color: isDarkMode ? colors.darkText : colors.primary }]}>
                                                 {freelanceData.data.first_name} {freelanceData.data.last_name}
                                             </Text>
                                         </View>
 
-                                        <View style={styles.infoRow}>
+                                        <View style={[styles.infoRow, { backgroundColor: isDarkMode ? colors.backgroundDark : colors.backgroundLight }]}>
                                             <Ionicons name="id-card-outline" size={20} color={colors.primary} />
-                                            <Text style={styles.infoText}>
+                                            <Text style={[styles.infoText, { color: isDarkMode ? colors.darkText : colors.primary }]}>
                                                 {t("id")}: {freelanceData.data.id_number}
                                             </Text>
                                         </View>
 
-                                        <View style={styles.infoRow}>
+                                        <View style={[styles.infoRow, { backgroundColor: isDarkMode ? colors.backgroundDark : colors.backgroundLight }]}>
                                             <Ionicons name="alert-circle-outline" size={20} color={colors.primary} />
                                             <View style={[
                                                 styles.statusBadge,
@@ -461,12 +465,12 @@ const FreelanceAssignmentScreen: React.FC<FreelanceAssignmentScreenProps> = ({
                                             </View>
                                         </View>
 
-                                        <View style={styles.additionalInfo}>
-                                            <View style={styles.infoColumn}>
-                                                <Text style={styles.infoLabel}>{t("operator_code")}</Text>
-                                                <Text style={styles.infoValue}>{freelanceData.data.code}</Text>
+                                        <View style={[styles.additionalInfo, { backgroundColor: isDarkMode ? colors.backgroundDark : colors.backgroundLight }]}>
+                                            <View style={[styles.infoColumn, { backgroundColor: isDarkMode ? colors.backgroundDark : colors.backgroundLight }]}>
+                                                <Text style={[styles.infoLabel, { color: isDarkMode ? colors.darkText : colors.primary }]}>{t("operator_code")}</Text>
+                                                <Text style={[styles.infoValue, { color: isDarkMode ? colors.darkText : colors.primary }]}>{freelanceData.data.code}</Text>
                                             </View>
-                                            <View style={styles.infoColumn}>
+                                            <View style={[styles.infoColumn, { backgroundColor: isDarkMode ? colors.backgroundDark : colors.backgroundLight }]}>
                                                 <Text style={styles.infoLabel}>{t("salary")}</Text>
                                                 <Text style={styles.infoValue}>${freelanceData.data.salary}</Text>
                                             </View>
@@ -485,7 +489,7 @@ const FreelanceAssignmentScreen: React.FC<FreelanceAssignmentScreenProps> = ({
                                         value={additionalCosts}
                                         onChangeText={setAdditionalCosts}
                                         placeholder={t("enter_additional_costs")}
-                                        placeholderTextColor={colors.placeholderLight}
+                                        placeholderTextColor={isDarkMode ? colors.darkText : colors.placeholderLight}
                                         multiline
                                     />
                                 </View>
@@ -511,27 +515,27 @@ const FreelanceAssignmentScreen: React.FC<FreelanceAssignmentScreenProps> = ({
 
                             {/* Botón para crear nuevo */}
                             <TouchableOpacity
-                                style={styles.createNewButton}
+                                style={[styles.createNewButton, { backgroundColor: isDarkMode ? colors.backgroundDark : colors.lightBackground }]}
                                 onPress={() => {
                                     setNewFreelance(prev => ({ ...prev, code: freelanceCode }));
                                     setShowCreateForm(true);
                                 }}
                             >
-                                <Ionicons name="add-circle" size={20} color={colors.secondary} />
-                                <Text style={styles.createNewButtonText}>{t("create_new_freelance")}</Text>
+                                <Ionicons name="add-circle" size={20} color={isDarkMode ? colors.darkText : colors.primary} />
+                                <Text style={[styles.createNewButtonText, { color: isDarkMode ? colors.darkText : colors.primary }]}>{t("create_new_freelance")}</Text>
                             </TouchableOpacity>
 
                             {/* Formulario de creación */}
                             {showCreateForm && (
-                                <View style={styles.createFormContainer}>
-                                    <Text style={styles.sectionTitle}>{t("new_freelance")}</Text>
+                                <View style={[styles.createFormContainer, { backgroundColor: isDarkMode ? colors.backgroundDark : colors.backgroundLight }]}>
+                                    <Text style={[styles.sectionTitle, { color: isDarkMode ? colors.darkText : colors.primary }]}>{t("new_freelance")}</Text>
 
-                                    <View style={styles.inputContainer}>
-                                        <Text style={styles.label}>
+                                    <View style={[styles.inputContainer, { backgroundColor: isDarkMode ? colors.backgroundDark : colors.backgroundLight }]}>
+                                        <Text style={[styles.label, { color: isDarkMode ? colors.darkText : colors.primary }]}>
                                             <Ionicons name="cash-outline" size={16} color={colors.primary} /> {t("salary")}
                                         </Text>
                                         <TextInput
-                                            style={styles.input}
+                                            style={[styles.input, { backgroundColor: isDarkMode ? colors.backgroundDark : colors.backgroundLight }]}
                                             placeholder="$0.00"
                                             value={newFreelance.salary?.toString()}
                                             onChangeText={text => setNewFreelance(prev => ({ ...prev, salary: parseFloat(text) || 0 }))}
@@ -539,59 +543,59 @@ const FreelanceAssignmentScreen: React.FC<FreelanceAssignmentScreenProps> = ({
                                         />
                                     </View>
 
-                                    <View style={styles.inputContainer}>
-                                        <Text style={styles.label}>
+                                    <View style={[styles.inputContainer, { backgroundColor: isDarkMode ? colors.backgroundDark : colors.backgroundLight }]}>
+                                        <Text style={[styles.label, { color: isDarkMode ? colors.darkText : colors.primary }]}>
                                             <Ionicons name="person-outline" size={16} color={colors.primary} /> {t("first_name")}
                                         </Text>
                                         <TextInput
-                                            style={styles.input}
+                                            style={[styles.input, { backgroundColor: isDarkMode ? colors.backgroundDark : colors.backgroundLight }]}
                                             placeholder={t("first_name")}
                                             value={newFreelance.first_name}
                                             onChangeText={text => setNewFreelance(prev => ({ ...prev, first_name: text }))}
                                         />
                                     </View>
 
-                                    <View style={styles.inputContainer}>
-                                        <Text style={styles.label}>
+                                    <View style={[styles.inputContainer, { backgroundColor: isDarkMode ? colors.backgroundDark : colors.backgroundLight }]}>
+                                        <Text style={[styles.label, { color: isDarkMode ? colors.darkText : colors.primary }]}>
                                             <Ionicons name="people-outline" size={16} color={colors.primary} /> {t("last_name")}
                                         </Text>
                                         <TextInput
-                                            style={styles.input}
+                                            style={[styles.input, { backgroundColor: isDarkMode ? colors.backgroundDark : colors.backgroundLight }]}
                                             placeholder={t("last_name")}
                                             value={newFreelance.last_name}
                                             onChangeText={text => setNewFreelance(prev => ({ ...prev, last_name: text }))}
                                         />
                                     </View>
 
-                                    <View style={styles.inputContainer}>
-                                        <Text style={styles.label}>
+                                    <View style={[styles.inputContainer, { backgroundColor: isDarkMode ? colors.backgroundDark : colors.backgroundLight }]}>
+                                        <Text style={[styles.label, { color: isDarkMode ? colors.darkText : colors.primary }]}>
                                             <Ionicons name="person-outline" size={16} color={colors.primary} /> {t("address")}
                                         </Text>
                                         <TextInput
-                                            style={styles.input}
+                                            style={[styles.input, { backgroundColor: isDarkMode ? colors.backgroundDark : colors.backgroundLight }]}
                                             placeholder={t("address")}
                                             value={newFreelance.address}
                                             onChangeText={text => setNewFreelance(prev => ({ ...prev, address: text }))}
                                         />
                                     </View>
 
-                                    <View style={styles.inputContainer}>
-                                        <Text style={styles.label}>
+                                    <View style={[styles.inputContainer, { backgroundColor: isDarkMode ? colors.backgroundDark : colors.backgroundLight }]}>
+                                        <Text style={[styles.label, { color: isDarkMode ? colors.darkText : colors.primary }]}>
                                             <Ionicons name="person-outline" size={16} color={colors.primary} /> {t("phone")}
                                         </Text>
                                         <TextInput
-                                            style={styles.input}
+                                            style={[styles.input, { backgroundColor: isDarkMode ? colors.backgroundDark : colors.backgroundLight }]}
                                             placeholder={t("phone")}
                                             value={newFreelance.phone}
                                             onChangeText={text => setNewFreelance(prev => ({ ...prev, phone: text }))}
                                         />
                                     </View>
 
-                                    <View style={styles.inputContainer}>
-                                        <Text style={styles.label}>
+                                    <View style={[styles.inputContainer, { backgroundColor: isDarkMode ? colors.backgroundDark : colors.backgroundLight }]}>
+                                        <Text style={[styles.label, { color: isDarkMode ? colors.darkText : colors.primary }]}>
                                             <Ionicons name="id-card-outline" size={16} color={colors.primary} /> {t("id_type")}
                                         </Text>
-                                        <View style={styles.pickerContainer}>
+                                        <View style={[styles.pickerContainer, { backgroundColor: isDarkMode ? colors.backgroundDark : colors.backgroundLight }]}>
                                             <Picker
                                                 selectedValue={newFreelance.type_id}
                                                 onValueChange={value => setNewFreelance(prev => ({ ...prev, type_id: value }))}
@@ -603,12 +607,12 @@ const FreelanceAssignmentScreen: React.FC<FreelanceAssignmentScreenProps> = ({
                                         </View>
                                     </View>
 
-                                    <View style={styles.inputContainer}>
-                                        <Text style={styles.label}>
+                                    <View style={[styles.inputContainer, { backgroundColor: isDarkMode ? colors.backgroundDark : colors.backgroundLight }]}>
+                                        <Text style={[styles.label, { color: isDarkMode ? colors.darkText : colors.primary }]}>
                                             <Ionicons name="card-outline" size={16} color={colors.primary} /> {t("id_number")}
                                         </Text>
                                         <TextInput
-                                            style={styles.input}
+                                            style={[styles.input, { backgroundColor: isDarkMode ? colors.backgroundDark : colors.backgroundLight }]}
                                             placeholder="123456789"
                                             value={newFreelance.id_number}
                                             onChangeText={text => setNewFreelance(prev => ({ ...prev, id_number: text }))}
@@ -616,7 +620,7 @@ const FreelanceAssignmentScreen: React.FC<FreelanceAssignmentScreenProps> = ({
                                     </View>
 
                                     {/* Sección de imágenes */}
-                                    <Text style={styles.sectionTitle}>
+                                    <Text style={[styles.sectionTitle, { color: isDarkMode ? colors.darkText : colors.primary }]}>
                                         <Ionicons name="images-outline" size={18} /> {t("documents")}
                                     </Text>
 

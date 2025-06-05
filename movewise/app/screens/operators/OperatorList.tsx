@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, FlatList, TouchableOpacity, StyleSheet, Modal, Image, ActivityIndicator, SafeAreaView, Alert } from 'react-native';
+import { View, Text, FlatList, TouchableOpacity, StyleSheet, Modal, useColorScheme, Image, ActivityIndicator, SafeAreaView, Alert } from 'react-native';
 import { GestureHandlerRootView, Swipeable } from "react-native-gesture-handler";
 import { Ionicons } from '@expo/vector-icons';
 import { ListOperators } from '@/hooks/api/Get_listOperator';
@@ -9,7 +9,7 @@ import { Operator, FormData } from '@/types/operator.types';
 import { router, useGlobalSearchParams } from 'expo-router';
 import { useTranslation } from 'react-i18next';
 import { Toast, ALERT_TYPE } from 'react-native-alert-notification';
-
+import colors from '@/app/Colors';
 // Interface for pagination response
 interface PaginatedResponse {
   count: number;
@@ -42,6 +42,9 @@ const OperatorList = () => {
   const [currentPage, setCurrentPage] = useState<number>(1);
   // Track open swipeable to close it when needed
   const [activeSwipeable, setActiveSwipeable] = useState<Swipeable | null>(null);
+
+  const colorScheme = useColorScheme();
+const isDarkMode = colorScheme === 'dark';
 
   useEffect(() => {
     if (!isCreating) {
@@ -252,7 +255,7 @@ const OperatorList = () => {
     let swipeableRef: Swipeable | null = null;
     
     return (
-      <GestureHandlerRootView>
+      <GestureHandlerRootView style={[styles.container, { backgroundColor: isDarkMode ? colors.backgroundDark : colors.backgroundLight }]}>
         <Swipeable
           ref={ref => {
             swipeableRef = ref;
@@ -271,32 +274,32 @@ const OperatorList = () => {
           }}
         >
           <TouchableOpacity
-            style={styles.listItem}
+            style={[styles.listItem, { backgroundColor: isDarkMode ? colors.backgroundDark : colors.backgroundLight , borderColor: isDarkMode ? colors.textLight : colors.textDark }]}
             onPress={() => {
               setSelectedOperator(item);
               setModalVisible(true);
             }}
           >
-            <View style={styles.avatarContainer}>
+            <View style={[styles.avatarContainer, { backgroundColor: isDarkMode ? colors.backgroundDark : colors.backgroundLight }]}>
               {item.photo ? (
                 <Image source={{ uri: item.photo }} style={styles.avatar} />
               ) : (
                 <View style={[styles.avatar, styles.noAvatar]}>
-                  <Text style={styles.avatarText}>
+                  <Text style={[styles.avatarText, { color: isDarkMode ? colors.darkText : colors.primary }]}>
                     {(item.first_name?.[0] || '') + (item.last_name?.[0] || '')}
                   </Text>
                 </View>
               )}
             </View>
-            <View style={styles.operatorInfo}>
-              <Text style={styles.operatorName}>{item.first_name} {item.last_name}</Text>
-              <Text style={styles.operatorDetail}>{item.type_id} {item.id_number}</Text>
-              <Text style={styles.operatorDetail}>
+            <View style={[styles.operatorInfo, { backgroundColor: isDarkMode ? colors.backgroundDark : colors.backgroundLight }]}>
+              <Text style={[styles.operatorName, { color: isDarkMode ? colors.darkText : colors.primary }]}>{item.first_name} {item.last_name}</Text>
+              <Text style={[styles.operatorDetail, { color: isDarkMode ? colors.darkText : colors.primary }]}>{item.type_id} {item.id_number}</Text>
+              <Text style={[styles.operatorDetail, { color: isDarkMode ? colors.darkText : colors.primary }]}>
                 <Ionicons name="call-outline" size={14} color="#666" /> {item.phone}
               </Text>
-              <View style={styles.statusContainer}>
+              <View style={[styles.statusContainer, { backgroundColor: isDarkMode ? colors.backgroundDark : colors.backgroundLight }]}>
                 <View style={[styles.statusIndicator, { backgroundColor: item.status === 'activo' ? '#4CAF50' : '#FF9800' }]} />
-                <Text style={styles.statusText}>{item.status || t("not_available")}</Text>
+                <Text style={[styles.statusText, { color: isDarkMode ? colors.darkText : colors.primary }]}>{item.status || t("not_available")}</Text>
               </View>
             </View>
           </TouchableOpacity>
@@ -309,9 +312,9 @@ const OperatorList = () => {
     if (!loadingMore) return null;
 
     return (
-      <View style={styles.footerLoader}>
+      <View style={[styles.footerLoader, { backgroundColor: isDarkMode ? colors.backgroundDark : colors.backgroundLight }]}>
         <ActivityIndicator size="small" color="#3498db" />
-        <Text style={styles.footerText}>{t("loading_more_operators")}</Text>
+        <Text style={[styles.footerText, { color: isDarkMode ? colors.darkText : colors.primary }]}>{t("loading_more_operators")}</Text>
       </View>
     );
   };
@@ -330,14 +333,14 @@ const handleSuccess = () => {
 };
 
   return (
-    <SafeAreaView style={styles.safeArea}>
-      <View style={styles.container}>
+    <SafeAreaView style={[styles.safeArea, { backgroundColor: isDarkMode ? colors.backgroundDark : colors.backgroundLight }]}>
+      <View style={[styles.container, { backgroundColor: isDarkMode ? colors.backgroundDark : colors.backgroundLight }]}>
         {/* Header */}
-        <View style={styles.header}>
+        <View style={[styles.header, { backgroundColor: isDarkMode ? colors.backgroundDark : colors.backgroundLight }]}>
           <TouchableOpacity style={styles.backButton} onPress={handleBackPress}>
-            <Ionicons name="arrow-back" size={24} color="#333" />
+            <Ionicons name="arrow-back" size={24} color={isDarkMode ? colors.darkText : colors.lightText } />
           </TouchableOpacity>
-          <Text style={styles.headerTitle}>{t("operators")}</Text>
+          <Text style={[styles.headerTitle, { color: isDarkMode ? colors.darkText : colors.primary }]}>{t("operators")}</Text>
           <TouchableOpacity
             style={styles.addButton}
             onPress={() => {
@@ -345,29 +348,29 @@ const handleSuccess = () => {
               setModalVisible(true);
             }}
           >
-            <Ionicons name="add" size={24} color="#fff" />
+            <Ionicons name="add" size={24} color={isDarkMode ? colors.third : colors.lightBackground} />
           </TouchableOpacity>
         </View>
 
         {/* Content */}
-        <View style={styles.content}>
+        <View style={[styles.content, { backgroundColor: isDarkMode ? colors.backgroundDark : colors.backgroundLight }]}>
           {loading && operators.length === 0 ? (
-            <View style={styles.centerContent}>
-              <ActivityIndicator size="large" color="#3498db" />
-              <Text style={styles.loadingText}>{t("loading_operators")}</Text>
+            <View style={[styles.centerContent, { backgroundColor: isDarkMode ? colors.backgroundDark : colors.backgroundLight }]}>
+              <ActivityIndicator size="large" color={isDarkMode ? colors.third : colors.lightBackground} />
+              <Text style={[styles.loadingText, { color: isDarkMode ? colors.darkText : colors.primary }]}>{t("loading_operators")}</Text>
             </View>
           ) : error ? (
-            <View style={styles.centerContent}>
-              <Ionicons name="alert-circle-outline" size={50} color="#e74c3c" />
+            <View style={[styles.centerContent, { backgroundColor: isDarkMode ? colors.backgroundDark : colors.backgroundLight }]}>
+              <Ionicons name="alert-circle-outline" size={50} color={isDarkMode ? colors.third : colors.lightBackground} />
               <Text style={styles.errorText}>{error}</Text>
               <TouchableOpacity style={styles.retryButton} onPress={() => loadOperators()}>
                 <Text style={styles.retryText}>{t("retry")}</Text>
               </TouchableOpacity>
             </View>
           ) : operators.length === 0 ? (
-            <View style={styles.centerContent}>
-              <Ionicons name="people-outline" size={50} color="#95a5a6" />
-              <Text style={styles.noDataText}>{t("no_operators_available")}</Text>
+            <View style={[styles.centerContent, { backgroundColor: isDarkMode ? colors.backgroundDark : colors.backgroundLight }]}>
+              <Ionicons name="people-outline" size={50} color={isDarkMode ? colors.third : colors.lightBackground} />
+              <Text style={[styles.noDataText, { color: isDarkMode ? colors.darkText : colors.primary }]}>{t("no_operators_available")}</Text>
               <TouchableOpacity
                 style={styles.addFirstButton}
                 onPress={() => setModalVisible(true)}
@@ -376,8 +379,9 @@ const handleSuccess = () => {
               </TouchableOpacity>
             </View>
           ) : (
-            <View style={styles.listWrapper}>
+            <View style={[styles.listWrapper, { backgroundColor: isDarkMode ? colors.backgroundDark : colors.backgroundLight }]}>
               <FlatList
+                style={{ backgroundColor: isDarkMode ? colors.backgroundDark : colors.backgroundLight }}
                 data={operators}
                 keyExtractor={(item, index) => (item.id_operator ? item.id_operator.toString() : index.toString())}
                 renderItem={renderOperatorItem}

@@ -18,11 +18,14 @@ import { useTranslation } from 'react-i18next';
 import { useActionSheet } from '@expo/react-native-action-sheet';
 import { Linking } from 'react-native';
 import { Modal, Image } from 'react-native';
+import colors from '@/app/Colors';
+
 // Componentes de Ayuda
 function FormInput({ label, value, onChangeText, keyboardType = 'default', error, required = false }: FormInputProps): JSX.Element {
+  const isDarkMode = useColorScheme() === 'dark';
   return (
-    <View style={styles.inputContainer}>
-      <Text style={styles.inputLabel}>{label}</Text>
+    <View style={[styles.inputContainer, { backgroundColor: isDarkMode ? colors.backgroundDark : colors.backgroundLight }]}>
+      <Text style={[styles.inputLabel, { color: isDarkMode ? colors.textDark : colors.primary }]}>{label}</Text>
       <View style={[styles.textInputContainer, error ? styles.inputError : null]}>
         <TextInput
           style={styles.textInput}
@@ -39,6 +42,7 @@ function FormInput({ label, value, onChangeText, keyboardType = 'default', error
 function DateInput({ label, value, onChangeDate, error, required = false }: DateInputProps): JSX.Element {
   const [showDatePicker, setShowDatePicker] = useState(false);
   const { t } = useTranslation();
+  const isDarkMode = useColorScheme() === 'dark';
 
   // Helper function to format date as YYYY-MM-DD
   const formatDate = (date: Date): string => {
@@ -82,8 +86,8 @@ function DateInput({ label, value, onChangeDate, error, required = false }: Date
   };
 
   return (
-    <View style={styles.inputContainer}>
-      <Text style={styles.inputLabel}>{label}</Text>
+    <View style={[styles.inputContainer, { backgroundColor: isDarkMode ? colors.backgroundDark : colors.backgroundLight }]}>
+      <Text style={[styles.inputLabel, { color: isDarkMode ? colors.textDark : colors.primary }]}>{label}</Text>
       <TouchableOpacity
         style={[styles.textInputContainer, error ? styles.inputError : null]}
         onPress={() => setShowDatePicker(true)}
@@ -109,10 +113,11 @@ function DateInput({ label, value, onChangeDate, error, required = false }: Date
 function DropdownInput({ label, value, onChange, options, error, required = false }: DropdownInputProps): JSX.Element {
   const [isOpen, setIsOpen] = useState(false);
   const { t } = useTranslation();
+  const isDarkMode = useColorScheme() === 'dark';
 
   return (
-    <View style={styles.inputContainer}>
-      <Text style={styles.inputLabel}>{label}</Text>
+    <View style={[styles.inputContainer, { backgroundColor: isDarkMode ? colors.backgroundDark : colors.backgroundLight }]}>
+      <Text style={[styles.inputLabel, { color: isDarkMode ? colors.textDark : colors.primary }]}>{label}</Text>
       <TouchableOpacity
         style={[styles.textInputContainer, error ? styles.inputError : null]}
         onPress={() => setIsOpen(!isOpen)}
@@ -143,10 +148,11 @@ function DropdownInput({ label, value, onChange, options, error, required = fals
 
 function RadioGroup({ label, options, selectedValue, onSelect, error, required = false }: RadioGroupProps): JSX.Element {
   const { t } = useTranslation();
+  const isDarkMode = useColorScheme() === 'dark';
 
   return (
-    <View style={styles.inputContainer}>
-      <Text style={styles.inputLabel}>{label}</Text>
+    <View style={[styles.inputContainer, { backgroundColor: isDarkMode ? colors.backgroundDark : colors.backgroundLight }]}>
+      <Text style={[styles.inputLabel, { color: isDarkMode ? colors.textDark : colors.primary }]}>{label}</Text>
       <View style={styles.radioGroupContainer}>
         {options.map((option) => (
           <TouchableOpacity
