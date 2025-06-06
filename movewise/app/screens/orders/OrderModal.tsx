@@ -336,7 +336,7 @@ const OrderModal = () => {
           style={[styles.backButton]}
           onPress={() => router.back()}
         >
-          <Ionicons name="arrow-back" size={24} color={isDarkMode ? colors.lightText : colors.primary} />
+          <Ionicons name="arrow-back" size={24} color={isDarkMode ? colors.white : colors.primary} />
         </TouchableOpacity>
         <Text style={[styles.title, { ...(isDarkMode ? { color: colors.darkText } : { color: colors.primary }) }]}>{t("Orders")}</Text>
         <TouchableOpacity
