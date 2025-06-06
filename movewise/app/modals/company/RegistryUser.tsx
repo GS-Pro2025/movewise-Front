@@ -29,9 +29,6 @@ import { useTranslation } from "react-i18next";
 import CheckBox from "react-native-check-box";
 import { registerUserWithCompany } from "@/hooks/api/RegisterUserWIthCompany";
 import { getTerms_and_conditions } from "@/hooks/api/GetTerms_and_conditions";
-import * as FileSystem from "expo-file-system";
-import * as Linking from "expo-linking";
-import * as WebBrowser from "expo-web-browser";
 import { WebView } from "react-native-webview";
 const RegistryUser = () => {
   const { t } = useTranslation();
