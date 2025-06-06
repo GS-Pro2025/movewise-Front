@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import {
   View,
   Text,
@@ -71,7 +71,13 @@ const RegistryUser = () => {
   const [searchTerm, setSearchTerm] = useState(""); // Added state for search term
   const [isChecked, setIsChecked] = useState(false); // Estado para el checkbox
   const insets = useSafeAreaInsets(); 
-
+  const memoizedStateItems = useMemo(() => 
+    stateList.map((state) => ({
+      label: state.label,
+      value: state.value,
+    })),
+    [stateList]
+  );
   const [errors, setErrors] = useState<{
     email?: string;
     password?: string;
@@ -385,10 +391,9 @@ const RegistryUser = () => {
             {errors.idNumber && <Text style={styles.errorText}>{errors.idNumber}</Text>}
             <TextInput
               style={[styles.input, errors.idNumber && styles.inputError]}
-              placeholder={t("id_number_placeholder")}
+              placeholder={t("identification_placeholder")}
               placeholderTextColor="#888"
               value={idNumber}
-              keyboardType="numeric"
               onChangeText={setIdNumber}
             />
     
@@ -396,13 +401,9 @@ const RegistryUser = () => {
             <DropDownPicker
               open={openState}
               value={state}
-              items={stateList.map((state) => ({
-                label: state.label,
-                value: state.value,
-              }))}
+              items={memoizedStateItems}
               setOpen={setOpenState}
               setValue={setState}
-              setItems={() => {}}
               placeholder={t("select_state_placeholder")}
               placeholderStyle={{ color: "#9ca3af" }}
               style={[styles.input, { borderColor: errors.state ? "red" : "#0458AB" }]}
@@ -413,15 +414,14 @@ const RegistryUser = () => {
                 animationType: "slide",
               }}
               searchable={true}
-              searchPlaceholder={t("search_placeholder")}
+              searchPlaceholder={t("search_state_placeholder")}
               searchPlaceholderTextColor="#9ca3af"
-              searchTextInputProps={{
-                onChangeText: (text) => setSearchTerm(text),
-              }}
+              onChangeSearchText={setSearchTerm}
               scrollViewProps={{
                 nestedScrollEnabled: true,
               }}
             />
+
     
             {errors.city && <Text style={styles.errorText}>{errors.city}</Text>}
             <TextInput

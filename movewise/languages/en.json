@@ -557,5 +557,7 @@
   "admin_actions":"Admin Actions",
   "admin_complete_work_info":"Once completed, the order cannot be modified",
   "page_not_found":"Page not found",
-  "the_page_you_are_looking_for_does_not_exist":"The page you are looking for does not exist"
+  "the_page_you_are_looking_for_does_not_exist":"The page you are looking for does not exist",
+  "identification_placeholder": "Identification",
+  "search_state_placeholder": "Search state"
 }

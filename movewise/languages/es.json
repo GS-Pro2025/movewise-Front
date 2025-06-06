@@ -593,5 +593,7 @@
   "admin_actions": "Acciones de Administrador",
   "admin_complete_work_info":"Una vez finalizada, la orden no podrá ser modificada",
   "page_not_found":"Página no encontrada",
-  "the_page_you_are_looking_for_does_not_exist":"La página que estás buscando no existe"
+  "the_page_you_are_looking_for_does_not_exist":"La página que estás buscando no existe",
+  "identification_placeholder": "Identificación",
+  "search_state_placeholder": "Buscar estado"
 }
