@@ -60,7 +60,7 @@ export const getOrders = async (url?: string): Promise<OrdersResponse> => {
 export const getOrdersAllStatus = async (
   url?: string,
   filters?: {
-    date?: Date | null;
+    date?: Date | string | null;
     status?: string | null;
     search?: string | null;
   }
@@ -70,7 +70,8 @@ export const getOrdersAllStatus = async (
     const params = new URLSearchParams();
 
     if (filters?.date) {
-      params.append('date', filters.date.toISOString().split('T')[0]); // Formato YYYY-MM-DD
+      // filters.date ya es un string YYYY-MM-DD
+      params.append('date', filters.date.toString());
     }
     if (filters?.status) {
       params.append('status', filters.status);

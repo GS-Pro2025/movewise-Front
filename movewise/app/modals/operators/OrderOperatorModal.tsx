@@ -14,6 +14,7 @@ import { useFocusEffect } from "expo-router";
 import { getOrdersAllStatus, OrdersResponse } from "@/hooks/api/GetOrders";
 import colors from "@/app/Colors";
 import { Picker } from '@react-native-picker/picker';
+import { formatLocalDate } from "@/app/components/orders/FormattedDate";
 
 
 interface OrderModalProps {
@@ -89,6 +90,8 @@ const OrderModal = () => {
     loadOrders();
   }, [selectedDate, statusFilter, searchText]);
 
+
+
   const loadOrders = useCallback(async (url?: string) => {
     const isFirstPage = !url;
     if (isFirstPage) {
@@ -101,8 +104,9 @@ const OrderModal = () => {
     try {
       // Formatear la fecha para el backend
       const formattedDate = selectedDate
-        ? new Date(selectedDate.toISOString().split('T')[0])
+        ? formatLocalDate(selectedDate)  
         : undefined;
+
 
       const response = await getOrdersAllStatus(url, {
         date: formattedDate,
