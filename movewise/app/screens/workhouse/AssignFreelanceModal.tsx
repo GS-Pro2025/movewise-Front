@@ -1,6 +1,6 @@
 // src/app/modals/AssignFreelanceModal.tsx
 import { useState, useRef, useEffect } from 'react';
-import { View, Text, Modal, TouchableOpacity, StyleSheet, Alert, ActivityIndicator, ScrollView, TextInput, Image } from 'react-native';
+import { useColorScheme,View, Text, Modal, TouchableOpacity, StyleSheet, Alert, ActivityIndicator, ScrollView, TextInput, Image } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import colors from '@/app/Colors';
 import { useTranslation } from 'react-i18next';
@@ -19,6 +19,8 @@ interface AssignFreelanceModalProps {
 }
 
 const AssignFreelanceModal: React.FC<AssignFreelanceModalProps> = ({ visible, onClose, workhouseKey, onSuccess, resetOnClose = false }) => {
+    const colorScheme = useColorScheme();
+    const isDarkMode = colorScheme === 'dark';
     const { t } = useTranslation();
     const [freelanceCode, setFreelanceCode] = useState('');
     const [freelanceData, setFreelanceData] = useState<any>(null);
@@ -187,11 +189,11 @@ const AssignFreelanceModal: React.FC<AssignFreelanceModalProps> = ({ visible, on
     return (
         <>
             <Modal visible={visible} transparent animationType="slide">
-                <View style={styles.modalContainer}>
-                    <View style={[styles.modalContent, { backgroundColor: colors.lightBackground }]}>
+                <View style={[styles.modalContainer, { backgroundColor: isDarkMode ? colors.backgroundDark : colors.lightBackground }]}>
+                    <View style={[styles.modalContent, { backgroundColor: isDarkMode ? colors.backgroundDark : colors.lightBackground }]}>
                         <ScrollView ref={scrollViewRef} contentContainerStyle={[styles.scrollContent, { paddingBottom: 40 }]} showsVerticalScrollIndicator={false}>
                             <View style={styles.header}>
-                                <Text style={styles.modalTitle}>{t("assign_freelance")}</Text>
+                                <Text style={[styles.modalTitle, { color: isDarkMode ? colors.textDark : colors.primary }]}>{t("assign_freelance")}</Text>
                                 <TouchableOpacity onPress={onClose}>
                                     <Ionicons name="close" size={24} color={colors.primary} />
                                 </TouchableOpacity>

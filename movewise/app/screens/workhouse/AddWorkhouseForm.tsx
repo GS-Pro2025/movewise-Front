@@ -1,6 +1,6 @@
 // este modal se creo para el registro de un nuevo workhouse
 import { useState, useEffect, useRef } from 'react';
-import { View, Text, Modal, TouchableOpacity, StyleSheet, Alert, ActivityIndicator, ScrollView, TextInput } from 'react-native';
+import { View, Text, Modal, TouchableOpacity, StyleSheet, Alert, ActivityIndicator, ScrollView, TextInput, useColorScheme } from 'react-native';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { Ionicons } from '@expo/vector-icons';
 import colors from '@/app/Colors';
@@ -15,7 +15,7 @@ interface FreelanceImages {
 import { CustomerFactory } from '@/hooks/api/CustomerFactoryClient';
 import { Order } from './ListWorkHouse';
 import { Picker } from '@react-native-picker/picker';
-import {  FreelanceData } from '@/hooks/api/FreelanceClient';
+import { FreelanceData } from '@/hooks/api/FreelanceClient';
 import FreelanceAssignmentScreen from './freelance-assignment';
 import CreateFreelanceModal from './CreateFreelanceModal';
 import CrossPlatformImageUpload from '@/components/CrossPlatformImageUpload';
@@ -42,6 +42,8 @@ export interface WorkhouseOrderData {
 }
 
 const AddWorkhouseForm: React.FC<AddWorkhouseFormProps> = ({ visible, onClose, onSuccess }) => {
+    const colorScheme = useColorScheme();
+    const isDarkMode = colorScheme === 'dark';
     const { t } = useTranslation();
     // Usar getTodayDate() en lugar de new Date()
     const [date, setDate] = useState(getTodayDate());
@@ -161,26 +163,36 @@ const AddWorkhouseForm: React.FC<AddWorkhouseFormProps> = ({ visible, onClose, o
 
     return (
         <>
-            <Modal visible={visible} transparent animationType="slide">
+            <Modal visible={visible} transparent animationType="slide" style={{ backgroundColor: isDarkMode ? colors.backgroundDark : colors.lightBackground }}>
                 <View style={styles.modalContainer}>
-                    <View style={[styles.modalContent, { backgroundColor: colors.lightBackground }]}>
+                    <View style={[styles.modalContent, { backgroundColor: isDarkMode ? colors.backgroundDark : colors.lightBackground }]}>
                         <ScrollView
                             contentContainerStyle={styles.scrollContent}
                             showsVerticalScrollIndicator={false}
                         >
                             <View style={styles.header}>
-                                <Text style={styles.modalTitle}>{t("new_workhouse_order")}</Text>
+                                <Text style={[styles.modalTitle, { color: isDarkMode ? colors.textDark : colors.primary }]}>{t("new_workhouse_order")}</Text>
                                 <TouchableOpacity onPress={onClose}>
-                                    <Ionicons name="close" size={24} color={colors.primary} />
+                                    <Ionicons name="close" size={24} color={isDarkMode ? colors.textDark : colors.primary} />
                                 </TouchableOpacity>
                             </View>
 
                             <TouchableOpacity
-                                style={styles.datePicker}
+                                style={[
+                                    styles.datePicker,
+                                    {
+                                        backgroundColor: isDarkMode ? colors.cardDark : '#f5f5f5',
+                                        borderColor: isDarkMode ? colors.borderDark : colors.borderLight
+                                    }
+                                ]}
                                 onPress={() => setShowDatePicker(true)}
                             >
-                                <Ionicons name="calendar" size={20} color={colors.primary} />
-                                <Text style={styles.dateText}>
+                                <Ionicons
+                                    name="calendar"
+                                    size={20}
+                                    color={isDarkMode ? colors.textDark : colors.primary}
+                                />
+                                <Text style={[styles.dateText, { color: isDarkMode ? colors.textDark : '#333' }]}>
                                     {date.toLocaleDateString(undefined, {
                                         year: 'numeric',
                                         month: 'long',
@@ -214,15 +226,26 @@ const AddWorkhouseForm: React.FC<AddWorkhouseFormProps> = ({ visible, onClose, o
                                 <Picker
                                     selectedValue={selectedCustomer}
                                     onValueChange={(itemValue) => setSelectedCustomer(itemValue)}
-                                    style={styles.picker}
-                                    dropdownIconColor={colors.primary}
+                                    style={[
+                                        styles.picker,
+                                        {
+                                            color: isDarkMode ? colors.textDark : colors.textLight,
+                                            backgroundColor: isDarkMode ? colors.cardDark : colors.cardLight
+                                        }
+                                    ]}
+                                    dropdownIconColor={isDarkMode ? colors.textDark : colors.primary}
                                 >
-                                    <Picker.Item label={t("select_customer")} value={null} />
+                                    <Picker.Item
+                                        label={t("select_customer")}
+                                        value={null}
+                                        color={isDarkMode ? colors.placeholderDark : colors.placeholderLight}
+                                    />
                                     {customerFactories.map(customer => (
                                         <Picker.Item
                                             key={customer.id_factory}
                                             label={customer.name}
                                             value={customer.id_factory}
+                                            color={isDarkMode ? colors.textDark : colors.textLight}
                                         />
                                     ))}
                                 </Picker>

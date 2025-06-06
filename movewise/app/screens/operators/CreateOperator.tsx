@@ -1,6 +1,6 @@
 import { PostOperator, UpdateOperator } from '@/hooks/api/PostOperator';
 import { ALERT_TYPE, Dialog, Toast } from 'react-native-alert-notification';
-import { Platform } from 'react-native';
+import { Platform, useColorScheme } from 'react-native';
 import React, { useState } from 'react';
 import { SafeAreaView, ActivityIndicator } from 'react-native';
 import { AlertNotificationRoot } from 'react-native-alert-notification';
@@ -8,6 +8,7 @@ import { AlertNotificationRoot } from 'react-native-alert-notification';
 import Step1Form from './FormSteps/Step1Form';
 import Step2Form from './FormSteps/Step2Form';
 import Step3Form from './FormSteps/Step3Form';
+import colors from '@/app/Colors';
 import { FormData, Operator, CreateOperatorProps, ImageInfo } from '@/types/operator.types';
 import 'react-native-get-random-values';
 import styles from '@/app/components/operators/FormStyle';
@@ -19,6 +20,8 @@ const CreateOperator: React.FC<CreateOperatorProps> = ({
   initialData,
   onClose,
 }) => {
+    const colorScheme = useColorScheme();
+    const isDarkMode = colorScheme === 'dark';
   const defaultFormData: FormData = {
     id_operator: 0,
     first_name: '',
@@ -149,7 +152,7 @@ const CreateOperator: React.FC<CreateOperatorProps> = ({
 
   return (
     <AlertNotificationRoot>
-      <SafeAreaView style={styles.container}>
+      <SafeAreaView style={[styles.container, { backgroundColor: isDarkMode ? colors.backgroundDark : colors.backgroundLight }]}>
         {loading && <ActivityIndicator size="large" />}
 
         {currentStep === 1 && (

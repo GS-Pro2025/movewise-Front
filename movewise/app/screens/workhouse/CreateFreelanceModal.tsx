@@ -8,7 +8,7 @@ import * as FileSystem from 'expo-file-system';
 import CrossPlatformImageUpload from '@/components/CrossPlatformImageUpload';
 import { Picker } from '@react-native-picker/picker';
 import EditAssignmentsModal from './EditAssignmentsModal';
-
+import { useColorScheme } from 'react-native';
 interface CreateFreelanceModalProps {
     visible: boolean;
     isFromFreelance: Boolean;
@@ -30,7 +30,7 @@ const CreateFreelanceModal: React.FC<CreateFreelanceModalProps> = ({ visible, on
         license_back?: any
     }>({});
     const [loading, setLoading] = useState(false);
-
+    const isDarkMode = useColorScheme() === 'dark';
     const handleCreateFreelance = async () => {
         try {
             setLoading(true);
@@ -81,23 +81,23 @@ const CreateFreelanceModal: React.FC<CreateFreelanceModalProps> = ({ visible, on
         <>
             <Modal visible={visible} transparent animationType="slide">
                 <View style={styles.modalContainer}>
-                    <View style={[styles.modalContent, { backgroundColor: colors.lightBackground }]}>
+                    <View style={[styles.modalContent, { backgroundColor: isDarkMode ? colors.backgroundDark : colors.backgroundLight }]}>
                         <ScrollView contentContainerStyle={styles.scrollContent}>
-                            <View style={styles.header}>
-                                <Text style={styles.modalTitle}>{t("new_freelance")}</Text>
+                            <View style={[styles.header, { backgroundColor: isDarkMode ? colors.backgroundDark : colors.backgroundLight }]}>
+                                <Text style={[styles.modalTitle, { color: isDarkMode ? colors.darkText : colors.lightText }]}>{t("new_freelance")}</Text>
                                 <TouchableOpacity onPress={() => onClose()}>
-                                    <Ionicons name="close" size={24} color={colors.primary} />
+                                    <Ionicons name="close" size={24} color={isDarkMode ? colors.darkText : colors.lightText} />
                                 </TouchableOpacity>
                             </View>
                             <Text style={[styles.modalTitle, { fontSize: 10 }]}>{t("current_order")} {workHouseKey}</Text>
 
                             {/* Campos del formulario con iconos */}
-                            <View style={styles.inputContainer}>
-                                <Text style={styles.label}>
-                                    <Ionicons name="cash-outline" size={16} color={colors.primary} /> {t("salary")}
+                            <View style={[styles.inputContainer, { backgroundColor: isDarkMode ? colors.backgroundDark : colors.backgroundLight }]}>
+                                <Text style={[styles.label, { color: isDarkMode ? colors.darkText : colors.lightText }]}>
+                                    <Ionicons name="cash-outline" size={16} color={isDarkMode ? colors.darkText : colors.lightText} /> {t("salary")}
                                 </Text>
                                 <TextInput
-                                    style={styles.input}
+                                    style={[styles.input, { color: isDarkMode ? colors.darkText : colors.lightText }]}
                                     placeholder="$0.00"
                                     value={newFreelance.salary?.toString()}
                                     onChangeText={text => setNewFreelance(prev => ({ ...prev, salary: parseFloat(text) || 0 }))}
@@ -105,59 +105,59 @@ const CreateFreelanceModal: React.FC<CreateFreelanceModalProps> = ({ visible, on
                                 />
                             </View>
 
-                            <View style={styles.inputContainer}>
-                                <Text style={styles.label}>
-                                    <Ionicons name="person-outline" size={16} color={colors.primary} /> {t("first_name")}
+                            <View style={[styles.inputContainer, { backgroundColor: isDarkMode ? colors.backgroundDark : colors.backgroundLight }]}>
+                                <Text style={[styles.label, { color: isDarkMode ? colors.darkText : colors.lightText }]}>
+                                    <Ionicons name="person-outline" size={16} color={isDarkMode ? colors.darkText : colors.lightText} /> {t("first_name")}
                                 </Text>
                                 <TextInput
-                                    style={styles.input}
+                                    style={[styles.input, { color: isDarkMode ? colors.darkText : colors.lightText }]}
                                     placeholder={t("first_name")}
                                     value={newFreelance.first_name}
                                     onChangeText={text => setNewFreelance(prev => ({ ...prev, first_name: text }))}
                                 />
                             </View>
 
-                            <View style={styles.inputContainer}>
-                                <Text style={styles.label}>
-                                    <Ionicons name="people-outline" size={16} color={colors.primary} /> {t("last_name")}
+                            <View style={[styles.inputContainer, { backgroundColor: isDarkMode ? colors.backgroundDark : colors.backgroundLight }]}>
+                                <Text style={[styles.label, { color: isDarkMode ? colors.darkText : colors.lightText }]}>
+                                    <Ionicons name="people-outline" size={16} color={isDarkMode ? colors.darkText : colors.lightText} /> {t("last_name")}
                                 </Text>
                                 <TextInput
-                                    style={styles.input}
+                                    style={[styles.input, { color: isDarkMode ? colors.darkText : colors.lightText }]}
                                     placeholder={t("last_name")}
                                     value={newFreelance.last_name}
                                     onChangeText={text => setNewFreelance(prev => ({ ...prev, last_name: text }))}
                                 />
                             </View>
 
-                            <View style={styles.inputContainer}>
-                                <Text style={styles.label}>
-                                    <Ionicons name="person-outline" size={16} color={colors.primary} /> {t("address")}
+                            <View style={[styles.inputContainer, { backgroundColor: isDarkMode ? colors.backgroundDark : colors.backgroundLight }]}>
+                                <Text style={[styles.label, { color: isDarkMode ? colors.darkText : colors.lightText }]}>
+                                    <Ionicons name="person-outline" size={16} color={isDarkMode ? colors.darkText : colors.lightText} /> {t("address")}
                                 </Text>
                                 <TextInput
-                                    style={styles.input}
+                                    style={[styles.input, { color: isDarkMode ? colors.darkText : colors.lightText }]}
                                     placeholder={t("address")}
                                     value={newFreelance.address}
                                     onChangeText={text => setNewFreelance(prev => ({ ...prev, address: text }))}
                                 />
                             </View>
 
-                            <View style={styles.inputContainer}>
-                                <Text style={styles.label}>
-                                    <Ionicons name="person-outline" size={16} color={colors.primary} /> {t("phone")}
+                            <View style={[styles.inputContainer, { backgroundColor: isDarkMode ? colors.backgroundDark : colors.backgroundLight }]}>
+                                <Text style={[styles.label, { color: isDarkMode ? colors.darkText : colors.lightText }]}>
+                                    <Ionicons name="person-outline" size={16} color={isDarkMode ? colors.darkText : colors.lightText} /> {t("phone")}
                                 </Text>
                                 <TextInput
-                                    style={styles.input}
+                                    style={[styles.input, { color: isDarkMode ? colors.darkText : colors.lightText }]}
                                     placeholder={t("phone")}
                                     value={newFreelance.phone}
                                     onChangeText={text => setNewFreelance(prev => ({ ...prev, phone: text }))}
                                 />
                             </View>
 
-                            <View style={styles.inputContainer}>
-                                <Text style={styles.label}>
-                                    <Ionicons name="id-card-outline" size={16} color={colors.primary} /> {t("id_type")}
+                            <View style={[styles.inputContainer, { backgroundColor: isDarkMode ? colors.backgroundDark : colors.backgroundLight }]}>
+                                <Text style={[styles.label, { color: isDarkMode ? colors.darkText : colors.lightText }]}>
+                                    <Ionicons name="id-card-outline" size={16} color={isDarkMode ? colors.darkText : colors.lightText} /> {t("id_type")}
                                 </Text>
-                                <View style={styles.pickerContainer}>
+                                <View style={[styles.pickerContainer, { backgroundColor: isDarkMode ? colors.backgroundDark : colors.backgroundLight }]}>
                                     <Picker
                                         selectedValue={newFreelance.type_id}
                                         onValueChange={value => setNewFreelance(prev => ({ ...prev, type_id: value }))}
@@ -169,12 +169,12 @@ const CreateFreelanceModal: React.FC<CreateFreelanceModalProps> = ({ visible, on
                                 </View>
                             </View>
 
-                            <View style={styles.inputContainer}>
-                                <Text style={styles.label}>
+                            <View style={[styles.inputContainer, { backgroundColor: isDarkMode ? colors.backgroundDark : colors.backgroundLight }]}>
+                                <Text style={[styles.label, { color: isDarkMode ? colors.darkText : colors.lightText }]}>
                                     <Ionicons name="images-outline" size={18} /> {t("documents")}
                                 </Text>
                                 <TextInput
-                                    style={styles.input}
+                                    style={[styles.input, { color: isDarkMode ? colors.darkText : colors.lightText }]}
                                     placeholder="123456789"
                                     value={newFreelance.id_number}
                                     onChangeText={text => setNewFreelance(prev => ({ ...prev, id_number: text }))}
@@ -182,7 +182,7 @@ const CreateFreelanceModal: React.FC<CreateFreelanceModalProps> = ({ visible, on
                             </View>
 
                             {/* Sección de imágenes */}
-                            <Text style={styles.sectionTitle}>
+                            <Text style={[styles.sectionTitle, { color: isDarkMode ? colors.darkText : colors.lightText }]}>
                                 <Ionicons name="images-outline" size={18} /> {t("documents")}
                             </Text>
 

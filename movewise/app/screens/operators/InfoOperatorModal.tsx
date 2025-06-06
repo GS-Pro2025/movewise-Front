@@ -7,16 +7,13 @@ import {
     Text,
     TouchableOpacity,
     StyleSheet,
-    Linking
+    Linking,
+    useColorScheme
 } from 'react-native';
-import { useColorScheme } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useTranslation } from 'react-i18next';
 import { Image, ActivityIndicator } from 'react-native';
 import colors from '@/app/Colors';
-const colorScheme = useColorScheme();
-const isDarkMode = colorScheme === 'dark';
-
 
 interface Son {
     name: string;
@@ -130,7 +127,7 @@ const InfoOperatorModal: React.FC<InfoOperatorModalProps> = ({ visible, onClose,
     };
 
     const renderPhotoSection = () => (
-        <View style={[styles.card, { backgroundColor: cardBackground, borderColor }]}>
+        <View style={[styles.card, { backgroundColor: isDarkMode ? colors.backgroundDark : colors.backgroundLight }]}>
             <View style={styles.cardHeader}>
                 <Ionicons name="camera" size={20} color={primaryColor} />
                 <Text style={[styles.cardTitle, { color: primaryColor }]}>
@@ -163,7 +160,7 @@ const InfoOperatorModal: React.FC<InfoOperatorModalProps> = ({ visible, onClose,
     );
 
     const renderLicenseSection = () => (
-        <View style={[styles.card, { backgroundColor: cardBackground, borderColor }]}>
+        <View style={[styles.card, { backgroundColor: isDarkMode ? colors.backgroundDark : colors.backgroundLight, borderColor }]}>
             <View style={styles.cardHeader}>
                 <Ionicons name="card" size={20} color={primaryColor} />
                 <Text style={[styles.cardTitle, { color: primaryColor }]}>
@@ -223,7 +220,7 @@ const InfoOperatorModal: React.FC<InfoOperatorModalProps> = ({ visible, onClose,
                     )}
 
                     {imageStatus.licenseBack === 'invalid' && (
-                        <View style={[styles.placeholderContainer, { borderColor }]}>
+                        <View style={[styles.placeholderContainer, { borderColor     }]}>
                             <Ionicons
                                 name="document-outline"
                                 size={40}
@@ -428,7 +425,7 @@ const styles = StyleSheet.create({
         width: 150,
         height: 150,
         borderRadius: 75,
-        backgroundColor: isDarkMode ? '#333' : '#f0f0f0',
+        backgroundColor: '#f0f0f0',
         justifyContent: 'center',
         alignItems: 'center',
         alignSelf: 'center',

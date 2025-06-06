@@ -1,13 +1,16 @@
 import React, { useState, useEffect } from 'react';
-import { ScrollView, View, Text, TouchableOpacity } from 'react-native';
+import { ScrollView, View, Text, TouchableOpacity, useColorScheme } from 'react-native';
 import { FormInput, RadioGroup, DateInput, DropdownInput } from '@/app/components/operators/HelperComponents';
 import styles from '@/app/components/operators/FormStyle';
 import { Son, StepProps } from '@/types/operator.types';
 import { ALERT_TYPE, Toast } from 'react-native-alert-notification';
 import { useTranslation } from 'react-i18next';
+import colors from '@/app/Colors';
 import CrossPlatformImageUpload  from '@/components/CrossPlatformImageUpload';
 const Step2Form = ({ formData, updateFormData, onNext, onBack, isEditing }: StepProps) => {
     const { t } = useTranslation();
+    const colorScheme = useColorScheme();
+    const isDarkMode = colorScheme === 'dark';
     const [localData, setLocalData] = useState({
         number_licence: formData.number_licence || '',
         zipcode: formData.zipcode || '',
@@ -194,9 +197,9 @@ const Step2Form = ({ formData, updateFormData, onNext, onBack, isEditing }: Step
     };
 
     return (
-        <ScrollView>
-            <View style={styles.stepForm}>
-                <Text style={styles.sectionTitle}>{t("license_info")}</Text>
+        <ScrollView style={[styles.stepForm, { backgroundColor: isDarkMode ? colors.backgroundDark : colors.backgroundLight }]}>
+            <View style={[styles.stepForm, { backgroundColor: isDarkMode ? colors.backgroundDark : colors.backgroundLight }]}>
+                <Text style={[styles.sectionTitle, { color: isDarkMode ? colors.textDark : colors.primary }]}>{t("license_info")}</Text>
 
                 <FormInput
                     label={`${t("license_number")} (*)`}
@@ -231,7 +234,7 @@ const Step2Form = ({ formData, updateFormData, onNext, onBack, isEditing }: Step
                     required={true}
                 />
 
-                <Text style={styles.subSectionTitle}>{t("children_info")}</Text>
+                <Text style={[styles.subSectionTitle, { color: isDarkMode ? colors.textDark : colors.primary }]}>{t("children_info")}</Text>
 
                 <RadioGroup
                     label={`${t("question_children")}`}
@@ -247,13 +250,13 @@ const Step2Form = ({ formData, updateFormData, onNext, onBack, isEditing }: Step
 
                 {localData.has_minors && (
                     <>
-                        <Text style={styles.inputLabel}>{t("number_of_children")}: {localData.n_children}</Text>
-                        {errors.sons && <Text style={styles.errorText}>{errors.sons}</Text>}
+                        <Text style={[styles.inputLabel, { color: isDarkMode ? colors.textDark : colors.primary }]}>{t("number_of_children")}: {localData.n_children}</Text>
+                        {errors.sons && <Text style={[styles.errorText, { color: isDarkMode ? colors.textDark : colors.primary }]}>{errors.sons}</Text>}
 
                         {/* Lista de hijos agregados */}
                         {localData.sons.length > 0 && (
-                            <View style={styles.sonsList}>
-                                <Text style={styles.subsectionTitle}>{t("added_children")}:</Text>
+                            <View style={[styles.sonsList, { backgroundColor: isDarkMode ? colors.backgroundDark : colors.backgroundLight }]}>
+                                <Text style={[styles.subsectionTitle, { color: isDarkMode ? colors.textDark : colors.primary }]}>{t("added_children")}:</Text>
                                 {localData.sons.map((son, index) => (
                                     <View key={index} style={styles.sonItem}>
                                         <Text>{son.name} - {son.birth_date} - {son.gender === 'M' ? t("male") : t("female")}</Text>
@@ -266,8 +269,8 @@ const Step2Form = ({ formData, updateFormData, onNext, onBack, isEditing }: Step
                         )}
 
                         {/* Formulario para agregar un nuevo hijo */}
-                        <View style={styles.addSonForm}>
-                            <Text style={styles.subsectionTitle}>{t("add_child")}:</Text>
+                        <View style={[styles.addSonForm, { backgroundColor: isDarkMode ? colors.backgroundDark : colors.backgroundLight }]}>
+                            <Text style={[styles.subsectionTitle, { color: isDarkMode ? colors.textDark : colors.primary }]}>{t("add_child")}:</Text>
 
                             <FormInput
                                 label={`${t("name")} (*)`}

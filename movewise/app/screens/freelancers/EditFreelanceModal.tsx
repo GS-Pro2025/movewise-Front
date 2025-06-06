@@ -8,7 +8,7 @@ import * as FileSystem from 'expo-file-system';
 import { Picker } from '@react-native-picker/picker';
 import { UpdateOperator } from '@/hooks/api/PostOperator';
 import CrossPlatformImageUpload from '@/components/CrossPlatformImageUpload';
-
+import { useColorScheme } from 'react-native';
 interface EditFreelanceModalProps {
     visible: boolean;
     freelancer: any;
@@ -38,6 +38,7 @@ const EditFreelanceModal: React.FC<EditFreelanceModalProps> = ({ visible, freela
     }>({});
     const [loading, setLoading] = useState(false);
     const [loadingData, setLoadingData] = useState(false);
+    const isDarkMode = useColorScheme() === 'dark';
 
     useEffect(() => {
         if (visible && freelancer) {
@@ -168,30 +169,30 @@ const EditFreelanceModal: React.FC<EditFreelanceModalProps> = ({ visible, freela
     if (!visible) return null;
 
     return (
-        <Modal visible={visible} transparent animationType="slide">
-            <View style={styles.modalContainer}>
-                <View style={[styles.modalContent, { backgroundColor: colors.lightBackground }]}>
+        <Modal visible={visible} transparent animationType="slide" style={{ backgroundColor: isDarkMode ? colors.backgroundDark : colors.backgroundLight }}>
+            <View style={styles.modalContainer} >
+                <View style={[styles.modalContent, { backgroundColor: isDarkMode ? colors.backgroundDark : colors.backgroundLight }]}>
                     <ScrollView contentContainerStyle={styles.scrollContent}>
                         <View style={styles.header}>
-                            <Text style={styles.modalTitle}>
-                                <Ionicons name="pencil" size={20} color={colors.textLight} /> {t("edit_freelance")}
+                            <Text style={[styles.modalTitle, { color: isDarkMode ? colors.darkText : colors.lightText }]}>
+                                <Ionicons name="pencil" size={20} color={isDarkMode ? colors.darkText : colors.lightText} /> {t("edit_freelance")}
                             </Text>
                             <TouchableOpacity onPress={handleClose}>
-                                <Ionicons name="close" size={24} color={colors.textLight} />
+                                <Ionicons name="close" size={24} color={isDarkMode ? colors.darkText : colors.lightText} />
                             </TouchableOpacity>
                         </View>
 
                         {loadingData ? (
-                            <View style={styles.loadingContainer}>
-                                <ActivityIndicator size="large" color={colors.textLight} />
-                                <Text style={styles.loadingText}>{t("loading_data")}</Text>
+                            <View style={[styles.loadingContainer, { backgroundColor: isDarkMode ? colors.backgroundDark : colors.backgroundLight }]}>
+                                <ActivityIndicator size="large" color={isDarkMode ? colors.darkText : colors.lightText} />
+                                <Text style={[styles.loadingText, { color: isDarkMode ? colors.darkText : colors.lightText }]}>{t("loading_data")}</Text>
                             </View>
                         ) : (
                             <>
                                 {/* Campos del formulario con iconos */}
                                 <View style={styles.inputContainer}>
-                                    <Text style={styles.label}>
-                                        <Ionicons name="cash-outline" size={16} color={colors.textLight} /> {t("salary")} *
+                                    <Text style={[styles.label, { color: isDarkMode ? colors.darkText : colors.lightText }]}>
+                                        <Ionicons name="cash-outline" size={16} color={isDarkMode ? colors.darkText : colors.lightText} /> {t("salary")} *
                                     </Text>
                                     <TextInput
                                         style={styles.input}
@@ -203,8 +204,8 @@ const EditFreelanceModal: React.FC<EditFreelanceModalProps> = ({ visible, freela
                                 </View>
 
                                 <View style={styles.inputContainer}>
-                                    <Text style={styles.label}>
-                                        <Ionicons name="person-outline" size={16} color={colors.textLight} /> {t("first_name")} *
+                                    <Text style={[styles.label, { color: isDarkMode ? colors.darkText : colors.lightText }]}>
+                                        <Ionicons name="person-outline" size={16} color={isDarkMode ? colors.darkText : colors.lightText} /> {t("first_name")} *
                                     </Text>
                                     <TextInput
                                         style={styles.input}
@@ -215,8 +216,8 @@ const EditFreelanceModal: React.FC<EditFreelanceModalProps> = ({ visible, freela
                                 </View>
 
                                 <View style={styles.inputContainer}>
-                                    <Text style={styles.label}>
-                                        <Ionicons name="people-outline" size={16} color={colors.textLight} /> {t("last_name")} *
+                                    <Text style={[styles.label, { color: isDarkMode ? colors.darkText : colors.lightText }]}>
+                                        <Ionicons name="people-outline" size={16} color={isDarkMode ? colors.darkText : colors.lightText} /> {t("last_name")} *
                                     </Text>
                                     <TextInput
                                         style={styles.input}
@@ -227,8 +228,8 @@ const EditFreelanceModal: React.FC<EditFreelanceModalProps> = ({ visible, freela
                                 </View>
 
                                 <View style={styles.inputContainer}>
-                                    <Text style={styles.label}>
-                                        <Ionicons name="mail-outline" size={16} color={colors.textLight} /> {t("email")}
+                                    <Text style={[styles.label, { color: isDarkMode ? colors.darkText : colors.lightText }]}>
+                                        <Ionicons name="mail-outline" size={16} color={isDarkMode ? colors.darkText : colors.lightText} /> {t("email")}
                                     </Text>
                                     <TextInput
                                         style={styles.input}
@@ -241,8 +242,8 @@ const EditFreelanceModal: React.FC<EditFreelanceModalProps> = ({ visible, freela
                                 </View>
 
                                 <View style={styles.inputContainer}>
-                                    <Text style={styles.label}>
-                                        <Ionicons name="location-outline" size={16} color={colors.textLight} /> {t("address")}
+                                    <Text style={[styles.label, { color: isDarkMode ? colors.darkText : colors.lightText }]}>
+                                        <Ionicons name="location-outline" size={16} color={isDarkMode ? colors.darkText : colors.lightText} /> {t("address")}
                                     </Text>
                                     <TextInput
                                         style={styles.input}
@@ -253,8 +254,8 @@ const EditFreelanceModal: React.FC<EditFreelanceModalProps> = ({ visible, freela
                                 </View>
 
                                 <View style={styles.inputContainer}>
-                                    <Text style={styles.label}>
-                                        <Ionicons name="call-outline" size={16} color={colors.textLight} /> {t("phone")}
+                                    <Text style={[styles.label, { color: isDarkMode ? colors.darkText : colors.lightText }]}>
+                                        <Ionicons name="call-outline" size={16} color={isDarkMode ? colors.darkText : colors.lightText} /> {t("phone")}
                                     </Text>
                                     <TextInput
                                         style={styles.input}
@@ -266,10 +267,10 @@ const EditFreelanceModal: React.FC<EditFreelanceModalProps> = ({ visible, freela
                                 </View>
 
                                 <View style={styles.inputContainer}>
-                                    <Text style={styles.label}>
-                                        <Ionicons name="id-card-outline" size={16} color={colors.textLight} /> {t("id_type")} *
+                                    <Text style={[styles.label, { color: isDarkMode ? colors.darkText : colors.lightText }]}>
+                                        <Ionicons name="id-card-outline" size={16} color={isDarkMode ? colors.darkText : colors.lightText} /> {t("id_type")} *
                                     </Text>
-                                    <View style={styles.pickerContainer}>
+                                    <View style={[styles.pickerContainer, { backgroundColor: isDarkMode ? colors.backgroundDark : colors.backgroundLight }]}>
                                         <Picker
                                             selectedValue={freelanceData.type_id}
                                             onValueChange={value => updateField('type_id', value)}
@@ -282,8 +283,8 @@ const EditFreelanceModal: React.FC<EditFreelanceModalProps> = ({ visible, freela
                                 </View>
 
                                 <View style={styles.inputContainer}>
-                                    <Text style={styles.label}>
-                                        <Ionicons name="card-outline" size={16} color={colors.textLight} /> {t("id_number")} *
+                                    <Text style={[styles.label, { color: isDarkMode ? colors.darkText : colors.lightText }]}>
+                                        <Ionicons name="card-outline" size={16} color={isDarkMode ? colors.darkText : colors.lightText} /> {t("id_number")} *
                                     </Text>
                                     <TextInput
                                         style={styles.input}
@@ -295,12 +296,12 @@ const EditFreelanceModal: React.FC<EditFreelanceModalProps> = ({ visible, freela
                                 </View>
 
                                 {/* Sección de imágenes */}
-                                <Text style={styles.sectionTitle}>
-                                    <Ionicons name="images-outline" size={18} color={colors.textLight} /> {t("documents")}
+                                <Text style={[styles.sectionTitle, { color: isDarkMode ? colors.darkText : colors.lightText }]}>
+                                    <Ionicons name="images-outline" size={18} color={isDarkMode ? colors.darkText : colors.lightText} /> {t("documents")}
                                 </Text>
 
-                                <Text style={styles.imageNote}>
-                                    <Ionicons name="information-circle-outline" size={16} color={colors.neutralGray} />
+                                <Text style={[styles.imageNote, { color: isDarkMode ? colors.darkText : colors.lightText }]}>
+                                    <Ionicons name="information-circle-outline" size={16} color={isDarkMode ? colors.darkText : colors.lightText} />
                                     {" " + t("select_only_if_updating_images")}
                                 </Text>
 
@@ -324,15 +325,15 @@ const EditFreelanceModal: React.FC<EditFreelanceModalProps> = ({ visible, freela
 
                                 <View style={styles.buttonContainer}>
                                     <TouchableOpacity
-                                        style={styles.cancelButton}
+                                        style={[styles.cancelButton, { backgroundColor: isDarkMode ? colors.backgroundDark : colors.backgroundLight }]}
                                         onPress={handleClose}
                                     >
-                                        <Ionicons name="close-outline" size={20} color={colors.neutralGray} />
-                                        <Text style={styles.cancelButtonText}>{t("cancel")}</Text>
+                                        <Ionicons name="close-outline" size={20} color={isDarkMode ? colors.darkText : colors.lightText} />
+                                        <Text style={[styles.cancelButtonText, { color: isDarkMode ? colors.darkText : colors.lightText }]}>{t("cancel")}</Text>
                                     </TouchableOpacity>
 
                                     <TouchableOpacity
-                                        style={[styles.submitButton, loading && styles.submitButtonDisabled]}
+                                        style={[styles.submitButton, loading && styles.submitButtonDisabled, { backgroundColor: isDarkMode ? colors.completedStatus : colors.primary }]}
                                         onPress={handleUpdateFreelance}
                                         disabled={loading}
                                     >
@@ -341,7 +342,7 @@ const EditFreelanceModal: React.FC<EditFreelanceModalProps> = ({ visible, freela
                                         ) : (
                                             <Ionicons name="save-outline" size={20} color="#fff" />
                                         )}
-                                        <Text style={styles.buttonText}>
+                                        <Text style={[styles.buttonText, { color: isDarkMode ? colors.darkText : colors.lightText }]}>
                                             {loading ? t("updating") : t("update_freelance")}
                                         </Text>
                                     </TouchableOpacity>

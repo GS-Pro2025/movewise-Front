@@ -85,7 +85,7 @@ const BaseOperatorView: React.FC<BaseOperatorViewProps> = ({
     };
 
     const loadAssignments = useCallback(async () => {
-        console.log("Loading assignments for operator:", operatorId);
+        // console.log("Loading assignments for operator:", operatorId);
 
         if (!operatorId) {
             console.error("No operator ID provided");

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { ScrollView, Platform, View, Text, TouchableOpacity } from 'react-native';
+import { ScrollView, Platform, View, Text, TouchableOpacity,useColorScheme } from 'react-native';
 import { FormInput, DateInput, DropdownInput } from '@/app/components/operators/HelperComponents';
 import styles from '@/app/components/operators/FormStyle';
 import { StepProps, Operator } from '@/types/operator.types';
@@ -7,9 +7,12 @@ import { ALERT_TYPE, Toast } from 'react-native-alert-notification';
 import { ListOperators } from '@/hooks/api/Get_listOperator';
 import { router } from 'expo-router';
 import { useTranslation } from 'react-i18next';
+import colors from '@/app/Colors';
 const Step1Form = ({ formData, updateFormData, onNext, isEditing }: StepProps) => {
     // Estado local para rastrear los valores del formulario
     const { t } = useTranslation();
+    const colorScheme = useColorScheme();
+    const isDarkMode = colorScheme === 'dark';
     const [localData, setLocalData] = useState({
         id_operator: formData.id_operator || 0,
         first_name: formData.first_name,
@@ -172,6 +175,7 @@ const Step1Form = ({ formData, updateFormData, onNext, isEditing }: StepProps) =
                 contentContainerStyle={{ flexGrow: 1 }}
                 automaticallyAdjustKeyboardInsets={true}
                 contentInsetAdjustmentBehavior="automatic"
+                style={[{ backgroundColor: isDarkMode ? colors.backgroundDark : colors.backgroundLight }]}
             >
                 <View style={[styles.stepForm, { flex: 1 }]}>
                     <Text style={styles.sectionTitle}>{t("general_data")}</Text>

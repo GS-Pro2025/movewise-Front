@@ -1,4 +1,4 @@
-import { Modal, SafeAreaView, ScrollView, View, Text, TextInput, TouchableOpacity, StyleSheet, useColorScheme } from 'react-native';
+import { Modal, SafeAreaView, ScrollView, View, Text,  TextInput, TouchableOpacity, StyleSheet, useColorScheme } from 'react-native';
 import { useState, useEffect } from 'react';
 // import { ThemedView } from '../../components/ThemedView';
 import {ThemedView} from '@/components/ThemedView'

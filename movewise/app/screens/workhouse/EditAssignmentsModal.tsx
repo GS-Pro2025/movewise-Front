@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
-import { View, Text, Modal, TouchableOpacity, StyleSheet, ActivityIndicator, ScrollView, SafeAreaView, Alert } from 'react-native';
+import { View, Text, Modal, TouchableOpacity, StyleSheet,useColorScheme, ActivityIndicator, ScrollView, SafeAreaView, Alert } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import colors from '@/app/Colors';
 import { useTranslation } from 'react-i18next';
@@ -16,6 +16,8 @@ interface EditAssignmentsModalProps {
 
 const EditAssignmentsModal: React.FC<EditAssignmentsModalProps> = ({ visible, onClose, workhouseKey, onRefresh }) => {
     const { t } = useTranslation();
+    const colorScheme = useColorScheme();
+    const isDarkMode = colorScheme === 'dark';
     const initialKeyRef = useRef<string>('');
     const [assignments, setAssignments] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
@@ -87,8 +89,8 @@ const EditAssignmentsModal: React.FC<EditAssignmentsModalProps> = ({ visible, on
                 <View style={styles.modalContainer}>
                     <View style={[styles.modalContent, { backgroundColor: colors.lightBackground }]}>
                         <ScrollView contentContainerStyle={styles.scrollContent}>
-                            <View style={styles.header}>
-                                <Text style={styles.modalTitle}>{t("assigned_freelancers")}</Text>
+                            <View style={[styles.header, { backgroundColor: colors.lightBackground }]}>
+                                <Text style={[styles.modalTitle, { color: isDarkMode ? colors.darkText : colors.primary }]}>{t("assigned_freelancers")}</Text>
                                 <TouchableOpacity style={{ padding: 15 }} onPress={onClose}>
                                     <Ionicons name="close" size={24} color={colors.primary} />
                                 </TouchableOpacity>

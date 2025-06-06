@@ -1,6 +1,6 @@
 // formulario de edicion de workhouse
 import { useState, useEffect } from 'react';
-import { View, Text, Modal, TouchableOpacity, StyleSheet, Alert, ActivityIndicator, ScrollView } from 'react-native';
+import { View, Text, Modal, TouchableOpacity, useColorScheme,StyleSheet, Alert, ActivityIndicator, ScrollView } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { Picker } from '@react-native-picker/picker';
@@ -31,6 +31,8 @@ interface InitialState {
 const EditWorkhouseForm: React.FC<EditWorkhouseFormProps> = ({ visible, onClose, onSuccess, order, onOpenAssignment }) => {
     const router = useRouter(); // Añadimos el router
     const { t } = useTranslation();
+    const colorScheme = useColorScheme();
+    const isDarkMode = colorScheme === 'dark';
     const [date, setDate] = useState(new Date());
     const [customerFactories, setCustomerFactories] = useState<any[]>([]);
     const [selectedCustomer, setSelectedCustomer] = useState<number | null>(null);
@@ -138,26 +140,42 @@ const EditWorkhouseForm: React.FC<EditWorkhouseFormProps> = ({ visible, onClose,
 
     return (
         <Modal visible={visible} transparent animationType="slide">
-            <View style={styles.modalContainer}>
-                <View style={[styles.modalContent, { backgroundColor: colors.lightBackground }]}>
+            <View style={[styles.modalContainer, { backgroundColor: isDarkMode ? 'rgba(0,0,0,0.7)' : 'rgba(0,0,0,0.5)' }]}>
+                <View style={[
+                    styles.modalContent,
+                    { 
+                        backgroundColor: isDarkMode ? colors.backgroundDark : colors.lightBackground,
+                        borderColor: isDarkMode ? colors.borderDark : colors.borderLight
+                    }
+                ]}>
                     <ScrollView
-                        contentContainerStyle={styles.scrollContent}
-                        showsVerticalScrollIndicator={false}
+                        contentContainerStyle={[
+                            styles.scrollContent,
+                            { backgroundColor: isDarkMode ? colors.backgroundDark : colors.lightBackground }
+                        ]}
                     >
-                        <View style={styles.header}>
-                            <Text style={styles.modalTitle}>{t("edit_workhouse_order")}</Text>
+                        <View style={[
+                            styles.header,
+                            { backgroundColor: isDarkMode ? colors.backgroundDark : colors.lightBackground }
+                        ]}>
+                            <Text style={[
+                                styles.modalTitle,
+                                { color: isDarkMode ? colors.textDark : colors.primary }
+                            ]}>
+                                {t("edit_workhouse_order")}
+                            </Text>
                             <TouchableOpacity style={{ padding: 15 }} onPress={() => onClose()}>
                                 <Ionicons name="close" size={24} color={colors.primary} />
                             </TouchableOpacity>
                         </View>
 
                         {/* Selector de Customer Factory */}
-                        <View style={styles.dropdownContainer}>
-                            <Text style={styles.dropdownLabel}>{t("customer_factory")}</Text>
+                        <View style={[styles.dropdownContainer, { backgroundColor: isDarkMode ? colors.backgroundDark : colors.lightBackground }]}>
+                            <Text style={[styles.dropdownLabel, { color: isDarkMode ? colors.textDark : colors.primary }]}>{t("customer_factory")}</Text>
                             <Picker
                                 selectedValue={selectedCustomer}
                                 onValueChange={(itemValue) => setSelectedCustomer(itemValue)}
-                                style={styles.picker}
+                                style={[styles.picker, { borderColor: isDarkMode ? colors.borderDark : colors.borderLight, backgroundColor: isDarkMode ? colors.backgroundDark : colors.lightBackground }]}
                                 dropdownIconColor={colors.primary}
                             >
                                 <Picker.Item label={t("select_customer")} value={null} />
@@ -166,6 +184,7 @@ const EditWorkhouseForm: React.FC<EditWorkhouseFormProps> = ({ visible, onClose,
                                         key={customer.id_factory}
                                         label={customer.name}
                                         value={customer.id_factory}
+                                        color={isDarkMode ? colors.textDark : colors.textLight}
                                     />
                                 ))}
                             </Picker>
@@ -173,11 +192,11 @@ const EditWorkhouseForm: React.FC<EditWorkhouseFormProps> = ({ visible, onClose,
 
                         {/* Selector de Fecha */}
                         <TouchableOpacity
-                            style={styles.datePicker}
+                            style={[styles.datePicker, { backgroundColor: isDarkMode ? colors.backgroundDark : colors.lightBackground }]}
                             onPress={() => setShowDatePicker(true)}
                         >
                             <Ionicons name="calendar" size={20} color={colors.primary} />
-                            <Text style={styles.dateText}>
+                            <Text style={[styles.dateText, { color: isDarkMode ? colors.textDark : colors.primary }]}>
                                 {date.toLocaleDateString()}
                             </Text>
                         </TouchableOpacity>
@@ -205,27 +224,27 @@ const EditWorkhouseForm: React.FC<EditWorkhouseFormProps> = ({ visible, onClose,
                         />
 
                         {validationError && (
-                            <Text style={styles.errorText}>{validationError}</Text>
+                            <Text style={[styles.errorText, { color: isDarkMode ? colors.textDark : colors.primary }]}>{validationError}</Text>
                         )}
 
                         <TouchableOpacity
-                            style={styles.editFreelancersButton}
+                            style={[styles.submitButton, { backgroundColor: isDarkMode ? colors.primary : colors.primary, flexDirection: 'row', alignItems: 'center', justifyContent: 'center',gap: 5 }]}
                             onPress={handleOpenAssignmentScreen}
                         >
-                            <Ionicons name="people-outline" size={16} color={colors.primary} />
-                            <Text style={styles.editFreelancersText}>{t("edit_freelancers")}</Text>
+                            <Ionicons name="people-outline" size={20} color={isDarkMode ? colors.textDark : colors.primary} />
+                            <Text style={[styles.editFreelancersText, { color: isDarkMode ? colors.textDark : colors.primary }]}>{t("edit_freelancers")}</Text>
                         </TouchableOpacity>
 
                         {hasChanges && (
                             <TouchableOpacity
-                                style={styles.submitButton}
+                                style={[styles.submitButton, { backgroundColor: isDarkMode ? colors.completedStatus : colors.completedStatus }]}
                                 onPress={handleSubmit}
                                 disabled={loading}
                             >
                                 {loading ? (
                                     <ActivityIndicator color="#fff" />
                                 ) : (
-                                    <Text style={styles.buttonText}>{t("save_changes")}</Text>
+                                    <Text style={[styles.buttonText]}>{t("save_changes")}</Text>
                                 )}
                             </TouchableOpacity>
                         )}
@@ -249,7 +268,6 @@ const styles = StyleSheet.create({
     modalContainer: {
         flex: 1,
         justifyContent: 'flex-end',
-        backgroundColor: 'rgba(0,0,0,0.5)',
     },
     modalContent: {
         borderTopLeftRadius: 20,
@@ -268,7 +286,6 @@ const styles = StyleSheet.create({
     editFreelancersText: {
         color: colors.primary,
         fontSize: 14,
-        textDecorationLine: 'underline',
     },
     scrollContent: {
         flexGrow: 1,
@@ -278,7 +295,8 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         justifyContent: 'space-between',
         alignItems: 'center',
-        marginBottom: 24,
+        marginBottom: 20,
+        padding: 10,
     },
     modalTitle: {
         fontSize: 20,
