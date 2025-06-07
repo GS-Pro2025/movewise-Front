@@ -25,7 +25,7 @@ import { getTodayDate, formatDateForAPI } from '@/utils/handleDate';
 export default function AddOrderModal() {
   const router = useRouter();
   const { t } = useTranslation();
-  
+
   // Formatear la fecha como YYYY-MM-DD - ACTUALIZADO para usar la nueva utilidad
   const formatDate = (date: Date): string => {
     return formatDateForAPI(date);
@@ -55,13 +55,15 @@ export default function AddOrderModal() {
   const [operatorModalVisible, setOperatorModalVisible] = useState(false); // State for OperatorModal visibility
   const [savedOrderKey, setSavedOrderKey] = useState<string | null>(null); // State to store saved order key
   const [dispatchTicket, setDispatchTicket] = useState<ImageInfo | null>(null); // State for dispatch_Ticket
-  
+
   const { saveOrder, isLoading, error } = AddOrderformApi();
 
   const handleSaveOperators = () => {
-    // console.log("Operators saved successfully! Closing both modals.");
-    setOperatorModalVisible(false); // close OperatorModal
-    router.back();
+    console.log("Operators saved successfully! Closing both modals.");
+
+    // Cerrar inmediatamente el modal padre
+    resetForm();
+    setOperatorModalVisible(false);
   };
 
   // Handler for deleting an order
@@ -113,6 +115,23 @@ export default function AddOrderModal() {
   interface AddOrderFormModel extends Omit<AddOrderForm, 'customer_factory'> {
     customer_factory: number;
   }
+
+  const resetForm = () => {
+    setState(null);
+    setSearchTerm('');
+    setJob(null);
+    setCompany(null);
+    setDate(formatDateForAPI(getTodayDate()));
+    setKeyReference('');
+    setCustomerName('');
+    setCustomerLastName('');
+    setCellPhone('');
+    setAddress('');
+    setEmail('');
+    setWeight('');
+    setErrors({});
+    setDispatchTicket(null);
+  };
 
   const handleSave = async () => {
     if (isLoading) return;
@@ -181,6 +200,7 @@ export default function AddOrderModal() {
         });
         await new Promise(resolve => setTimeout(resolve, 900));
         setSavedOrderKey(savedOrder.key);
+        resetForm(); // Clear the form
         setOperatorModalVisible(true);
       }
     } catch (error) {
@@ -567,7 +587,7 @@ export default function AddOrderModal() {
               />
             </View>
 
-            <Text style={styles.text}>{t('weight')} (kg) <Text style={styles.required}>(*)</Text></Text>
+            <Text style={styles.text}>{t('weight')} (Lb) <Text style={styles.required}>(*)</Text></Text>
             <TextInput
               style={[styles.input, { borderColor: errors.weight ? "red" : (colorScheme === 'dark' ? '#64748b' : '#0458AB') }]}
               placeholder={t('weight')}
@@ -611,10 +631,12 @@ export default function AddOrderModal() {
           </ThemedView>
 
           {/* Operator Modal */}
-          <OperatorModal visible={operatorModalVisible}
+          <OperatorModal
+            visible={operatorModalVisible}
             onClose={() => setOperatorModalVisible(false)}
             orderKey={savedOrderKey || 'There is no key'}
-            onSave={handleSaveOperators} />
+            onSave={handleSaveOperators}
+          />
         </ScrollView>
       </KeyboardAvoidingView>
       <Toast />

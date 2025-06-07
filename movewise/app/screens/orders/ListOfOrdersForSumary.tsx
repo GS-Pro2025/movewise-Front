@@ -19,7 +19,7 @@ import DateTimePicker, { DateTimePickerEvent } from "@react-native-community/dat
 import { useTranslation } from "react-i18next";
 import { getOrdersAllStatus, OrdersResponse } from "@/hooks/api/GetOrders";
 import colors from "@/app/Colors"; // Asegúrate de importar tus colores
-
+import { formatLocalDate } from "@/app/components/orders/FormattedDate";
 interface OrderPerson {
   email: string;
   first_name: string | null;
@@ -60,11 +60,11 @@ const ListOfOrdersForSummary: React.FC = () => {
     try {
       // Formatear fecha para el backend
       const formattedDate = selectedDate 
-        ? selectedDate.toISOString().split('T')[0] 
+        ? formatLocalDate(selectedDate) 
         : undefined;
       
       const response = await getOrdersAllStatus(undefined, {
-        date: formattedDate ? new Date(formattedDate) : null,
+        date: formattedDate,
         search: searchText,
         status: null // No status filter
       });

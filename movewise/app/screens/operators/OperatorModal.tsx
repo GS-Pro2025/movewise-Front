@@ -123,10 +123,15 @@ const OperatorModal: React.FC<OperatorModalProps> = ({ visible, onClose, orderKe
 
   const handleSave = async () => {
     console.log("Operadores antes de guardar:", operators);
+
+    // Prevenir múltiples ejecuciones
+    if (loading) return;
+
     try {
+      setLoading(true); // Activar loading para prevenir múltiples clicks
+
       const token = await AsyncStorage.getItem("userToken");
       if (!token) throw new Error(t("authentication_required"));
-      // console.log("Operadores antes de construir el payload:", operators);
 
       if (!validateFields()) {
         Toast.show({
@@ -145,7 +150,6 @@ const OperatorModal: React.FC<OperatorModalProps> = ({ visible, onClose, orderKe
         truck: (op.role === "driver" || op.role === "leader") ? op.truckId : null
       }));
 
-      // console.log("Payload enviado al backend para la asignación:", payload);
       const response = await fetch(`${url}/assigns/bulk/`, {
         method: 'POST',
         headers: {
@@ -156,7 +160,6 @@ const OperatorModal: React.FC<OperatorModalProps> = ({ visible, onClose, orderKe
       });
 
       const responseData = await response.json();
-      // console.log("Respuesta del backend:", responseData);
 
       if (!response.ok) {
         if (response.status === 207) {
@@ -168,15 +171,24 @@ const OperatorModal: React.FC<OperatorModalProps> = ({ visible, onClose, orderKe
             ? `${responseData.data.created.length} ${t("assignments_saved")}.`
             : "";
 
+          // Mostrar toast y esperar un poco antes de continuar
           Toast.show({
             type: "info",
             text1: t("partial_success"),
             text2: `${successMessage}\n\n${t("conflicts")}: ${conflictMessages}`,
           });
 
+          // Esperar un poco antes de actualizar el estado
+          await new Promise(resolve => setTimeout(resolve, 100));
+
           updateOperatorsWithConflicts(responseData.data.conflicts);
-          fetchAssignedOperators();
-          onSave();
+          await fetchAssignedOperators();
+
+          // Esperar antes de llamar onSave
+          setTimeout(() => {
+            onSave(); // ejecuta handleSaveOperators en el componente padre
+          }, 1500);
+
         } else if (response.status === 400) {
           const errorMessages = responseData.data
             .map((e: { operator_id?: number; index?: number; message?: string; errors?: any }) =>
@@ -194,15 +206,21 @@ const OperatorModal: React.FC<OperatorModalProps> = ({ visible, onClose, orderKe
         return;
       }
 
+      // Éxito completo
       setOperators([]);
-      fetchAssignedOperators();
+      await fetchAssignedOperators();
+
       Toast.show({
         type: "success",
         text1: t("success"),
         text2: t("assignments_saved"),
       });
 
-      onSave(); // Close the modal after saving
+      // Dar tiempo para que se procese todo antes de cerrar
+      setTimeout(() => {
+        onSave(); // Esto ejecuta handleSaveOperators en el padre y cerrará ambos modales
+      }, 1500);
+
     } catch (error) {
       console.error(t("error"), error);
       Toast.show({
@@ -210,6 +228,11 @@ const OperatorModal: React.FC<OperatorModalProps> = ({ visible, onClose, orderKe
         text1: t("error"),
         text2: t("could_not_save_assignments"),
       });
+    } finally {
+      // se desactiva el loading
+      setTimeout(() => {
+        setLoading(false);
+      }, 100);
     }
   };
 
@@ -246,7 +269,7 @@ const OperatorModal: React.FC<OperatorModalProps> = ({ visible, onClose, orderKe
                 .catch((error) => {
                   console.error("Error deleting assignation:", error);
                   Alert.alert(t("error"), t("could_not_delete_assignation"));
-              });
+                });
             } else {
               setOperators((prev) => prev.filter((_, i) => i !== index));
             }
@@ -306,7 +329,7 @@ const OperatorModal: React.FC<OperatorModalProps> = ({ visible, onClose, orderKe
     }
     setRoleSelectorVisible(false);
   };
-  
+
   const renderOperatorItem = (operator: any, index: number, isAssigned: boolean) => {
     const renderRightActions = () => (
       <View style={styles.rightSwipeActions}>
