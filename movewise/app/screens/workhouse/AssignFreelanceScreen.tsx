@@ -81,7 +81,6 @@ const AssignFreelanceScreen: React.FC<AssignFreelanceScreenProps> = ({ workhouse
                 workhouse_key: workhouseKey,
                 operator: freelanceData.id_operator,
                 order: freelanceData.code,
-                assigned_at: new Date().toISOString(),
                 rol: 'freelance',
                 additional_costs: additionalCosts
             });
