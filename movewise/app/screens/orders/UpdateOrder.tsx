@@ -5,7 +5,6 @@ import { useLocalSearchParams, useRouter } from "expo-router";
 import DateTimePickerModal from "react-native-modal-datetime-picker";
 import { KeyboardAwareView } from '@/components/KeyboardAwareView';
 import { ListJobs } from '@/hooks/api/JobClient';
-import { ListStates } from '@/hooks/api/StatesClient';
 import UpdateOrderFormApi from '@/hooks/api/UpdateOrderFormApi';
 import { AntDesign, MaterialIcons } from '@expo/vector-icons';
 import OperatorModal from '../operators/OperatorModal';
@@ -17,7 +16,7 @@ import Toast from 'react-native-toast-message';
 import { CustomerFactory } from '@/hooks/api/CustomerFactoryClient';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import { ThemedView } from '@/components/ThemedView';
-
+import { url } from '@/hooks/api/apiClient';  
 interface Job {
   id: number;
   name: string;
@@ -49,23 +48,37 @@ interface UpdateOrderModalProps {
     dispatch_ticket?: string;
   };
 }
+
 export default function UpdateOrderModal() {
   const params = useLocalSearchParams();
   const orderData = params.order ? JSON.parse(params.order as string) : null;
-
   const { t } = useTranslation();
-  const [companyList, setCompanyList] = useState<any[]>([]);
-  const [stateList, setStateList] = useState<any[]>([]);
   const router = useRouter();
-  const [stateDropdownOpen, setStateDropdownOpen] = useState(false);
-  const [jobDropdownOpen, setJobDropdownOpen] = useState(false);
+  
+  // Estados para ubicación
+  const [openCountry, setOpenCountry] = useState(false);
+  const [openStateRegion, setOpenStateRegion] = useState(false);
+  const [openCity, setOpenCity] = useState(false);
+  
+  const [country, setCountry] = useState<string | null>(null);
+  const [stateRegion, setStateRegion] = useState<string | null>(null);
+  const [city, setCity] = useState<string | null>(null);
+  
+  const [countriesList, setCountriesList] = useState<any[]>([]);
+  const [statesList, setStatesList] = useState<any[]>([]);
+  const [citiesList, setCitiesList] = useState<any[]>([]);
+  
+  const [loadingCountries, setLoadingCountries] = useState(false);
+  const [loadingStates, setLoadingStates] = useState(false);
+  const [loadingCities, setLoadingCities] = useState(false);
+  
+  // Resto de estados
   const [addOperatorVisible, setAddOperatorVisible] = useState(false);
   const { updateOrder, isLoading } = UpdateOrderFormApi();
   const colorScheme = useColorScheme();
   const isDarkMode = colorScheme === "dark";
   const [openCompany, setOpenCompany] = useState(false);
   const [company, setCompany] = useState<number | null>(null);
-  const [state, setState] = useState<string | null>(null);
   const [date, setDate] = useState<string | null>(null);
   const [keyReference, setKeyReference] = useState('');
   const [customerFirstName, setCustomerFirstName] = useState('');
@@ -76,15 +89,115 @@ export default function UpdateOrderModal() {
   const [weight, setWeight] = useState('');
   const [jobId, setJobId] = useState<number | null>(null);
   const [jobList, setJobList] = useState<Job[]>([]);
+  const [jobDropdownOpen, setJobDropdownOpen] = useState(false);
+  const [companyList, setCompanyList] = useState<any[]>([]);
   const [errors, setErrors] = useState<{ [key: string]: string }>({});
   const [isDatePickerVisible, setDatePickerVisibility] = useState(false);
   const [dispatchTicket, setDispatchTicket] = useState<ImageInfo | null>(null);
   const [hasExistingDispatchTicket, setHasExistingDispatchTicket] = useState(false);
 
+  // Función para cargar países
+  const fetchCountries = async () => {
+    setLoadingCountries(true);
+    try {
+      const response = await fetch(`${url}/orders-locations/?type=countries`);
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      const data = await response.json();
+      if (data.status === 'success') {
+        const countries = data.data.map((c: any) => ({
+          label: c.name,
+          value: c.name
+        }));
+        setCountriesList(countries);
+      }
+    } catch (error) {
+      console.error('Error fetching countries:', error);
+      setCountriesList([]);
+    } finally {
+      setLoadingCountries(false);
+    }
+  };
+
+  // Función para cargar estados
+  const fetchStates = async (countryName: string) => {
+    if (!countryName) return;
+    setLoadingStates(true);
+    try {
+      const response = await fetch(
+        `${url}/orders-locations/?type=states&country=${encodeURIComponent(countryName)}`
+      );
+      const data = await response.json();
+      if (data.status === 'success') {
+        const states = data.data.map((s: any) => ({
+          label: s.name,
+          value: s.name
+        }));
+        setStatesList(states);
+      }
+    } catch (error) {
+      console.error('Error fetching states:', error);
+    } finally {
+      setLoadingStates(false);
+    }
+  };
+
+  // Función para cargar ciudades
+  const fetchCities = async (countryName: string, stateName: string) => {
+    if (!countryName || !stateName) return;
+    setLoadingCities(true);
+    try {
+      const response = await fetch(
+        `${url}/orders-locations/?type=cities&country=${encodeURIComponent(countryName)}&state=${encodeURIComponent(stateName)}`
+      );
+      const data = await response.json();
+      if (data.status === 'success') {
+        const cities = data.data.map((c: any) => ({
+          label: c.name,
+          value: c.name
+        }));
+        setCitiesList(cities);
+      }
+    } catch (error) {
+      console.error('Error fetching cities:', error);
+    } finally {
+      setLoadingCities(false);
+    }
+  };
+
+  // Cargar estados cuando cambia el país
+  useEffect(() => {
+    if (country) {
+      // No resetear el estado si ya está establecido (durante la carga inicial)
+      if (!stateRegion) {
+        setStateRegion(null);
+        setCity(null);
+      }
+      fetchStates(country);
+    } else {
+      setStatesList([]);
+      setCitiesList([]);
+    }
+  }, [country]);
+
+  // Cargar ciudades cuando cambia el estado
+  useEffect(() => {
+    if (country && stateRegion) {
+      // No resetear la ciudad si ya está establecida (durante la carga inicial)
+      if (!city) {
+        setCity(null);
+      }
+      fetchCities(country, stateRegion);
+    } else {
+      setCitiesList([]);
+    }
+  }, [stateRegion]);
+
   useEffect(() => {
     fetchJobs();
     fetchCompanies();
-    fetchStates();
+    fetchCountries(); // Cargar países al iniciar
 
     if (orderData) {
       // Convertir customer_factory a número si existe
@@ -95,7 +208,14 @@ export default function UpdateOrderModal() {
         : null;
 
       setCompany(customerFactoryValue);
-      setState(orderData.state_usa || null);
+
+      // Descomponer la ubicación existente
+      if (orderData.state_usa) {
+        const locationParts = orderData.state_usa.split(' - ');
+        if (locationParts.length >= 1) setCountry(locationParts[0]);
+        if (locationParts.length >= 2) setStateRegion(locationParts[1]);
+        if (locationParts.length >= 3) setCity(locationParts[2]);
+      }
 
       setDate(orderData.date || '');
       setKeyReference(orderData.key_ref || '');
@@ -129,22 +249,11 @@ export default function UpdateOrderModal() {
     }
   };
 
-  const fetchStates = async () => {
-    try {
-      const states = await ListStates();
-      setStateList(Array.isArray(states) ? states : []);
-    } catch (error) {
-      console.error('Error fetching states:', error);
-      setStateList([]);
-    }
-  };
-
   const fetchCompanies = async () => {
     try {
       const companies = await CustomerFactory();
       const companyArray = Array.isArray(companies) ? companies : [];
       setCompanyList(companyArray);
-      // // console.log("Companies fetched:", companyArray);
     } catch (error) {
       console.error(t('error_fetching_companies'), error);
       setCompanyList([]);
@@ -152,9 +261,6 @@ export default function UpdateOrderModal() {
   };
 
   const handleChange = (field: string, value: any): void => {
-    // // console.log(`UpdateOrderForm - Changing ${field} to:`, value);
-
-    // Actualizar el estado dinámicamente
     if (field === "dispatch_ticket") {
       setDispatchTicket(value);
       setHasExistingDispatchTicket(false); // Si se carga una nueva imagen, ya no estamos usando la existente
@@ -170,7 +276,8 @@ export default function UpdateOrderModal() {
 
   const validateFields = async () => {
     let newErrors: { [key: string]: string } = {};
-    if (!state) newErrors.state = t("state_required");
+    if (!country) newErrors.country = t("country_required");
+    if (!stateRegion) newErrors.stateRegion = t("state_region_required");
     if (!date) newErrors.date = t("date_required");
     if (!keyReference) newErrors.keyReference = t("key_reference_required");
     if (!customerFirstName) newErrors.customerFirstName = t("customer_first_name_required");
@@ -183,7 +290,6 @@ export default function UpdateOrderModal() {
     if (!dispatchTicket && !hasExistingDispatchTicket) {
       newErrors.dispatchTicket = t('dispatch_ticket_required');
     } else if (dispatchTicket && !hasExistingDispatchTicket) {
-      // Solo verificar tamaño si es una nueva imagen
       try {
         const fileInfo = await FileSystem.getInfoAsync(dispatchTicket.uri);
         if (fileInfo.exists && fileInfo.size && fileInfo.size > 5 * 1024 * 1024) {
@@ -215,9 +321,6 @@ export default function UpdateOrderModal() {
     router.back();
   };
 
-  // Dentro de la función handleUpdate modifica esta parte
-
-  // Definamos primero un tipo para el objeto updateData
   type UpdateOrderData = {
     key_ref: string;
     date: string;
@@ -237,7 +340,7 @@ export default function UpdateOrderModal() {
       address: string;
     };
     job: number;
-    dispatch_ticket?: string; // optional property
+    dispatch_ticket?: string;
   }
 
   const handleUpdate = async () => {
@@ -246,47 +349,54 @@ export default function UpdateOrderModal() {
     try {
       let base64Image = undefined;
 
-      if (dispatchTicket) {
+      // Construir ubicación
+      const location = country && stateRegion && city
+      ? `${country} - ${stateRegion} - ${city}`
+      : null;
 
+      if (!location) {
+        Toast.show({
+          type: 'error',
+          text1: t('error'),
+          text2: t('location_required'),
+        });
+        return;
+      }
+
+      if (dispatchTicket) {
         if (hasExistingDispatchTicket && dispatchTicket.uri === orderData.dispatch_ticket) {
-          // console.log("Using existing image - will not send");
-        } else {
-          if (dispatchTicket.uri && dispatchTicket.uri.startsWith('data:')) {
-            base64Image = dispatchTicket.uri;
-            // console.log("Using existing URI in base64 format");
-          } else if (dispatchTicket.uri) {
-            // Convert to base64
-            try {
-              // console.log("Converting image to base64:", dispatchTicket.uri);
-              base64Image = await FileSystem.readAsStringAsync(dispatchTicket.uri, {
-                encoding: FileSystem.EncodingType.Base64,
-              });
-              base64Image = `data:image/jpeg;base64,${base64Image}`;
-            } catch (error) {
-              console.error("Error converting image to base64:", error);
-              Toast.show({
-                type: 'error',
-                text1: t('error'),
-                text2: t('error_processing_image'),
-              });
-              return;
-            }
-          } else {
-            console.error("dispatchTicket does not have a valid URI");
+          // Usar imagen existente sin cambios
+        } else if (dispatchTicket.uri && dispatchTicket.uri.startsWith('data:')) {
+          base64Image = dispatchTicket.uri;
+        } else if (dispatchTicket.uri) {
+          try {
+            base64Image = await FileSystem.readAsStringAsync(dispatchTicket.uri, {
+              encoding: FileSystem.EncodingType.Base64,
+            });
+            base64Image = `data:image/jpeg;base64,${base64Image}`;
+          } catch (error) {
+            console.error("Error converting image to base64:", error);
             Toast.show({
               type: 'error',
               text1: t('error'),
-              text2: t('invalid_image_format'),
+              text2: t('error_processing_image'),
             });
             return;
           }
+        } else {
+          console.error("dispatchTicket does not have a valid URI");
+          Toast.show({
+            type: 'error',
+            text1: t('error'),
+            text2: t('invalid_image_format'),
+          });
+          return;
         }
       }
 
       const customerFactoryValue = typeof company === 'number' ? company :
         company ? parseInt(company, 10) : 0;
 
-      // Create the updateData object without including dispatch_ticket initially
       const updateData = {
         key_ref: keyReference,
         date: date || '',
@@ -296,7 +406,7 @@ export default function UpdateOrderModal() {
         weight: weight,
         status: orderData.status || t("in_progress"),
         payStatus: orderData.payStatus || 0,
-        state_usa: state || '',
+        state_usa: location,
         customer_factory: customerFactoryValue,
         person: {
           email: email || '',
@@ -308,12 +418,8 @@ export default function UpdateOrderModal() {
         job: jobId || 0,
       } as UpdateOrderData;
 
-      // Only add the dispatch_ticket field if the image has been modified and is a valid string
       if (base64Image !== undefined) {
-        // console.log("Including dispatch_ticket in the request");
         updateData.dispatch_ticket = base64Image;
-      } else {
-        // console.log("No se incluirá dispatch_ticket en la solicitud");
       }
 
       const result = await updateOrder(orderData.key || '', updateData);
@@ -360,32 +466,30 @@ export default function UpdateOrderModal() {
           </View>
 
           <ThemedView style={{ padding: 16, flex: 1, backgroundColor: isDarkMode ? '#112A4A' : '#FFFFFF' }}>
+            {/* Ubicación: País */}
             <View style={[styles.inputContainer, { zIndex: 3000 }]}>
               <Text style={[styles.label, { color: isDarkMode ? '#FFFFFF' : '#0458AB' }]}>
-                {t("state")} <Text style={{ color: '#FF0000' }}>(*)</Text>
+                {t("country")} <Text style={{ color: '#FF0000' }}>(*)</Text>
               </Text>
               <DropDownPicker
-                open={stateDropdownOpen}
-                value={state}
-                items={stateList.map((stateItem) => ({
-                  label: `${stateItem.name} (${stateItem.code})`,
-                  value: stateItem.code,
-                  key: stateItem.code
-                }))}
-                setOpen={setStateDropdownOpen}
-                setValue={setState}
-                placeholder={t("select_state")}
+                open={openCountry}
+                value={country}
+                items={countriesList}
+                setOpen={setOpenCountry}
+                setValue={setCountry}
+                placeholder={t("select_country")}
+                loading={loadingCountries}
+                searchable={true}
                 style={[styles.dropdown, {
                   backgroundColor: isDarkMode ? '#1E3A5F' : '#FFFFFF',
-                  borderColor: errors.state ? "red" : isDarkMode ? '#A1C6EA' : '#0458AB'
+                  borderColor: errors.country ? "red" : isDarkMode ? '#A1C6EA' : '#0458AB'
                 }]}
                 dropDownContainerStyle={{
                   backgroundColor: isDarkMode ? '#1E3A5F' : '#FFFFFF',
                   borderColor: isDarkMode ? '#A1C6EA' : '#0458AB'
                 }}
                 listMode="MODAL"
-                modalTitle={t("select_state")}
-                searchable={true}
+                modalTitle={t("select_country")}
                 searchPlaceholder={t("search")}
                 listItemLabelStyle={{
                   color: isDarkMode ? '#FFFFFF' : '#333333'
@@ -393,10 +497,80 @@ export default function UpdateOrderModal() {
                 textStyle={{ color: isDarkMode ? '#FFFFFF' : '#333333' }}
                 placeholderStyle={{ color: isDarkMode ? '#AAAAAA' : '#666666' }}
               />
-              {errors.state && <Text style={styles.errorText}>{errors.state}</Text>}
+              {errors.country && <Text style={styles.errorText}>{errors.country}</Text>}
             </View>
 
-            <View style={[styles.inputContainer, { zIndex: 2000, marginTop: 16 }]}>
+            {/* Ubicación: Estado/Región */}
+            <View style={[styles.inputContainer, { zIndex: 2900 }]}>
+              <Text style={[styles.label, { color: isDarkMode ? '#FFFFFF' : '#0458AB' }]}>
+                {t("state_region")} <Text style={{ color: '#FF0000' }}>(*)</Text>
+              </Text>
+              <DropDownPicker
+                open={openStateRegion}
+                value={stateRegion}
+                items={statesList}
+                setOpen={setOpenStateRegion}
+                setValue={setStateRegion}
+                placeholder={t("select_state_region")}
+                loading={loadingStates}
+                searchable={true}
+                disabled={!country}
+                style={[styles.dropdown, {
+                  backgroundColor: isDarkMode ? '#1E3A5F' : '#FFFFFF',
+                  borderColor: errors.stateRegion ? "red" : isDarkMode ? '#A1C6EA' : '#0458AB'
+                }]}
+                dropDownContainerStyle={{
+                  backgroundColor: isDarkMode ? '#1E3A5F' : '#FFFFFF',
+                  borderColor: isDarkMode ? '#A1C6EA' : '#0458AB'
+                }}
+                listMode="MODAL"
+                modalTitle={t("select_state_region")}
+                searchPlaceholder={t("search")}
+                listItemLabelStyle={{
+                  color: isDarkMode ? '#FFFFFF' : '#333333'
+                }}
+                textStyle={{ color: isDarkMode ? '#FFFFFF' : '#333333' }}
+                placeholderStyle={{ color: isDarkMode ? '#AAAAAA' : '#666666' }}
+              />
+              {errors.stateRegion && <Text style={styles.errorText}>{errors.stateRegion}</Text>}
+            </View>
+
+            {/* Ubicación: Ciudad */}
+            <View style={[styles.inputContainer, { zIndex: 2800 }]}>
+              <Text style={[styles.label, { color: isDarkMode ? '#FFFFFF' : '#0458AB' }]}>
+                {t("city")}
+              </Text>
+              <DropDownPicker
+                open={openCity}
+                value={city}
+                items={citiesList}
+                setOpen={setOpenCity}
+                setValue={setCity}
+                placeholder={t("select_city")}
+                loading={loadingCities}
+                searchable={true}
+                disabled={!stateRegion}
+                style={[styles.dropdown, {
+                  backgroundColor: isDarkMode ? '#1E3A5F' : '#FFFFFF',
+                  borderColor: isDarkMode ? '#A1C6EA' : '#0458AB'
+                }]}
+                dropDownContainerStyle={{
+                  backgroundColor: isDarkMode ? '#1E3A5F' : '#FFFFFF',
+                  borderColor: isDarkMode ? '#A1C6EA' : '#0458AB'
+                }}
+                listMode="MODAL"
+                modalTitle={t("select_city")}
+                searchPlaceholder={t("search")}
+                listItemLabelStyle={{
+                  color: isDarkMode ? '#FFFFFF' : '#333333'
+                }}
+                textStyle={{ color: isDarkMode ? '#FFFFFF' : '#333333' }}
+                placeholderStyle={{ color: isDarkMode ? '#AAAAAA' : '#666666' }}
+              />
+            </View>
+
+            {/* Fecha */}
+            <View style={[styles.inputContainer, { zIndex: 2700, marginTop: 16 }]}>
               <Text style={[styles.label, { color: isDarkMode ? '#FFFFFF' : '#0458AB' }]}>
                 {t("date")} <Text style={{ color: '#FF0000' }}>(*)</Text>
               </Text>
@@ -425,7 +599,8 @@ export default function UpdateOrderModal() {
               {errors.date && <Text style={styles.errorText}>{errors.date}</Text>}
             </View>
 
-            <View style={[styles.inputContainer, { zIndex: 2000, marginTop: 16 }]}>
+            {/* Empresa */}
+            <View style={[styles.inputContainer, { zIndex: 2600, marginTop: 16 }]}>
               <Text style={[styles.label, { color: isDarkMode ? '#FFFFFF' : '#0458AB' }]}>
                 {t("company_customer")} <Text style={{ color: '#FF0000' }}>(*)</Text>
               </Text>
@@ -439,13 +614,9 @@ export default function UpdateOrderModal() {
                 }))}
                 setOpen={setOpenCompany}
                 setValue={(val) => {
-                  // // console.log("Company selected:", val);
-                  // // console.log("Company type:", typeof val);
-                  // Asegurar que sea numérico
                   if (val !== null) {
                     const numericVal = typeof val === 'string' ? parseInt(val, 10) : val;
                     setCompany(numericVal);
-                    // // console.log("Company set to:", numericVal, "type:", typeof numericVal);
                   } else {
                     setCompany(null);
                   }
@@ -471,6 +642,7 @@ export default function UpdateOrderModal() {
 
             <Text style={[styles.sectionTitle, { color: isDarkMode ? '#A1C6EA' : '#0458AB' }]}>{t("general_data")}</Text>
 
+            {/* Campos de texto */}
             <View style={styles.inputContainer}>
               <Text style={[styles.label, { color: isDarkMode ? '#FFFFFF' : '#0458AB' }]}>
                 {t("key_reference")} <Text style={{ color: '#FF0000' }}>(*)</Text>
@@ -532,7 +704,7 @@ export default function UpdateOrderModal() {
               <TextInput
                 value={cellPhone.toString()}
                 onChangeText={(text) => {
-                  const numericValue = parseInt(text.replace(/\D/g, ''), 10); // solo dígitos
+                  const numericValue = parseInt(text.replace(/\D/g, ''), 10);
                   setCellPhone(isNaN(numericValue) ? 0 : numericValue);
                 }}
                 placeholder={t("cell_phone_placeholder")}
@@ -544,7 +716,6 @@ export default function UpdateOrderModal() {
                   borderColor: isDarkMode ? '#A1C6EA' : '#0458AB'
                 }]}
               />
-
             </View>
 
             <View style={styles.inputContainer}>
@@ -601,7 +772,7 @@ export default function UpdateOrderModal() {
               {errors.weight && <Text style={styles.errorText}>{errors.weight}</Text>}
             </View>
 
-            <View style={[styles.inputContainer, { zIndex: 1000 }]}>
+            <View style={[styles.inputContainer, { zIndex: 2500 }]}>
               <Text style={[styles.label, { color: isDarkMode ? '#FFFFFF' : '#0458AB' }]}>
                 {t("job")} <Text style={{ color: '#FF0000' }}>(*)</Text>
               </Text>
@@ -631,7 +802,7 @@ export default function UpdateOrderModal() {
               {errors.job && <Text style={styles.errorText}>{errors.job}</Text>}
             </View>
 
-            <View style={{ zIndex: 50, marginTop: 16 }}>
+            <View style={{ zIndex: 2400, marginTop: 16 }}>
               <Text style={[styles.label, { color: isDarkMode ? '#FFFFFF' : '#0458AB' }]}>
                 {t("dispatch_ticket")} <Text style={{ color: '#FF0000' }}>(*)</Text>
               </Text>
@@ -677,7 +848,6 @@ export default function UpdateOrderModal() {
                 {t("edit_operators")}
               </Text>
             </TouchableOpacity>
-
 
             <OperatorModal
               visible={addOperatorVisible}
