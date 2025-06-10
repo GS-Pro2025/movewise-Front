@@ -72,7 +72,7 @@ export default function AddOrderModal() {
   const [operatorModalVisible, setOperatorModalVisible] = useState(false); // State for OperatorModal visibility
   const [savedOrderKey, setSavedOrderKey] = useState<string | null>(null); // State to store saved order key
   const [dispatchTicket, setDispatchTicket] = useState<ImageInfo | null>(null); // State for dispatch_Ticket
-
+  const [isAdmin, setIsAdmin] = useState(false);
   const { saveOrder, isLoading, error } = AddOrderformApi();
 
   // Fix the fetchCountries function
@@ -179,6 +179,18 @@ export default function AddOrderModal() {
     resetForm();
     setOperatorModalVisible(false);
   };
+
+  useEffect(() => {
+    const checkAdmin = async () => {
+      try {
+        const admin = await AsyncStorage.getItem('isAdmin');
+        setIsAdmin(admin === 'true');
+      } catch (error) {
+        console.error('Error checking admin status:', error);
+      }
+    };
+    checkAdmin();
+  }, []);
 
   // Handler for deleting an order
   const handleDeleteOrder = (key: string) => {
@@ -778,9 +790,13 @@ export default function AddOrderModal() {
               />
             </View>
             <View style={styles.buttonContainer}>
-              <TouchableOpacity style={styles.buttonCancel} onPress={handleCancel}>
-                <Text style={styles.buttonTextCancel}>{t('cancel')}</Text>
-              </TouchableOpacity>
+              {
+                isAdmin && (
+                  <TouchableOpacity style={styles.buttonCancel} onPress={handleCancel}>
+                    <Text style={styles.buttonTextCancel}>{t('cancel')}</Text>
+                  </TouchableOpacity>
+                )
+              }
               <TouchableOpacity
                 style={[
                   styles.buttonSave,
