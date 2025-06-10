@@ -6,7 +6,7 @@ export interface AssignmentData {
     truck?: number | null;
     order: string;
     // assigned_at: string;
-    rol: 'driver' | 'freelance';
+    rol: 'operator' | 'driver' | 'freelance';
     additional_costs: string;
 }
 

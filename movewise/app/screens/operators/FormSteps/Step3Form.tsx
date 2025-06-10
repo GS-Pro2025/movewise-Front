@@ -21,8 +21,14 @@ const Step3Form = ({ formData, updateFormData, onBack, onSubmit, isEditing }: St
     // Errores de validación
     const [errors, setErrors] = useState<Record<string, string>>({});
 
-    const handleChange = (field: string, value: any): void => {
+    // Asegurar que el formData tenga el status por defecto al inicializar
+    useEffect(() => {
+        if (!formData.status) {
+            updateFormData({ status: 'active' });
+        }
+    }, []);
 
+    const handleChange = (field: string, value: any): void => {
         setLocalData(prev => ({ ...prev, [field]: value }));
 
         // Actualizar el formData principal inmediatamente
@@ -57,7 +63,8 @@ const Step3Form = ({ formData, updateFormData, onBack, onSubmit, isEditing }: St
             newErrors.name_t_shift = t("tshirt_name_required");
         }
 
-        if (!localData.status) {
+        // Asegurar que status siempre tenga un valor válido
+        if (!localData.status || (localData.status !== 'active' && localData.status !== 'inactive')) {
             newErrors.status = t("status_required");
         }
 
@@ -70,6 +77,14 @@ const Step3Form = ({ formData, updateFormData, onBack, onSubmit, isEditing }: St
     };
 
     const handleSave = (): void => {
+        // Asegurar que status tenga un valor antes de validar
+        const dataToValidate = {
+            ...localData,
+            status: localData.status || 'active'
+        };
+        
+        setLocalData(dataToValidate);
+
         if (validateForm()) {
             // Sincronizar todos los campos con el formData principal
             updateFormData({
@@ -78,7 +93,7 @@ const Step3Form = ({ formData, updateFormData, onBack, onSubmit, isEditing }: St
                 size_t_shift: localData.size_t_shift,
                 name_t_shift: localData.name_t_shift,
                 photo: localData.photo,
-                status: localData.status
+                status: localData.status || 'active' // Garantizar que nunca sea vacío
             });
 
             if (onSubmit) onSubmit();
@@ -91,6 +106,9 @@ const Step3Form = ({ formData, updateFormData, onBack, onSubmit, isEditing }: St
             });
         }
     };
+
+    // Opciones para el dropdown del status
+    const statusOptions = ["active", "inactive"];
 
     return (
         <ScrollView>
@@ -139,19 +157,12 @@ const Step3Form = ({ formData, updateFormData, onBack, onSubmit, isEditing }: St
 
                 <DropdownInput
                     label={`${t("status")} (*)`}
-                    value={
-                        localData.status === "active"
-                            ? t("active")
-                            : localData.status === "inactive"
-                                ? t("inactive")
-                                : t("select_option")
-                    }
+                    value={localData.status || 'active'} // Garantizar valor por defecto
                     onChange={(value) => handleChange("status", value)}
-                    options={["active", "inactive"]}
+                    options={statusOptions}
                     error={errors.status}
                     required={true}
                 />
-
 
                 <View style={styles.buttonContainer}>
                     <TouchableOpacity style={styles.cancelButton} onPress={onBack}>

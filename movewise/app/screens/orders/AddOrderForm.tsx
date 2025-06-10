@@ -1,6 +1,6 @@
 import { ActivityIndicator, Modal, SafeAreaView, ScrollView, View, Text, TextInput, TouchableOpacity, StyleSheet, useColorScheme, Alert } from 'react-native';
 import DropDownPicker from "react-native-dropdown-picker";
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { ThemedView } from '@/components/ThemedView';
 import { Image } from 'react-native';
 import AddOrderformApi from '@/hooks/api/AddOrderFormApi';
@@ -21,7 +21,7 @@ import { ImageInfo } from '@/components/CrossPlatformImageUpload';
 import { useRouter } from 'expo-router';
 import OperatorModal from '../operators/OperatorModal';
 import { getTodayDate, formatDateForAPI } from '@/utils/handleDate';
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import { url } from '@/hooks/api/apiClient';
 export default function AddOrderModal() {
   const router = useRouter();
   const { t } = useTranslation();
@@ -31,8 +31,25 @@ export default function AddOrderModal() {
     return formatDateForAPI(date);
   };
 
-  const [open, setOpen] = useState(false);
   const [state, setState] = useState<string | null>(null);
+  // new useStates for state field
+  const [open, setOpen] = useState(false);
+  const [openCountry, setOpenCountry] = useState(false);
+  const [openStateRegion, setOpenStateRegion] = useState(false);
+  const [openCity, setOpenCity] = useState(false);
+
+  const [country, setCountry] = useState<string | null>(null);
+  const [stateRegion, setStateRegion] = useState<string | null>(null);
+  const [city, setCity] = useState<string | null>(null);
+
+  const [countriesList, setCountriesList] = useState<any[]>([]);
+  const [citiesList, setCitiesList] = useState<any[]>([]);
+
+  const [loadingCountries, setLoadingCountries] = useState(false);
+  const [loadingStates, setLoadingStates] = useState(false);
+  const [loadingCities, setLoadingCities] = useState(false);
+  // end new useStates for state field
+
   const [searchTerm, setSearchTerm] = useState<string>(''); // State for search term
   const [openJob, setOpenJob] = useState(false);
   const [job, setJob] = useState<string | null>(null);
@@ -57,6 +74,103 @@ export default function AddOrderModal() {
   const [dispatchTicket, setDispatchTicket] = useState<ImageInfo | null>(null); // State for dispatch_Ticket
   const [isAdmin, setIsAdmin] = useState(false);
   const { saveOrder, isLoading, error } = AddOrderformApi();
+
+  // Fix the fetchCountries function
+  const fetchCountries = useCallback(async () => {
+    setLoadingCountries(true);
+    try {
+      const response = await fetch(`${url}/orders-locations/?type=countries`);
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      const data = await response.json();
+      if (data.status === 'success') {
+        const countries = data.data.map((c: any) => ({
+          label: c.name,
+          value: c.name
+        }));
+        setCountriesList(countries);
+      }
+    } catch (error) {
+      console.error('Error fetching countries:', error);
+      setCountriesList([]);
+    } finally {
+      setLoadingCountries(false);
+    }
+  }, []); // No dependencies needed here
+
+  // Fetch states
+  const fetchStates = async (countryName: string) => {
+    if (!countryName) return;
+
+    setLoadingStates(true);
+    try {
+      const response = await fetch(
+        `${url}/orders-locations/?type=states&country=${encodeURIComponent(countryName)}`
+      );
+      const data = await response.json();
+      if (data.status === 'success') {
+        const states = data.data.map((s: any) => ({
+          label: s.name,
+          value: s.name
+        }));
+        setStateList(states); // Poblar stateList
+      }
+    } catch (error) {
+      console.error('Error fetching states:', error);
+      setStateList([]); // Asegurar reset en error
+    } finally {
+      setLoadingStates(false);
+    }
+  };
+
+
+  // Fetch cities
+  const fetchCities = async (countryName: string, stateName: string) => {
+    if (!countryName || !stateName) return;
+
+    setLoadingCities(true);
+    try {
+      const response = await fetch(
+        `${url}/orders-locations/?type=cities&country=${encodeURIComponent(countryName)}&state=${encodeURIComponent(stateName)}`
+      );
+      const data = await response.json();
+      if (data.status === 'success') {
+        const cities = data.data.map((c: any) => ({
+          label: c.name,
+          value: c.name
+        }));
+        setCitiesList(cities);
+      }
+    } catch (error) {
+      console.error('Error fetching cities:', error);
+    } finally {
+      setLoadingCities(false);
+    }
+  };
+
+  // Reset states and cities when country changes
+  useEffect(() => {
+    if (country) {
+      setStateRegion(null);
+      setCity(null);
+      fetchStates(country);
+    } else {
+      setStateList([]); // Corregido: usar setStateList
+      setCitiesList([]);
+    }
+  }, [country]);
+
+  // Reset cities when state changes
+  useEffect(() => {
+    if (country && stateRegion) {
+      setCity(null);
+      fetchCities(country, stateRegion);
+    } else {
+      setCitiesList([]);
+    }
+  }, [stateRegion]);
+
 
   const handleSaveOperators = () => {
     console.log("Operators saved successfully! Closing both modals.");
@@ -157,7 +271,6 @@ export default function AddOrderModal() {
       // !email?.trim() ||
       !cellPhone?.trim() ||
       !date ||
-      !state ||
       !weight ||
       !keyReference ||
       !company
@@ -170,6 +283,19 @@ export default function AddOrderModal() {
       return;
     }
 
+
+    const location = country && stateRegion && city
+      ? `${country} - ${stateRegion} - ${city}`
+      : null;
+
+    if (!location) {
+      Toast.show({
+        type: 'error',
+        text1: t('error'),
+        text2: t('location_required'),
+      });
+      return;
+    }
     let base64Image = null;
     if (dispatchTicket) {
       base64Image = await FileSystem.readAsStringAsync(dispatchTicket.uri, {
@@ -185,7 +311,7 @@ export default function AddOrderModal() {
       status: "Pending",
       date,
       key_ref: keyReference,
-      state_usa: state,
+      state_usa: location,
       person: {
         first_name: customerName,
         last_name: customerLastName,
@@ -225,18 +351,6 @@ export default function AddOrderModal() {
     }
   };
 
-
-  const fetchStates = async () => {
-    try {
-      const states = await ListStates();
-      // Asegurar que siempre sea un array
-      setStateList(Array.isArray(states) ? states : []);
-    } catch (error) {
-      console.error(t('error_fetching_states'), error);
-      setStateList([]); // Resetear a array vacío en errores
-    }
-  };
-
   const fetchJobs = async () => {
     try {
       const jobs = await ListJobs();
@@ -271,8 +385,8 @@ export default function AddOrderModal() {
   useEffect(() => {
     fetchJobs();
     fetchCompanies();
-    fetchStates();
-  }, []);
+    fetchCountries();
+  }, [fetchCountries]); // Add fetchCountries to dependencies
 
   // Registrar cambios en el valor de company
   useEffect(() => {
@@ -340,6 +454,10 @@ export default function AddOrderModal() {
     : require("@/assets/images/PNG_negativo.png");
 
   const styles = StyleSheet.create({
+    disabledInput: {
+      backgroundColor: '#E5E7EB',
+      borderColor: '#9ca3af',
+    },
     container: {
       flex: 1,
       padding: 19,
@@ -431,27 +549,79 @@ export default function AddOrderModal() {
           </View>
 
           <ThemedView style={styles.container}>
-            <View style={{ zIndex: 3000 }}>
-              <Text style={styles.text}>{t('state')} <Text style={styles.required}>(*)</Text></Text>
+            {/* Selector de País */}
+            <View style={{ zIndex: 4000, marginTop: 16 }}>
+              <Text style={styles.text}>{t('country')} <Text style={styles.required}>(*)</Text></Text>
               <DropDownPicker
-                open={open}
-                value={state || ""}
-                items={stateList.map((stateItem) => ({
-                  label: `${stateItem.name} (${stateItem.code})`,
-                  value: stateItem.code,
-                  key: stateItem.code
-                }))}
-                setOpen={setOpen}
-                setValue={setState}
-                placeholder={t('select_state')}
+                open={openCountry}
+                value={country}
+                items={countriesList}
+                setOpen={setOpenCountry}
+                setValue={setCountry}
+                placeholder={t('select_country')}
                 placeholderStyle={{ color: '#9ca3af' }}
-                style={[styles.input, { borderColor: errors.state ? "red" : "#0458AB" }]}
+                style={[styles.input, { borderColor: errors.country ? "red" : "#0458AB" }]}
                 listMode="MODAL"
-                modalTitle={t('select_state')}
+                modalTitle={t('select_country')}
                 searchable={true}
                 searchPlaceholder={t('search')}
-                searchPlaceholderTextColor="#9ca3af"
-                scrollViewProps={{ nestedScrollEnabled: true }}
+                loading={loadingCountries}
+                dropDownContainerStyle={{ maxHeight: 500 }}
+              />
+            </View>
+
+            {/* Selector de Estado/Región */}
+            <View style={{ zIndex: 3000, marginTop: 16 }}>
+              <Text style={styles.text}>{t('state_region')} <Text style={styles.required}>(*)</Text></Text>
+              <DropDownPicker
+                open={openStateRegion}
+                value={stateRegion}
+                items={stateList}
+                setOpen={setOpenStateRegion}
+                setValue={setStateRegion}
+                placeholder={t('select_state_region')}
+                placeholderStyle={{ color: '#9ca3af' }}
+                style={[
+                  styles.input,
+                  {
+                    borderColor: errors.stateRegion ? "red" : "#0458AB",
+                    ...(!country ? styles.disabledInput : {})
+                  }
+                ]}
+                listMode="MODAL"
+                modalTitle={t('select_state_region')}
+                searchable={true}
+                searchPlaceholder={t('search')}
+                loading={loadingStates}
+                disabled={!country}
+                dropDownContainerStyle={{ maxHeight: 500 }}
+              />
+            </View>
+
+            {/* Selector de Ciudad */}
+            <View style={{ zIndex: 2000, marginTop: 16 }}>
+              <Text style={styles.text}>{t('city')} <Text style={styles.required}>(*)</Text></Text>
+              <DropDownPicker
+                open={openCity}
+                value={city}
+                items={citiesList}
+                setOpen={setOpenCity}
+                setValue={setCity}
+                placeholder={t('select_city')}
+                placeholderStyle={{ color: '#9ca3af' }}
+                style={[
+                  styles.input,
+                  {
+                    borderColor: errors.city ? "red" : "#0458AB",
+                    ...(!stateRegion ? styles.disabledInput : {})
+                  }
+                ]}
+                listMode="MODAL"
+                modalTitle={t('select_city')}
+                searchable={true}
+                searchPlaceholder={t('search')}
+                loading={loadingCities}
+                disabled={!stateRegion}
                 dropDownContainerStyle={{ maxHeight: 500 }}
               />
             </View>

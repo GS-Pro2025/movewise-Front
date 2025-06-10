@@ -231,8 +231,8 @@ const EditWorkhouseForm: React.FC<EditWorkhouseFormProps> = ({ visible, onClose,
                             style={[styles.submitButton, { backgroundColor: isDarkMode ? colors.primary : colors.primary, flexDirection: 'row', alignItems: 'center', justifyContent: 'center',gap: 5 }]}
                             onPress={handleOpenAssignmentScreen}
                         >
-                            <Ionicons name="people-outline" size={20} color={isDarkMode ? colors.textDark : colors.primary} />
-                            <Text style={[styles.editFreelancersText, { color: isDarkMode ? colors.textDark : colors.primary }]}>{t("edit_freelancers")}</Text>
+                            <Ionicons name="people-outline" size={20} color={isDarkMode ? colors.textDark : colors.white} />
+                            <Text style={[styles.editFreelancersText, { color: isDarkMode ? colors.textDark : colors.white }]}>{t("edit_freelancers")}</Text>
                         </TouchableOpacity>
 
                         {hasChanges && (

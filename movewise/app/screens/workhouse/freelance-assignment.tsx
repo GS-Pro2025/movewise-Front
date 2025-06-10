@@ -178,10 +178,14 @@ const FreelanceAssignmentScreen: React.FC<FreelanceAssignmentScreenProps> = ({
 
         setAssignmentLoading(true);
         try {
+            // Determinar el rol basado en el estado del operador
+            const operatorStatus = freelanceData.data.status || 'freelance';
+            const role = operatorStatus === 'active' ? 'operator' : 'freelance';
+            
             await CreateAssignment({
                 operator: freelanceData.data.id_operator,
                 order: processedWorkhouseKey,
-                rol: 'freelance',
+                rol: role,
                 additional_costs: additionalCosts
             });
 
@@ -391,7 +395,7 @@ const FreelanceAssignmentScreen: React.FC<FreelanceAssignmentScreenProps> = ({
                                 onPress={showAssignmentView}
                             >
                                 <Ionicons name="person-add" size={20} color="#fff" />
-                                <Text style={styles.assignNewButtonText}>{t("assign_new_operator")}</Text>
+                                <Text style={styles.assignNewButtonText}>{t("assign_new_freelance")}</Text>
                             </TouchableOpacity>
                         </>
                     ) : (
