@@ -1,23 +1,24 @@
+import colors from '@/app/Colors';
 import { StyleSheet } from 'react-native';
 
 const styles = StyleSheet.create({
   // En tu FormStyle.ts
   // En FormStyle.ts
-disabled: {
-  opacity: 0.6,
-  backgroundColor: '#f3f4f6',
-},
-imageText: {
-  color: '#0458AB',
-  fontWeight: '500',
-},
-filename: {
-  color: '#64748b',
-  fontSize: 12,
-},
-placeholder: {
-  color: '#94a3b8',
-},
+  disabled: {
+    opacity: 0.6,
+    backgroundColor: '#f3f4f6',
+  },
+  imageText: {
+    color: '#0458AB',
+    fontWeight: '500',
+  },
+  filename: {
+    color: '#64748b',
+    fontSize: 12,
+  },
+  placeholder: {
+    color: '#94a3b8',
+  },
   disabledContainer: {
     opacity: 0.6,
     backgroundColor: '#f3f4f6',
@@ -285,7 +286,97 @@ placeholder: {
   },
   inputError: {
     borderColor: 'red'
-  }
+  },
+
+  phoneContainer: {
+    borderWidth: 1,
+    borderRadius: 8,
+    marginBottom: 4,
+    width: '100%',
+    flexDirection: 'row',
+    alignItems: 'stretch',
+    minHeight: 50,
+    overflow: 'hidden',
+  },
+
+  phoneTextContainer: {
+    borderRadius: 0,
+    backgroundColor: 'transparent',
+    flex: 1,
+    height: 48,
+    paddingVertical: 0,
+    paddingLeft: 0,
+    justifyContent: 'center',
+  },
+
+  phoneTextInput: {
+    fontSize: 16,
+    paddingVertical: 0,
+    paddingHorizontal: 12,
+    includeFontPadding: false,
+    textAlignVertical: 'center',
+    height: 48,
+    margin: 0,
+  },
+
+  phoneCodeText: {
+    fontSize: 16,
+    fontWeight: '500',
+    paddingVertical: 0,
+    textAlignVertical: 'center',
+    lineHeight: 20,
+    marginLeft: 6,
+    marginRight: 4,
+  },
+
+  phoneFlagButton: {
+    justifyContent: 'center',
+    alignItems: 'center',
+    flexDirection: 'row',
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    minHeight: 48,
+    borderRightWidth: 1,
+    borderRightColor: '#e0e0e0',
+    width: 90,
+  },
+
+  // Añade este nuevo estilo para el contenedor de la bandera
+  flagContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginRight: 8,
+  },
+
+  flagImage: {
+    width: 24,
+    height: 16,
+    marginRight: 6,
+  },
+
+  phoneCountryPicker: {
+    backgroundColor: 'transparent',
+    flexDirection: 'row',
+    alignItems: 'center',
+    height: 48,
+    paddingHorizontal: 4,
+  },
+
+  dropdownArrow: {
+    marginLeft: 4,
+    justifyContent: 'center',
+    alignItems: 'center',
+    width: 20,
+    height: 20,
+  },
+
+  label: {
+    fontSize: 16,
+    fontWeight: '500',
+    marginBottom: 8,
+    color: colors.textLight, // Color por defecto
+  },
+
 });
 
 export default styles;
