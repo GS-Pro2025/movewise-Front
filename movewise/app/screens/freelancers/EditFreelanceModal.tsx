@@ -350,17 +350,18 @@ const EditFreelanceModal: React.FC<EditFreelanceModalProps> = ({ visible, freela
                                             backgroundColor: 'transparent',
                                             paddingVertical: 0,
                                             height: 48,
-                                            paddingLeft: 0
+                                            paddingLeft: 0,
+                                            color: isDarkMode ? colors.lightText : colors.lightText,
                                         }}
                                         textInputStyle={{
-                                            color: isDarkMode ? '#FFFFFF' : '#333333',
                                             fontSize: 16,
                                             height: 48,
                                             padding: 0,
                                             margin: 0,
+                                            color: isDarkMode ? colors.lightText : colors.lightText,
                                         }}
                                         codeTextStyle={{
-                                            color: isDarkMode ? '#FFFFFF' : '#333333',
+                                            color: isDarkMode ? colors.lightText : colors.lightText,
                                             fontSize: 16,
                                             height: 48,
                                             padding: 0,
@@ -379,7 +380,7 @@ const EditFreelanceModal: React.FC<EditFreelanceModalProps> = ({ visible, freela
                                     <Text style={[styles.label, { color: isDarkMode ? colors.darkText : colors.lightText }]}>
                                         <Ionicons name="id-card-outline" size={16} color={isDarkMode ? colors.darkText : colors.lightText} /> {t("id_type")} *
                                     </Text>
-                                    <View style={[styles.pickerContainer, { backgroundColor: isDarkMode ? colors.backgroundDark : colors.backgroundLight }]}>
+                                    <View style={[styles.pickerContainer, { backgroundColor: isDarkMode ? colors.lightBackground : colors.backgroundLight }]}>
                                         <Picker
                                             selectedValue={freelanceData.type_id}
                                             onValueChange={value => updateField('type_id', value)}

@@ -236,6 +236,7 @@ const AddWorkhouseForm: React.FC<AddWorkhouseFormProps> = ({ visible, onClose, o
                                     dropdownIconColor={isDarkMode ? colors.textDark : colors.primary}
                                 >
                                     <Picker.Item
+                                        style={{ color: isDarkMode ? colors.darkText : colors.darkText }}
                                         label={t("select_customer")}
                                         value={null}
                                         color={isDarkMode ? colors.placeholderDark : colors.placeholderLight}
@@ -245,7 +246,7 @@ const AddWorkhouseForm: React.FC<AddWorkhouseFormProps> = ({ visible, onClose, o
                                             key={customer.id_factory}
                                             label={customer.name}
                                             value={customer.id_factory}
-                                            color={isDarkMode ? colors.textDark : colors.textLight}
+                                            color={isDarkMode ? colors.lightText : colors.lightText}
                                         />
                                     ))}
                                 </Picker>
