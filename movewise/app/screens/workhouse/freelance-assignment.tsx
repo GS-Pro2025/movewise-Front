@@ -16,6 +16,9 @@ import {
 import { Ionicons } from '@expo/vector-icons';
 import colors from '@/app/Colors';
 import { useTranslation } from 'react-i18next';
+import _PhoneInput from 'react-native-phone-number-input';
+import CountryFlag from 'react-native-country-flag';
+import { CountryCode } from 'react-native-country-picker-modal';
 import {
     GetFreelanceByCode,
     CreateFreelance,
@@ -27,7 +30,7 @@ import { deleteAssign } from '@/hooks/api/DeleteAssign';
 import CrossPlatformImageUpload from '@/components/CrossPlatformImageUpload';
 import { Picker } from '@react-native-picker/picker';
 import * as FileSystem from 'expo-file-system';
-
+const PhoneInput = _PhoneInput as any;
 interface FreelanceAssignmentScreenProps {
     workhouseKey?: string;
     visible: boolean;
@@ -63,6 +66,12 @@ const FreelanceAssignmentScreen: React.FC<FreelanceAssignmentScreenProps> = ({
         last_name: '',
         id_number: ''
     });
+
+    // Estados para el input de teléfono
+    const [phoneCountryCode, setPhoneCountryCode] = useState<CountryCode>('US');
+    const [formattedPhone, setFormattedPhone] = useState('');
+    const phoneInput = useRef<any>(null);
+
 
     const [freelanceImages, setFreelanceImages] = useState<{
         photo?: any,
@@ -181,7 +190,7 @@ const FreelanceAssignmentScreen: React.FC<FreelanceAssignmentScreenProps> = ({
             // Determinar el rol basado en el estado del operador
             const operatorStatus = freelanceData.data.status || 'freelance';
             const role = operatorStatus === 'active' ? 'operator' : 'freelance';
-            
+
             await CreateAssignment({
                 operator: freelanceData.data.id_operator,
                 order: processedWorkhouseKey,
@@ -207,11 +216,63 @@ const FreelanceAssignmentScreen: React.FC<FreelanceAssignmentScreenProps> = ({
         }
     };
 
+    // Formatear número de teléfono como +prefijo-numero
+    const formatPhoneNumber = (phone: string, countryCode: string) => {
+        if (!phone) return '';
+        // Eliminar caracteres que no sean dígitos
+        const cleaned = phone.replace(/\D/g, '');
+        // Obtener el código de llamada del país
+        const callingCode = phoneInput.current?.getCallingCode() || '';
+        // Formatear como +callingCode-number (solo si tenemos código de llamada y número de teléfono)
+        if (callingCode && cleaned) {
+            return `+${callingCode}-${cleaned}`;
+        }
+        return phone;
+    };
+
+    // Renderizar botón de bandera personalizado
+    const renderFlagButton = (props: any) => (
+        <TouchableOpacity
+            style={{
+                justifyContent: 'center',
+                alignItems: 'center',
+                flexDirection: 'row',
+                paddingHorizontal: 12,
+                paddingVertical: 8,
+                minHeight: 48,
+                borderRightWidth: 1,
+                borderRightColor: '#e0e0e0',
+                width: 90,
+            }}
+            onPress={props.onPress}
+        >
+            <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                <CountryFlag
+                    isoCode={props.isoCode}
+                    size={20}
+                    style={{ marginRight: 8 }}
+                />
+                <Text style={{
+                    color: isDarkMode ? '#FFFFFF' : '#333333',
+                    fontSize: 16,
+                    fontWeight: '500',
+                    marginLeft: 6,
+                    marginRight: 4,
+                }}>
+                    {props.callingCode}
+                </Text>
+            </View>
+        </TouchableOpacity>
+    );
+
     // Crear nuevo freelancer
     const handleCreateFreelance = async () => {
         setCreatingFreelance(true);
         try {
             const formData = new FormData();
+
+            // Formatear el número de teléfono antes de enviarlo
+            const formattedPhoneNumber = formatPhoneNumber(newFreelance.phone || '', phoneCountryCode);
 
             // Campos obligatorios
             formData.append('salary', newFreelance.salary!.toString());
@@ -223,7 +284,7 @@ const FreelanceAssignmentScreen: React.FC<FreelanceAssignmentScreenProps> = ({
 
             // Campos opcionales
             if (newFreelance.address) formData.append('address', newFreelance.address);
-            if (newFreelance.phone) formData.append('phone', newFreelance.phone);
+            if (formattedPhoneNumber) formData.append('phone', formattedPhoneNumber);
 
             // CORRECCIÓN: Enviar la imagen como archivo en lugar de base64
             if (freelanceImages.photo) {
@@ -585,14 +646,72 @@ const FreelanceAssignmentScreen: React.FC<FreelanceAssignmentScreenProps> = ({
 
                                     <View style={[styles.inputContainer, { backgroundColor: isDarkMode ? colors.backgroundDark : colors.backgroundLight }]}>
                                         <Text style={[styles.label, { color: isDarkMode ? colors.darkText : colors.primary }]}>
-                                            <Ionicons name="person-outline" size={16} color={colors.primary} /> {t("phone")}
+                                            <Ionicons name="call-outline" size={16} color={colors.primary} /> {t("phone")}
                                         </Text>
-                                        <TextInput
-                                            style={[styles.input, { backgroundColor: isDarkMode ? colors.backgroundDark : colors.backgroundLight }]}
-                                            placeholder={t("phone")}
-                                            value={newFreelance.phone}
-                                            onChangeText={text => setNewFreelance(prev => ({ ...prev, phone: text }))}
-                                        />
+                                        <View style={[
+                                            styles.phoneInputContainer,
+                                            {
+                                                backgroundColor: isDarkMode ? '#1E3A5F' : '#FFFFFF',
+                                                borderColor: isDarkMode ? '#A1C6EA' : '#0458AB'
+                                            }
+                                        ]}>
+                                            <PhoneInput
+                                                ref={phoneInput}
+                                                defaultValue={newFreelance.phone}
+                                                defaultCode={phoneCountryCode}
+                                                layout="first"
+                                                flagButton={renderFlagButton}
+                                                onChangeText={(text: string) => {
+                                                    setNewFreelance(prev => ({ ...prev, phone: text }));
+                                                    // Formatear el número de teléfono cuando cambia el texto
+                                                    const formatted = formatPhoneNumber(text, phoneCountryCode);
+                                                    setFormattedPhone(formatted);
+                                                }}
+                                                onChangeFormattedText={(text: string) => {
+                                                    // No usamos esto para establecer el teléfono formateado
+                                                    // ya que no coincide con nuestro formato deseado con guión
+                                                }}
+                                                onChangeCountry={(country: any) => {
+                                                    setPhoneCountryCode(country.cca2);
+                                                    // Actualizar solo el código de país, sin incluir el número de teléfono aún
+                                                    setFormattedPhone(`+${phoneInput.current?.getCallingCode()}`);
+                                                }}
+                                                withDarkTheme={isDarkMode}
+                                                withShadow={false}
+                                                autoFocus={false}
+                                                containerStyle={{
+                                                    backgroundColor: 'transparent',
+                                                    width: '100%',
+                                                    height: 50,
+                                                }}
+                                                textContainerStyle={{
+                                                    backgroundColor: 'transparent',
+                                                    paddingVertical: 0,
+                                                    height: 48,
+                                                    paddingLeft: 0
+                                                }}
+                                                textInputStyle={{
+                                                    color: isDarkMode ? '#FFFFFF' : '#333333',
+                                                    fontSize: 16,
+                                                    height: 48,
+                                                    padding: 0,
+                                                    margin: 0,
+                                                }}
+                                                codeTextStyle={{
+                                                    color: isDarkMode ? '#FFFFFF' : '#333333',
+                                                    fontSize: 16,
+                                                    height: 48,
+                                                    padding: 0,
+                                                    paddingVertical: 12,
+                                                    margin: 0,
+                                                }}
+                                                countryPickerButtonStyle={{
+                                                    paddingRight: 8,
+                                                    height: 45
+                                                }}
+                                                flagSize={20}
+                                            />
+                                        </View>
                                     </View>
 
                                     <View style={[styles.inputContainer, { backgroundColor: isDarkMode ? colors.backgroundDark : colors.backgroundLight }]}>
@@ -665,7 +784,8 @@ const styles = StyleSheet.create({
     container: {
         flex: 1,
         backgroundColor: colors.lightBackground,
-    }, disabledButton: {
+    },
+    disabledButton: {
         backgroundColor: colors.neutralGray,
         opacity: 0.7,
     },
@@ -833,6 +953,14 @@ const styles = StyleSheet.create({
     },
     inputContainer: {
         marginBottom: 16,
+    },
+    phoneInputContainer: {
+        borderWidth: 1,
+        borderRadius: 8,
+        width: '100%',
+        height: 50,
+        justifyContent: 'center',
+        paddingHorizontal: 10,
     },
     label: {
         fontSize: 14,

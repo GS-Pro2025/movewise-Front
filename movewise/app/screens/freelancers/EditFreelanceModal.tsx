@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { View, Text, Modal, TouchableOpacity, StyleSheet, Alert, ActivityIndicator, ScrollView, TextInput } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import colors from '@/app/Colors';
@@ -9,6 +9,10 @@ import { Picker } from '@react-native-picker/picker';
 import { UpdateOperator } from '@/hooks/api/PostOperator';
 import CrossPlatformImageUpload from '@/components/CrossPlatformImageUpload';
 import { useColorScheme } from 'react-native';
+import _PhoneInput from 'react-native-phone-number-input';
+import CountryFlag from 'react-native-country-flag';
+import { CountryCode } from 'react-native-country-picker-modal';
+const PhoneInput = _PhoneInput as any;
 interface EditFreelanceModalProps {
     visible: boolean;
     freelancer: any;
@@ -39,6 +43,9 @@ const EditFreelanceModal: React.FC<EditFreelanceModalProps> = ({ visible, freela
     const [loading, setLoading] = useState(false);
     const [loadingData, setLoadingData] = useState(false);
     const isDarkMode = useColorScheme() === 'dark';
+    const [phoneCountryCode, setPhoneCountryCode] = useState<CountryCode>('US');
+    const [formattedPhone, setFormattedPhone] = useState('');
+    const phoneInput = useRef<any>(null);
 
     useEffect(() => {
         if (visible && freelancer) {
@@ -92,6 +99,55 @@ const EditFreelanceModal: React.FC<EditFreelanceModalProps> = ({ visible, freela
         }
     }, [visible, freelancer?.code]); // Usar código como dependencia
 
+
+    const formatPhoneNumber = (phone: string, countryCode: string) => {
+        if (!phone) return '';
+        // Eliminar caracteres que no sean dígitos
+        const cleaned = phone.replace(/\D/g, '');
+        // Obtener el código de llamada del país
+        const callingCode = phoneInput.current?.getCallingCode() || '';
+        // Formatear como +callingCode-number (solo si tenemos código de llamada y número de teléfono)
+        if (callingCode && cleaned) {
+            return `+${callingCode}-${cleaned}`;
+        }
+        return phone;
+    };
+
+    // Renderizar botón de bandera personalizado
+    const renderFlagButton = (props: any) => (
+        <TouchableOpacity
+            style={{
+                justifyContent: 'center',
+                alignItems: 'center',
+                flexDirection: 'row',
+                paddingHorizontal: 12,
+                paddingVertical: 8,
+                minHeight: 48,
+                borderRightWidth: 1,
+                borderRightColor: '#e0e0e0',
+                width: 90,
+            }}
+            onPress={props.onPress}
+        >
+            <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                <CountryFlag
+                    isoCode={props.isoCode}
+                    size={20}
+                    style={{ marginRight: 8 }}
+                />
+                <Text style={{
+                    color: isDarkMode ? '#FFFFFF' : '#333333',
+                    fontSize: 16,
+                    fontWeight: '500',
+                    marginLeft: 6,
+                    marginRight: 4,
+                }}>
+                    {props.callingCode}
+                </Text>
+            </View>
+        </TouchableOpacity>
+    );
+
     const handleUpdateFreelance = async () => {
         // Validar campos requeridos
         if (!freelanceData.first_name || !freelanceData.last_name || !freelanceData.id_number) {
@@ -103,6 +159,8 @@ const EditFreelanceModal: React.FC<EditFreelanceModalProps> = ({ visible, freela
             setLoading(true);
             const formData = new FormData();
 
+            const formattedPhoneNumber = formatPhoneNumber(freelanceData.phone || '', phoneCountryCode);
+
             // Campos obligatorios
             formData.append('salary', freelanceData.salary!.toString());
             formData.append('first_name', freelanceData.first_name!);
@@ -113,7 +171,7 @@ const EditFreelanceModal: React.FC<EditFreelanceModalProps> = ({ visible, freela
 
             // Campos opcionales
             if (freelanceData.address) formData.append('address', freelanceData.address);
-            if (freelanceData.phone) formData.append('phone', freelanceData.phone);
+            if (formattedPhoneNumber) formData.append('phone', formattedPhoneNumber);
             if (freelanceData.email) formData.append('email', freelanceData.email);
 
             // Manejo de imágenes solo si se seleccionaron nuevas
@@ -257,12 +315,63 @@ const EditFreelanceModal: React.FC<EditFreelanceModalProps> = ({ visible, freela
                                     <Text style={[styles.label, { color: isDarkMode ? colors.darkText : colors.lightText }]}>
                                         <Ionicons name="call-outline" size={16} color={isDarkMode ? colors.darkText : colors.lightText} /> {t("phone")}
                                     </Text>
-                                    <TextInput
-                                        style={styles.input}
-                                        placeholder={t("phone")}
-                                        value={freelanceData.phone}
-                                        onChangeText={text => updateField('phone', text)}
-                                        keyboardType="phone-pad"
+                                    <PhoneInput
+                                        ref={phoneInput}
+                                        defaultValue={freelanceData.phone}
+                                        defaultCode={phoneCountryCode}
+                                        layout="first"
+                                        flagButton={renderFlagButton}
+                                        onChangeText={(text: string) => {
+                                            setFreelanceData(prev => ({ ...prev, phone: text }));
+                                            // Formatear el número de teléfono cuando cambia el texto
+                                            const formatted = formatPhoneNumber(text, phoneCountryCode);
+                                            setFormattedPhone(formatted);
+                                        }}
+                                        onChangeFormattedText={(text: string) => {
+                                            // No usamos esto para establecer el teléfono formateado
+                                            // ya que no coincide con nuestro formato deseado con guión
+                                        }}
+                                        onChangeCountry={(country: any) => {
+                                            setPhoneCountryCode(country.cca2);
+                                            // Actualizar solo el código de país, sin incluir el número de teléfono aún
+                                            setFormattedPhone(`+${phoneInput.current?.getCallingCode()}`);
+                                        }}
+                                        withDarkTheme={isDarkMode}
+                                        withShadow={false}
+                                        autoFocus={false}
+                                        containerStyle={{
+                                            backgroundColor: '#fff',
+                                            width: '100%',
+                                            height: 50, borderWidth: 1,
+                                            borderColor: colors.primary,
+                                            borderRadius: 8,
+                                        }}
+                                        textContainerStyle={{
+                                            backgroundColor: 'transparent',
+                                            paddingVertical: 0,
+                                            height: 48,
+                                            paddingLeft: 0
+                                        }}
+                                        textInputStyle={{
+                                            color: isDarkMode ? '#FFFFFF' : '#333333',
+                                            fontSize: 16,
+                                            height: 48,
+                                            padding: 0,
+                                            margin: 0,
+                                        }}
+                                        codeTextStyle={{
+                                            color: isDarkMode ? '#FFFFFF' : '#333333',
+                                            fontSize: 16,
+                                            height: 48,
+                                            padding: 0,
+                                            paddingVertical: 12,
+                                            margin: 0,
+                                        }}
+                                        countryPickerButtonStyle={{
+                                            paddingRight: 8,
+                                            height: 45
+                                        }}
+                                        flagSize={20}
                                     />
                                 </View>
 

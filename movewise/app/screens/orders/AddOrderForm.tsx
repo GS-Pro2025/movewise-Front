@@ -1,6 +1,9 @@
 import { ActivityIndicator, Modal, SafeAreaView, ScrollView, View, Text, TextInput, TouchableOpacity, StyleSheet, useColorScheme, Alert } from 'react-native';
 import DropDownPicker from "react-native-dropdown-picker";
-import { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
+import _PhoneInput from 'react-native-phone-number-input';
+import CountryFlag from 'react-native-country-flag';
+import type { CountryCode } from 'react-native-country-picker-modal';
 import { ThemedView } from '@/components/ThemedView';
 import { Image } from 'react-native';
 import AddOrderformApi from '@/hooks/api/AddOrderFormApi';
@@ -23,6 +26,9 @@ import OperatorModal from '../operators/OperatorModal';
 import { getTodayDate, formatDateForAPI } from '@/utils/handleDate';
 import { url } from '@/hooks/api/apiClient';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+
+
+const PhoneInput = _PhoneInput as any;
 
 export default function AddOrderModal() {
   const router = useRouter();
@@ -64,6 +70,9 @@ export default function AddOrderModal() {
   const [customerName, setCustomerName] = useState('');
   const [customerLastName, setCustomerLastName] = useState('');
   const [cellPhone, setCellPhone] = useState('');
+  const [formattedPhone, setFormattedPhone] = useState('');
+  const [phoneCountryCode, setPhoneCountryCode] = useState<CountryCode>('US');
+  const phoneInput = useRef<any>(null);
   const [address, setAddress] = useState('');
   const [email, setEmail] = useState('');
   const [weight, setWeight] = useState('');
@@ -310,6 +319,16 @@ export default function AddOrderModal() {
     const customerFactoryValue = typeof company === 'number' ? company :
       company ? parseInt(company) : 0;
 
+    // Aseguramos que el número de teléfono tenga el formato correcto (+prefijo-número)
+    let formattedPhoneNumber = cellPhone;
+    if (formattedPhoneNumber && !formattedPhoneNumber.startsWith('+')) {
+      const callingCode = phoneInput.current?.getCallingCode() || '';
+      formattedPhoneNumber = `+${callingCode}-${formattedPhoneNumber}`;
+    } else if (formattedPhoneNumber && !formattedPhoneNumber.includes('-')) {
+      const callingCode = phoneInput.current?.getCallingCode() || '';
+      formattedPhoneNumber = formattedPhoneNumber.replace(`+${callingCode}`, `+${callingCode}-`);
+    }
+
     const orderData: AddOrderFormModel = {
       status: "Pending",
       date,
@@ -320,7 +339,7 @@ export default function AddOrderModal() {
         last_name: customerLastName,
         address: address,
         email: email,
-        phone: cellPhone,
+        phone: formattedPhoneNumber, // Usamos el número formateado
       },
       weight,
       job: job || "",
@@ -504,6 +523,40 @@ export default function AddOrderModal() {
       padding: 8,
       borderRadius: 8,
       color: colorScheme === 'dark' ? '#ffffff' : '#1f2937',
+    },
+    phoneContainer: {
+      width: '100%',
+      borderRadius: 8,
+      borderWidth: 2,
+      overflow: 'hidden',
+    },
+    phoneTextContainer: {
+      backgroundColor: 'transparent',
+      borderRadius: 0,
+    },
+    phoneTextInput: {
+      height: 48,
+      fontSize: 16,
+      padding: 0,
+      margin: 0,
+    },
+    phoneCodeText: {
+      fontSize: 16,
+      padding: 0,
+      margin: 0,
+    },
+    phoneFlagButton: {
+      justifyContent: 'center',
+      alignItems: 'center',
+      borderRightWidth: 1,
+      borderRightColor: '#e2e8f0',
+    },
+    phoneCountryPicker: {
+      justifyContent: 'center',
+      alignItems: 'center',
+    },
+    dropdownArrow: {
+      marginLeft: 4,
     },
     buttonContainer: {
       flexDirection: 'row',
@@ -714,14 +767,116 @@ export default function AddOrderModal() {
             ))}
 
             <Text style={styles.text}>{t('cell_phone')}</Text>
-            <TextInput
-              style={styles.input}
-              placeholder={t('cell_phone')}
-              placeholderTextColor="#9ca3af"
-              value={cellPhone}
-              onChangeText={setCellPhone}
-              keyboardType="numeric"
-            />
+            <View style={{ marginBottom: 16 }}>
+              <PhoneInput
+                ref={phoneInput}
+                value={cellPhone}
+                defaultCode={phoneCountryCode}
+                layout="first"
+                flagButton={(props: any) => (
+                  <TouchableOpacity
+                    style={[styles.phoneFlagButton, { width: 70 }]}
+                    onPress={props.onPress}
+                  >
+                    <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                      <CountryFlag
+                        isoCode={props.isoCode}
+                        size={20}
+                        style={{ marginRight: 8 }}
+                      />
+                      <Text style={[styles.phoneCodeText, { color: colorScheme === 'dark' ? '#ffffff' : '#000000' }]}>
+                        {props.callingCode}
+                      </Text>
+                    </View>
+                  </TouchableOpacity>
+                )}
+                onChangeText={setCellPhone}
+                onChangeFormattedText={(text: string) => {
+                  const callingCode = phoneInput.current?.getCallingCode() || '';
+                  // Aseguramos que el número siempre tenga el formato +prefijo-número
+                  let formattedNumber = text;
+                  if (text.startsWith(`+${callingCode}`) && !text.includes('-')) {
+                    formattedNumber = `${text.slice(0, callingCode.length + 1)}-${text.slice(callingCode.length + 1)}`;
+                  }
+                  setFormattedPhone(formattedNumber);
+                }}
+                onChangeCountry={(country: any) => {
+                  setPhoneCountryCode(country.cca2);
+                  setCellPhone('');
+                  const newPrefix = `+${country.callingCode}`;
+                  const newFormatted = `${newPrefix}-`;
+                  setFormattedPhone(newFormatted);
+                }}
+                withDarkTheme={colorScheme === 'dark'}
+                withShadow={false}
+                autoFocus={false}
+                containerStyle={[
+                  styles.phoneContainer,
+                  {
+                    backgroundColor: colorScheme === 'dark' ? '#FFFFFF36' : '#ffffff',
+                    borderColor: colorScheme === 'dark' ? '#64748b' : '#0458AB',
+                    height: 50,
+                    minHeight: 50,
+                  }
+                ]}
+                textContainerStyle={[
+                  styles.phoneTextContainer,
+                  {
+                    backgroundColor: 'transparent',
+                    height: 48,
+                    paddingVertical: 0,
+                    paddingLeft: 0,
+                  }
+                ]}
+                textInputStyle={[
+                  styles.phoneTextInput,
+                  {
+                    color: colorScheme === 'dark' ? '#ffffff' : '#1f2937',
+                    height: 48,
+                    paddingVertical: 12,
+                    paddingHorizontal: 12,
+                    includeFontPadding: false,
+                    textAlignVertical: 'center',
+                    backgroundColor: 'transparent',
+                  }
+                ]}
+                codeTextStyle={[
+                  styles.phoneCodeText,
+                  {
+                    color: colorScheme === 'dark' ? '#ffffff' : '#1f2937',
+                    height: 48,
+                    paddingVertical: 0,
+                    textAlignVertical: 'center',
+                    lineHeight: 20,
+                    backgroundColor: 'transparent',
+                  }
+                ]}
+                flagButtonStyle={[
+                  styles.phoneFlagButton,
+                  {
+                    width: 60,
+                    height: 48,
+                    paddingHorizontal: 8,
+                    backgroundColor: colorScheme === 'dark' ? '#1e293b' : '#f1f5f9',
+                  }
+                ]}
+                countryPickerButtonStyle={[
+                  styles.phoneCountryPicker,
+                  {
+                    height: 48,
+                    paddingHorizontal: 8,
+                  }
+                ]}
+                renderDropdownImage={
+                  <View style={styles.dropdownArrow}>
+                    <Text style={{
+                      color: colorScheme === 'dark' ? '#ffffff' : '#1f2937',
+                      fontSize: 12
+                    }}>▼</Text>
+                  </View>
+                }
+              />
+            </View>
 
             <Text style={styles.text}>{t('address')}</Text>
             <TextInput
