@@ -1,6 +1,11 @@
 import { Modal, View, Text, ScrollView, TextInput, TouchableOpacity, StyleSheet, useColorScheme, Alert } from 'react-native';
 import DropDownPicker from "react-native-dropdown-picker";
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
+import _PhoneInput from 'react-native-phone-number-input';
+import CountryFlag from 'react-native-country-flag';
+import type { CountryCode } from 'react-native-country-picker-modal';
+
+const PhoneInput = _PhoneInput as any;
 import { useLocalSearchParams, useRouter } from "expo-router";
 import DateTimePickerModal from "react-native-modal-datetime-picker";
 import { KeyboardAwareView } from '@/components/KeyboardAwareView';
@@ -16,7 +21,7 @@ import Toast from 'react-native-toast-message';
 import { CustomerFactory } from '@/hooks/api/CustomerFactoryClient';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import { ThemedView } from '@/components/ThemedView';
-import { url } from '@/hooks/api/apiClient';  
+import { url } from '@/hooks/api/apiClient';
 interface Job {
   id: number;
   name: string;
@@ -54,24 +59,24 @@ export default function UpdateOrderModal() {
   const orderData = params.order ? JSON.parse(params.order as string) : null;
   const { t } = useTranslation();
   const router = useRouter();
-  
+
   // Estados para ubicación
   const [openCountry, setOpenCountry] = useState(false);
   const [openStateRegion, setOpenStateRegion] = useState(false);
   const [openCity, setOpenCity] = useState(false);
-  
+
   const [country, setCountry] = useState<string | null>(null);
   const [stateRegion, setStateRegion] = useState<string | null>(null);
   const [city, setCity] = useState<string | null>(null);
-  
+
   const [countriesList, setCountriesList] = useState<any[]>([]);
   const [statesList, setStatesList] = useState<any[]>([]);
   const [citiesList, setCitiesList] = useState<any[]>([]);
-  
+
   const [loadingCountries, setLoadingCountries] = useState(false);
   const [loadingStates, setLoadingStates] = useState(false);
   const [loadingCities, setLoadingCities] = useState(false);
-  
+
   // Resto de estados
   const [addOperatorVisible, setAddOperatorVisible] = useState(false);
   const { updateOrder, isLoading } = UpdateOrderFormApi();
@@ -83,7 +88,66 @@ export default function UpdateOrderModal() {
   const [keyReference, setKeyReference] = useState('');
   const [customerFirstName, setCustomerFirstName] = useState('');
   const [customerLastName, setCustomerLastName] = useState('');
-  const [cellPhone, setCellPhone] = useState(0);
+  // Estados para el campo de teléfono
+  const phoneInput = useRef<any>(null);
+  const [cellPhone, setCellPhone] = useState<string>('');
+
+  const [formattedPhone, setFormattedPhone] = useState('');
+  const [phoneCountryCode, setPhoneCountryCode] = useState<CountryCode>(() => {
+    if (orderData?.person?.phone) {
+      const phoneStr = orderData.person.phone.toString();
+      return phoneStr.startsWith('+57') ? 'CO' : 'US';
+    }
+    return 'US';
+  });
+
+  const renderFlagButton = (props: any) => (
+    <TouchableOpacity
+      style={{
+        justifyContent: 'center',
+        alignItems: 'center',
+        flexDirection: 'row',
+        paddingHorizontal: 12,
+        paddingVertical: 8,
+        minHeight: 48,
+        borderRightWidth: 1,
+        borderRightColor: '#e0e0e0',
+        width: 90,
+      }}
+      onPress={props.onPress}
+    >
+      <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+        <CountryFlag
+          isoCode={props.isoCode}
+          size={20}
+          style={{ marginRight: 8 }}
+        />
+        <Text style={{
+          color: isDarkMode ? '#FFFFFF' : '#333333',
+          fontSize: 16,
+          fontWeight: '500',
+          marginLeft: 6,
+          marginRight: 4,
+        }}>
+          {props.callingCode}
+        </Text>
+      </View>
+    </TouchableOpacity>
+  );
+  
+  // Format phone number as +prefijo-numero
+  const formatPhoneNumber = (phone: string, countryCode: string) => {
+    if (!phone) return '';
+    // Remove any non-digit characters
+    const cleaned = phone.replace(/\D/g, '');
+    // Get the calling code for the country
+    const callingCode = phoneInput.current?.getCallingCode() || '';
+    // Format as +callingCode-number (only if we have a calling code and phone number)
+    if (callingCode && cleaned) {
+      return `+${callingCode}-${cleaned}`;
+    }
+    return phone;
+  };
   const [address, setAddress] = useState('');
   const [email, setEmail] = useState('');
   const [weight, setWeight] = useState('');
@@ -221,7 +285,23 @@ export default function UpdateOrderModal() {
       setKeyReference(orderData.key_ref || '');
       setCustomerFirstName(orderData.person?.first_name || '');
       setCustomerLastName(orderData.person?.last_name || '');
-      setCellPhone(orderData.person?.phone || 0);
+
+      // Inicializar el teléfono
+      if (orderData.person?.phone) {
+        const phoneStr = orderData.person.phone.toString();
+        if (phoneStr.includes('-')) {
+          const [_, number] = phoneStr.split('-');
+          setCellPhone(number);
+          setFormattedPhone(phoneStr);
+        } else {
+          setCellPhone(phoneStr);
+          setFormattedPhone(phoneStr);
+        }
+      } else {
+        setCellPhone('');
+        setFormattedPhone('');
+      }
+
       setAddress(orderData.person?.address || '');
       setEmail(orderData.person?.email || '');
       setWeight(orderData.weight || '');
@@ -336,7 +416,7 @@ export default function UpdateOrderModal() {
       email: string;
       first_name: string;
       last_name: string;
-      phone: number;
+      phone: string;
       address: string;
     };
     job: number;
@@ -351,8 +431,8 @@ export default function UpdateOrderModal() {
 
       // Construir ubicación
       const location = country && stateRegion && city
-      ? `${country} - ${stateRegion} - ${city}`
-      : null;
+        ? `${country} - ${stateRegion} - ${city}`
+        : null;
 
       if (!location) {
         Toast.show({
@@ -412,7 +492,7 @@ export default function UpdateOrderModal() {
           email: email || '',
           first_name: customerFirstName,
           last_name: customerLastName,
-          phone: cellPhone,
+          phone: formattedPhone || formatPhoneNumber(cellPhone, phoneCountryCode),
           address: address,
         },
         job: jobId || 0,
@@ -696,26 +776,110 @@ export default function UpdateOrderModal() {
               />
               {errors.customerLastName && <Text style={styles.errorText}>{errors.customerLastName}</Text>}
             </View>
-
             <View style={styles.inputContainer}>
               <Text style={[styles.label, { color: isDarkMode ? '#FFFFFF' : '#0458AB' }]}>
                 {t("cell_phone")}
               </Text>
-              <TextInput
-                value={cellPhone.toString()}
-                onChangeText={(text) => {
-                  const numericValue = parseInt(text.replace(/\D/g, ''), 10);
-                  setCellPhone(isNaN(numericValue) ? 0 : numericValue);
-                }}
-                placeholder={t("cell_phone_placeholder")}
-                placeholderTextColor={isDarkMode ? '#AAAAAA' : '#666666'}
-                keyboardType="numeric"
-                style={[styles.input, {
-                  backgroundColor: isDarkMode ? '#1E3A5F' : '#FFFFFF',
-                  color: isDarkMode ? '#FFFFFF' : '#333333',
-                  borderColor: isDarkMode ? '#A1C6EA' : '#0458AB'
-                }]}
-              />
+              <View style={{
+                borderWidth: 1,
+                borderRadius: 8,
+                marginBottom: 4,
+                width: '100%',
+                flexDirection: 'row',
+                alignItems: 'stretch',
+                minHeight: 50,
+                overflow: 'hidden',
+              }}>
+                <PhoneInput
+                  ref={phoneInput}
+                  value={cellPhone}
+                  defaultCode={phoneCountryCode}
+                  layout="first"
+                  flagButton={renderFlagButton}
+                  onChangeText={(text: string) => {
+                    setCellPhone(text);
+                    // Format the phone number with the current country code
+                    const formatted = formatPhoneNumber(text, phoneCountryCode);
+                    setFormattedPhone(formatted);
+                  }}
+                  onChangeFormattedText={(text: string) => {
+                    // This will be called after the country changes
+                    // We don't use this for setting the formatted phone as it includes the country code
+                    // but doesn't match our desired format with the hyphen
+                  }}
+                  onChangeCountry={(country: any) => {
+                    setPhoneCountryCode(country.cca2);
+                    setCellPhone('');
+                    // Update formatted phone when country changes
+                    // Just update the country code, don't include the phone number yet
+                    setFormattedPhone(`+${phoneInput.current?.getCallingCode()}`);
+                  }}
+                  withDarkTheme={isDarkMode}
+                  withShadow={false}
+                  autoFocus={false}
+                  containerStyle={{
+                    backgroundColor: isDarkMode ? '#1E3A5F' : '#FFFFFF',
+                    borderColor: isDarkMode ? '#A1C6EA' : '#0458AB',
+                    height: 50,
+                    minHeight: 50,
+                  }}
+                  textContainerStyle={{
+                    backgroundColor: 'transparent',
+                    height: 48,
+                    paddingVertical: 0,
+                    paddingLeft: 0,
+                  }}
+                  textInputStyle={{
+                    color: isDarkMode ? '#FFFFFF' : '#333333',
+                    height: 48,
+                    paddingVertical: 12,
+                    paddingHorizontal: 12,
+                    includeFontPadding: false,
+                    textAlignVertical: 'center',
+                    backgroundColor: 'transparent',
+                  }}
+                  codeTextStyle={{
+                    color: isDarkMode ? '#FFFFFF' : '#333333',
+                    height: 48,
+                    paddingVertical: 0,
+                    textAlignVertical: 'center',
+                    lineHeight: 20,
+                    backgroundColor: 'transparent',
+                  }}
+                  flagButtonStyle={{
+                    justifyContent: 'center',
+                    alignItems: 'center',
+                    flexDirection: 'row',
+                    paddingHorizontal: 12,
+                    paddingVertical: 8,
+                    minHeight: 48,
+                    borderRightWidth: 1,
+                    borderRightColor: '#e0e0e0',
+                    width: 90,
+                  }}
+                  countryPickerButtonStyle={{
+                    backgroundColor: 'transparent',
+                    flexDirection: 'row',
+                    alignItems: 'center',
+                    height: 48,
+                    paddingHorizontal: 4,
+                  }}
+                  renderDropdownImage={
+                    <View style={{
+                      marginLeft: 4,
+                      justifyContent: 'center',
+                      alignItems: 'center',
+                      width: 20,
+                      height: 20,
+                    }}>
+                      <Text style={{
+                        color: isDarkMode ? '#FFFFFF' : '#333333',
+                        fontSize: 12
+                      }}>▼</Text>
+                    </View>
+                  }
+                />
+              </View>
             </View>
 
             <View style={styles.inputContainer}>
@@ -919,7 +1083,69 @@ const styles = StyleSheet.create({
     marginBottom: 10,
   },
   inputContainer: {
-    marginBottom: 15,
+    marginBottom: 16,
+  },
+  phoneContainer: {
+    borderWidth: 1,
+    borderRadius: 8,
+    marginBottom: 4,
+    width: '100%',
+    flexDirection: 'row',
+    alignItems: 'stretch',
+    minHeight: 50,
+    overflow: 'hidden',
+  },
+  phoneTextContainer: {
+    borderRadius: 0,
+    backgroundColor: 'transparent',
+    flex: 1,
+    height: 48,
+    paddingVertical: 0,
+    paddingLeft: 0,
+    justifyContent: 'center',
+  },
+  phoneTextInput: {
+    fontSize: 16,
+    paddingVertical: 0,
+    paddingHorizontal: 12,
+    includeFontPadding: false,
+    textAlignVertical: 'center',
+    height: 48,
+    margin: 0,
+  },
+  phoneCodeText: {
+    fontSize: 16,
+    fontWeight: '500',
+    paddingVertical: 0,
+    textAlignVertical: 'center',
+    lineHeight: 20,
+    marginLeft: 6,
+    marginRight: 4,
+  },
+  phoneFlagButton: {
+    justifyContent: 'center',
+    alignItems: 'center',
+    flexDirection: 'row',
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    minHeight: 48,
+    borderRightWidth: 1,
+    borderRightColor: '#e0e0e0',
+    width: 90,
+  },
+  phoneCountryPicker: {
+    backgroundColor: 'transparent',
+    flexDirection: 'row',
+    alignItems: 'center',
+    height: 48,
+    paddingHorizontal: 4,
+  },
+  dropdownArrow: {
+    marginLeft: 4,
+    justifyContent: 'center',
+    alignItems: 'center',
+    width: 20,
+    height: 20,
   },
   label: {
     marginBottom: 5,

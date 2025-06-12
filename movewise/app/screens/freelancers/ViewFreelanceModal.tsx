@@ -14,7 +14,7 @@ interface ViewFreelanceModalProps {
 }
 
 const ViewFreelanceModal: React.FC<ViewFreelanceModalProps> = ({ visible, freelancer, onClose, onEdit }) => {
-   console.log(`received freelance: ${JSON.stringify(freelancer)}`);
+//    console.log(`received freelance: ${JSON.stringify(freelancer)}`);
    
     const { t } = useTranslation();
     const colorScheme = useColorScheme();
