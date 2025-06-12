@@ -175,11 +175,12 @@ export default function AddOrderModal() {
 
 
   const handleSaveOperators = () => {
-    console.log("Operators saved successfully! Closing both modals.");
-
-    // Cerrar inmediatamente el modal padre
-    resetForm();
+    // Close the operator modal and the parent modal
     setOperatorModalVisible(false);
+    if (isAdmin) {
+      router.back(); // Close the parent modal
+    }
+    // You can add any additional logic here if needed when operators are saved
   };
 
   useEffect(() => {
