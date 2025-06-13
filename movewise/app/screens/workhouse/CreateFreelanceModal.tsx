@@ -157,7 +157,7 @@ const CreateFreelanceModal: React.FC<CreateFreelanceModalProps> = ({ visible, on
                                     <Ionicons name="cash-outline" size={16} color={isDarkMode ? colors.darkText : colors.lightText} /> {t("salary")}
                                 </Text>
                                 <TextInput
-                                    style={[styles.input, { color: isDarkMode ? colors.darkText : colors.lightText }]}
+                                    style={[styles.input, { color: isDarkMode ? colors.lightText : colors.lightText }]}
                                     placeholder="$0.00"
                                     value={newFreelance.salary?.toString()}
                                     onChangeText={text => setNewFreelance(prev => ({ ...prev, salary: parseFloat(text) || 0 }))}
@@ -170,7 +170,7 @@ const CreateFreelanceModal: React.FC<CreateFreelanceModalProps> = ({ visible, on
                                     <Ionicons name="person-outline" size={16} color={isDarkMode ? colors.darkText : colors.lightText} /> {t("first_name")}
                                 </Text>
                                 <TextInput
-                                    style={[styles.input, { color: isDarkMode ? colors.darkText : colors.lightText }]}
+                                    style={[styles.input, { color: isDarkMode ? colors.lightText : colors.lightText }]}
                                     placeholder={t("first_name")}
                                     value={newFreelance.first_name}
                                     onChangeText={text => setNewFreelance(prev => ({ ...prev, first_name: text }))}
@@ -182,7 +182,7 @@ const CreateFreelanceModal: React.FC<CreateFreelanceModalProps> = ({ visible, on
                                     <Ionicons name="people-outline" size={16} color={isDarkMode ? colors.darkText : colors.lightText} /> {t("last_name")}
                                 </Text>
                                 <TextInput
-                                    style={[styles.input, { color: isDarkMode ? colors.darkText : colors.lightText }]}
+                                    style={[styles.input, { color: isDarkMode ? colors.lightText : colors.lightText }]}
                                     placeholder={t("last_name")}
                                     value={newFreelance.last_name}
                                     onChangeText={text => setNewFreelance(prev => ({ ...prev, last_name: text }))}
@@ -194,7 +194,7 @@ const CreateFreelanceModal: React.FC<CreateFreelanceModalProps> = ({ visible, on
                                     <Ionicons name="person-outline" size={16} color={isDarkMode ? colors.darkText : colors.lightText} /> {t("address")}
                                 </Text>
                                 <TextInput
-                                    style={[styles.input, { color: isDarkMode ? colors.darkText : colors.lightText }]}
+                                    style={[styles.input, { color: isDarkMode ? colors.lightText : colors.lightText }]}
                                     placeholder={t("address")}
                                     value={newFreelance.address}
                                     onChangeText={text => setNewFreelance(prev => ({ ...prev, address: text }))}
@@ -240,17 +240,18 @@ const CreateFreelanceModal: React.FC<CreateFreelanceModalProps> = ({ visible, on
                                         backgroundColor: 'transparent',
                                         paddingVertical: 0,
                                         height: 48,
-                                        paddingLeft: 0
+                                        paddingLeft: 0,
+                                        color: isDarkMode ? colors.lightText : colors.lightText,
                                     }}
                                     textInputStyle={{
-                                        color: isDarkMode ? '#FFFFFF' : '#333333',
+                                        color: isDarkMode ? colors.lightText : colors.lightText,
                                         fontSize: 16,
                                         height: 48,
                                         padding: 0,
                                         margin: 0,
                                     }}
                                     codeTextStyle={{
-                                        color: isDarkMode ? '#FFFFFF' : '#333333',
+                                        color: isDarkMode ? colors.lightText : colors.lightText,
                                         fontSize: 16,
                                         height: 48,
                                         padding: 0,
@@ -269,7 +270,7 @@ const CreateFreelanceModal: React.FC<CreateFreelanceModalProps> = ({ visible, on
                                 <Text style={[styles.label, { color: isDarkMode ? colors.darkText : colors.lightText }]}>
                                     <Ionicons name="id-card-outline" size={16} color={isDarkMode ? colors.darkText : colors.lightText} /> {t("id_type")}
                                 </Text>
-                                <View style={[styles.pickerContainer, { backgroundColor: isDarkMode ? colors.backgroundDark : colors.backgroundLight }]}>
+                                <View style={[styles.pickerContainer, { backgroundColor: isDarkMode ? colors.lightBackground : colors.backgroundLight }]}>
                                     <Picker
                                         selectedValue={newFreelance.type_id}
                                         onValueChange={value => setNewFreelance(prev => ({ ...prev, type_id: value }))}
@@ -286,7 +287,7 @@ const CreateFreelanceModal: React.FC<CreateFreelanceModalProps> = ({ visible, on
                                     <Ionicons name="images-outline" size={18} /> {t("documents")}
                                 </Text>
                                 <TextInput
-                                    style={[styles.input, { color: isDarkMode ? colors.darkText : colors.lightText }]}
+                                    style={[styles.input, { color: isDarkMode ? colors.lightText : colors.lightText }]}
                                     placeholder="123456789"
                                     value={newFreelance.id_number}
                                     onChangeText={text => setNewFreelance(prev => ({ ...prev, id_number: text }))}
