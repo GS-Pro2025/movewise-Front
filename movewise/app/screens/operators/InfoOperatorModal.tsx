@@ -40,7 +40,7 @@ interface OperatorInfo {
     address: string;
     phone: string;
     email: string;
-    id_company: number;
+    id_company?: number;
     sons: Son[];
 }
 

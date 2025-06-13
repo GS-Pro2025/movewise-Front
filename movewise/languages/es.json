@@ -603,5 +603,9 @@
   "page_not_found":"Página no encontrada",
   "the_page_you_are_looking_for_does_not_exist":"La página que estás buscando no existe",
   "identification_placeholder": "Identificación",
-  "search_state_placeholder": "Buscar estado"
+  "search_state_placeholder": "Buscar estado",
+  "work_info":"Información del trabajo",
+  "employee_code":"Código de empleado",
+  "shift_size":"Tamaño de turno",
+  "shift_name":"Nombre de turno"
 }
