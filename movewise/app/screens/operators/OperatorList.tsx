@@ -1,10 +1,11 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { View, Text, FlatList, TouchableOpacity, StyleSheet, Modal, useColorScheme, Image, ActivityIndicator, SafeAreaView, Alert } from 'react-native';
 import { GestureHandlerRootView, Swipeable } from "react-native-gesture-handler";
 import { Ionicons } from '@expo/vector-icons';
 import { ListOperators } from '@/hooks/api/Get_listOperator';
-import { SoftDeleteOperator } from '@/hooks/api/SoftDeleteOperator'; // Import the new function
+import { SoftDeleteOperator } from '@/hooks/api/SoftDeleteOperator';
 import CreateOperator from './CreateOperator';
+import InfoOperatorModal from './InfoOperatorModal';
 import { Operator, FormData } from '@/types/operator.types';
 import { router, useGlobalSearchParams } from 'expo-router';
 import { useTranslation } from 'react-i18next';
@@ -27,6 +28,7 @@ const OperatorList = () => {
   const [operators, setOperators] = useState<Operator[]>([]);
   const [selectedOperator, setSelectedOperator] = useState<Operator | null>(null);
   const [modalVisible, setModalVisible] = useState(false);
+  const [infoModalVisible, setInfoModalVisible] = useState(false);
   const [loading, setLoading] = useState(true);
   const [loadingMore, setLoadingMore] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -44,7 +46,7 @@ const OperatorList = () => {
   const [activeSwipeable, setActiveSwipeable] = useState<Swipeable | null>(null);
 
   const colorScheme = useColorScheme();
-const isDarkMode = colorScheme === 'dark';
+  const isDarkMode = colorScheme === 'dark';
 
   useEffect(() => {
     if (!isCreating) {
@@ -250,7 +252,16 @@ const isDarkMode = colorScheme === 'dark';
     }
   };
 
-  // Update renderOperatorItem to include the renderRightActions and track the active swipeable
+  const handleViewOperator = (operator: Operator) => {
+    setSelectedOperator(operator);
+    setInfoModalVisible(true);
+  };
+
+  const handleEditOperator = (operator: Operator) => {
+    setSelectedOperator(operator);
+    setModalVisible(true);
+  };
+
   const renderOperatorItem = ({ item }: { item: Operator }) => {
     let swipeableRef: Swipeable | null = null;
     
@@ -274,11 +285,8 @@ const isDarkMode = colorScheme === 'dark';
           }}
         >
           <TouchableOpacity
-            style={[styles.listItem, { backgroundColor: isDarkMode ? colors.backgroundDark : colors.backgroundLight , borderColor: isDarkMode ? colors.textLight : colors.textDark }]}
-            onPress={() => {
-              setSelectedOperator(item);
-              setModalVisible(true);
-            }}
+            style={[styles.listItem, { backgroundColor: isDarkMode ? colors.backgroundDark : colors.backgroundLight, borderColor: isDarkMode ? colors.textLight : colors.textDark }]}
+            onPress={() => handleViewOperator(item)}
           >
             <View style={[styles.avatarContainer, { backgroundColor: isDarkMode ? colors.backgroundDark : colors.backgroundLight }]}>
               {item.photo ? (
@@ -319,18 +327,18 @@ const isDarkMode = colorScheme === 'dark';
     );
   };
 
-const handleSuccess = () => {
-  loadOperators(1, true);
-  setModalVisible(false);
-  setSelectedOperator(null);
-  Toast.show({
-      type: ALERT_TYPE.DANGER,
-      title: t("error"),
-      textBody: t("error_sending_data"),
-      autoClose: 3000,
-  });
-  setTimeout(() => setSuccessModalVisible(true), 400); // Espera a que se cierre el modal de creación
-};
+  const handleSuccess = () => {
+    loadOperators(1, true);
+    setModalVisible(false);
+    setSelectedOperator(null);
+    Toast.show({
+        type: ALERT_TYPE.DANGER,
+        title: t("error"),
+        textBody: t("error_sending_data"),
+        autoClose: 3000,
+    });
+    setTimeout(() => setSuccessModalVisible(true), 400); // Espera a que se cierre el modal de creación
+  };
 
   return (
     <SafeAreaView style={[styles.safeArea, { backgroundColor: isDarkMode ? colors.backgroundDark : colors.backgroundLight }]}>
@@ -410,6 +418,16 @@ const handleSuccess = () => {
             onClose={handleSuccess}
           />
         </Modal>
+
+        <InfoOperatorModal
+          visible={infoModalVisible}
+          onClose={() => setInfoModalVisible(false)}
+          operator={selectedOperator}
+          onEdit={() => {
+            setInfoModalVisible(false);
+            handleEditOperator(selectedOperator!);
+          }}
+        />
 
       </View>
     </SafeAreaView>

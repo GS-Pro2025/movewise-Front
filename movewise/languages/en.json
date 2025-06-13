@@ -567,5 +567,9 @@
   "page_not_found":"Page not found",
   "the_page_you_are_looking_for_does_not_exist":"The page you are looking for does not exist",
   "identification_placeholder": "Identification",
-  "search_state_placeholder": "Search state"
+  "search_state_placeholder": "Search state",
+  "work_info":"Work Info",
+  "employee_code":"Employee Code",
+  "shift_size":"Shift Size",
+  "shift_name":"Shift Name"
 }
