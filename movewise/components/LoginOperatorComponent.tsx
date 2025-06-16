@@ -13,6 +13,9 @@ import {
   ImageBackground,
   StatusBar,
   ActivityIndicator,
+  KeyboardAvoidingView,
+  Platform,
+  ScrollView,
 } from "react-native";
 import Toast from "react-native-toast-message";
 
@@ -69,8 +72,10 @@ const IdLoginScreen: React.FC = () => {
         text1: t("login_successful"),
         text2: `${t("welcome")} ${operatorData.first_name ?? t("user")}`,
       });
+      // esperamos 3 segundos para redirigir a  la pantalla de inicio
+      await new Promise(resolve => setTimeout(resolve, 500));
+      router.replace("/OperatorHome");
 
-      router.push("/OperatorHome");
     } catch (error: any) {
       console.error("❌ Error en login operator:", error);
       Toast.show({
@@ -91,38 +96,44 @@ const IdLoginScreen: React.FC = () => {
       resizeMode="cover"
     >
       <StatusBar barStyle="light-content" />
-      <View style={styles.container}>
-        <Text style={styles.title}>{t("welcome_to")}{"\n"}Movewise</Text>
+      <KeyboardAvoidingView
+        style={{ flex: 1 }}
+        behavior={Platform.OS === "ios" ? "padding" : "height"}
+        keyboardVerticalOffset={Platform.OS === "ios" ? 0 : 24}
+      >
+        <ScrollView contentContainerStyle={styles.container} keyboardShouldPersistTaps="handled">
+          <Text style={styles.title}>{t("welcome_to")}{"\n"}Movewise</Text>
 
-        <Text style={styles.label}>{t("identification_number")}</Text>
-        <TextInput
-          style={styles.input}
-          placeholder={t("id_placeholder")}
-          placeholderTextColor="#666"
-          keyboardType="default"
-          value={id_number}
-          onChangeText={setIdNumber}
-        />
+          <Text style={styles.label}>{t("identification_number")}</Text>
+          <TextInput
+            style={styles.input}
+            placeholder={t("id_placeholder")}
+            placeholderTextColor="#666"
+            keyboardType="default"
+            value={id_number}
+            onChangeText={setIdNumber}
+          />
 
-        <TouchableOpacity
-          style={styles.button}
-          onPress={handleLogin}
-          disabled={loading}
-        >
-          {loading ? (
-            <ActivityIndicator color="#fff" />
-          ) : (
-            <Text style={styles.buttonText}>{t("login_button")}</Text>
-          )}
-        </TouchableOpacity>
-        <TouchableOpacity
-          style={styles.backButton}
-          onPress={() => router.replace("/Login")}>
-          <Text style={styles.buttonText}>
-            {t("back_to_admin_login")}
-          </Text>
-        </TouchableOpacity>
-      </View>
+          <TouchableOpacity
+            style={styles.button}
+            onPress={handleLogin}
+            disabled={loading}
+          >
+            {loading ? (
+              <ActivityIndicator color="#fff" />
+            ) : (
+              <Text style={styles.buttonText}>{t("login_button")}</Text>
+            )}
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={styles.backButton}
+            onPress={() => router.replace("/Login")}>
+            <Text style={styles.buttonText}>
+              {t("back_to_admin_login")}
+            </Text>
+          </TouchableOpacity>
+        </ScrollView>
+      </KeyboardAvoidingView>
     </ImageBackground>
   );
 };
