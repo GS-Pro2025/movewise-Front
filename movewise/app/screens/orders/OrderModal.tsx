@@ -1,4 +1,4 @@
-import { View, Text, TouchableOpacity, Modal, StyleSheet, useColorScheme, FlatList, TextInput, ActivityIndicator, RefreshControl, Alert, SafeAreaView, TextStyle, Platform } from "react-native";
+import { View, Text, TouchableOpacity, Modal, StyleSheet, useColorScheme, FlatList, TextInput, ActivityIndicator, RefreshControl, Alert, SafeAreaView } from "react-native";
 import { useState, useEffect, useCallback, memo } from "react";
 import { useRouter } from "expo-router";
 import DateTimePicker, { DateTimePickerEvent } from '@react-native-community/datetimepicker';
@@ -17,6 +17,8 @@ import { getOrdersAllStatus, OrdersResponse } from "@/hooks/api/GetOrders";
 import colors from "@/app/Colors";
 import { Picker } from '@react-native-picker/picker';
 import { formatLocalDate } from "@/app/components/orders/FormattedDate";
+import { getRegisteredLocations } from "@/hooks/api/GetRegisteredLocations";
+
 interface OrderModalProps {
   visible: boolean;
   onClose: () => void;
@@ -68,6 +70,8 @@ const OrderModal = () => {
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [statusFilter, setStatusFilter] = useState<string | null>(null);
+  const [locationFilter, setLocationFilter] = useState<string | null>(null);
+  const [locations, setLocations] = useState<string[]>([]);
   const [modalAddOrderVisible, setModalAddOrderVisible] = useState(false);
   const [updateOrderVisible, setUpdateOrderVisible] = useState(false);
   const [pagination, setPagination] = useState({
@@ -79,7 +83,6 @@ const OrderModal = () => {
   const isDarkMode = colorScheme === "dark";
   const router = useRouter();
 
-  // Efecto para debounce en la búsqueda
   useEffect(() => {
     const handler = setTimeout(() => {
       setSearchText(searchQuery);
@@ -87,11 +90,23 @@ const OrderModal = () => {
     return () => clearTimeout(handler);
   }, [searchQuery]);
 
-  // Recargar cuando cambien los filtros
+  useEffect(() => {
+    const fetchLocations = async () => {
+      try {
+        const response = await getRegisteredLocations();
+        if (response?.data) {
+          setLocations(response.data);
+        }
+      } catch (error) {
+        console.error('Error fetching locations:', error);
+      }
+    };
+    fetchLocations();
+  }, []);
+
   useEffect(() => {
     loadOrders();
-  }, [selectedDate, statusFilter, searchText]);
-
+  }, [selectedDate, statusFilter, searchText, locationFilter]);
 
   const loadOrders = useCallback(async (url?: string) => {
     const isFirstPage = !url;
@@ -103,15 +118,12 @@ const OrderModal = () => {
     setRefreshing(true);
 
     try {
-      // Formatear la fecha para el backend
-      const formattedDate = selectedDate
-        ? formatLocalDate(selectedDate)
-        : undefined;
-
+      const formattedDate = selectedDate ? formatLocalDate(selectedDate) : undefined;
       const response = await getOrdersAllStatus(url, {
         date: formattedDate,
         status: statusFilter,
-        search: searchText
+        search: searchText,
+        location: locationFilter || undefined
       });
 
       if (!response || !response.results || !Array.isArray(response.results)) {
@@ -170,9 +182,8 @@ const OrderModal = () => {
       setLoadingMore(false);
       setRefreshing(false);
     }
-  }, [t, selectedDate, statusFilter, searchText]);
+  }, [t, selectedDate, statusFilter, searchText, locationFilter]);
 
-  // Recargar al enfocar la pantalla
   useFocusEffect(
     useCallback(() => {
       loadOrders();
@@ -329,36 +340,48 @@ const OrderModal = () => {
   }, []);
 
   return (
-    <SafeAreaView style={{ flex: 1 }}>
-
-      {/* Header */}
-      <View style={[styles.header, { backgroundColor: isDarkMode ? colors.third : colors.lightBackground, borderBottomColor: isDarkMode ? colors.borderDark : colors.borderLight }]}>
-        <Text style={[styles.title, { ...(isDarkMode ? { color: colors.darkText } : { color: colors.primary }) }]}>{t("Orders")}</Text>
-        <TouchableOpacity
-          style={[styles.addButton, { backgroundColor: isDarkMode ? colors.lightBackground : colors.primary }]}
-          onPress={() => setModalAddOrderVisible(true)}
-        >
-          <Text style={[styles.plus, { color: isDarkMode ? colors.primary : colors.lightBackground }]}>+</Text>
-        </TouchableOpacity>
+    <SafeAreaView style={[styles.container, { backgroundColor: isDarkMode ? colors.backgroundDark : colors.backgroundLight }]}>
+      {/* Header unificado */}
+      <View style={[styles.header, { backgroundColor: isDarkMode ? colors.backgroundDark : colors.backgroundLight }]}>
+        <Text style={[styles.title, { color: isDarkMode ? colors.darkText : colors.primary }]}>
+          {t("Orders")}
+        </Text>
+        
+        <View style={styles.headerRight}>
+          <View style={styles.locationPickerContainer}>
+            <Picker
+              selectedValue={locationFilter || ''}
+              style={[styles.locationPicker, { color: isDarkMode ? colors.darkText : colors.primary }]}
+              dropdownIconColor={isDarkMode ? colors.darkText : colors.primary}
+              onValueChange={(itemValue) => setLocationFilter(itemValue || null)}
+            >
+              <Picker.Item label={t('all_locations') || 'All Locations'} value="" />
+              {locations.map((location, index) => (
+                <Picker.Item key={index} label={location} value={location} />
+              ))}
+            </Picker>
+          </View>
+          
+          <TouchableOpacity
+            style={[styles.addButton, { backgroundColor: isDarkMode ? colors.secondary : colors.primary }]}
+            onPress={() => setModalAddOrderVisible(true)}
+          >
+            <Ionicons name="add" size={20} color={colors.lightBackground} />
+          </TouchableOpacity>
+        </View>
       </View>
 
-      {/* Filtros combinados: Fecha + Estado */}
+      {/* Filtros: Fecha + Estado */}
       <View style={[styles.filtersRow, { backgroundColor: isDarkMode ? colors.third : colors.lightBackground }]}>
-
-        {/* Date Picker */}
-        <View style={[styles.filterItem, { marginRight: 5 }]}>
+        <View style={styles.filterItem}>
           <TouchableOpacity
-            style={[
-              styles.datePickerButton,
-              {
-                borderWidth: 1,
-                borderColor: isDarkMode ? colors.secondary : colors.primary,
-                backgroundColor: isDarkMode ? colors.third : colors.highlightLight,
-              }
-            ]}
+            style={[styles.datePickerButton, {
+              borderColor: isDarkMode ? colors.secondary : colors.primary,
+              backgroundColor: isDarkMode ? colors.backgroundDark : colors.backgroundLight,
+            }]}
             onPress={() => setShowDatePicker(true)}
           >
-            <Text style={{ color: isDarkMode ? colors.darkText : colors.lightText, fontSize: 16 }}>
+            <Text style={{ color: isDarkMode ? colors.darkText : colors.lightText, fontSize: 14 }}>
               {selectedDate ? selectedDate.toLocaleDateString() : t("select_date")}
             </Text>
             <Ionicons name="calendar" size={20} color={isDarkMode ? colors.secondary : colors.primary} />
@@ -372,21 +395,19 @@ const OrderModal = () => {
             />
           )}
           {selectedDate && (
-            <TouchableOpacity onPress={clearDateFilter} style={{ position: 'absolute', top: 8, right: 8 }}>
+            <TouchableOpacity onPress={clearDateFilter} style={styles.clearButton}>
               <Ionicons name="close-circle" size={20} color={isDarkMode ? colors.secondary : colors.primary} />
             </TouchableOpacity>
           )}
         </View>
 
-        {/* Status Filter */}
-        <View style={[styles.filterItem]}>
+        <View style={styles.filterItem}>
           <Picker
             selectedValue={statusFilter}
             onValueChange={(itemValue) => setStatusFilter(itemValue)}
             style={[styles.picker, {
               color: isDarkMode ? colors.darkText : colors.lightText,
-              backgroundColor: isDarkMode ? colors.third : colors.highlightLight,
-              flex: 1,
+              backgroundColor: isDarkMode ? colors.backgroundDark : colors.backgroundLight,
             }]}
             dropdownIconColor={isDarkMode ? colors.secondary : colors.primary}
           >
@@ -396,29 +417,26 @@ const OrderModal = () => {
             <Picker.Item label={t("completed")} value="FINISHED" />
           </Picker>
         </View>
-
       </View>
 
-      {/* Search Bar */}
-      <View style={[styles.filtersContainer, { backgroundColor: isDarkMode ? colors.third : colors.lightBackground }]}>
-        <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-          <Ionicons name="search" size={20} color={isDarkMode ? colors.secondary : colors.primary} />
-          <TextInput
-            style={[styles.searchInput, { color: isDarkMode ? colors.darkText : colors.lightText }]}
-            placeholder={t("search_placeholder")}
-            placeholderTextColor={isDarkMode ? colors.placeholderDark : colors.placeholderLight}
-            value={searchQuery}
-            onChangeText={setSearchQuery}
-          />
-          {searchQuery.length > 0 && (
-            <TouchableOpacity onPress={() => setSearchQuery('')}>
-              <Ionicons name="close-circle" size={18} color={isDarkMode ? colors.secondary : colors.primary} />
-            </TouchableOpacity>
-          )}
-        </View>
+      {/* Barra de búsqueda */}
+      <View style={[styles.searchContainer, { backgroundColor: isDarkMode ? colors.third : colors.lightBackground }]}>
+        <Ionicons name="search" size={20} color={isDarkMode ? colors.secondary : colors.primary} />
+        <TextInput
+          style={[styles.searchInput, { color: isDarkMode ? colors.darkText : colors.lightText }]}
+          placeholder={t("search_placeholder")}
+          placeholderTextColor={isDarkMode ? colors.placeholderDark : colors.placeholderLight}
+          value={searchQuery}
+          onChangeText={setSearchQuery}
+        />
+        {searchQuery.length > 0 && (
+          <TouchableOpacity onPress={() => setSearchQuery('')}>
+            <Ionicons name="close-circle" size={18} color={isDarkMode ? colors.secondary : colors.primary} />
+          </TouchableOpacity>
+        )}
       </View>
 
-      {/* Orders List */}
+      {/* Lista de órdenes */}
       {loading ? (
         <View style={styles.loadingContainer}>
           <ActivityIndicator size="large" color={colors.primary} />
@@ -454,13 +472,10 @@ const OrderModal = () => {
               </Text>
             </View>
           }
-          initialNumToRender={10}
-          maxToRenderPerBatch={5}
-          windowSize={7}
         />
       )}
 
-      {/* Info Modal */}
+      {/* Modales */}
       <InfoOrderModal
         visible={infoModalVisible}
         onClose={() => setInfoModalVisible(false)}
@@ -468,109 +483,128 @@ const OrderModal = () => {
         userRole={"admin"}
         isWorkhouse={false}
       />
-      <Toast />
+      
       <Modal visible={modalAddOrderVisible} animationType="slide">
         <AddOrderForm visible={modalAddOrderVisible} onClose={() => setModalAddOrderVisible(false)} />
       </Modal>
-      
+
       {selectedOrder && (
         <UpdateOrder
           visible={updateOrderVisible}
           onClose={() => {
             setUpdateOrderVisible(false);
             setSelectedOrder(null);
-            loadOrders(); // Refresh the orders list when the update modal is closed
+            loadOrders();
           }}
           orderData={selectedOrder}
         />
       )}
+      
+      <Toast />
     </SafeAreaView>
   );
 };
 
 const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+  },
   header: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingHorizontal: 15,
-    paddingVertical: 10,
-    minHeight: 70,
+    paddingHorizontal: 20,
+    paddingVertical: 15,
     borderBottomWidth: 1,
-    elevation: 2,
-  },
-  backButton: {
-    padding: 5,
+    borderBottomColor: '#eee',
   },
   title: {
-    fontSize: 20,
+    fontSize: 24,
     fontWeight: 'bold',
-    flex: 1,
-    textAlign: 'center',
-    marginLeft: 10,
+  },
+  headerRight: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+  },
+  locationPickerContainer: {
+    width: 120,
+    height: 52,
+    borderWidth: 1,
+    borderRadius: 8,
+    borderColor: '#ddd',
+  },
+  locationPicker: {
+    height: 52,
+    width: '100%',
+    fontSize: 4,
   },
   addButton: {
-    width: 30,
-    height: 30,
-    borderRadius: 15,
+    width: 40,
+    height: 40,
+    borderRadius: 20,
     justifyContent: 'center',
     alignItems: 'center',
   },
-  plus: {
-    fontSize: 20,
-    fontWeight: 'bold',
-    lineHeight: 22,
-  },
   filtersRow: {
     flexDirection: 'row',
-    paddingHorizontal: 10,
-    paddingVertical: 5,
-    justifyContent: 'space-between',
+    paddingHorizontal: 20,
+    paddingVertical: 12,
+    gap: 12,
   },
   filterItem: {
     flex: 1,
-    height: 50,
-    justifyContent: 'center',
+    position: 'relative',
   },
   datePickerButton: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingHorizontal: 10,
-    paddingVertical: 8,
-    borderRadius: 5,
+    paddingHorizontal: 12,
+    height: 52,
+    borderRadius: 8,
+    borderWidth: 1,
+  },
+  clearButton: {
+    position: 'absolute',
+    top: 10,
+    right: 10,
   },
   picker: {
-    height: 50,
-    width: '100%',
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: '#ddd',
+    height: 52,
   },
-  filtersContainer: {
-    paddingHorizontal: 15,
-    paddingVertical: 10,
+  searchContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 20,
+    paddingVertical: 12,
+    gap: 12,
   },
   searchInput: {
     flex: 1,
     height: 40,
-    marginLeft: 10,
-    paddingHorizontal: 10,
-    borderRadius: 5,
+    paddingHorizontal: 12,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: '#ddd',
   },
   listContainer: {
-    flexGrow: 1,
     paddingHorizontal: 16,
-    paddingVertical: 24,
+    paddingVertical: 8,
   },
   orderItem: {
     flexDirection: 'row',
     padding: 16,
     marginVertical: 4,
-    marginHorizontal: 8,
     borderRadius: 8,
+    elevation: 1,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.2,
+    shadowOpacity: 0.1,
     shadowRadius: 2,
-    elevation: 2,
   },
   orderIconContainer: {
     marginRight: 12,
@@ -600,24 +634,20 @@ const styles = StyleSheet.create({
     fontSize: 12,
     marginTop: 4,
   },
-  rightSwipeActions: {
-    backgroundColor: '#e74c3c',
-    justifyContent: 'center',
-    alignItems: 'flex-end',
-    height: '92%',
-    width: 100,
-    marginVertical: 4,
-    marginRight: 16,
-    borderRadius: 8,
-  },
   leftSwipeActions: {
-    backgroundColor: '#3498db',
+    backgroundColor: colors.swipeEdit,
     justifyContent: 'center',
     alignItems: 'flex-start',
-    height: '92%',
-    width: 100,
+    width: 80,
     marginVertical: 4,
-    marginLeft: 16,
+    borderRadius: 8,
+  },
+  rightSwipeActions: {
+    backgroundColor: colors.swipeDelete,
+    justifyContent: 'center',
+    alignItems: 'flex-end',
+    width: 80,
+    marginVertical: 4,
     borderRadius: 8,
   },
   editAction: {
