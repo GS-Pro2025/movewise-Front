@@ -157,15 +157,6 @@ const WorkDailyScreen = () => {
     <>
       {/* Header and Date Picker */}
       <View style={[styles.header, { backgroundColor: isDarkMode ? colors.header : colors.lightBackground }]}>
-        <View style={styles.headerContent}>
-          <TouchableOpacity
-            onPress={() => router.back()}
-            style={styles.backButton}
-          >
-            <Ionicons name="arrow-back" size={24} color={isDarkMode ? '#FFF' : colors.primary} />
-          </TouchableOpacity>
-          <Text style={[styles.title, { color: isDarkMode ? colors.darkText : colors.primary }]}>{t("orders")}</Text>
-        </View>
         <View style={styles.dateContainer}>
           <Text style={[styles.selectDateText, { color: isDarkMode ? colors.darkText : colors.primary }]}>{t("select_date")}</Text>
           <TouchableOpacity
@@ -220,8 +211,7 @@ const WorkDailyScreen = () => {
 };
 const styles = StyleSheet.create({
   header: {
-    paddingTop: 20,
-    marginTop: 40,
+    marginTop: 20,
     paddingHorizontal: 20,
   },
   headerContent: {
@@ -235,7 +225,7 @@ const styles = StyleSheet.create({
   },
   container: { flex: 1, paddingHorizontal: 20, paddingTop: 0 },
   title: { fontSize: 20, fontWeight: "bold", textAlign: "center", marginBottom: 10 },
-  dateContainer: { flexDirection: "row", alignItems: "center", marginBottom: 10 },
+  dateContainer: { flexDirection: "row", alignItems: "center", marginBottom: 5 },
   selectDateText: { fontSize: 16, fontWeight: "600", marginRight: 10, paddingHorizontal: 10 },
   datePickerButton: {
     flexDirection: "row",

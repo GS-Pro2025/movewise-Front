@@ -7,7 +7,7 @@ import { SoftDeleteOperator } from '@/hooks/api/SoftDeleteOperator';
 import CreateOperator from './CreateOperator';
 import InfoOperatorModal from './InfoOperatorModal';
 import { Operator, FormData } from '@/types/operator.types';
-import { router, useGlobalSearchParams } from 'expo-router';
+import { router } from 'expo-router';
 import { useTranslation } from 'react-i18next';
 import { Toast, ALERT_TYPE } from 'react-native-alert-notification';
 import colors from '@/app/Colors';
@@ -19,9 +19,8 @@ interface PaginatedResponse {
   results: Operator[];
 }
 
-const OperatorList = () => {
+const OperatorList = ({ isEdit, onClose }: { isEdit: string, onClose: () => void }) => {
   const { t } = useTranslation(); // Hook para traducción
-  const { isEdit } = useGlobalSearchParams<{ isEdit: string }>();
   const isCreating = isEdit === 'false'; // ahora esto sí funciona
   console.log(isCreating);
   const [successModalVisible, setSuccessModalVisible] = useState(false);
@@ -247,7 +246,9 @@ const OperatorList = () => {
   );
 
   const handleBackPress = () => {
-    if (router && router.back) {
+    if (onClose) {
+      onClose();
+    } else if (router && router.canGoBack()) {
       router.back();
     }
   };
@@ -345,9 +346,6 @@ const OperatorList = () => {
       <View style={[styles.container, { backgroundColor: isDarkMode ? colors.backgroundDark : colors.backgroundLight }]}>
         {/* Header */}
         <View style={[styles.header, { backgroundColor: isDarkMode ? colors.backgroundDark : colors.backgroundLight }]}>
-          <TouchableOpacity style={styles.backButton} onPress={handleBackPress}>
-            <Ionicons name="arrow-back" size={24} color={isDarkMode ? colors.darkText : colors.lightText } />
-          </TouchableOpacity>
           <Text style={[styles.headerTitle, { color: isDarkMode ? colors.darkText : colors.primary }]}>{t("operators")}</Text>
           <TouchableOpacity
             style={styles.addButton}
@@ -411,11 +409,19 @@ const OperatorList = () => {
         </View>
 
         {/* Modal for Create/Edit Operator */}
-        <Modal visible={modalVisible} animationType="slide">
+        <Modal 
+          visible={modalVisible} 
+          animationType="slide"
+          onRequestClose={() => setModalVisible(false)}
+        >
           <CreateOperator
             isEditing={!!selectedOperator}
             initialData={selectedOperator ? mapOperatorToFormData(selectedOperator) : undefined}
-            onClose={handleSuccess}
+            onClose={() => {
+              setModalVisible(false);
+              loadOperators(1, true);
+              setSelectedOperator(null);
+            }}
           />
         </Modal>
 
@@ -448,7 +454,7 @@ const styles = StyleSheet.create({
     alignItems: 'flex-end',         // baja los ítems al fondo del header
     justifyContent: 'space-between',
     backgroundColor: '#fff',
-    paddingTop: 30,                  // más espacio arriba
+    paddingTop: 20,                  // más espacio arriba
     paddingBottom: 10,               // menos espacio abajo
     paddingHorizontal: 16,
     borderBottomWidth: 1,
@@ -458,7 +464,6 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 1 },
     shadowOpacity: 0.1,
     shadowRadius: 1,
-    marginTop: 30,
   },
   backButton: {
     padding: 8,

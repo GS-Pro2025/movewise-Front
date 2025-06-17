@@ -317,7 +317,7 @@ const WorkhouseModal: React.FC<WorkhouseModalProps> = ({ visible, onClose }) => 
     const searchLower = searchText.toLowerCase();
 
     // Primero filtramos por búsqueda
-    const filtered = orders.filter(order => 
+    const filtered = orders.filter(order =>
       order.key_ref.toLowerCase().includes(searchLower) ||
       (order.customer_factory_name?.toLowerCase() || '').includes(searchLower)
     );
@@ -327,20 +327,20 @@ const WorkhouseModal: React.FC<WorkhouseModalProps> = ({ visible, onClose }) => 
     const inactive = filtered.filter(order => order.status?.toLowerCase() === 'inactive');
 
     const sections = [];
-    
+
     // Solo mostramos la sección de activos si hay resultados o si no hay búsqueda
     if (active.length > 0 || searchText === '') {
-      sections.push({ 
-        title: t('active_orders'), 
+      sections.push({
+        title: t('active_orders'),
         data: active,
         key: 'active'
       });
     }
-    
+
     // Solo mostramos inactivos si hay resultados
     if (inactive.length > 0) {
-      sections.push({ 
-        title: t('inactive_orders'), 
+      sections.push({
+        title: t('inactive_orders'),
         data: inactive,
         key: 'inactive'
       });
@@ -354,116 +354,107 @@ const WorkhouseModal: React.FC<WorkhouseModalProps> = ({ visible, onClose }) => 
   };
 
   return (
-    <Modal animationType="slide" transparent={false} visible={visible} onRequestClose={onClose}>
-      <SafeAreaView style={[styles.safeArea, { backgroundColor: isDarkMode ? colors.darkBackground : colors.lightBackground }]}>
-        <View style={[styles.headerContainer, { backgroundColor: isDarkMode ? colors.third : colors.lightBackground }]}>
-          <View style={styles.headerTopRow}>
-            <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
-              <Ionicons
-                name="arrow-back"
-                size={24}
-                color={isDarkMode ? colors.secondary : colors.primary}
-              />
-            </TouchableOpacity>
+    <SafeAreaView style={[styles.safeArea, { backgroundColor: isDarkMode ? colors.darkBackground : colors.lightBackground }]}>
+      <View style={[styles.headerContainer, { backgroundColor: isDarkMode ? colors.third : colors.lightBackground }]}>
+        <View style={styles.headerTopRow}>
 
-            <Text style={[styles.headerTitle, { color: isDarkMode ? colors.darkText : colors.primary }]}>
-              {t("workhouse")} ({totalCount})
-            </Text>
+          <Text style={[styles.headerTitle, { color: isDarkMode ? colors.darkText : colors.primary }]}>
+            {t("workhouse")} ({totalCount})
+          </Text>
 
-            <View style={styles.emptySpace} />
-          </View>
-
-          {/* Search bar */}
-          <View style={styles.searchContainer}>
-            <TextInput
-              placeholder={t("search_placeholder")}
-              placeholderTextColor={isDarkMode ? colors.placeholderDark : colors.placeholderLight}
-              style={[styles.searchInput, {
-                backgroundColor: isDarkMode ? colors.darkBackground : '#f5f5f5',
-                color: isDarkMode ? colors.darkText : colors.primary
-              }]}
-              value={searchText}
-              onChangeText={setSearchText}
-            />
-            <TouchableOpacity
-              onPress={() => setAddModalVisible(true)}
-              style={styles.addButton}
-            >
-              <Ionicons
-                name="add-circle-outline"
-                size={34}
-                color={isDarkMode ? colors.secondary : colors.primary}
-              />
-            </TouchableOpacity>
-          </View>
+          <View style={styles.emptySpace} />
         </View>
 
-        {loading ? (
-          <View style={styles.loadingContainer}>
-            <ActivityIndicator size="large" color={colors.primary} />
-          </View>
-        ) : (
-          <SectionList
-            sections={filteredSections()}
-            keyExtractor={keyExtractor}
-            renderItem={renderItem}
-            renderSectionHeader={renderSectionHeader}
-            refreshControl={
-              <RefreshControl
-                refreshing={refreshing}
-                onRefresh={handleRefresh}
-                colors={[colors.primary]}
-              />
-            }
-            onEndReached={handleEndReached}
-            onEndReachedThreshold={0.1}
-            ListFooterComponent={renderFooter}
-            ListEmptyComponent={
-              <View style={styles.emptyContainer}>
-                <Ionicons name="sad-outline" size={40} color={colors.primary} />
-                <Text style={[styles.emptyText, { color: isDarkMode ? colors.darkText : colors.lightText }]}>
-                  {t("no_workhouse_orders")}
-                </Text>
-              </View>
-            }
-            contentContainerStyle={orders.length === 0 ? styles.emptyListContainer : undefined}
+        {/* Search bar */}
+        <View style={styles.searchContainer}>
+          <TextInput
+            placeholder={t("search_placeholder")}
+            placeholderTextColor={isDarkMode ? colors.placeholderDark : colors.placeholderLight}
+            style={[styles.searchInput, {
+              backgroundColor: isDarkMode ? colors.darkBackground : '#f5f5f5',
+              color: isDarkMode ? colors.darkText : colors.primary
+            }]}
+            value={searchText}
+            onChangeText={setSearchText}
           />
-        )}
+          <TouchableOpacity
+            onPress={() => setAddModalVisible(true)}
+            style={styles.addButton}
+          >
+            <Ionicons
+              name="add-circle-outline"
+              size={34}
+              color={isDarkMode ? colors.secondary : colors.primary}
+            />
+          </TouchableOpacity>
+        </View>
+      </View>
 
-        {/* Modal para agregar nuevo workhouse */}
-        <AddWorkhouseForm
-          visible={addModalVisible}
-          onClose={() => setAddModalVisible(false)}
-          onSuccess={() => {
-            handleRefresh(); // Usar handleRefresh en lugar de loadOrders
-            setAddModalVisible(false);
-          }}
+      {loading ? (
+        <View style={styles.loadingContainer}>
+          <ActivityIndicator size="large" color={colors.primary} />
+        </View>
+      ) : (
+        <SectionList
+          sections={filteredSections()}
+          keyExtractor={keyExtractor}
+          renderItem={renderItem}
+          renderSectionHeader={renderSectionHeader}
+          refreshControl={
+            <RefreshControl
+              refreshing={refreshing}
+              onRefresh={handleRefresh}
+              colors={[colors.primary]}
+            />
+          }
+          onEndReached={handleEndReached}
+          onEndReachedThreshold={0.1}
+          ListFooterComponent={renderFooter}
+          ListEmptyComponent={
+            <View style={styles.emptyContainer}>
+              <Ionicons name="sad-outline" size={40} color={colors.primary} />
+              <Text style={[styles.emptyText, { color: isDarkMode ? colors.darkText : colors.lightText }]}>
+                {t("no_workhouse_orders")}
+              </Text>
+            </View>
+          }
+          contentContainerStyle={orders.length === 0 ? styles.emptyListContainer : undefined}
         />
+      )}
 
-        {/* Modal para editar workhouse */}
-        <EditWorkhouseForm
-          visible={editModalVisible}
-          onClose={() => setEditModalVisible(false)}
-          onSuccess={() => {
-            handleRefresh(); // Usar handleRefresh en lugar de loadOrders
-            setEditModalVisible(false);
-          }}
-          order={selectedOrderForEdit}
-          onOpenAssignment={handleOpenAssignmentScreen}
-        />
+      {/* Modal para agregar nuevo workhouse */}
+      <AddWorkhouseForm
+        visible={addModalVisible}
+        onClose={() => setAddModalVisible(false)}
+        onSuccess={() => {
+          handleRefresh(); // Usar handleRefresh en lugar de loadOrders
+          setAddModalVisible(false);
+        }}
+      />
 
-        <InfoOrderModal
-          visible={infoModalVisible}
-          isWorkhouse={true}
-          userRole={"admin"}
-          onClose={() => {
-            setInfoModalVisible(false);
-            setSelectedOrderInfo(null);
-          }}
-          order={selectedOrderInfo}
-        />
-      </SafeAreaView>
-    </Modal>
+      {/* Modal para editar workhouse */}
+      <EditWorkhouseForm
+        visible={editModalVisible}
+        onClose={() => setEditModalVisible(false)}
+        onSuccess={() => {
+          handleRefresh(); // Usar handleRefresh en lugar de loadOrders
+          setEditModalVisible(false);
+        }}
+        order={selectedOrderForEdit}
+        onOpenAssignment={handleOpenAssignmentScreen}
+      />
+
+      <InfoOrderModal
+        visible={infoModalVisible}
+        isWorkhouse={true}
+        userRole={"admin"}
+        onClose={() => {
+          setInfoModalVisible(false);
+          setSelectedOrderInfo(null);
+        }}
+        order={selectedOrderInfo}
+      />
+    </SafeAreaView>
   );
 };
 

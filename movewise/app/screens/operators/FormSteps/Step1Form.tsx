@@ -13,7 +13,7 @@ import type { CountryCode } from 'react-native-country-picker-modal';
 import colors from '@/app/Colors';
 
 const PhoneInput = _PhoneInput as any;
-const Step1Form = ({ formData, updateFormData, onNext, isEditing }: StepProps) => {
+const Step1Form = ({ formData, updateFormData, onNext, isEditing, onclose }: StepProps) => {
     const { t } = useTranslation();
     const colorScheme = useColorScheme();
     const isDarkMode = colorScheme === 'dark';
@@ -417,7 +417,10 @@ const Step1Form = ({ formData, updateFormData, onNext, isEditing }: StepProps) =
                 />
 
                 <View style={styles.buttonContainer}>
-                    <TouchableOpacity style={styles.cancelButton} onPress={() => router.back()}>
+                    <TouchableOpacity 
+                        style={styles.cancelButton} 
+                        onPress={() => onclose && onclose()}
+                    >
                         <Text style={styles.buttonText}>{t("cancel")}</Text>
                     </TouchableOpacity>
                     <TouchableOpacity style={styles.nextButton} onPress={handleNext}>

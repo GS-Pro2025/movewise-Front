@@ -1,6 +1,7 @@
 import { router, Stack } from "expo-router";
 import ListTruckModal from "@/components/ListTruckModal";
 import { useState } from "react";
+import { Text } from "react-native";
 
 export default function ListTruckScreen() {
   const [modalVisible, setModalVisible] = useState(true); // Control visibility dynamically
@@ -12,8 +13,8 @@ export default function ListTruckScreen() {
 
   return (
     <>
-      <Stack.Screen options={{ presentation: "modal", title: "Trucks" }} />
-      <ListTruckModal visible={modalVisible} onClose={handleClose} />
+      <Stack.Screen options={{ presentation: "containedModal", title: "Trucks" }} />
+      <ListTruckModal visible={true} onClose={handleClose} />
     </>
   );
 }

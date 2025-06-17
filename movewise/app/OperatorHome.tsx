@@ -185,7 +185,7 @@ const Home: React.FC = () => {
 
     const AddOrderView = useCallback(() => (
         <View style={styles.tabContent}>
-            <AddOrderForm />
+            <AddOrderForm visible={true} onClose={() => router.back()} />
         </View>
     ), []);
 

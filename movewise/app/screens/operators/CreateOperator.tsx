@@ -160,6 +160,7 @@ const CreateOperator: React.FC<CreateOperatorProps> = ({
             formData={formData}
             updateFormData={updateFormData}
             onNext={onNext}
+            onclose={() => onClose()}
             isEditing={isEditing}
           />
         )}

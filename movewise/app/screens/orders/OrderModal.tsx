@@ -24,7 +24,7 @@ interface OrderModalProps {
 }
 
 interface OrderPerson {
-  email: string;
+  email: string | null;
   first_name: string | null;
   last_name: string | null;
   address: string | null;
@@ -68,6 +68,8 @@ const OrderModal = () => {
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [statusFilter, setStatusFilter] = useState<string | null>(null);
+  const [modalAddOrderVisible, setModalAddOrderVisible] = useState(false);
+  const [updateOrderVisible, setUpdateOrderVisible] = useState(false);
   const [pagination, setPagination] = useState({
     next: null as string | null,
     previous: null as string | null,
@@ -103,7 +105,7 @@ const OrderModal = () => {
     try {
       // Formatear la fecha para el backend
       const formattedDate = selectedDate
-        ? formatLocalDate(selectedDate) 
+        ? formatLocalDate(selectedDate)
         : undefined;
 
       const response = await getOrdersAllStatus(url, {
@@ -195,10 +197,8 @@ const OrderModal = () => {
 
   const handleEditOrder = useCallback((order: Order) => {
     if (order && order.status !== 'FINISHED') {
-      router.push({
-        pathname: './UpdateOrder',
-        params: { order: JSON.stringify(order) }
-      });
+      setSelectedOrder(order);
+      setUpdateOrderVisible(true);
     } else if (order.status === 'FINISHED') {
       Toast.show({
         type: "info",
@@ -208,7 +208,7 @@ const OrderModal = () => {
     } else {
       Alert.alert(t("error"), t("selected_order_null"));
     }
-  }, [router, t]);
+  }, [t]);
 
   const handleDeleteOrder = useCallback((Key: string) => {
     Alert.alert(
@@ -332,17 +332,11 @@ const OrderModal = () => {
     <SafeAreaView style={{ flex: 1 }}>
 
       {/* Header */}
-      <View style={[styles.header, { backgroundColor: isDarkMode ? colors.third : colors.lightBackground, borderBottomColor: isDarkMode ? colors.borderDark : colors.borderLight, minHeight: 100 }]}>
-        <TouchableOpacity
-          style={[styles.backButton]}
-          onPress={() => router.back()}
-        >
-          <Ionicons name="arrow-back" size={24} color={isDarkMode ? colors.white : colors.primary} />
-        </TouchableOpacity>
+      <View style={[styles.header, { backgroundColor: isDarkMode ? colors.third : colors.lightBackground, borderBottomColor: isDarkMode ? colors.borderDark : colors.borderLight }]}>
         <Text style={[styles.title, { ...(isDarkMode ? { color: colors.darkText } : { color: colors.primary }) }]}>{t("Orders")}</Text>
         <TouchableOpacity
           style={[styles.addButton, { backgroundColor: isDarkMode ? colors.lightBackground : colors.primary }]}
-          onPress={() => router.push('./AddOrderForm')}
+          onPress={() => setModalAddOrderVisible(true)}
         >
           <Text style={[styles.plus, { color: isDarkMode ? colors.primary : colors.lightBackground }]}>+</Text>
         </TouchableOpacity>
@@ -475,6 +469,21 @@ const OrderModal = () => {
         isWorkhouse={false}
       />
       <Toast />
+      <Modal visible={modalAddOrderVisible} animationType="slide">
+        <AddOrderForm visible={modalAddOrderVisible} onClose={() => setModalAddOrderVisible(false)} />
+      </Modal>
+      
+      {selectedOrder && (
+        <UpdateOrder
+          visible={updateOrderVisible}
+          onClose={() => {
+            setUpdateOrderVisible(false);
+            setSelectedOrder(null);
+            loadOrders(); // Refresh the orders list when the update modal is closed
+          }}
+          orderData={selectedOrder}
+        />
+      )}
     </SafeAreaView>
   );
 };
@@ -485,7 +494,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'space-between',
     paddingHorizontal: 15,
-    paddingVertical: 20,
+    paddingVertical: 10,
     minHeight: 70,
     borderBottomWidth: 1,
     elevation: 2,

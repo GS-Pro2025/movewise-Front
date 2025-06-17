@@ -33,6 +33,7 @@ interface InfoAdminModalProps {
 
 
 const InfoAdminModal: React.FC<InfoAdminModalProps> = ({ visible, onClose, admin, onEdit }) => {
+    console.log(`se abrio el modal con la info de admin: ${admin}`);
     const { t } = useTranslation();
     const router = useRouter();
     const colorScheme = useColorScheme();
