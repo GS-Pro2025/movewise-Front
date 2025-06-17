@@ -84,7 +84,7 @@ export const getOrdersAllStatus = async (
     }
 
     if (filters?.location) {
-      console.log("filtro para location", filters.location);
+      // console.log("filtro para location", filters.location);
       params.append('location', filters.location);
     }
 
