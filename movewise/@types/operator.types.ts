@@ -52,6 +52,7 @@ export interface StepProps {
     onNext?: () => void;
     onBack?: () => void;
     onSubmit?: () => void;
+    onclose?: () => void;
     isEditing: boolean;
 }
 

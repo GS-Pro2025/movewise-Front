@@ -24,6 +24,7 @@ export interface AdminInfo {
 export const GetAdminInfo = async (): Promise<AdminInfo> => {  // Cambiar AdminInfo[] por AdminInfo
   try {
     const response = await apiClient.get("/profile/");
+    console.log(`informacion en el hook: ${response.data}`);
     return response.data;  // Retorna el objeto directamente
   } catch (error) {
     console.error("Error fetching admin info:", error);

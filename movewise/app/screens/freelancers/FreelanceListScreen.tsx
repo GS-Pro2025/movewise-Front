@@ -106,9 +106,9 @@ const FreelanceListScreen = () => {
             <View style={[styles.container, { backgroundColor: isDarkMode ? colors.backgroundDark : colors.backgroundLight }]}>
                 {/* Header mejorado */}
                 <View style={[styles.header, { backgroundColor: isDarkMode ? colors.backgroundDark : colors.backgroundLight }]}>
-                    <TouchableOpacity onPress={() => navigation.goBack()}>
+                    {/* <TouchableOpacity onPress={() => navigation.goBack()}>
                         <Ionicons name="arrow-back" size={24} color={isDarkMode ? colors.darkText : colors.primary} />
-                    </TouchableOpacity>
+                    </TouchableOpacity> */}
                     <Text style={[styles.title, { color: isDarkMode ? colors.darkText : colors.primary }]}>{t("freelancers")}</Text>
                     <TouchableOpacity onPress={() => setShowCreateModal(true)}>
                         <Ionicons name="add" size={28} color={isDarkMode ? colors.darkText : colors.primary} />

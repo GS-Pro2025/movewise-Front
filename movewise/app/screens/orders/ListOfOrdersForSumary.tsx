@@ -163,39 +163,6 @@ const ListOfOrdersForSummary: React.FC = () => {
   return (
     <SafeAreaView style={{ flex: 1 }}>
       {/* Header con espacio aumentado para iOS */}
-      <View style={[styles.header, { 
-        backgroundColor: isDarkMode ? colors.third : colors.lightBackground,
-        minHeight: 70,
-        paddingVertical: 20,
-        borderBottomColor: isDarkMode ? colors.borderDark : colors.borderLight,
-      }]}>
-        <TouchableOpacity
-          onPress={() => router.back()}
-          style={{
-            width: 40,
-            height: 40,
-            borderRadius: 20,
-            alignItems: 'center',
-            justifyContent: 'center',
-            backgroundColor: isDarkMode ? colors.secondary : colors.primary,
-          }}
-        >
-          <Ionicons 
-            name="arrow-back" 
-            size={24} 
-            color={isDarkMode ? colors.darkText : colors.lightText} 
-          />
-        </TouchableOpacity>
-        <Text style={[styles.title, { 
-          flex: 1, 
-          textAlign: 'center', 
-          marginLeft: 0,
-          color: isDarkMode ? colors.darkText : colors.primary
-        }]}>
-          {t("orders")}
-        </Text>
-        <View style={{ width: 40 }} />
-      </View>
       
       {/* Barra de búsqueda */}
       <View style={[styles.searchContainer, { 

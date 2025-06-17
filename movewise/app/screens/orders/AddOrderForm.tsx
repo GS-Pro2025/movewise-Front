@@ -27,10 +27,14 @@ import { getTodayDate, formatDateForAPI } from '@/utils/handleDate';
 import { url } from '@/hooks/api/apiClient';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
+interface AddOrderFormProps {
+    visible?: boolean;
+    onClose?: () => void;
+}
 
 const PhoneInput = _PhoneInput as any;
 
-export default function AddOrderModal() {
+export default function AddOrderModal({ visible, onClose }: AddOrderFormProps) {
   const router = useRouter();
   const { t } = useTranslation();
 
@@ -187,7 +191,7 @@ export default function AddOrderModal() {
     // Close the operator modal and the parent modal
     setOperatorModalVisible(false);
     if (isAdmin) {
-      router.back(); // Close the parent modal
+      onClose?.();
     }
     // You can add any additional logic here if needed when operators are saved
   };
@@ -223,7 +227,7 @@ export default function AddOrderModal() {
                 text2: t("order_deleted_successfully"),
               });
               // Close the modal after successful deletion
-              router.back();
+              onClose?.();
             } catch (error) {
               console.error(t("error_deleting_order"), error);
               Toast.show({
@@ -245,7 +249,7 @@ export default function AddOrderModal() {
       handleDeleteOrder(savedOrderKey);
     } else {
       // No order was created, just back
-      router.back();
+      onClose?.();
     }
   };
 

@@ -32,31 +32,32 @@ interface UpdateOrderModalProps {
   onClose?: () => void;
   orderData: {
     key: string;
-    state_usa: string;
-    date: string | null;
     key_ref: string;
-    person: {
-      first_name: string;
-      last_name: string;
-      email: string;
-      phone: number;
-      address: string;
-    };
-    job?: number;
+    date: string | null;
+    distance: number | null;
+    expense: string | null;
+    income: string | null;
     weight: string;
-    distance?: number;
-    expense?: string;
-    income?: string;
-    status?: string;
-    payStatus?: number;
-    customer_factory?: number;
-    dispatch_ticket?: string;
+    status: string;
+    payStatus: number | null;
+    state_usa: string;
+    person: {
+      first_name: string | null;
+      last_name: string | null;
+      email: string | null;
+      phone: number | null;
+      address: string | null;
+    };
+    job: number;
+    job_name: string | null;
+    evidence: string | null;
+    dispatch_ticket: string | null;
+    customer_factory: number | 0;
   };
 }
 
-export default function UpdateOrderModal() {
-  const params = useLocalSearchParams();
-  const orderData = params.order ? JSON.parse(params.order as string) : null;
+export default function UpdateOrderModal({ visible = true, onClose, orderData }: UpdateOrderModalProps) {
+  // Use orderData from props instead of URL params
   const { t } = useTranslation();
   const router = useRouter();
 
@@ -134,7 +135,7 @@ export default function UpdateOrderModal() {
       </View>
     </TouchableOpacity>
   );
-  
+
   // Format phone number as +prefijo-numero
   const formatPhoneNumber = (phone: string, countryCode: string) => {
     if (!phone) return '';
@@ -529,519 +530,531 @@ export default function UpdateOrderModal() {
   };
 
   const handleClose = () => {
-    router.back();
+    if (onClose) {
+      onClose();
+    } else {
+      router.back();
+    }
   };
 
+  if (!visible) return null;
+
   return (
-    <View style={{ flex: 1, backgroundColor: isDarkMode ? '#112A4A' : '#FFFFFF' }}>
-      <KeyboardAwareView style={{ flex: 1 }}>
-        <ScrollView
-          contentContainerStyle={{ flexGrow: 1 }}
-          keyboardShouldPersistTaps="handled"
-          nestedScrollEnabled={true}
-        >
-          <View style={[styles.header, { backgroundColor: isDarkMode ? '#1E3A5F' : '#0458AB' }]}>
-            <Text style={[styles.headerText, { color: '#FFFFFF' }]}>{t("edit_order")}</Text>
-            <Text style={{ color: '#FFFFFF' }}>{t("current_order")}: {orderData.key}</Text>
-          </View>
-
-          <ThemedView style={{ padding: 16, flex: 1, backgroundColor: isDarkMode ? '#112A4A' : '#FFFFFF' }}>
-            {/* Ubicación: País */}
-            <View style={[styles.inputContainer, { zIndex: 3000 }]}>
-              <Text style={[styles.label, { color: isDarkMode ? '#FFFFFF' : '#0458AB' }]}>
-                {t("country")} <Text style={{ color: '#FF0000' }}>(*)</Text>
-              </Text>
-              <DropDownPicker
-                open={openCountry}
-                value={country}
-                items={countriesList}
-                setOpen={setOpenCountry}
-                setValue={setCountry}
-                placeholder={t("select_country")}
-                loading={loadingCountries}
-                searchable={true}
-                style={[styles.dropdown, {
-                  backgroundColor: isDarkMode ? '#1E3A5F' : '#FFFFFF',
-                  borderColor: errors.country ? "red" : isDarkMode ? '#A1C6EA' : '#0458AB'
-                }]}
-                dropDownContainerStyle={{
-                  backgroundColor: isDarkMode ? '#1E3A5F' : '#FFFFFF',
-                  borderColor: isDarkMode ? '#A1C6EA' : '#0458AB'
-                }}
-                listMode="MODAL"
-                modalTitle={t("select_country")}
-                searchPlaceholder={t("search")}
-                listItemLabelStyle={{
-                  color: isDarkMode ? '#FFFFFF' : '#333333'
-                }}
-                textStyle={{ color: isDarkMode ? '#FFFFFF' : '#333333' }}
-                placeholderStyle={{ color: isDarkMode ? '#AAAAAA' : '#666666' }}
-              />
-              {errors.country && <Text style={styles.errorText}>{errors.country}</Text>}
+    <Modal
+      visible={visible}
+      animationType="slide"
+      onRequestClose={onClose}
+    >
+      <View style={{ flex: 1, backgroundColor: isDarkMode ? '#112A4A' : '#FFFFFF' }}>
+        <KeyboardAwareView style={{ flex: 1 }}>
+          <ScrollView
+            contentContainerStyle={{ flexGrow: 1 }}
+            keyboardShouldPersistTaps="handled"
+            nestedScrollEnabled={true}
+          >
+            <View style={[styles.header, { backgroundColor: isDarkMode ? '#1E3A5F' : '#0458AB' }]}>
+              <Text style={[styles.headerText, { color: '#FFFFFF' }]}>{t("edit_order")}</Text>
+              <Text style={{ color: '#FFFFFF' }}>{t("current_order")}: {orderData.key}</Text>
             </View>
 
-            {/* Ubicación: Estado/Región */}
-            <View style={[styles.inputContainer, { zIndex: 2900 }]}>
-              <Text style={[styles.label, { color: isDarkMode ? '#FFFFFF' : '#0458AB' }]}>
-                {t("state_region")} <Text style={{ color: '#FF0000' }}>(*)</Text>
-              </Text>
-              <DropDownPicker
-                open={openStateRegion}
-                value={stateRegion}
-                items={statesList}
-                setOpen={setOpenStateRegion}
-                setValue={setStateRegion}
-                placeholder={t("select_state_region")}
-                loading={loadingStates}
-                searchable={true}
-                disabled={!country}
-                style={[styles.dropdown, {
-                  backgroundColor: isDarkMode ? '#1E3A5F' : '#FFFFFF',
-                  borderColor: errors.stateRegion ? "red" : isDarkMode ? '#A1C6EA' : '#0458AB'
-                }]}
-                dropDownContainerStyle={{
-                  backgroundColor: isDarkMode ? '#1E3A5F' : '#FFFFFF',
-                  borderColor: isDarkMode ? '#A1C6EA' : '#0458AB'
-                }}
-                listMode="MODAL"
-                modalTitle={t("select_state_region")}
-                searchPlaceholder={t("search")}
-                listItemLabelStyle={{
-                  color: isDarkMode ? '#FFFFFF' : '#333333'
-                }}
-                textStyle={{ color: isDarkMode ? '#FFFFFF' : '#333333' }}
-                placeholderStyle={{ color: isDarkMode ? '#AAAAAA' : '#666666' }}
-              />
-              {errors.stateRegion && <Text style={styles.errorText}>{errors.stateRegion}</Text>}
-            </View>
-
-            {/* Ubicación: Ciudad */}
-            <View style={[styles.inputContainer, { zIndex: 2800 }]}>
-              <Text style={[styles.label, { color: isDarkMode ? '#FFFFFF' : '#0458AB' }]}>
-                {t("city")}
-              </Text>
-              <DropDownPicker
-                open={openCity}
-                value={city}
-                items={citiesList}
-                setOpen={setOpenCity}
-                setValue={setCity}
-                placeholder={t("select_city")}
-                loading={loadingCities}
-                searchable={true}
-                disabled={!stateRegion}
-                style={[styles.dropdown, {
-                  backgroundColor: isDarkMode ? '#1E3A5F' : '#FFFFFF',
-                  borderColor: isDarkMode ? '#A1C6EA' : '#0458AB'
-                }]}
-                dropDownContainerStyle={{
-                  backgroundColor: isDarkMode ? '#1E3A5F' : '#FFFFFF',
-                  borderColor: isDarkMode ? '#A1C6EA' : '#0458AB'
-                }}
-                listMode="MODAL"
-                modalTitle={t("select_city")}
-                searchPlaceholder={t("search")}
-                listItemLabelStyle={{
-                  color: isDarkMode ? '#FFFFFF' : '#333333'
-                }}
-                textStyle={{ color: isDarkMode ? '#FFFFFF' : '#333333' }}
-                placeholderStyle={{ color: isDarkMode ? '#AAAAAA' : '#666666' }}
-              />
-            </View>
-
-            {/* Fecha */}
-            <View style={[styles.inputContainer, { zIndex: 2700, marginTop: 16 }]}>
-              <Text style={[styles.label, { color: isDarkMode ? '#FFFFFF' : '#0458AB' }]}>
-                {t("date")} <Text style={{ color: '#FF0000' }}>(*)</Text>
-              </Text>
-              <TouchableOpacity
-                onPress={() => setDatePickerVisibility(true)}
-                style={[styles.dateButton, {
-                  backgroundColor: isDarkMode ? '#1E3A5F' : '#FFFFFF',
-                  borderColor: errors.date ? "red" : isDarkMode ? '#A1C6EA' : '#0458AB'
-                }]}
-              >
-                <Text style={{ color: date ? (isDarkMode ? "#ffffff" : "#000") : "#9ca3af" }}>
-                  {date ? date : t('select_date')}
+            <ThemedView style={{ padding: 16, flex: 1, backgroundColor: isDarkMode ? '#112A4A' : '#FFFFFF' }}>
+              {/* Ubicación: País */}
+              <View style={[styles.inputContainer, { zIndex: 3000 }]}>
+                <Text style={[styles.label, { color: isDarkMode ? '#FFFFFF' : '#0458AB' }]}>
+                  {t("country")} <Text style={{ color: '#FF0000' }}>(*)</Text>
                 </Text>
-                <MaterialIcons name="calendar-today" size={20} color="#9ca3af" />
-              </TouchableOpacity>
-
-              <DateTimePickerModal
-                isVisible={isDatePickerVisible}
-                mode="date"
-                onConfirm={(selectedDate) => {
-                  setDatePickerVisibility(false);
-                  setDate(selectedDate.toISOString().split('T')[0]);
-                }}
-                onCancel={() => setDatePickerVisibility(false)}
-              />
-              {errors.date && <Text style={styles.errorText}>{errors.date}</Text>}
-            </View>
-
-            {/* Empresa */}
-            <View style={[styles.inputContainer, { zIndex: 2600, marginTop: 16 }]}>
-              <Text style={[styles.label, { color: isDarkMode ? '#FFFFFF' : '#0458AB' }]}>
-                {t("company_customer")} <Text style={{ color: '#FF0000' }}>(*)</Text>
-              </Text>
-              <DropDownPicker
-                open={openCompany}
-                value={company}
-                items={companyList.map((companyItem) => ({
-                  label: companyItem.name,
-                  value: companyItem.id_factory,
-                  key: companyItem.id_factory.toString()
-                }))}
-                setOpen={setOpenCompany}
-                setValue={(val) => {
-                  if (val !== null) {
-                    const numericVal = typeof val === 'string' ? parseInt(val, 10) : val;
-                    setCompany(numericVal);
-                  } else {
-                    setCompany(null);
-                  }
-                }}
-                placeholder={t('select_company')}
-                placeholderStyle={{ color: '#9ca3af' }}
-                style={[styles.dropdown, {
-                  backgroundColor: isDarkMode ? '#1E3A5F' : '#FFFFFF',
-                  borderColor: errors.company ? "red" : isDarkMode ? '#A1C6EA' : '#0458AB'
-                }]}
-                dropDownContainerStyle={{
-                  backgroundColor: isDarkMode ? '#1E3A5F' : '#FFFFFF',
-                  borderColor: isDarkMode ? '#A1C6EA' : '#0458AB'
-                }}
-                listMode="SCROLLVIEW"
-                zIndex={3000}
-                zIndexInverse={1000}
-                listItemLabelStyle={{ color: isDarkMode ? '#FFFFFF' : '#333333' }}
-                textStyle={{ color: isDarkMode ? '#FFFFFF' : '#333333' }}
-              />
-              {errors.company && <Text style={styles.errorText}>{errors.company}</Text>}
-            </View>
-
-            <Text style={[styles.sectionTitle, { color: isDarkMode ? '#A1C6EA' : '#0458AB' }]}>{t("general_data")}</Text>
-
-            {/* Campos de texto */}
-            <View style={styles.inputContainer}>
-              <Text style={[styles.label, { color: isDarkMode ? '#FFFFFF' : '#0458AB' }]}>
-                {t("key_reference")} <Text style={{ color: '#FF0000' }}>(*)</Text>
-              </Text>
-              <TextInput
-                value={keyReference}
-                onChangeText={setKeyReference}
-                placeholder={t("key_reference_placeholder")}
-                placeholderTextColor={isDarkMode ? '#AAAAAA' : '#666666'}
-                style={[styles.input, {
-                  backgroundColor: isDarkMode ? '#1E3A5F' : '#FFFFFF',
-                  color: isDarkMode ? '#FFFFFF' : '#333333',
-                  borderColor: errors.keyReference ? "red" : isDarkMode ? '#A1C6EA' : '#0458AB'
-                }]}
-              />
-              {errors.keyReference && <Text style={styles.errorText}>{errors.keyReference}</Text>}
-            </View>
-
-            <View style={styles.inputContainer}>
-              <Text style={[styles.label, { color: isDarkMode ? '#FFFFFF' : '#0458AB' }]}>
-                {t("customer_first_name")} <Text style={{ color: '#FF0000' }}>(*)</Text>
-              </Text>
-              <TextInput
-                value={customerFirstName}
-                onChangeText={setCustomerFirstName}
-                placeholder={t("customer_first_name_placeholder")}
-                placeholderTextColor={isDarkMode ? '#AAAAAA' : '#666666'}
-                style={[styles.input, {
-                  backgroundColor: isDarkMode ? '#1E3A5F' : '#FFFFFF',
-                  color: isDarkMode ? '#FFFFFF' : '#333333',
-                  borderColor: errors.customerFirstName ? "red" : isDarkMode ? '#A1C6EA' : '#0458AB'
-                }]}
-              />
-              {errors.customerFirstName && <Text style={styles.errorText}>{errors.customerFirstName}</Text>}
-            </View>
-
-            <View style={styles.inputContainer}>
-              <Text style={[styles.label, { color: isDarkMode ? '#FFFFFF' : '#0458AB' }]}>
-                {t("customer_last_name")} <Text style={{ color: '#FF0000' }}>(*)</Text>
-              </Text>
-              <TextInput
-                value={customerLastName}
-                onChangeText={setCustomerLastName}
-                placeholder={t("customer_last_name_placeholder")}
-                placeholderTextColor={isDarkMode ? '#AAAAAA' : '#666666'}
-                style={[styles.input, {
-                  backgroundColor: isDarkMode ? '#1E3A5F' : '#FFFFFF',
-                  color: isDarkMode ? '#FFFFFF' : '#333333',
-                  borderColor: errors.customerLastName ? "red" : isDarkMode ? '#A1C6EA' : '#0458AB'
-                }]}
-              />
-              {errors.customerLastName && <Text style={styles.errorText}>{errors.customerLastName}</Text>}
-            </View>
-            <View style={styles.inputContainer}>
-              <Text style={[styles.label, { color: isDarkMode ? '#FFFFFF' : '#0458AB' }]}>
-                {t("cell_phone")}
-              </Text>
-              <View style={{
-                borderWidth: 1,
-                borderRadius: 8,
-                marginBottom: 4,
-                width: '100%',
-                flexDirection: 'row',
-                alignItems: 'stretch',
-                minHeight: 50,
-                overflow: 'hidden',
-              }}>
-                <PhoneInput
-                  ref={phoneInput}
-                  value={cellPhone}
-                  defaultCode={phoneCountryCode}
-                  layout="first"
-                  flagButton={renderFlagButton}
-                  onChangeText={(text: string) => {
-                    setCellPhone(text);
-                    // Format the phone number with the current country code
-                    const formatted = formatPhoneNumber(text, phoneCountryCode);
-                    setFormattedPhone(formatted);
-                  }}
-                  onChangeFormattedText={(text: string) => {
-                    // This will be called after the country changes
-                    // We don't use this for setting the formatted phone as it includes the country code
-                    // but doesn't match our desired format with the hyphen
-                  }}
-                  onChangeCountry={(country: any) => {
-                    setPhoneCountryCode(country.cca2);
-                    setCellPhone('');
-                    // Update formatted phone when country changes
-                    // Just update the country code, don't include the phone number yet
-                    setFormattedPhone(`+${phoneInput.current?.getCallingCode()}`);
-                  }}
-                  withDarkTheme={isDarkMode}
-                  withShadow={false}
-                  autoFocus={false}
-                  containerStyle={{
+                <DropDownPicker
+                  open={openCountry}
+                  value={country}
+                  items={countriesList}
+                  setOpen={setOpenCountry}
+                  setValue={setCountry}
+                  placeholder={t("select_country")}
+                  loading={loadingCountries}
+                  searchable={true}
+                  style={[styles.dropdown, {
                     backgroundColor: isDarkMode ? '#1E3A5F' : '#FFFFFF',
-                    borderColor: isDarkMode ? '#A1C6EA' : '#0458AB',
-                    height: 50,
-                    minHeight: 50,
+                    borderColor: errors.country ? "red" : isDarkMode ? '#A1C6EA' : '#0458AB'
+                  }]}
+                  dropDownContainerStyle={{
+                    backgroundColor: isDarkMode ? '#1E3A5F' : '#FFFFFF',
+                    borderColor: isDarkMode ? '#A1C6EA' : '#0458AB'
                   }}
-                  textContainerStyle={{
-                    backgroundColor: 'transparent',
-                    height: 48,
-                    paddingVertical: 0,
-                    paddingLeft: 0,
+                  listMode="MODAL"
+                  modalTitle={t("select_country")}
+                  searchPlaceholder={t("search")}
+                  listItemLabelStyle={{
+                    color: isDarkMode ? '#FFFFFF' : '#333333'
                   }}
-                  textInputStyle={{
-                    color: isDarkMode ? '#FFFFFF' : '#333333',
-                    height: 48,
-                    paddingVertical: 12,
-                    paddingHorizontal: 12,
-                    includeFontPadding: false,
-                    textAlignVertical: 'center',
-                    backgroundColor: 'transparent',
+                  textStyle={{ color: isDarkMode ? '#FFFFFF' : '#333333' }}
+                  placeholderStyle={{ color: isDarkMode ? '#AAAAAA' : '#666666' }}
+                />
+                {errors.country && <Text style={styles.errorText}>{errors.country}</Text>}
+              </View>
+
+              {/* Ubicación: Estado/Región */}
+              <View style={[styles.inputContainer, { zIndex: 2900 }]}>
+                <Text style={[styles.label, { color: isDarkMode ? '#FFFFFF' : '#0458AB' }]}>
+                  {t("state_region")} <Text style={{ color: '#FF0000' }}>(*)</Text>
+                </Text>
+                <DropDownPicker
+                  open={openStateRegion}
+                  value={stateRegion}
+                  items={statesList}
+                  setOpen={setOpenStateRegion}
+                  setValue={setStateRegion}
+                  placeholder={t("select_state_region")}
+                  loading={loadingStates}
+                  searchable={true}
+                  disabled={!country}
+                  style={[styles.dropdown, {
+                    backgroundColor: isDarkMode ? '#1E3A5F' : '#FFFFFF',
+                    borderColor: errors.stateRegion ? "red" : isDarkMode ? '#A1C6EA' : '#0458AB'
+                  }]}
+                  dropDownContainerStyle={{
+                    backgroundColor: isDarkMode ? '#1E3A5F' : '#FFFFFF',
+                    borderColor: isDarkMode ? '#A1C6EA' : '#0458AB'
                   }}
-                  codeTextStyle={{
-                    color: isDarkMode ? '#FFFFFF' : '#333333',
-                    height: 48,
-                    paddingVertical: 0,
-                    textAlignVertical: 'center',
-                    lineHeight: 20,
-                    backgroundColor: 'transparent',
+                  listMode="MODAL"
+                  modalTitle={t("select_state_region")}
+                  searchPlaceholder={t("search")}
+                  listItemLabelStyle={{
+                    color: isDarkMode ? '#FFFFFF' : '#333333'
                   }}
-                  flagButtonStyle={{
-                    justifyContent: 'center',
-                    alignItems: 'center',
-                    flexDirection: 'row',
-                    paddingHorizontal: 12,
-                    paddingVertical: 8,
-                    minHeight: 48,
-                    borderRightWidth: 1,
-                    borderRightColor: '#e0e0e0',
-                    width: 90,
+                  textStyle={{ color: isDarkMode ? '#FFFFFF' : '#333333' }}
+                  placeholderStyle={{ color: isDarkMode ? '#AAAAAA' : '#666666' }}
+                />
+                {errors.stateRegion && <Text style={styles.errorText}>{errors.stateRegion}</Text>}
+              </View>
+
+              {/* Ubicación: Ciudad */}
+              <View style={[styles.inputContainer, { zIndex: 2800 }]}>
+                <Text style={[styles.label, { color: isDarkMode ? '#FFFFFF' : '#0458AB' }]}>
+                  {t("city")}
+                </Text>
+                <DropDownPicker
+                  open={openCity}
+                  value={city}
+                  items={citiesList}
+                  setOpen={setOpenCity}
+                  setValue={setCity}
+                  placeholder={t("select_city")}
+                  loading={loadingCities}
+                  searchable={true}
+                  disabled={!stateRegion}
+                  style={[styles.dropdown, {
+                    backgroundColor: isDarkMode ? '#1E3A5F' : '#FFFFFF',
+                    borderColor: isDarkMode ? '#A1C6EA' : '#0458AB'
+                  }]}
+                  dropDownContainerStyle={{
+                    backgroundColor: isDarkMode ? '#1E3A5F' : '#FFFFFF',
+                    borderColor: isDarkMode ? '#A1C6EA' : '#0458AB'
                   }}
-                  countryPickerButtonStyle={{
-                    backgroundColor: 'transparent',
-                    flexDirection: 'row',
-                    alignItems: 'center',
-                    height: 48,
-                    paddingHorizontal: 4,
+                  listMode="MODAL"
+                  modalTitle={t("select_city")}
+                  searchPlaceholder={t("search")}
+                  listItemLabelStyle={{
+                    color: isDarkMode ? '#FFFFFF' : '#333333'
                   }}
-                  renderDropdownImage={
-                    <View style={{
-                      marginLeft: 4,
-                      justifyContent: 'center',
-                      alignItems: 'center',
-                      width: 20,
-                      height: 20,
-                    }}>
-                      <Text style={{
-                        color: isDarkMode ? '#FFFFFF' : '#333333',
-                        fontSize: 12
-                      }}>▼</Text>
-                    </View>
-                  }
+                  textStyle={{ color: isDarkMode ? '#FFFFFF' : '#333333' }}
+                  placeholderStyle={{ color: isDarkMode ? '#AAAAAA' : '#666666' }}
                 />
               </View>
-            </View>
 
-            <View style={styles.inputContainer}>
-              <Text style={[styles.label, { color: isDarkMode ? '#FFFFFF' : '#0458AB' }]}>
-                {t("address")}
-              </Text>
-              <TextInput
-                value={address}
-                onChangeText={setAddress}
-                placeholder={t("address_placeholder")}
-                placeholderTextColor={isDarkMode ? '#AAAAAA' : '#666666'}
-                style={[styles.input, {
-                  backgroundColor: isDarkMode ? '#1E3A5F' : '#FFFFFF',
-                  color: isDarkMode ? '#FFFFFF' : '#333333',
-                  borderColor: isDarkMode ? '#A1C6EA' : '#0458AB'
-                }]}
-              />
-            </View>
-
-            <View style={styles.inputContainer}>
-              <Text style={[styles.label, { color: isDarkMode ? '#FFFFFF' : '#0458AB' }]}>
-                {t("email")}
-              </Text>
-              <TextInput
-                value={email}
-                onChangeText={setEmail}
-                placeholder={t("email_placeholder")}
-                placeholderTextColor={isDarkMode ? '#AAAAAA' : '#666666'}
-                keyboardType="email-address"
-                style={[styles.input, {
-                  backgroundColor: isDarkMode ? '#1E3A5F' : '#FFFFFF',
-                  color: isDarkMode ? '#FFFFFF' : '#333333',
-                  borderColor: isDarkMode ? '#A1C6EA' : '#0458AB'
-                }]}
-              />
-            </View>
-
-            <View style={styles.inputContainer}>
-              <Text style={[styles.label, { color: isDarkMode ? '#FFFFFF' : '#0458AB' }]}>
-                {t("weight")} (kg) <Text style={{ color: '#FF0000' }}>(*)</Text>
-              </Text>
-              <TextInput
-                value={weight}
-                onChangeText={setWeight}
-                placeholder="0.0"
-                placeholderTextColor={isDarkMode ? '#AAAAAA' : '#666666'}
-                keyboardType="numeric"
-                style={[styles.input, {
-                  backgroundColor: isDarkMode ? '#1E3A5F' : '#FFFFFF',
-                  color: isDarkMode ? '#FFFFFF' : '#333333',
-                  borderColor: errors.weight ? "red" : isDarkMode ? '#A1C6EA' : '#0458AB'
-                }]}
-              />
-              {errors.weight && <Text style={styles.errorText}>{errors.weight}</Text>}
-            </View>
-
-            <View style={[styles.inputContainer, { zIndex: 2500 }]}>
-              <Text style={[styles.label, { color: isDarkMode ? '#FFFFFF' : '#0458AB' }]}>
-                {t("job")} <Text style={{ color: '#FF0000' }}>(*)</Text>
-              </Text>
-              <DropDownPicker
-                open={jobDropdownOpen}
-                value={jobId}
-                items={jobList.map(jobItem => ({
-                  label: jobItem.name,
-                  value: jobItem.id,
-                  key: jobItem.id.toString()
-                }))}
-                setOpen={setJobDropdownOpen}
-                setValue={setJobId}
-                placeholder={t("job_placeholder")}
-                style={[styles.dropdown, {
-                  backgroundColor: isDarkMode ? '#1E3A5F' : '#FFFFFF',
-                  borderColor: errors.job ? "red" : isDarkMode ? '#A1C6EA' : '#0458AB'
-                }]}
-                dropDownContainerStyle={{
-                  backgroundColor: isDarkMode ? '#1E3A5F' : '#FFFFFF',
-                  borderColor: isDarkMode ? '#A1C6EA' : '#0458AB'
-                }}
-                listMode="SCROLLVIEW"
-                textStyle={{ color: isDarkMode ? '#FFFFFF' : '#333333' }}
-                placeholderStyle={{ color: isDarkMode ? '#AAAAAA' : '#666666' }}
-              />
-              {errors.job && <Text style={styles.errorText}>{errors.job}</Text>}
-            </View>
-
-            <View style={{ zIndex: 2400, marginTop: 16 }}>
-              <Text style={[styles.label, { color: isDarkMode ? '#FFFFFF' : '#0458AB' }]}>
-                {t("dispatch_ticket")} <Text style={{ color: '#FF0000' }}>(*)</Text>
-              </Text>
-              <CrossPlatformImageUpload
-                label={t("upload_dispatch_ticket")}
-                image={dispatchTicket}
-                onImageSelected={(image) => handleChange("dispatch_ticket", image)}
-                error={errors.dispatchTicket}
-                required={true}
-                aspect={[16, 9]}
-                allowsEditing={true}
-                maxWidth={1024}
-                maxHeight={768}
-                quality={0.9}
-              />
-              {hasExistingDispatchTicket && dispatchTicket?.uri === orderData.dispatch_ticket && (
-                <Text style={{ color: isDarkMode ? '#A1C6EA' : '#0458AB', marginTop: 5 }}>
-                  {t("using_existing_dispatch_ticket")}
+              {/* Fecha */}
+              <View style={[styles.inputContainer, { zIndex: 2700, marginTop: 16 }]}>
+                <Text style={[styles.label, { color: isDarkMode ? '#FFFFFF' : '#0458AB' }]}>
+                  {t("date")} <Text style={{ color: '#FF0000' }}>(*)</Text>
                 </Text>
-              )}
-            </View>
+                <TouchableOpacity
+                  onPress={() => setDatePickerVisibility(true)}
+                  style={[styles.dateButton, {
+                    backgroundColor: isDarkMode ? '#1E3A5F' : '#FFFFFF',
+                    borderColor: errors.date ? "red" : isDarkMode ? '#A1C6EA' : '#0458AB'
+                  }]}
+                >
+                  <Text style={{ color: date ? (isDarkMode ? "#ffffff" : "#000") : "#9ca3af" }}>
+                    {date ? date : t('select_date')}
+                  </Text>
+                  <MaterialIcons name="calendar-today" size={20} color="#9ca3af" />
+                </TouchableOpacity>
 
-            <TouchableOpacity
-              style={[
-                styles.operatorsButton,
-                { backgroundColor: isDarkMode ? '#1F2937' : '#E0F2FE' }
-              ]}
-              onPress={() => setAddOperatorVisible(true)}
-              activeOpacity={0.7}
-            >
-              <Ionicons
-                name="people-circle-outline"
-                size={20}
-                color={isDarkMode ? '#A1C6EA' : '#0458AB'}
-                style={{ marginRight: 8 }}
-              />
-              <Text
+                <DateTimePickerModal
+                  isVisible={isDatePickerVisible}
+                  mode="date"
+                  onConfirm={(selectedDate) => {
+                    setDatePickerVisibility(false);
+                    setDate(selectedDate.toISOString().split('T')[0]);
+                  }}
+                  onCancel={() => setDatePickerVisibility(false)}
+                />
+                {errors.date && <Text style={styles.errorText}>{errors.date}</Text>}
+              </View>
+
+              {/* Empresa */}
+              <View style={[styles.inputContainer, { zIndex: 2600, marginTop: 16 }]}>
+                <Text style={[styles.label, { color: isDarkMode ? '#FFFFFF' : '#0458AB' }]}>
+                  {t("company_customer")} <Text style={{ color: '#FF0000' }}>(*)</Text>
+                </Text>
+                <DropDownPicker
+                  open={openCompany}
+                  value={company}
+                  items={companyList.map((companyItem) => ({
+                    label: companyItem.name,
+                    value: companyItem.id_factory,
+                    key: companyItem.id_factory.toString()
+                  }))}
+                  setOpen={setOpenCompany}
+                  setValue={(val) => {
+                    if (val !== null) {
+                      const numericVal = typeof val === 'string' ? parseInt(val, 10) : val;
+                      setCompany(numericVal);
+                    } else {
+                      setCompany(null);
+                    }
+                  }}
+                  placeholder={t('select_company')}
+                  placeholderStyle={{ color: '#9ca3af' }}
+                  style={[styles.dropdown, {
+                    backgroundColor: isDarkMode ? '#1E3A5F' : '#FFFFFF',
+                    borderColor: errors.company ? "red" : isDarkMode ? '#A1C6EA' : '#0458AB'
+                  }]}
+                  dropDownContainerStyle={{
+                    backgroundColor: isDarkMode ? '#1E3A5F' : '#FFFFFF',
+                    borderColor: isDarkMode ? '#A1C6EA' : '#0458AB'
+                  }}
+                  listMode="SCROLLVIEW"
+                  zIndex={3000}
+                  zIndexInverse={1000}
+                  listItemLabelStyle={{ color: isDarkMode ? '#FFFFFF' : '#333333' }}
+                  textStyle={{ color: isDarkMode ? '#FFFFFF' : '#333333' }}
+                />
+                {errors.company && <Text style={styles.errorText}>{errors.company}</Text>}
+              </View>
+
+              <Text style={[styles.sectionTitle, { color: isDarkMode ? '#A1C6EA' : '#0458AB' }]}>{t("general_data")}</Text>
+
+              {/* Campos de texto */}
+              <View style={styles.inputContainer}>
+                <Text style={[styles.label, { color: isDarkMode ? '#FFFFFF' : '#0458AB' }]}>
+                  {t("key_reference")} <Text style={{ color: '#FF0000' }}>(*)</Text>
+                </Text>
+                <TextInput
+                  value={keyReference}
+                  onChangeText={setKeyReference}
+                  placeholder={t("key_reference_placeholder")}
+                  placeholderTextColor={isDarkMode ? '#AAAAAA' : '#666666'}
+                  style={[styles.input, {
+                    backgroundColor: isDarkMode ? '#1E3A5F' : '#FFFFFF',
+                    color: isDarkMode ? '#FFFFFF' : '#333333',
+                    borderColor: errors.keyReference ? "red" : isDarkMode ? '#A1C6EA' : '#0458AB'
+                  }]}
+                />
+                {errors.keyReference && <Text style={styles.errorText}>{errors.keyReference}</Text>}
+              </View>
+
+              <View style={styles.inputContainer}>
+                <Text style={[styles.label, { color: isDarkMode ? '#FFFFFF' : '#0458AB' }]}>
+                  {t("customer_first_name")} <Text style={{ color: '#FF0000' }}>(*)</Text>
+                </Text>
+                <TextInput
+                  value={customerFirstName}
+                  onChangeText={setCustomerFirstName}
+                  placeholder={t("customer_first_name_placeholder")}
+                  placeholderTextColor={isDarkMode ? '#AAAAAA' : '#666666'}
+                  style={[styles.input, {
+                    backgroundColor: isDarkMode ? '#1E3A5F' : '#FFFFFF',
+                    color: isDarkMode ? '#FFFFFF' : '#333333',
+                    borderColor: errors.customerFirstName ? "red" : isDarkMode ? '#A1C6EA' : '#0458AB'
+                  }]}
+                />
+                {errors.customerFirstName && <Text style={styles.errorText}>{errors.customerFirstName}</Text>}
+              </View>
+
+              <View style={styles.inputContainer}>
+                <Text style={[styles.label, { color: isDarkMode ? '#FFFFFF' : '#0458AB' }]}>
+                  {t("customer_last_name")} <Text style={{ color: '#FF0000' }}>(*)</Text>
+                </Text>
+                <TextInput
+                  value={customerLastName}
+                  onChangeText={setCustomerLastName}
+                  placeholder={t("customer_last_name_placeholder")}
+                  placeholderTextColor={isDarkMode ? '#AAAAAA' : '#666666'}
+                  style={[styles.input, {
+                    backgroundColor: isDarkMode ? '#1E3A5F' : '#FFFFFF',
+                    color: isDarkMode ? '#FFFFFF' : '#333333',
+                    borderColor: errors.customerLastName ? "red" : isDarkMode ? '#A1C6EA' : '#0458AB'
+                  }]}
+                />
+                {errors.customerLastName && <Text style={styles.errorText}>{errors.customerLastName}</Text>}
+              </View>
+              <View style={styles.inputContainer}>
+                <Text style={[styles.label, { color: isDarkMode ? '#FFFFFF' : '#0458AB' }]}>
+                  {t("cell_phone")}
+                </Text>
+                <View style={{
+                  borderWidth: 1,
+                  borderRadius: 8,
+                  marginBottom: 4,
+                  width: '100%',
+                  flexDirection: 'row',
+                  alignItems: 'stretch',
+                  minHeight: 50,
+                  overflow: 'hidden',
+                }}>
+                  <PhoneInput
+                    ref={phoneInput}
+                    value={cellPhone}
+                    defaultCode={phoneCountryCode}
+                    layout="first"
+                    flagButton={renderFlagButton}
+                    onChangeText={(text: string) => {
+                      setCellPhone(text);
+                      // Format the phone number with the current country code
+                      const formatted = formatPhoneNumber(text, phoneCountryCode);
+                      setFormattedPhone(formatted);
+                    }}
+                    onChangeFormattedText={(text: string) => {
+                      // This will be called after the country changes
+                      // We don't use this for setting the formatted phone as it includes the country code
+                      // but doesn't match our desired format with the hyphen
+                    }}
+                    onChangeCountry={(country: any) => {
+                      setPhoneCountryCode(country.cca2);
+                      setCellPhone('');
+                      // Update formatted phone when country changes
+                      // Just update the country code, don't include the phone number yet
+                      setFormattedPhone(`+${phoneInput.current?.getCallingCode()}`);
+                    }}
+                    withDarkTheme={isDarkMode}
+                    withShadow={false}
+                    autoFocus={false}
+                    containerStyle={{
+                      backgroundColor: isDarkMode ? '#1E3A5F' : '#FFFFFF',
+                      borderColor: isDarkMode ? '#A1C6EA' : '#0458AB',
+                      height: 50,
+                      minHeight: 50,
+                    }}
+                    textContainerStyle={{
+                      backgroundColor: 'transparent',
+                      height: 48,
+                      paddingVertical: 0,
+                      paddingLeft: 0,
+                    }}
+                    textInputStyle={{
+                      color: isDarkMode ? '#FFFFFF' : '#333333',
+                      height: 48,
+                      paddingVertical: 12,
+                      paddingHorizontal: 12,
+                      includeFontPadding: false,
+                      textAlignVertical: 'center',
+                      backgroundColor: 'transparent',
+                    }}
+                    codeTextStyle={{
+                      color: isDarkMode ? '#FFFFFF' : '#333333',
+                      height: 48,
+                      paddingVertical: 0,
+                      textAlignVertical: 'center',
+                      lineHeight: 20,
+                      backgroundColor: 'transparent',
+                    }}
+                    flagButtonStyle={{
+                      justifyContent: 'center',
+                      alignItems: 'center',
+                      flexDirection: 'row',
+                      paddingHorizontal: 12,
+                      paddingVertical: 8,
+                      minHeight: 48,
+                      borderRightWidth: 1,
+                      borderRightColor: '#e0e0e0',
+                      width: 90,
+                    }}
+                    countryPickerButtonStyle={{
+                      backgroundColor: 'transparent',
+                      flexDirection: 'row',
+                      alignItems: 'center',
+                      height: 48,
+                      paddingHorizontal: 4,
+                    }}
+                    renderDropdownImage={
+                      <View style={{
+                        marginLeft: 4,
+                        justifyContent: 'center',
+                        alignItems: 'center',
+                        width: 20,
+                        height: 20,
+                      }}>
+                        <Text style={{
+                          color: isDarkMode ? '#FFFFFF' : '#333333',
+                          fontSize: 12
+                        }}>▼</Text>
+                      </View>
+                    }
+                  />
+                </View>
+              </View>
+
+              <View style={styles.inputContainer}>
+                <Text style={[styles.label, { color: isDarkMode ? '#FFFFFF' : '#0458AB' }]}>
+                  {t("address")}
+                </Text>
+                <TextInput
+                  value={address}
+                  onChangeText={setAddress}
+                  placeholder={t("address_placeholder")}
+                  placeholderTextColor={isDarkMode ? '#AAAAAA' : '#666666'}
+                  style={[styles.input, {
+                    backgroundColor: isDarkMode ? '#1E3A5F' : '#FFFFFF',
+                    color: isDarkMode ? '#FFFFFF' : '#333333',
+                    borderColor: isDarkMode ? '#A1C6EA' : '#0458AB'
+                  }]}
+                />
+              </View>
+
+              <View style={styles.inputContainer}>
+                <Text style={[styles.label, { color: isDarkMode ? '#FFFFFF' : '#0458AB' }]}>
+                  {t("email")}
+                </Text>
+                <TextInput
+                  value={email}
+                  onChangeText={setEmail}
+                  placeholder={t("email_placeholder")}
+                  placeholderTextColor={isDarkMode ? '#AAAAAA' : '#666666'}
+                  keyboardType="email-address"
+                  style={[styles.input, {
+                    backgroundColor: isDarkMode ? '#1E3A5F' : '#FFFFFF',
+                    color: isDarkMode ? '#FFFFFF' : '#333333',
+                    borderColor: isDarkMode ? '#A1C6EA' : '#0458AB'
+                  }]}
+                />
+              </View>
+
+              <View style={styles.inputContainer}>
+                <Text style={[styles.label, { color: isDarkMode ? '#FFFFFF' : '#0458AB' }]}>
+                  {t("weight")} (kg) <Text style={{ color: '#FF0000' }}>(*)</Text>
+                </Text>
+                <TextInput
+                  value={weight}
+                  onChangeText={setWeight}
+                  placeholder="0.0"
+                  placeholderTextColor={isDarkMode ? '#AAAAAA' : '#666666'}
+                  keyboardType="numeric"
+                  style={[styles.input, {
+                    backgroundColor: isDarkMode ? '#1E3A5F' : '#FFFFFF',
+                    color: isDarkMode ? '#FFFFFF' : '#333333',
+                    borderColor: errors.weight ? "red" : isDarkMode ? '#A1C6EA' : '#0458AB'
+                  }]}
+                />
+                {errors.weight && <Text style={styles.errorText}>{errors.weight}</Text>}
+              </View>
+
+              <View style={[styles.inputContainer, { zIndex: 2500 }]}>
+                <Text style={[styles.label, { color: isDarkMode ? '#FFFFFF' : '#0458AB' }]}>
+                  {t("job")} <Text style={{ color: '#FF0000' }}>(*)</Text>
+                </Text>
+                <DropDownPicker
+                  open={jobDropdownOpen}
+                  value={jobId}
+                  items={jobList.map(jobItem => ({
+                    label: jobItem.name,
+                    value: jobItem.id,
+                    key: jobItem.id.toString()
+                  }))}
+                  setOpen={setJobDropdownOpen}
+                  setValue={setJobId}
+                  placeholder={t("job_placeholder")}
+                  style={[styles.dropdown, {
+                    backgroundColor: isDarkMode ? '#1E3A5F' : '#FFFFFF',
+                    borderColor: errors.job ? "red" : isDarkMode ? '#A1C6EA' : '#0458AB'
+                  }]}
+                  dropDownContainerStyle={{
+                    backgroundColor: isDarkMode ? '#1E3A5F' : '#FFFFFF',
+                    borderColor: isDarkMode ? '#A1C6EA' : '#0458AB'
+                  }}
+                  listMode="SCROLLVIEW"
+                  textStyle={{ color: isDarkMode ? '#FFFFFF' : '#333333' }}
+                  placeholderStyle={{ color: isDarkMode ? '#AAAAAA' : '#666666' }}
+                />
+                {errors.job && <Text style={styles.errorText}>{errors.job}</Text>}
+              </View>
+
+              <View style={{ zIndex: 2400, marginTop: 16 }}>
+                <Text style={[styles.label, { color: isDarkMode ? '#FFFFFF' : '#0458AB' }]}>
+                  {t("dispatch_ticket")} <Text style={{ color: '#FF0000' }}>(*)</Text>
+                </Text>
+                <CrossPlatformImageUpload
+                  label={t("upload_dispatch_ticket")}
+                  image={dispatchTicket}
+                  onImageSelected={(image) => handleChange("dispatch_ticket", image)}
+                  error={errors.dispatchTicket}
+                  required={true}
+                  aspect={[16, 9]}
+                  allowsEditing={true}
+                  maxWidth={1024}
+                  maxHeight={768}
+                  quality={0.9}
+                />
+                {hasExistingDispatchTicket && dispatchTicket?.uri === orderData.dispatch_ticket && (
+                  <Text style={{ color: isDarkMode ? '#A1C6EA' : '#0458AB', marginTop: 5 }}>
+                    {t("using_existing_dispatch_ticket")}
+                  </Text>
+                )}
+              </View>
+
+              <TouchableOpacity
                 style={[
-                  styles.operatorsButtonText,
-                  { color: isDarkMode ? '#A1C6EA' : '#0458AB' }
+                  styles.operatorsButton,
+                  { backgroundColor: isDarkMode ? '#1F2937' : '#E0F2FE' }
                 ]}
+                onPress={() => setAddOperatorVisible(true)}
+                activeOpacity={0.7}
               >
-                {t("edit_operators")}
-              </Text>
-            </TouchableOpacity>
-
-            <OperatorModal
-              visible={addOperatorVisible}
-              onClose={() => setAddOperatorVisible(false)}
-              orderKey={orderData.key}
-              onSave={handleSaveOperators}
-            />
-
-            <View style={styles.buttonContainer}>
-              <TouchableOpacity
-                style={[styles.cancelButton, { backgroundColor: isDarkMode ? '#545257' : '#777' }]}
-                onPress={handleClose}
-              >
-                <Text style={styles.cancelButtonText}>{t("cancel")}</Text>
-              </TouchableOpacity>
-              <TouchableOpacity
-                style={[styles.saveButton, { backgroundColor: isDarkMode ? '#A1C6EA' : '#0458AB' }]}
-                onPress={handleUpdate}
-                disabled={isLoading}
-              >
-                <Text style={[styles.saveButtonText, { color: isDarkMode ? '#0458AB' : '#FFFFFF' }]}>
-                  {isLoading ? t("saving") : t("save")}
+                <Ionicons
+                  name="people-circle-outline"
+                  size={20}
+                  color={isDarkMode ? '#A1C6EA' : '#0458AB'}
+                  style={{ marginRight: 8 }}
+                />
+                <Text
+                  style={[
+                    styles.operatorsButtonText,
+                    { color: isDarkMode ? '#A1C6EA' : '#0458AB' }
+                  ]}
+                >
+                  {t("edit_operators")}
                 </Text>
               </TouchableOpacity>
-            </View>
-          </ThemedView>
-        </ScrollView>
-      </KeyboardAwareView>
-      <Toast />
-    </View>
+
+              <OperatorModal
+                visible={addOperatorVisible}
+                onClose={() => setAddOperatorVisible(false)}
+                orderKey={orderData.key}
+                onSave={handleSaveOperators}
+              />
+
+              <View style={styles.buttonContainer}>
+                <TouchableOpacity
+                  style={[styles.cancelButton, { backgroundColor: isDarkMode ? '#545257' : '#777' }]}
+                  onPress={handleClose}
+                >
+                  <Text style={styles.cancelButtonText}>{t("cancel")}</Text>
+                </TouchableOpacity>
+                <TouchableOpacity
+                  style={[styles.saveButton, { backgroundColor: isDarkMode ? '#A1C6EA' : '#0458AB' }]}
+                  onPress={handleUpdate}
+                  disabled={isLoading}
+                >
+                  <Text style={[styles.saveButtonText, { color: isDarkMode ? '#0458AB' : '#FFFFFF' }]}>
+                    {isLoading ? t("saving") : t("save")}
+                  </Text>
+                </TouchableOpacity>
+              </View>
+            </ThemedView>
+          </ScrollView>
+        </KeyboardAwareView>
+        <Toast />
+      </View>
+    </Modal>
   );
 }
 

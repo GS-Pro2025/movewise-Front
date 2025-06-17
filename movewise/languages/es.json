@@ -607,5 +607,6 @@
   "work_info":"Información del trabajo",
   "employee_code":"Código de empleado",
   "shift_size":"Tamaño de turno",
-  "shift_name":"Nombre de turno"
+  "shift_name":"Nombre de turno",
+  "work_history":"Historial de Trabajo"
 }

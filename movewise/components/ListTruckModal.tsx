@@ -32,11 +32,13 @@ const ListTruckModal: React.FC<ListTruckModalProps> = ({ visible, onClose }) => 
   const isDarkMode = colorScheme === "dark";
 
   const loadTrucks = useCallback(async () => {
+    console.log(`loading trucks`);
     setLoading(true);
     setRefreshing(true);
     try {
       const response = await ListTruck();
       setTrucks(response.data || []);
+      console.log(`trucks loaded: ${JSON.stringify(trucks)}`);
     } catch (error) {
       console.error(t("error_loading_trucks"), error);
       Alert.alert(t("error"), t("could_not_load_trucks"));
@@ -45,7 +47,7 @@ const ListTruckModal: React.FC<ListTruckModalProps> = ({ visible, onClose }) => 
       setRefreshing(false);
     }
   }, [t]);
-
+// console.log(`truck visible: ${visible}`);
   useEffect(() => {
     if (visible) {
       loadTrucks();
@@ -154,7 +156,7 @@ const ListTruckModal: React.FC<ListTruckModalProps> = ({ visible, onClose }) => 
   };
 
   return (
-    <Modal animationType="slide" transparent={false} visible={visible} onRequestClose={onClose}>
+    <>
       <SafeAreaView style={{ flex: 1 }}>
         <View
           style={[
@@ -163,14 +165,14 @@ const ListTruckModal: React.FC<ListTruckModalProps> = ({ visible, onClose }) => 
           ]}
         >
           {/* Back Button */}
-          <TouchableOpacity
+          {/* <TouchableOpacity
             onPress={() => router.back()}
             style={[styles.backButton, { borderColor: isDarkMode ? '#FFF' : '#0458AB' }]}
           >
             <Text style={[styles.backIcon, { color: isDarkMode ? '#FFF' : '#0458AB' }]}>
               ←
             </Text>
-          </TouchableOpacity>
+          </TouchableOpacity> */}
 
           {/* Title centrado */}
           <Text
@@ -228,21 +230,40 @@ const ListTruckModal: React.FC<ListTruckModalProps> = ({ visible, onClose }) => 
         ) : (
           <FlatList
             data={filteredTrucks}
-            keyExtractor={(item, index) => (item.id_truck ? item.id_truck.toString() : index.toString())}
             renderItem={renderItem}
-            contentContainerStyle={styles.listContainer}
+            keyExtractor={(item) => item.id_truck}
             refreshControl={
               <RefreshControl
                 refreshing={refreshing}
                 onRefresh={onRefresh}
-                colors={["#000000"]}
+                colors={['#0458AB']}
+                tintColor="#0458AB"
               />
             }
+            contentContainerStyle={[
+              styles.listContent,
+              filteredTrucks.length === 0 && styles.emptyListContent
+            ]}
             ListEmptyComponent={
               <View style={styles.emptyContainer}>
-                <Text style={[styles.emptyText, { color: isDarkMode ? '#0458AB' : '#666666' }]}>
-                  {t("no_trucks_available")}
+                <Ionicons 
+                  name="car-outline" 
+                  size={60} 
+                  color={isDarkMode ? '#666' : '#999'} 
+                  style={{ marginBottom: 10 }}
+                />
+                <Text style={[styles.emptyText, { color: isDarkMode ? '#CCCCCC' : '#666666' }]}>
+                  {t('no_trucks_available')}
                 </Text>
+                <TouchableOpacity
+                  style={[styles.addButton, { marginTop: 20 }]}
+                  onPress={() => setAddTruckVisible(true)}
+                >
+                  <Ionicons name="add" size={24} color="white" />
+                  <Text style={styles.addButtonText}>
+                    {t('add_truck')}
+                  </Text>
+                </TouchableOpacity>
               </View>
             }
           />
@@ -260,7 +281,7 @@ const ListTruckModal: React.FC<ListTruckModalProps> = ({ visible, onClose }) => 
         onSuccess={loadTrucks}
       />
       <Toast />
-    </Modal>
+    </>
   );
 };
 
@@ -270,8 +291,8 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingBottom: 20,
-    paddingTop: 30,
+    paddingBottom: 10,
+    paddingTop: 10,
     borderBottomWidth: 2,
     width: '100%',
     paddingHorizontal: 20,
@@ -435,6 +456,20 @@ const styles = StyleSheet.create({
   truckModel: {
     fontSize: 14,
     marginTop: 4,
+  },
+  listContent: {
+    flexGrow: 1,
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+  },
+  emptyListContent: {
+    flexGrow: 1,
+    justifyContent: 'center',
+  },
+  addButtonText: {
+    color: 'white',
+    marginLeft: 8,
+    fontWeight: '600',
   },
 });
 export default ListTruckModal;
