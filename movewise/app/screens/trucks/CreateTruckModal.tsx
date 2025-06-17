@@ -1,9 +1,9 @@
 import React, { useState } from "react";
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, Modal, ScrollView } from "react-native";
+import { View, Text, TextInput, TouchableOpacity, StyleSheet, Modal, ScrollView, useColorScheme} from "react-native";
 import { useTranslation } from "react-i18next";
 import { CreateTruck } from "@/hooks/api/TruckClient";
 import Toast from "react-native-toast-message";
-
+import colors from "@/app/Colors";
 interface CreateTruckModalProps {
   visible: boolean;
   onClose: () => void;
@@ -12,6 +12,8 @@ interface CreateTruckModalProps {
 
 const CreateTruckModal: React.FC<CreateTruckModalProps> = ({ visible, onClose, onSuccess }) => {
   const { t } = useTranslation();
+  const theme = useColorScheme();
+  const isDarkMode = theme === 'dark';
   const [formData, setFormData] = useState({
     name: "",
     number_truck: "",
@@ -38,43 +40,47 @@ const CreateTruckModal: React.FC<CreateTruckModalProps> = ({ visible, onClose, o
 
   return (
     <Modal visible={visible} transparent={true}>
-      <View style={styles.container}>
-        <View style={styles.modalContent}>
-          <Text style={styles.title}>{t('create_truck')}</Text>
+      <View style={[styles.container, { backgroundColor: isDarkMode ? colors.backgroundDark : colors.lightBackground }]}>
+        <View style={[styles.modalContent, { backgroundColor: isDarkMode ? colors.backgroundDark : colors.lightBackground }]}>
+          <Text style={[styles.title, { color: isDarkMode ? colors.textDark : colors.lightText }]}>{t('create_truck')}</Text>
           <ScrollView>
             <View style={styles.formContainer}>
               <TextInput
-                style={styles.input}
+                style={[styles.input, { borderColor: isDarkMode ? colors.primary : colors.primary, color: isDarkMode ? colors.textDark : colors.lightText }]}
                 placeholder={t('name')}
+                placeholderTextColor={isDarkMode ? colors.textDark : colors.lightText}
                 value={formData.name}
                 onChangeText={(text) => setFormData({ ...formData, name: text })}
               />
               <TextInput
-                style={styles.input}
+                style={[styles.input, { borderColor: isDarkMode ? colors.primary : colors.primary, color: isDarkMode ? colors.textDark : colors.lightText }]}
                 placeholder={t('truck_number')}
+                placeholderTextColor={isDarkMode ? colors.textDark : colors.lightText}
                 value={formData.number_truck}
                 onChangeText={(text) => setFormData({ ...formData, number_truck: text })}
               />
               <TextInput
-                style={styles.input}
+                style={[styles.input, { borderColor: isDarkMode ? colors.primary : colors.primary, color: isDarkMode ? colors.textDark : colors.lightText }]}
                 placeholder={t('category')}
+                placeholderTextColor={isDarkMode ? colors.textDark : colors.lightText}
                 value={formData.category}
                 onChangeText={(text) => setFormData({ ...formData, category: text })}
               />
               <TextInput
-                style={styles.input}
+                style={[styles.input, { borderColor: isDarkMode ? colors.primary : colors.primary, color: isDarkMode ? colors.textDark : colors.lightText }]}
                 placeholder={t('type')}
+                placeholderTextColor={isDarkMode ? colors.textDark : colors.lightText}
                 value={formData.type}
                 onChangeText={(text) => setFormData({ ...formData, type: text })}
               />
             </View>
           </ScrollView>
           <View style={styles.buttonContainer}>
-            <TouchableOpacity style={styles.cancelButton} onPress={onClose}>
-              <Text style={styles.cancelButtonText}>{t('cancel')}</Text>
+            <TouchableOpacity style={[styles.cancelButton, { backgroundColor: colors.swipeDelete }]} onPress={onClose}>
+              <Text style={[styles.cancelButtonText, { color: colors.lightBackground }]}>{t('cancel')}</Text>
             </TouchableOpacity>
-            <TouchableOpacity style={styles.submitButton} onPress={handleSubmit}>
-              <Text style={styles.submitButtonText}>{t('create')}</Text>
+            <TouchableOpacity style={[styles.submitButton, { backgroundColor: colors.secondary }]} onPress={handleSubmit}>
+              <Text style={[styles.submitButtonText, { color: colors.lightBackground }]}>{t('create')}</Text>
             </TouchableOpacity>
           </View>
         </View>
@@ -86,18 +92,17 @@ const CreateTruckModal: React.FC<CreateTruckModalProps> = ({ visible, onClose, o
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
     justifyContent: 'center',
     alignItems: 'center',
   },
   modalContent: {
-    backgroundColor: 'white',
     padding: 20,
     borderRadius: 10,
     width: '90%',
   },
   title: {
     fontSize: 20,
+    width: '100%',
     fontWeight: 'bold',
     marginBottom: 20,
     textAlign: 'center',
@@ -107,7 +112,6 @@ const styles = StyleSheet.create({
   },
   input: {
     borderWidth: 1,
-    borderColor: '#ddd',
     borderRadius: 5,
     padding: 10,
     marginBottom: 15,
@@ -118,26 +122,22 @@ const styles = StyleSheet.create({
     marginTop: 20,
   },
   cancelButton: {
-    backgroundColor: '#dc3545',
     padding: 10,
     borderRadius: 5,
     flex: 1,
     marginRight: 10,
   },
   submitButton: {
-    backgroundColor: '#28a745',
     padding: 10,
     borderRadius: 5,
     flex: 1,
     marginLeft: 10,
   },
   cancelButtonText: {
-    color: 'white',
     textAlign: 'center',
     fontWeight: 'bold',
   },
   submitButtonText: {
-    color: 'white',
     textAlign: 'center',
     fontWeight: 'bold',
   },

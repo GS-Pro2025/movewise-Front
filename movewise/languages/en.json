@@ -572,5 +572,7 @@
   "employee_code":"Employee Code",
   "shift_size":"Shift Size",
   "shift_name":"Shift Name",
-  "work_history":"Work History"
+  "work_history":"Work History",
+  "search_by_name":"Search by name",
+  "create":"Create"
 }

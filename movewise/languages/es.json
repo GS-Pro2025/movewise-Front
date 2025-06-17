@@ -33,7 +33,7 @@
   "add_extra_cost": "Agregar\n costo extra",
   "edit_daily": "Editar\nOrden",
   "resume_order": "Resumen\nPedido",
-  "create_truck": "Registrar\nCamión",
+  "create_truck": "Registrar Camión",
   "collaborator_registration": "Registro de\nOperador",
   "collaborator_unlink": "Desvincular\nOperador",
   "collaborator_edit": "Editar\nOperador",
@@ -608,5 +608,7 @@
   "employee_code":"Código de empleado",
   "shift_size":"Tamaño de turno",
   "shift_name":"Nombre de turno",
-  "work_history":"Historial de Trabajo"
-}
+  "work_history":"Historial de Trabajo",
+  "search_by_name":"Buscar por nombre",
+  "create":"Crear"
+} 

@@ -205,8 +205,8 @@ const Home: React.FC = () => {
           style={styles.operatorsMenuItem}
           onPress={() => handleOperatorsOption('freelance')}
         >
-          <Ionicons name="person-outline" size={20} color={isDarkMode ? colors.primary : colors.textDark} />
-          <Text style={[styles.operatorsMenuText, { color: isDarkMode ? colors.primary : colors.textDark }]}>
+          <Ionicons name="person-outline" size={20} color={isDarkMode ? colors.textDark : colors.textDark} />
+          <Text style={[styles.operatorsMenuText, { color: isDarkMode ? colors.textDark : colors.textDark }]}>
             {t("freelance")}
           </Text>
         </TouchableOpacity>
@@ -217,8 +217,8 @@ const Home: React.FC = () => {
           style={styles.operatorsMenuItem}
           onPress={() => handleOperatorsOption('operator')}
         >
-          <Ionicons name="people-outline" size={20} color={isDarkMode ? colors.primary : colors.textDark} />
-          <Text style={[styles.operatorsMenuText, { color: isDarkMode ? colors.primary : colors.textDark }]}>
+          <Ionicons name="people-outline" size={20} color={isDarkMode ? colors.textDark : colors.textDark} />
+          <Text style={[styles.operatorsMenuText, { color: isDarkMode ? colors.textDark : colors.textDark }]}>
             {t("operator")}
           </Text>
         </TouchableOpacity>

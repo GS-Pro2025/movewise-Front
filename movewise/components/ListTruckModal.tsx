@@ -13,6 +13,7 @@ import { useTranslation } from "react-i18next";
 import { router } from "expo-router";
 import UpdateTruckModal from "@/app/screens/trucks/UpdateTruckModal";
 import CreateTruckModal from "@/app/screens/trucks/CreateTruckModal";
+import colors from "@/app/Colors";
 
 interface ListTruckModalProps {
   visible: boolean;
@@ -256,7 +257,7 @@ const ListTruckModal: React.FC<ListTruckModalProps> = ({ visible, onClose }) => 
                   {t('no_trucks_available')}
                 </Text>
                 <TouchableOpacity
-                  style={[styles.addButton, { marginTop: 20 }]}
+                  style={[styles.secondAddButton, { marginTop: 20 }]}
                   onPress={() => setAddTruckVisible(true)}
                 >
                   <Ionicons name="add" size={24} color="white" />
@@ -309,6 +310,18 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
+  secondAddButton: {
+      display: 'flex',
+      flexDirection: 'row',
+      justifyContent: 'center',
+      alignItems: 'center',
+      width: 200,
+      height: 40,
+      borderRadius: 20,
+      borderColor: colors.primary,
+      borderWidth: 1,
+      backgroundColor: colors.primary,
+    },
   plus: {
     fontSize: 24,
     fontWeight: 'bold',

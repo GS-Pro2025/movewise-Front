@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { View, Text, FlatList, TouchableOpacity,useColorScheme, StyleSheet, Alert, TextInput } from 'react-native';
+import { View, Text, FlatList, TouchableOpacity, useColorScheme, StyleSheet, Alert, TextInput } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { Swipeable } from 'react-native-gesture-handler';
 import { useNavigation } from '@react-navigation/native';
@@ -110,19 +110,31 @@ const FreelanceListScreen = () => {
                         <Ionicons name="arrow-back" size={24} color={isDarkMode ? colors.darkText : colors.primary} />
                     </TouchableOpacity> */}
                     <Text style={[styles.title, { color: isDarkMode ? colors.darkText : colors.primary }]}>{t("freelancers")}</Text>
-                    <TouchableOpacity onPress={() => setShowCreateModal(true)}>
+                    <TouchableOpacity onPress={() => setShowCreateModal(true)} style={styles.addButton}>
                         <Ionicons name="add" size={28} color={isDarkMode ? colors.darkText : colors.primary} />
                     </TouchableOpacity>
                 </View>
 
-                {/* Buscador */}
-                <TextInput
-                    style={[styles.searchInput, { color: isDarkMode ? colors.darkText : colors.primary }]}
-                    placeholder={t("search_freelancers")}
-                    value={searchQuery}
-                    onChangeText={setSearchQuery}
-                    placeholderTextColor={colors.placeholderLight}
-                />
+                {/* Search Bar */}
+                <View style={[styles.searchContainer, { backgroundColor: isDarkMode ? colors.backgroundDark : colors.backgroundLight }]}>
+                    <View style={[styles.searchInputContainer, { backgroundColor: isDarkMode ? colors.third : '#f5f5f5', borderColor: isDarkMode ? colors.darkText : '#ddd' }]}>
+                        <Ionicons name="search-outline" size={20} color={isDarkMode ? colors.darkText : colors.primary} style={styles.searchIcon} />
+                        <TextInput
+                            style={[styles.searchInput, { color: isDarkMode ? colors.darkText : colors.primary }]}
+                            placeholder={t("search_freelancers")}
+                            placeholderTextColor={isDarkMode ? colors.darkText : colors.primary}
+                            value={searchQuery}
+                            onChangeText={setSearchQuery}
+                            autoCapitalize="words"
+                            autoCorrect={false}
+                        />
+                        {searchQuery.length > 0 && (
+                            <TouchableOpacity onPress={() => setSearchQuery('')} style={styles.clearButton}>
+                                <Ionicons name="close-circle" size={20} color={isDarkMode ? colors.darkText : '#666'} />
+                            </TouchableOpacity>
+                        )}
+                    </View>
+                </View>
 
                 {/* Listado */}
                 <FlatList
@@ -226,6 +238,19 @@ const FreelanceListScreen = () => {
 };
 
 const styles = StyleSheet.create({
+    addButton: {
+        backgroundColor: '#3498db',
+        borderRadius: 30,
+        width: 40,
+        height: 40,
+        justifyContent: 'center',
+        alignItems: 'center',
+        elevation: 3,
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.2,
+        shadowRadius: 2,
+    },
     swipeActions: {
         flexDirection: 'row',
         width: 160,  // Ancho para ambos botones
@@ -262,25 +287,45 @@ const styles = StyleSheet.create({
     },
     header: {
         flexDirection: 'row',
+        alignItems: 'flex-end',
         justifyContent: 'space-between',
-        alignItems: 'center',
-        paddingTop: 40, // Aumenta el alto superior
-        paddingVertical: 10,
-        marginBottom: 20,
+        paddingTop: 20,
+        paddingBottom: 10,
+        paddingHorizontal: 16,
     },
     title: {
         fontSize: 24,
         fontWeight: 'bold',
         color: colors.primary,
     },
-    searchInput: {
-        backgroundColor: '#fff',
-        borderRadius: 8,
-        padding: 12,
-        marginBottom: 16,
+    searchContainer: {
+        paddingHorizontal: 10,
+        paddingVertical: 12,
+        borderBottomWidth: 1,
+        borderBottomColor: '#eee',
+    },
+    searchInputContainer: {
+        width: '100%',
+        flexDirection: 'row',
+        alignItems: 'center',
+        backgroundColor: '#f5f5f5',
+        borderRadius: 25,
+        paddingHorizontal: 15,
+        paddingVertical: 2,
         borderWidth: 1,
-        borderColor: colors.borderLight,
-        color: colors.textLight,
+        borderColor: '#ddd',
+    },
+    searchIcon: {
+        marginRight: 10,
+    },
+    searchInput: {
+        flex: 1,
+        fontSize: 16,
+        color: '#333',
+        height: 40,
+    },
+    clearButton: {
+        padding: 5,
     },
     freelanceCard: {
         backgroundColor: '#fff',

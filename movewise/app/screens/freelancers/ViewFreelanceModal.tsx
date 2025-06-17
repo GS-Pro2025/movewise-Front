@@ -107,7 +107,7 @@ const ViewFreelanceModal: React.FC<ViewFreelanceModalProps> = ({ visible, freela
                             onPress={onClose}
                             style={[styles.closeButton, { backgroundColor: isDarkMode ? colors.backgroundDark : colors.backgroundLight }]}
                         >
-                            <Ionicons name="close" size={20} color={isDarkMode ? colors.textLight : colors.lightText} />
+                            <Ionicons name="close" size={20} color={isDarkMode ? colors.darkText : colors.lightText} />
                         </TouchableOpacity>
                     </View>
 
