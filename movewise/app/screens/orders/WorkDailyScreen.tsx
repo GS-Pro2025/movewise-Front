@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, TouchableOpacity, StyleSheet, FlatList, TextInput, Image, ActivityIndicator, Alert, useColorScheme } from 'react-native';
+import { View, Text, TouchableOpacity, StyleSheet, FlatList, TextInput, Image, ActivityIndicator, Alert, useColorScheme, Modal } from 'react-native';
 import DateTimePickerModal from 'react-native-modal-datetime-picker';
 import { format } from 'date-fns';
 import Order, { getOrders } from '@/hooks/api/GetOrders'; // Import the API function
 import Toast from 'react-native-toast-message';
 import { useRouter } from 'expo-router';
+import ExtraCostScreen from './ExtraCostScreen';
 import colors from '@/app/Colors';
 import { useTranslation } from 'react-i18next';
 import { Ionicons } from '@expo/vector-icons';
@@ -25,7 +26,8 @@ const WorkDailyScreen = () => {
   // Estados para el selector de fecha
   const [isDatePickerVisible, setDatePickerVisibility] = useState(false); // Estado para la visibilidad del selector de fecha
   const [selectedDate, setSelectedDate] = useState<Date>(new Date()); // Estado para la fecha seleccionada
-
+  const [modalVisible, setModalVisible] = useState(false);
+  const [selectedOrderKey, setSelectedOrderKey] = useState<string | null>(null);
 
   // Obtener datos de las órdenes
   const fetchOrdersData = async (page: number = 1) => {
@@ -92,12 +94,13 @@ const WorkDailyScreen = () => {
 
   const handleItemPress = (item: Order) => {
     console.log(t("pressed_item"), item);
-    router.push({
-      pathname: "./ExtraCostScreen", // Ruta de la pantalla de destino
-      params: {
-        key: item.key, // Pasar el parámetro key
-      },
-    });
+    setSelectedOrderKey(item.key);
+    setModalVisible(true);
+  };
+
+  const handleCloseModal = () => {
+    setModalVisible(false);
+    setSelectedOrderKey(null);
   };
 
   const renderItem = ({ item }: { item: Order }) => (
@@ -108,7 +111,7 @@ const WorkDailyScreen = () => {
       <TouchableOpacity
         style={[
           styles.itemContainer,
-          { backgroundColor: isDarkMode ? colors.third : colors.lightBackground },
+          { backgroundColor: isDarkMode ? colors.third : colors.lightBackground, borderRadius: 10, borderColor: isDarkMode ? colors.textDark : colors.primary, borderWidth: 1, paddingHorizontal: 10 },
         ]}
         onPress={() => handleItemPress(item)}
       >
@@ -149,6 +152,7 @@ const WorkDailyScreen = () => {
         <Text style={[styles.errorText, { color: isDarkMode ? colors.swipeDelete : colors.primary }]}>
           {error}
         </Text>
+        <Toast />
       </View>
     );
   }
@@ -156,7 +160,7 @@ const WorkDailyScreen = () => {
   return (
     <>
       {/* Header and Date Picker */}
-      <View style={[styles.header, { backgroundColor: isDarkMode ? colors.header : colors.lightBackground }]}>
+      <View style={[styles.header, { backgroundColor: isDarkMode ? colors.backgroundDark : colors.lightBackground }]}>
         <View style={styles.dateContainer}>
           <Text style={[styles.selectDateText, { color: isDarkMode ? colors.darkText : colors.primary }]}>{t("select_date")}</Text>
           <TouchableOpacity
@@ -181,7 +185,7 @@ const WorkDailyScreen = () => {
       <View
         style={[
           styles.container,
-          { backgroundColor: isDarkMode ? colors.darkBackground : colors.lightBackground },
+          { backgroundColor: isDarkMode ? colors.backgroundDark : colors.lightBackground },
         ]}
       >
         <FlatList
@@ -205,6 +209,18 @@ const WorkDailyScreen = () => {
           onCancel={() => setDatePickerVisibility(false)}
         />
         <Toast />
+        {selectedOrderKey && (
+          <Modal
+            visible={modalVisible}
+            animationType="slide"
+            onRequestClose={handleCloseModal}
+          >
+            <ExtraCostScreen
+              orderKey={selectedOrderKey}
+              onClose={handleCloseModal}
+            />
+          </Modal>
+        )}
       </View>
     </>
   );

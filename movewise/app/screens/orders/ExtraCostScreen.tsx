@@ -1,48 +1,43 @@
-import React, { useState, useEffect } from "react";
-import { View, Text, TouchableOpacity, StyleSheet, FlatList, Image, ActivityIndicator, Alert, Modal } from "react-native";
+import React, { useState, useEffect, useCallback } from "react";
+import { View,useColorScheme, Text, TouchableOpacity, StyleSheet, FlatList, Image, ActivityIndicator, Alert, Modal } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { SearchParams, useRouter } from "expo-router"; // Importa useRouter para la navegación
-import WorkCost, { ListWorkCostByOrder } from "@/hooks/api/WorkCostListByOrder";
-import { useSearchParams } from "expo-router/build/hooks";
-import { BulkCreateWorkCost } from "@/hooks/api/WorkCostBulkCreate";
 import { useTranslation } from "react-i18next";
+import WorkCost, { ListWorkCostByOrder } from "@/hooks/api/WorkCostListByOrder";
+import { BulkCreateWorkCost } from "@/hooks/api/WorkCostBulkCreate";
+import AddExtraCostForm from "./AddExtraCostForm";
+import { useRouter } from "expo-router";
+import colors from "@/app/Colors";
 
-const ExtraCostScreen = () => {
-  const { t } = useTranslation(); // Hook para traducción
+interface ExtraCostScreenProps {
+  orderKey: string;
+  onClose: () => void;
+}
+
+const ExtraCostScreen = ({ orderKey, onClose }: ExtraCostScreenProps) => {
+  const { t } = useTranslation();
+  const theme = useColorScheme();
+  const isDarkMode = theme === 'dark';
   const router = useRouter();
-  const searchParams = useSearchParams();
   const [isCancelModalVisible, setIsCancelModalVisible] = useState(false);
-  const key = searchParams.get("key");
-  const newWorkCost = searchParams.get("newWorkCost");
+  const [newWorkCost, setNewWorkCost] = useState<any>(null);
 
   const [existingWorkCosts, setExistingWorkCosts] = useState<WorkCost[]>([]);
   const [newWorkCosts, setNewWorkCosts] = useState<WorkCost[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
-
-  const handleCancel = () => {
-    if (newWorkCosts.length > 0) {
-      setIsCancelModalVisible(true);
-    } else {
-      router.back();
-    }
-  };
-
-  const confirmCancel = () => {
-    setIsCancelModalVisible(false);
-    router.back();
-  };
-
-  const cancelModal = () => {
-    setIsCancelModalVisible(false);
-  };
-
-  // Función para obtener los costos extra existentes
-  const fetchWorkCosts = async () => {
+  const [showAddForm, setShowAddForm] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  
+  const handleOpenAddForm = () => setShowAddForm(true);
+  const handleCloseAddForm = () => setShowAddForm(false);
+  
+  const fetchWorkCosts = useCallback(async () => {
+    if (!orderKey) return;
+    
     setLoading(true);
     setError(null);
     try {
-      const response = await ListWorkCostByOrder(key || "");
+      const response = await ListWorkCostByOrder(orderKey);
       setExistingWorkCosts(response);
     } catch (err) {
       console.error(t("error_fetching_costs"), err);
@@ -50,11 +45,44 @@ const ExtraCostScreen = () => {
     } finally {
       setLoading(false);
     }
+  }, [orderKey, t]);
+  
+  const handleAddExtraCost = useCallback(async (newCost: any) => {
+    setIsSubmitting(true);
+    try {
+      const response = await BulkCreateWorkCost([newCost]);
+      Alert.alert(t("success"), t("extra_cost_added"));
+      setShowAddForm(false);
+      await fetchWorkCosts();
+    } catch (err) {
+      console.error(t("error_adding_extra_cost"), err);
+      Alert.alert(t("error"), t("failed_to_add_extra_cost"));
+    } finally {
+      setIsSubmitting(false);
+    }
+  }, [fetchWorkCosts, t]);
+
+  const handleCancel = () => {
+    if (newWorkCosts.length > 0) {
+      setIsCancelModalVisible(true);
+    } else {
+      onClose();
+    }
   };
 
+  const confirmCancel = () => {
+    setIsCancelModalVisible(false);
+    onClose();
+  };
+
+  const cancelModal = () => {
+    setIsCancelModalVisible(false);
+  };
+
+  // Función para obtener los costos extra existentes
   useEffect(() => {
     fetchWorkCosts();
-  }, [key]);
+  }, [fetchWorkCosts]);
 
   useEffect(() => {
     // Si hay un nuevo WorkCost, agrégalo a la lista de nuevos costos
@@ -79,7 +107,7 @@ const ExtraCostScreen = () => {
   };
 
   const renderItem = ({ item, isNew }: { item: WorkCost; isNew: boolean }) => (
-    <View style={[styles.itemContainer, isNew && styles.newItemContainer]}>
+    <View style={[styles.itemContainer, isNew && styles.newItemContainer, { backgroundColor: isDarkMode ? colors.backgroundDark : colors.white }]}>
       <View style={styles.iconContainer}>
         <Image source={require("@/assets/images/dollar.png")} style={styles.icon} />
       </View>
@@ -106,13 +134,13 @@ const ExtraCostScreen = () => {
   }
 
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, { backgroundColor: isDarkMode ? colors.backgroundDark : colors.white }] }>
       {/* Encabezado */}
       <View style={styles.header}>
-        <Text style={styles.title}>{t("extra_costs")}</Text>
+        <Text style={[styles.title, { color: isDarkMode ? colors.textDark : colors.primary }]}>{t("extra_costs")}</Text>
         <TouchableOpacity
           style={styles.addButton}
-          onPress={() => router.push({ pathname: "./AddExtraCostForm", params: { key } })}
+          onPress={handleOpenAddForm}
         >
           <Text style={styles.addButtonText}>+</Text>
         </TouchableOpacity>
@@ -126,7 +154,7 @@ const ExtraCostScreen = () => {
         contentContainerStyle={styles.list}
       />
     {/* Botones de guardar y cancelar */}
-    <SafeAreaView edges={['bottom']} style={{ backgroundColor: "#fff" }}>
+    <SafeAreaView edges={['bottom']} style={{ backgroundColor: isDarkMode ? colors.backgroundDark : colors.white }}>
       <View style={[styles.buttonContainer, { marginBottom: 10 }]}>
         <TouchableOpacity style={styles.cancelButton} onPress={handleCancel}>
           <Text style={styles.cancelButtonText}>{t("cancel")}</Text>
@@ -153,6 +181,19 @@ const ExtraCostScreen = () => {
           </View>
         </View>
       </Modal>
+      {showAddForm && (
+<Modal
+          visible={showAddForm}
+          animationType="slide"
+          onRequestClose={handleCloseAddForm}
+        >
+          <AddExtraCostForm 
+            orderKey={orderKey}
+            onSave={handleAddExtraCost}
+            onClose={handleCloseAddForm}
+          />
+        </Modal>
+      )}
     </View>
   );
 };

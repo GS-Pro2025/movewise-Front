@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { View, Text, FlatList, TouchableOpacity, StyleSheet, Modal, useColorScheme, Image, ActivityIndicator, SafeAreaView, Alert } from 'react-native';
+import { View, Text, FlatList, TouchableOpacity, StyleSheet, Modal, useColorScheme, Image, ActivityIndicator, SafeAreaView, Alert, TextInput } from 'react-native';
 import { GestureHandlerRootView, Swipeable } from "react-native-gesture-handler";
 import { Ionicons } from '@expo/vector-icons';
 import { ListOperators } from '@/hooks/api/Get_listOperator';
@@ -11,6 +11,7 @@ import { router } from 'expo-router';
 import { useTranslation } from 'react-i18next';
 import { Toast, ALERT_TYPE } from 'react-native-alert-notification';
 import colors from '@/app/Colors';
+
 // Interface for pagination response
 interface PaginatedResponse {
   count: number;
@@ -20,9 +21,11 @@ interface PaginatedResponse {
 }
 
 const OperatorList = ({ isEdit, onClose }: { isEdit: string, onClose: () => void }) => {
-  const { t } = useTranslation(); // Hook para traducción
-  const isCreating = isEdit === 'false'; // ahora esto sí funciona
+  const { t } = useTranslation();
+  const isCreating = isEdit === 'false';
   console.log(isCreating);
+
+  // Estados existentes
   const [successModalVisible, setSuccessModalVisible] = useState(false);
   const [operators, setOperators] = useState<Operator[]>([]);
   const [selectedOperator, setSelectedOperator] = useState<Operator | null>(null);
@@ -31,6 +34,15 @@ const OperatorList = ({ isEdit, onClose }: { isEdit: string, onClose: () => void
   const [loading, setLoading] = useState(true);
   const [loadingMore, setLoadingMore] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  // Nuevos estados para el filtro
+  const [allOperators, setAllOperators] = useState<Operator[]>([]); // Todos los operadores cargados
+  const [filteredOperators, setFilteredOperators] = useState<Operator[]>([]); // Operadores filtrados
+  const [searchQuery, setSearchQuery] = useState<string>(''); // Texto de búsqueda
+  const [isSearching, setIsSearching] = useState(false); // Estado de búsqueda activa
+  const [loadingAllData, setLoadingAllData] = useState(false); // Cargando todos los datos
+  const [allDataLoaded, setAllDataLoaded] = useState(false); // Si ya se cargaron todos los datos
+
   const [pagination, setPagination] = useState<{
     count: number;
     next: string | null;
@@ -41,7 +53,6 @@ const OperatorList = ({ isEdit, onClose }: { isEdit: string, onClose: () => void
     previous: null,
   });
   const [currentPage, setCurrentPage] = useState<number>(1);
-  // Track open swipeable to close it when needed
   const [activeSwipeable, setActiveSwipeable] = useState<Swipeable | null>(null);
 
   const colorScheme = useColorScheme();
@@ -53,12 +64,29 @@ const OperatorList = ({ isEdit, onClose }: { isEdit: string, onClose: () => void
     }
   }, [isCreating]);
 
-  //open if IsCREATing mode
   useEffect(() => {
     if (isCreating) {
       setModalVisible(true);
     }
   }, [isCreating]);
+
+  // Efecto para filtrar operadores cuando cambia el texto de búsqueda
+  useEffect(() => {
+    if (searchQuery.trim() === '') {
+      setIsSearching(false);
+      setFilteredOperators([]);
+    } else {
+      setIsSearching(true);
+      if (allDataLoaded) {
+        filterOperators(searchQuery);
+      } else {
+        // Si no tenemos todos los datos, cargarlos primero
+        loadAllOperators().then(() => {
+          filterOperators(searchQuery);
+        });
+      }
+    }
+  }, [searchQuery, allDataLoaded]);
 
   const loadOperators = async (page = 1, reset = true) => {
     try {
@@ -68,16 +96,13 @@ const OperatorList = ({ isEdit, onClose }: { isEdit: string, onClose: () => void
         setLoadingMore(true);
       }
 
-      // Assuming your API supports page parameter
       const response = await ListOperators(page);
 
-      // Handle different response structures
       if (response) {
         let newOperators: Operator[] = [];
         let paginationInfo = { ...pagination };
 
         if (response.results && Array.isArray(response.results)) {
-          // Standard pagination structure
           newOperators = response.results;
           paginationInfo = {
             count: response.count || 0,
@@ -85,9 +110,7 @@ const OperatorList = ({ isEdit, onClose }: { isEdit: string, onClose: () => void
             previous: response.previous,
           };
         } else if (Array.isArray(response)) {
-          // Direct array response
           newOperators = response;
-          // Without pagination info, we can't determine if there are more pages
           paginationInfo = {
             count: response.length,
             next: null,
@@ -115,13 +138,95 @@ const OperatorList = ({ isEdit, onClose }: { isEdit: string, onClose: () => void
     }
   };
 
+  // Nueva función para cargar todos los operadores de todas las páginas
+  const loadAllOperators = async (): Promise<void> => {
+    if (allDataLoaded || loadingAllData) {
+      return;
+    }
+
+    try {
+      setLoadingAllData(true);
+      let allOps: Operator[] = [];
+      let currentPageNum = 1;
+      let hasMorePages = true;
+
+      while (hasMorePages) {
+        const response = await ListOperators(currentPageNum);
+
+        if (response) {
+          let pageOperators: Operator[] = [];
+
+          if (response.results && Array.isArray(response.results)) {
+            pageOperators = response.results;
+            hasMorePages = !!response.next;
+          } else if (Array.isArray(response)) {
+            pageOperators = response;
+            hasMorePages = false; // Sin paginación
+          }
+
+          allOps = [...allOps, ...pageOperators];
+          currentPageNum++;
+
+          // Evitar bucle infinito
+          if (currentPageNum > 100) {
+            console.warn('Deteniendo carga después de 100 páginas');
+            break;
+          }
+        } else {
+          hasMorePages = false;
+        }
+      }
+
+      setAllOperators(allOps);
+      setAllDataLoaded(true);
+    } catch (error) {
+      console.error('Error loading all operators:', error);
+      Toast.show({
+        type: ALERT_TYPE.DANGER,
+        title: t("error"),
+        textBody: t("error_loading_all_operators"),
+        autoClose: 3000,
+      });
+    } finally {
+      setLoadingAllData(false);
+    }
+  };
+
+  // Función para filtrar operadores por nombre
+  const filterOperators = (query: string) => {
+    if (!query.trim()) {
+      setFilteredOperators([]);
+      return;
+    }
+
+    const lowercaseQuery = query.toLowerCase().trim();
+    const filtered = allOperators.filter(operator => {
+      const fullName = `${operator.first_name || ''} ${operator.last_name || ''}`.toLowerCase();
+      const firstName = (operator.first_name || '').toLowerCase();
+      const lastName = (operator.last_name || '').toLowerCase();
+
+      return fullName.includes(lowercaseQuery) ||
+        firstName.includes(lowercaseQuery) ||
+        lastName.includes(lowercaseQuery);
+    });
+
+    setFilteredOperators(filtered);
+  };
+
   const loadMoreOperators = () => {
-    if (pagination.next && !loadingMore && !loading) {
+    if (pagination.next && !loadingMore && !loading && !isSearching) {
       loadOperators(currentPage + 1, false);
     }
   };
 
-  // Function to map Operator to FormData
+  // Función para limpiar la búsqueda
+  const clearSearch = () => {
+    setSearchQuery('');
+    setIsSearching(false);
+    setFilteredOperators([]);
+  };
+
+  // Función mapOperatorToFormData permanece igual
   const mapOperatorToFormData = (op: Operator): FormData => ({
     id_operator: op.id_operator ?? 0,
     first_name: op.first_name ?? '',
@@ -133,16 +238,16 @@ const OperatorList = ({ isEdit, onClose }: { isEdit: string, onClose: () => void
     phone: op.phone ?? '',
     email: op.email ?? '',
     number_licence: op.number_licence ?? '',
-    zipcode: op.zipcode ?? '', 
+    zipcode: op.zipcode ?? '',
     code: op.code ?? '',
     has_minors: Array.isArray(op.sons) && op.sons.length > 0,
     n_children: op.n_children ?? 0,
     sons: Array.isArray(op.sons)
       ? op.sons.map(son => ({
-          name: son.name ?? '',
-          birth_date: son.birth_date ?? '',
-          gender: son.gender ?? 'M',
-        }))
+        name: son.name ?? '',
+        birth_date: son.birth_date ?? '',
+        gender: son.gender ?? 'M',
+      }))
       : [],
     salary: op.salary ?? '',
     size_t_shift: op.size_t_shift ?? '',
@@ -153,16 +258,13 @@ const OperatorList = ({ isEdit, onClose }: { isEdit: string, onClose: () => void
     status: op.status ?? '',
   });
 
-  // Handler for soft delete
   const handleSoftDelete = async (operatorId: number) => {
     try {
-      // Close the active swipeable if any
       if (activeSwipeable) {
         activeSwipeable.close();
         setActiveSwipeable(null);
       }
-      
-      // Show confirmation dialog
+
       Alert.alert(
         t("delete_operator"),
         t("delete_operator_confirmation"),
@@ -176,21 +278,24 @@ const OperatorList = ({ isEdit, onClose }: { isEdit: string, onClose: () => void
             style: "destructive",
             onPress: async () => {
               try {
-                // Show loading indicator or disable UI while deleting
                 setLoading(true);
-                
-                // Call the API
+
                 const response = await SoftDeleteOperator(operatorId);
-                
-                // Show success message
+
                 Alert.alert(
                   t("success"),
                   t("operator_deleted_successfully"),
                   [{ text: t("ok") }]
                 );
-                
-                // Refresh the operator list
+
+                // Refrescar listas
                 loadOperators();
+                if (allDataLoaded) {
+                  setAllDataLoaded(false); // Forzar recarga de todos los datos
+                }
+                if (isSearching) {
+                  setSearchQuery(''); // Limpiar búsqueda
+                }
               } catch (error) {
                 console.error('Error deleting operator:', error);
                 Alert.alert(
@@ -229,7 +334,6 @@ const OperatorList = ({ isEdit, onClose }: { isEdit: string, onClose: () => void
     </View>
   );
 
-  // Add the right actions for delete functionality
   const renderRightActions = (operator: Operator) => (
     <View style={styles.swipeActions}>
       <TouchableOpacity
@@ -265,7 +369,7 @@ const OperatorList = ({ isEdit, onClose }: { isEdit: string, onClose: () => void
 
   const renderOperatorItem = ({ item }: { item: Operator }) => {
     let swipeableRef: Swipeable | null = null;
-    
+
     return (
       <GestureHandlerRootView style={[styles.container, { backgroundColor: isDarkMode ? colors.backgroundDark : colors.backgroundLight }]}>
         <Swipeable
@@ -275,11 +379,9 @@ const OperatorList = ({ isEdit, onClose }: { isEdit: string, onClose: () => void
           renderLeftActions={() => renderLeftActions(item)}
           renderRightActions={() => renderRightActions(item)}
           onSwipeableOpen={() => {
-            // Close previously opened swipeable
             if (activeSwipeable && activeSwipeable !== swipeableRef) {
               activeSwipeable.close();
             }
-            // Set the current swipeable as active
             if (swipeableRef) {
               setActiveSwipeable(swipeableRef);
             }
@@ -318,7 +420,7 @@ const OperatorList = ({ isEdit, onClose }: { isEdit: string, onClose: () => void
   };
 
   const renderFooter = () => {
-    if (!loadingMore) return null;
+    if (isSearching || !loadingMore) return null;
 
     return (
       <View style={[styles.footerLoader, { backgroundColor: isDarkMode ? colors.backgroundDark : colors.backgroundLight }]}>
@@ -332,14 +434,20 @@ const OperatorList = ({ isEdit, onClose }: { isEdit: string, onClose: () => void
     loadOperators(1, true);
     setModalVisible(false);
     setSelectedOperator(null);
+    // Invalidar datos cargados para forzar recarga en próxima búsqueda
+    setAllDataLoaded(false);
     Toast.show({
-        type: ALERT_TYPE.DANGER,
-        title: t("error"),
-        textBody: t("error_sending_data"),
-        autoClose: 3000,
+      type: ALERT_TYPE.SUCCESS,
+      title: t("success"),
+      textBody: t("operator_saved_successfully"),
+      autoClose: 3000,
     });
-    setTimeout(() => setSuccessModalVisible(true), 400); // Espera a que se cierre el modal de creación
+    setTimeout(() => setSuccessModalVisible(true), 400);
   };
+
+  // Determinar qué datos mostrar
+  const displayData = isSearching ? filteredOperators : operators;
+  const showingSearchResults = isSearching && searchQuery.trim() !== '';
 
   return (
     <SafeAreaView style={[styles.safeArea, { backgroundColor: isDarkMode ? colors.backgroundDark : colors.backgroundLight }]}>
@@ -354,9 +462,47 @@ const OperatorList = ({ isEdit, onClose }: { isEdit: string, onClose: () => void
               setModalVisible(true);
             }}
           >
-            <Ionicons name="add" size={24} color={isDarkMode ? colors.third : colors.lightBackground} />
+            <Ionicons name="add" size={24} color={isDarkMode ? colors.darkText : colors.lightBackground} />
           </TouchableOpacity>
         </View>
+
+        {/* Search Bar */}
+        <View style={[styles.searchContainer, { backgroundColor: isDarkMode ? colors.backgroundDark : colors.backgroundLight }]}>
+          <View style={[styles.searchInputContainer, { backgroundColor: isDarkMode ? colors.third : '#f5f5f5', borderColor: isDarkMode ? colors.darkText : '#ddd' }]}>
+            <Ionicons name="search-outline" size={20} color={isDarkMode ? colors.darkText : colors.primary} style={styles.searchIcon} />
+            <TextInput
+              style={[styles.searchInput, { color: isDarkMode ? colors.darkText : colors.primary }]}
+              placeholder={t("search_by_name")}
+              placeholderTextColor={isDarkMode ? colors.darkText : colors.primary}
+              value={searchQuery}
+              onChangeText={setSearchQuery}
+              autoCapitalize="words"
+              autoCorrect={false}
+            />
+            {searchQuery.length > 0 && (
+              <TouchableOpacity onPress={clearSearch} style={styles.clearButton}>
+                <Ionicons name="close-circle" size={20} color={isDarkMode ? colors.darkText : '#666'} />
+              </TouchableOpacity>
+            )}
+          </View>
+          {loadingAllData && (
+            <View style={styles.searchLoadingContainer}>
+              <ActivityIndicator size="small" color="#3498db" />
+              <Text style={[styles.searchLoadingText, { color: isDarkMode ? colors.darkText : colors.primary }]}>
+                {t("loading_all_data")}
+              </Text>
+            </View>
+          )}
+        </View>
+
+        {/* Search Results Info */}
+        {showingSearchResults && (
+          <View style={[styles.searchResultsInfo, { backgroundColor: isDarkMode ? colors.backgroundDark : colors.backgroundLight }]}>
+            <Text style={[styles.searchResultsText, { color: isDarkMode ? colors.darkText : colors.primary }]}>
+              {filteredOperators.length} {t("results_for")} "{searchQuery}"
+            </Text>
+          </View>
+        )}
 
         {/* Content */}
         <View style={[styles.content, { backgroundColor: isDarkMode ? colors.backgroundDark : colors.backgroundLight }]}>
@@ -373,44 +519,55 @@ const OperatorList = ({ isEdit, onClose }: { isEdit: string, onClose: () => void
                 <Text style={styles.retryText}>{t("retry")}</Text>
               </TouchableOpacity>
             </View>
-          ) : operators.length === 0 ? (
+          ) : displayData.length === 0 ? (
             <View style={[styles.centerContent, { backgroundColor: isDarkMode ? colors.backgroundDark : colors.backgroundLight }]}>
               <Ionicons name="people-outline" size={50} color={isDarkMode ? colors.third : colors.lightBackground} />
-              <Text style={[styles.noDataText, { color: isDarkMode ? colors.darkText : colors.primary }]}>{t("no_operators_available")}</Text>
-              <TouchableOpacity
-                style={styles.addFirstButton}
-                onPress={() => setModalVisible(true)}
-              >
-                <Text style={styles.addFirstText}>{t("add_operator")}</Text>
-              </TouchableOpacity>
+              <Text style={[styles.noDataText, { color: isDarkMode ? colors.darkText : colors.primary }]}>
+                {showingSearchResults ? t("no_operators_found") : t("no_operators_available")}
+              </Text>
+              {!showingSearchResults && (
+                <TouchableOpacity
+                  style={styles.addFirstButton}
+                  onPress={() => setModalVisible(true)}
+                >
+                  <Text style={styles.addFirstText}>{t("add_operator")}</Text>
+                </TouchableOpacity>
+              )}
             </View>
           ) : (
             <View style={[styles.listWrapper, { backgroundColor: isDarkMode ? colors.backgroundDark : colors.backgroundLight }]}>
               <FlatList
                 style={{ backgroundColor: isDarkMode ? colors.backgroundDark : colors.backgroundLight }}
-                data={operators}
+                data={displayData}
                 keyExtractor={(item, index) => (item.id_operator ? item.id_operator.toString() : index.toString())}
                 renderItem={renderOperatorItem}
                 contentContainerStyle={styles.listContainer}
                 refreshing={loading}
-                onRefresh={() => loadOperators(1, true)}
+                onRefresh={() => {
+                  loadOperators(1, true);
+                  if (isSearching) {
+                    setAllDataLoaded(false);
+                  }
+                }}
                 onEndReached={loadMoreOperators}
                 onEndReachedThreshold={0.3}
                 ListFooterComponent={renderFooter}
               />
               {/* Pagination info */}
-              <View style={styles.paginationInfo}>
-                <Text style={styles.paginationText}>
-                  {t("showing")} {operators.length} {t("of")} {pagination.count} {t("operators")}
-                </Text>
-              </View>
+              {!isSearching && (
+                <View style={styles.paginationInfo}>
+                  <Text style={styles.paginationText}>
+                    {t("showing")} {operators.length} {t("of")} {pagination.count} {t("operators")}
+                  </Text>
+                </View>
+              )}
             </View>
           )}
         </View>
 
         {/* Modal for Create/Edit Operator */}
-        <Modal 
-          visible={modalVisible} 
+        <Modal
+          visible={modalVisible}
           animationType="slide"
           onRequestClose={() => setModalVisible(false)}
         >
@@ -421,6 +578,8 @@ const OperatorList = ({ isEdit, onClose }: { isEdit: string, onClose: () => void
               setModalVisible(false);
               loadOperators(1, true);
               setSelectedOperator(null);
+              // Invalidar datos para forzar recarga en próxima búsqueda
+              setAllDataLoaded(false);
             }}
           />
         </Modal>
@@ -434,12 +593,10 @@ const OperatorList = ({ isEdit, onClose }: { isEdit: string, onClose: () => void
             handleEditOperator(selectedOperator!);
           }}
         />
-
       </View>
     </SafeAreaView>
   );
 };
-
 
 const styles = StyleSheet.create({
   safeArea: {
@@ -451,14 +608,12 @@ const styles = StyleSheet.create({
   },
   header: {
     flexDirection: 'row',
-    alignItems: 'flex-end',         // baja los ítems al fondo del header
+    alignItems: 'flex-end',
     justifyContent: 'space-between',
     backgroundColor: '#fff',
-    paddingTop: 20,                  // más espacio arriba
-    paddingBottom: 10,               // menos espacio abajo
+    paddingTop: 20,
+    paddingBottom: 10,
     paddingHorizontal: 16,
-    borderBottomWidth: 1,
-    borderBottomColor: '#eee',
     elevation: 2,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 1 },
@@ -469,10 +624,9 @@ const styles = StyleSheet.create({
     padding: 8,
   },
   headerTitle: {
-    fontSize: 20,
+    fontSize: 24,
     fontWeight: 'bold',
-    color: '#333',
-    marginBottom:10,
+    color: colors.primary,
   },
   addButton: {
     backgroundColor: '#3498db',
@@ -487,6 +641,55 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.2,
     shadowRadius: 2,
   },
+  searchContainer: {
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    borderBottomWidth: 1,
+    borderBottomColor: '#eee',
+  },
+  searchInputContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#f5f5f5',
+    borderRadius: 25,
+    paddingHorizontal: 15,
+    paddingVertical: 2,
+    borderWidth: 1,
+    borderColor: '#ddd',
+  },
+  searchIcon: {
+    marginRight: 10,
+  },
+  searchInput: {
+    flex: 1,
+    fontSize: 16,
+    color: '#333',
+  },
+  clearButton: {
+    padding: 5,
+  },
+  searchLoadingContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginTop: 8,
+  },
+  searchLoadingText: {
+    marginLeft: 8,
+    fontSize: 14,
+    color: '#666',
+  },
+  searchResultsInfo: {
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    borderBottomWidth: 1,
+    borderBottomColor: '#eee',
+  },
+  searchResultsText: {
+    fontSize: 14,
+    color: '#666',
+    fontStyle: 'italic',
+  },
   content: {
     flex: 1,
   },
@@ -496,7 +699,7 @@ const styles = StyleSheet.create({
   },
   listContainer: {
     paddingVertical: 8,
-    paddingBottom: 60, // Add extra padding at bottom for pagination info
+    paddingBottom: 60,
   },
   listItem: {
     backgroundColor: '#fff',

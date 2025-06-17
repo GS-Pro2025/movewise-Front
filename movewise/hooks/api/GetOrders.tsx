@@ -63,6 +63,7 @@ export const getOrdersAllStatus = async (
     date?: Date | string | null;
     status?: string | null;
     search?: string | null;
+    location?: string | null;
   }
 ): Promise<OrdersResponse> => {
   try {
@@ -70,14 +71,21 @@ export const getOrdersAllStatus = async (
     const params = new URLSearchParams();
 
     if (filters?.date) {
-      // filters.date ya es un string YYYY-MM-DD
-      params.append('date', filters.date.toString());
+      const formattedDate = filters.date instanceof Date ? filters.date.toISOString().split('T')[0] : filters.date;
+      params.append('date', formattedDate);
     }
+
     if (filters?.status) {
       params.append('status', filters.status);
     }
+
     if (filters?.search) {
       params.append('search', filters.search);
+    }
+
+    if (filters?.location) {
+      // console.log("filtro para location", filters.location);
+      params.append('location', filters.location);
     }
 
     // Si hay parámetros, añadirlos al endpoint
