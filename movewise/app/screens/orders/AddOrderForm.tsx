@@ -188,12 +188,15 @@ export default function AddOrderModal({ visible, onClose }: AddOrderFormProps) {
 
 
   const handleSaveOperators = () => {
-    // Close the operator modal and the parent modal
+    // Close the operator modal first
     setOperatorModalVisible(false);
+    
+    // If it's an admin, close the parent modal after a short delay
     if (isAdmin) {
-      onClose?.();
+      setTimeout(() => {
+        onClose?.();
+      }, 300); // Small delay to allow the operator modal to close smoothly
     }
-    // You can add any additional logic here if needed when operators are saved
   };
 
   useEffect(() => {
@@ -978,11 +981,11 @@ export default function AddOrderModal({ visible, onClose }: AddOrderFormProps) {
             </View>
           </ThemedView>
 
-          {/* Operator Modal */}
+          {/* Operator Modal - rendered at the same level as other root components */}
           <OperatorModal
             visible={operatorModalVisible}
             onClose={() => setOperatorModalVisible(false)}
-            orderKey={savedOrderKey || 'There is no key'}
+            orderKey={savedOrderKey || ''}
             onSave={handleSaveOperators}
           />
         </ScrollView>
