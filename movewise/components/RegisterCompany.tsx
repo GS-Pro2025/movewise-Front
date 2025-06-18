@@ -8,10 +8,15 @@ import {
   ImageBackground,
   Keyboard,
   TouchableWithoutFeedback,
+  useColorScheme,
+  KeyboardAvoidingView,
+  Platform,
+  ScrollView,
 } from "react-native";
 import { useRouter } from "expo-router";
 import Toast from "react-native-toast-message";
 import { useTranslation } from "react-i18next";
+import colors from "../app/Colors";
 
 const RegisterCompany = () => {
   const { t } = useTranslation();
@@ -26,6 +31,7 @@ const RegisterCompany = () => {
     zipCode?: string;
   }>({});
   const router = useRouter();
+  const theme = useColorScheme();
 
   const validateFields = () => {
     const newErrors: {
@@ -64,13 +70,6 @@ const RegisterCompany = () => {
 
   const handleRegister = () => {
     if (validateFields()) {
-      const companyData = {
-        license: license,
-        company_name: companyName,
-        address: address,
-        zip_code: zipCode,
-      };
-
       Toast.show({
         type: "success",
         text1: t("company_data_prepared"),
@@ -98,58 +97,138 @@ const RegisterCompany = () => {
   return (
     <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
       <ImageBackground
-        source={require(".././assets/images/bg_login.jpg")}
-        style={styles.background}
+        source={
+          theme === "dark"
+            ? require("../assets/images/patron_modo_oscuro.png")
+            : require("../assets/images/patron_modo_claro.png")
+        }
+        style={[
+          styles.background,
+          { backgroundColor: theme === "dark" ? "#0B2863" : "#fff" },
+        ]}
         resizeMode="cover"
       >
-        <View style={styles.container}>
-          <Text style={styles.title}>{t("register_your_company")}</Text>
+        <KeyboardAvoidingView
+          style={{ flex: 1 }}
+          behavior={Platform.OS === "ios" ? "padding" : "height"}
+          keyboardVerticalOffset={Platform.OS === "ios" ? 0 : 24}
+        >
+          <ScrollView contentContainerStyle={styles.container} keyboardShouldPersistTaps="handled">
+            <Text
+              style={[
+                styles.title,
+                { color: theme === "dark" ? colors.textDark : colors.primary },
+              ]}
+            >
+              {t("register_your_company")}
+            </Text>
 
-          <TextInput
-            style={[styles.input, errors.license && styles.inputError]}
-            placeholder={t("license_placeholder")}
-            placeholderTextColor="#888"
-            value={license}
-            onChangeText={setLicense}
-          />
-          {errors.license && <Text style={styles.errorText}>{errors.license}</Text>}
+            <TextInput
+              style={[
+                styles.input,
+                errors.license && styles.inputError,
+                {
+                  backgroundColor: theme === "dark" ? colors.cardDark : colors.cardLight,
+                  color: theme === "dark" ? colors.textDark : colors.textLight,
+                  borderColor: errors.license
+                    ? "#FF0000"
+                    : theme === "dark"
+                    ? colors.borderDark
+                    : colors.borderLight,
+                },
+              ]}
+              placeholder={t("license_placeholder")}
+              placeholderTextColor={theme === "dark" ? colors.placeholderDark : colors.placeholderLight}
+              value={license}
+              onChangeText={setLicense}
+            />
+            {errors.license && <Text style={styles.errorText}>{errors.license}</Text>}
 
-          <TextInput
-            style={[styles.input, errors.companyName && styles.inputError]}
-            placeholder={t("name_placeholder")}
-            placeholderTextColor="#888"
-            value={companyName}
-            onChangeText={setCompanyName}
-          />
-          {errors.companyName && <Text style={styles.errorText}>{errors.companyName}</Text>}
+            <TextInput
+              style={[
+                styles.input,
+                errors.companyName && styles.inputError,
+                {
+                  backgroundColor: theme === "dark" ? colors.cardDark : colors.cardLight,
+                  color: theme === "dark" ? colors.textDark : colors.textLight,
+                  borderColor: errors.companyName
+                    ? "#FF0000"
+                    : theme === "dark"
+                    ? colors.borderDark
+                    : colors.borderLight,
+                },
+              ]}
+              placeholder={t("name_placeholder")}
+              placeholderTextColor={theme === "dark" ? colors.placeholderDark : colors.placeholderLight}
+              value={companyName}
+              onChangeText={setCompanyName}
+            />
+            {errors.companyName && <Text style={styles.errorText}>{errors.companyName}</Text>}
 
-          <TextInput
-            style={[styles.input, errors.address && styles.inputError]}
-            placeholder={t("address_placeholder")}
-            placeholderTextColor="#888"
-            value={address}
-            onChangeText={setAddress}
-          />
-          {errors.address && <Text style={styles.errorText}>{errors.address}</Text>}
+            <TextInput
+              style={[
+                styles.input,
+                errors.address && styles.inputError,
+                {
+                  backgroundColor: theme === "dark" ? colors.cardDark : colors.cardLight,
+                  color: theme === "dark" ? colors.textDark : colors.textLight,
+                  borderColor: errors.address
+                    ? "#FF0000"
+                    : theme === "dark"
+                    ? colors.borderDark
+                    : colors.borderLight,
+                },
+              ]}
+              placeholder={t("address_placeholder")}
+              placeholderTextColor={theme === "dark" ? colors.placeholderDark : colors.placeholderLight}
+              value={address}
+              onChangeText={setAddress}
+            />
+            {errors.address && <Text style={styles.errorText}>{errors.address}</Text>}
 
-          <TextInput
-            style={[styles.input, errors.zipCode && styles.inputError]}
-            placeholder={t("zip_code_placeholder")}
-            placeholderTextColor="#888"
-            value={zipCode}
-            onChangeText={setZipCode}
-            keyboardType="numeric"
-          />
-          {errors.zipCode && <Text style={styles.errorText}>{errors.zipCode}</Text>}
+            <TextInput
+              style={[
+                styles.input,
+                errors.zipCode && styles.inputError,
+                {
+                  backgroundColor: theme === "dark" ? colors.cardDark : colors.cardLight,
+                  color: theme === "dark" ? colors.textDark : colors.textLight,
+                  borderColor: errors.zipCode
+                    ? "#FF0000"
+                    : theme === "dark"
+                    ? colors.borderDark
+                    : colors.borderLight,
+                },
+              ]}
+              placeholder={t("zip_code_placeholder")}
+              placeholderTextColor={theme === "dark" ? colors.placeholderDark : colors.placeholderLight}
+              value={zipCode}
+              onChangeText={setZipCode}
+              keyboardType="numeric"
+            />
+            {errors.zipCode && <Text style={styles.errorText}>{errors.zipCode}</Text>}
 
-          <TouchableOpacity style={styles.button} onPress={handleRegister}>
-            <Text style={styles.buttonText}>{t("register_company_button")}</Text>
-          </TouchableOpacity>
+            <TouchableOpacity
+              style={[
+                styles.button,
+                { backgroundColor: colors.primary },
+              ]}
+              onPress={handleRegister}
+            >
+              <Text style={styles.buttonText}>{t("register_company_button")}</Text>
+            </TouchableOpacity>
 
-          <TouchableOpacity style={styles.backButton} onPress={() => router.replace("/Login")}>
-            <Text style={styles.buttonText}>{t("back")}</Text>
-          </TouchableOpacity>
-        </View>
+            <TouchableOpacity
+              style={[
+                styles.backButton,
+                { backgroundColor: "#FF0000" },
+              ]}
+              onPress={() => router.replace("/Login")}
+            >
+              <Text style={styles.buttonText}>{t("back")}</Text>
+            </TouchableOpacity>
+          </ScrollView>
+        </KeyboardAvoidingView>
       </ImageBackground>
     </TouchableWithoutFeedback>
   );
@@ -174,7 +253,6 @@ const styles = StyleSheet.create({
   input: {
     height: 50,
     borderWidth: 2,
-    borderColor: "#0458AB",
     borderRadius: 10,
     paddingHorizontal: 16,
     marginBottom: 8,
@@ -192,7 +270,6 @@ const styles = StyleSheet.create({
   },
   button: {
     height: 48,
-    backgroundColor: "#002366",
     borderRadius: 10,
     justifyContent: "center",
     alignItems: "center",
@@ -200,7 +277,6 @@ const styles = StyleSheet.create({
   },
   backButton: {
     height: 48,
-    backgroundColor: "#FF0000",
     borderRadius: 10,
     justifyContent: "center",
     alignItems: "center",
