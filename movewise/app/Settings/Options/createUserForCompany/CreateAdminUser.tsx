@@ -100,27 +100,33 @@ const CreateAdminUser = () => {
         address: adressPerson,
         id_number: idNumber,
         type_id: idType,
-        id_company: Number(company_id),
-        state: "",
-        city: "",
+        id_company: Number(company_id)
       },
     };
-    console.log("Data to send:", JSON.stringify(dataToSend, null, 2));
+
     try {
-      await registerUser(dataToSend);
+      const response = await registerUser(dataToSend);
+
+      // Si el backend devuelve messUser, úsalo y tradúcelo si existe
+      const messUser = response?.messUser || "registration_successful";
+      const translatedMsg = t(messUser, { defaultValue: messUser });
+
       Toast.show({
         type: "success",
         text1: t("admin_created"),
-        text2: t("admin_created_successfully"),
+        text2: translatedMsg,
       });
-      //espera 600ms antes de volver atrás
-      await new Promise(resolve => setTimeout(resolve, 600));
+      await new Promise(resolve => setTimeout(resolve, 300));
       router.back();
-    } catch (error) {
+    } catch (error: any) {
+      // Intenta extraer messUser del error del backend
+      let messUser = error?.response?.data?.messUser || "admin_creation_failed";
+      const translatedMsg = t(messUser, { defaultValue: messUser });
+
       Toast.show({
         type: "error",
         text1: t("error"),
-        text2: t("admin_creation_failed"),
+        text2: translatedMsg,
       });
     }
   };

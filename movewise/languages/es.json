@@ -618,5 +618,10 @@
   "create_new_admin": "Crear nuevo administrador",
   "admin_created_successfully": "Administrador creado exitosamente",
   "admin_creation_failed": "Error al crear el administrador",
-  "all_locations": "Todas las ubicaciones"
+  "all_locations": "Todas las ubicaciones",
+  "user_already_exists": "Ya existe un usuario para esta persona.",
+  "user_created_for_existing_person": "Usuario creado para persona ya existente.",
+  "registration_successful": "Registro exitoso.",
+  "invalid_data": "Datos inválidos. Por favor revisa el formulario.",
+  "truck_history": "Historial de camiones"
 } 
