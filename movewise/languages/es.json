@@ -615,5 +615,8 @@
   "admin_created": "Administrador creado",
   "create_admin_option": "Crear Administrador",
   "id_type_placeholder": "Seleccionar tipo de identificación",
-  "create_new_admin": "Crear nuevo administrador"
+  "create_new_admin": "Crear nuevo administrador",
+  "admin_created_successfully": "Administrador creado exitosamente",
+  "admin_creation_failed": "Error al crear el administrador",
+  "all_locations": "Todas las ubicaciones"
 } 

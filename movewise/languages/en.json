@@ -579,5 +579,8 @@
   "admin_created": "Admin created successfully",
   "create_admin_option": "Create Admin",
   "id_type_placeholder": "Select ID Type",
-  "create_new_admin": "Create New Admin"
+  "create_new_admin": "Create New Admin",
+  "admin_created_successfully": "admin created successfully",
+  "admin_creation_failed": "admin creation failed",
+  "all_locations": "All Locations"
 }
