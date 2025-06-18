@@ -150,9 +150,18 @@ const LoginComponent: React.FC = () => {
   return (
     <>
       <ImageBackground
-        source={require("../assets/images/bg_login.jpg")}
-        style={styles.background}
-        resizeMode="cover"
+        source={
+          theme === "dark"
+            ? require("../assets/images/patron_modo_oscuro.png")
+            : require("../assets/images/patron_modo_claro.png")
+        }
+        style={[
+        styles.background,
+        {
+          backgroundColor: theme === "dark" ? "#0B2863" : "#fff",
+        },
+      ]}
+      resizeMode="cover"
       >
         <StatusBar barStyle="light-content" />
         <View style={styles.container}>
