@@ -20,6 +20,7 @@ import ForgotPasswordModal from "./ForgotPasswordModal";
 import { useLocalSearchParams } from "expo-router";
 import { decodeToken, getPersonIdFromToken, isAdmin } from "@/utils/decodeToken";
 import { GetPersonById } from "@/hooks/api/GetPersonById";
+import colors from "../app/Colors";
 
 const LoginComponent: React.FC = () => {
   const { t } = useTranslation();
@@ -156,20 +157,39 @@ const LoginComponent: React.FC = () => {
             : require("../assets/images/patron_modo_claro.png")
         }
         style={[
-        styles.background,
-        {
-          backgroundColor: theme === "dark" ? "#0B2863" : "#fff",
-        },
-      ]}
-      resizeMode="cover"
+          styles.background,
+          {
+            backgroundColor: theme === "dark" ? "#0B2863" : "#fff",
+          },
+        ]}
+        resizeMode="cover"
       >
-        <StatusBar barStyle="light-content" />
+        <StatusBar barStyle={theme === "dark" ? "light-content" : "dark-content"} />
         <View style={styles.container}>
-          <Text style={styles.title}>{t("welcome_title")}</Text>
+          <Text
+            style={[
+              styles.title,
+              { color: theme === "dark" ? colors.textDark : colors.primary }
+            ]}
+          >
+            {t("welcome_title")}
+          </Text>
           <TextInput
-            style={[styles.input, errors.email && styles.inputError]}
+            style={[
+              styles.input,
+              errors.email && styles.inputError,
+              {
+                backgroundColor: theme === "dark" ? colors.cardDark : colors.cardLight,
+                color: theme === "dark" ? colors.textDark : colors.textLight,
+                borderColor: errors.email
+                  ? colors.error
+                  : theme === "dark"
+                  ? colors.borderDark
+                  : colors.borderLight,
+              },
+            ]}
             placeholder={t("email_placeholder")}
-            placeholderTextColor="#333"
+            placeholderTextColor={theme === "dark" ? colors.placeholderDark : colors.placeholderLight}
             value={email}
             onChangeText={setEmail}
           />
@@ -177,21 +197,33 @@ const LoginComponent: React.FC = () => {
 
           <View style={styles.inputContainer}>
             <TextInput
-              style={[styles.input, errors.password && styles.inputError]}
+              style={[
+                styles.input,
+                errors.password && styles.inputError,
+                {
+                  backgroundColor: theme === "dark" ? colors.cardDark : colors.cardLight,
+                  color: theme === "dark" ? colors.textDark : colors.textLight,
+                  borderColor: errors.password
+                    ? colors.error
+                    : theme === "dark"
+                    ? colors.borderDark
+                    : colors.borderLight,
+                },
+              ]}
               placeholder={t("password_placeholder")}
-              placeholderTextColor="#333"
-              secureTextEntry={!passwordVisible} // Cambiar visibilidad según el estado
+              placeholderTextColor={theme === "dark" ? colors.placeholderDark : colors.placeholderLight}
+              secureTextEntry={!passwordVisible}
               value={password}
               onChangeText={setPassword}
             />
             <TouchableOpacity
               style={styles.eyeIcon}
-              onPress={() => setPasswordVisible(!passwordVisible)} // Alternar visibilidad
+              onPress={() => setPasswordVisible(!passwordVisible)}
             >
               <Icon
-                name={passwordVisible ? "visibility" : "visibility-off"} // Cambiar ícono según el estado
+                name={passwordVisible ? "visibility" : "visibility-off"}
                 size={24}
-                color="#333"
+                color={theme === "dark" ? colors.placeholderDark : colors.placeholderLight}
               />
             </TouchableOpacity>
           </View>
@@ -199,29 +231,67 @@ const LoginComponent: React.FC = () => {
 
           <View style={styles.row}>
             <View style={styles.checkboxContainer}>
-              <Checkbox value={remember} onValueChange={setRemember} color="#0458AB" />
-              <Text style={styles.checkboxText}>{t("remember_me")}</Text>
+              <Checkbox
+                value={remember}
+                onValueChange={setRemember}
+                color={theme === "dark" ? colors.primary : colors.primary}
+              />
+              <Text
+                style={[
+                  styles.checkboxText,
+                  { color: theme === "dark" ? colors.textDark : colors.primary }
+                ]}
+              >
+                {t("remember_me")}
+              </Text>
             </View>
             <TouchableOpacity onPress={() => setForgotPasswordVisible(true)}>
-              <Text style={styles.forgotText}>{t("forgot_password")}</Text>
+              <Text
+                style={[
+                  styles.forgotText,
+                  { color: theme === "dark" ? colors.secondary : colors.primary }
+                ]}
+              >
+                {t("forgot_password")}
+              </Text>
             </TouchableOpacity>
           </View>
-          <TouchableOpacity style={styles.button} onPress={handleLogin}>
-            <Text style={styles.buttonText}>{t("login_button")}</Text>
-          </TouchableOpacity>
-          <TouchableOpacity style={styles.button} onPress={() => router.push("/OperatorLogin")}>
-            <Text style={styles.buttonText}>{t("operator_daily_work")}</Text>
-          </TouchableOpacity>
-          <Text style={styles.bottomText}>{t("no_company")}</Text>
           <TouchableOpacity
-            style={styles.button}
+            style={[
+              styles.button,
+              { backgroundColor: theme === "dark" ? colors.primary : colors.primary }
+            ]}
+            onPress={handleLogin}
+          >
+            <Text style={[styles.buttonText, { color: colors.white }]}>{t("login_button")}</Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={[
+              styles.button,
+              { backgroundColor: theme === "dark" ? colors.primary : colors.primary }
+            ]}
+            onPress={() => router.push("/OperatorLogin")}
+          >
+            <Text style={[styles.buttonText, { color: colors.white }]}>{t("operator_daily_work")}</Text>
+          </TouchableOpacity>
+          <Text
+            style={[
+              styles.bottomText,
+              { color: theme === "dark" ? colors.textDark : colors.primary }
+            ]}
+          >
+            {t("no_company")}
+          </Text>
+          <TouchableOpacity
+            style={[
+              styles.button,
+              { backgroundColor: theme === "dark" ? colors.primary : colors.primary }
+            ]}
             onPress={() => router.push("/CompanyRegister")}
           >
-            <Text style={styles.buttonText}>{t("register_company")}</Text>
+            <Text style={[styles.buttonText, { color: colors.white }]}>{t("register_company")}</Text>
           </TouchableOpacity>
         </View>
-
-        {/* Toast Component */}
         <Toast />
       </ImageBackground>
       {/* Forgot Password Modal */}
