@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { Modal, View, Text, TouchableOpacity, StyleSheet, useColorScheme } from "react-native";
 import { useTranslation } from "react-i18next";
 import colors from "@/app/Colors";
+import { useRouter } from "expo-router";
 
 interface SettingsModalProps {
     visible: boolean;
@@ -16,6 +17,8 @@ const SettingsModal: React.FC<SettingsModalProps> = ({ visible, onClose, onOpenJ
 
     const isDark = theme === "dark";
 
+    const router = useRouter();
+    
     return (
         <Modal
             visible={visible}
@@ -83,7 +86,22 @@ const SettingsModal: React.FC<SettingsModalProps> = ({ visible, onClose, onOpenJ
                             {t("customer_factory_option")}
                         </Text>
                     </TouchableOpacity>
-
+                    <TouchableOpacity
+                        style={styles.modalOption}
+                        onPress={() => {
+                            onClose();
+                            router.push("/Settings/Options/createUserForCompany/CreateAdminUser");
+                        }}
+                    >
+                        <Text
+                            style={[
+                                styles.modalOptionText,
+                                { color: isDark ? colors.textDark : "#333" },
+                            ]}
+                        >
+                            {t("create_admin_option")}
+                        </Text>
+                    </TouchableOpacity>
                     <TouchableOpacity style={styles.modalOption} onPress={onClose}>
                         <Text
                             style={[

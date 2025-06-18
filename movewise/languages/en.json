@@ -576,5 +576,8 @@
   "search_by_name":"Search by name",
   "create":"Create",
   "create_admin_button": "Create Admin",
-  "admin_created": "Admin created successfully"
+  "admin_created": "Admin created successfully",
+  "create_admin_option": "Create Admin",
+  "id_type_placeholder": "Select ID Type",
+  "create_new_admin": "Create New Admin"
 }

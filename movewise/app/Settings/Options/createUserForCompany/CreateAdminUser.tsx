@@ -17,11 +17,17 @@ import { Picker } from "@react-native-picker/picker";
 import DateTimePickerModal from "react-native-modal-datetime-picker";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import colors from "@/app/Colors";
-import { useTranslation } from "react-i18next"; // <-- Añadido
+import { useTranslation } from "react-i18next";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { registerUser } from "@/hooks/api/RegistryClient"; 
+import { useRouter } from "expo-router";
+import Toast from "react-native-toast-message";
+import { GetAdminInfo } from "@/hooks/api/GetAdminByToken"; // Importa el hook
 
 const CreateAdminUser = () => {
   const theme = useColorScheme();
-  const { t } = useTranslation(); // <-- Añadido
+  const { t } = useTranslation();
+  const router = useRouter();
 
   // Estados para los campos
   const [email, setEmail] = useState("");
@@ -32,12 +38,10 @@ const CreateAdminUser = () => {
   const [birthDate, setBirthDate] = useState("");
   const [idType, setIdType] = useState("");
   const [idNumber, setIdNumber] = useState("");
-  const [state, setState] = useState("");
-  const [city, setCity] = useState("");
-  const [zipCode, setZipCode] = useState("");
   const [adressPerson, setAddress] = useState("");
   const [phone, setPhone] = useState("");
   const [isDatePickerVisible, setDatePickerVisibility] = useState(false);
+  const [passwordVisible, setPasswordVisible] = useState(false); // <-- Añadido
 
   const [errors, setErrors] = useState<{ [key: string]: string }>({});
 
@@ -45,36 +49,85 @@ const CreateAdminUser = () => {
     const newErrors: { [key: string]: string } = {};
     if (!email) newErrors.email = t("email_required");
     if (!userName) newErrors.userName = t("username_required");
-    if (!password) newErrors.password = t("password_required");
+    if (!password) {
+      newErrors.password = t("password_required");
+    } else if (password.length < 6) {
+      newErrors.password = t("password_min_length"); 
+    }
     if (!firstName) newErrors.firstName = t("first_name_required");
     if (!lastName) newErrors.lastName = t("last_name_required");
     if (!birthDate) newErrors.birthDate = t("birthdate_required");
     if (!idType) newErrors.idType = t("id_type_required");
     if (!idNumber) newErrors.idNumber = t("id_number_required");
-    if (!state) newErrors.state = t("state_required");
-    if (!city) newErrors.city = t("city_required");
-    if (!zipCode) newErrors.zipCode = t("zip_code_required");
     if (!adressPerson) newErrors.adressPerson = t("address_required");
     if (!phone) newErrors.phone = t("phone_required");
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
 
-  const handleCreateAdmin = () => {
+  const handleCreateAdmin = async () => {
     if (!validateFields()) {
+      Toast.show({
+        type: "error",
+        text1: t("validation_error"),
+        text2: t("fix_errors_before_submitting"),
+      });
       return;
     }
-    // Tu lógica de envío aquí
+
+    let company_id = null;
+    try {
+      const adminInfo = await GetAdminInfo();
+      company_id = adminInfo.person.id_company;
+    } catch (e) {
+      Toast.show({
+        type: "error",
+        text1: t("error"),
+        text2: t("no_company_id_found"),
+      });
+      return;
+    }
+
+    const dataToSend = {
+      user_name: userName,
+      password: password,
+      person: {
+        email: email,
+        first_name: firstName,
+        last_name: lastName,
+        birth_date: birthDate,
+        phone: phone,
+        address: adressPerson,
+        id_number: idNumber,
+        type_id: idType,
+        id_company: Number(company_id),
+        state: "",
+        city: "",
+      },
+    };
+    console.log("Data to send:", JSON.stringify(dataToSend, null, 2));
+    try {
+      await registerUser(dataToSend);
+      Toast.show({
+        type: "success",
+        text1: t("admin_created"),
+        text2: t("admin_created_successfully"),
+      });
+      //espera 600ms antes de volver atrás
+      await new Promise(resolve => setTimeout(resolve, 600));
+      router.back();
+    } catch (error) {
+      Toast.show({
+        type: "error",
+        text1: t("error"),
+        text2: t("admin_creation_failed"),
+      });
+    }
   };
 
   return (
     <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
       <ImageBackground
-        source={
-          theme === "dark"
-            ? require("../../../assets/images/patron_modo_oscuro.png")
-            : require("../../../assets/images/patron_modo_claro.png")
-        }
         style={[
           styles.background,
           { backgroundColor: "#0B2863" },
@@ -87,6 +140,7 @@ const CreateAdminUser = () => {
           keyboardVerticalOffset={Platform.OS === "ios" ? 0 : 24}
         >
           <ScrollView contentContainerStyle={styles.container}>
+
             <Text
               style={[
                 styles.title,
@@ -144,26 +198,43 @@ const CreateAdminUser = () => {
 
             {/* Password */}
             {errors.password && <Text style={styles.errorText}>{errors.password}</Text>}
-            <TextInput
-              style={[
-                styles.input,
-                errors.password && styles.inputError,
-                {
-                  backgroundColor: theme === "dark" ? colors.cardDark : colors.cardLight,
-                  color: theme === "dark" ? colors.textDark : colors.textLight,
-                  borderColor: errors.password
-                    ? "#FF0000"
-                    : theme === "dark"
-                    ? colors.borderDark
-                    : colors.borderLight,
-                },
-              ]}
-              placeholder={t("password_placeholder")}
-              placeholderTextColor={theme === "dark" ? colors.placeholderDark : colors.placeholderLight}
-              value={password}
-              onChangeText={setPassword}
-              secureTextEntry
-            />
+            <View style={{ position: "relative" }}>
+              <TextInput
+                style={[
+                  styles.input,
+                  errors.password && styles.inputError,
+                  {
+                    backgroundColor: theme === "dark" ? colors.cardDark : colors.cardLight,
+                    color: theme === "dark" ? colors.textDark : colors.textLight,
+                    borderColor: errors.password
+                      ? "#FF0000"
+                      : theme === "dark"
+                      ? colors.borderDark
+                      : colors.borderLight,
+                  },
+                ]}
+                placeholder={t("password_placeholder")}
+                placeholderTextColor={theme === "dark" ? colors.placeholderDark : colors.placeholderLight}
+                value={password}
+                onChangeText={setPassword}
+                secureTextEntry={!passwordVisible}
+              />
+              <TouchableOpacity
+                style={{
+                  position: "absolute",
+                  right: 16,
+                  top: 12,
+                  zIndex: 10,
+                }}
+                onPress={() => setPasswordVisible((v) => !v)}
+              >
+                <MaterialIcons
+                  name={passwordVisible ? "visibility" : "visibility-off"}
+                  size={24}
+                  color={theme === "dark" ? colors.textDark : colors.primary}
+                />
+              </TouchableOpacity>
+            </View>
 
             {/* Nombre */}
             {errors.firstName && <Text style={styles.errorText}>{errors.firstName}</Text>}
@@ -266,7 +337,7 @@ const CreateAdminUser = () => {
                 selectedValue={idType}
                 onValueChange={(itemValue) => setIdType(itemValue)}
                 style={{
-                  color: theme === "dark" ? colors.textDark : colors.textLight,
+                  color: theme === "dark" ? colors.placeholderDark : colors.placeholderLight,
                   backgroundColor: "transparent",
                 }}
                 dropdownIconColor={theme === "dark" ? colors.textDark : colors.textLight}
@@ -299,73 +370,6 @@ const CreateAdminUser = () => {
               placeholderTextColor={theme === "dark" ? colors.placeholderDark : colors.placeholderLight}
               value={idNumber}
               onChangeText={setIdNumber}
-            />
-
-            {/* Estado */}
-            {errors.state && <Text style={styles.errorText}>{errors.state}</Text>}
-            <TextInput
-              style={[
-                styles.input,
-                errors.state && styles.inputError,
-                {
-                  backgroundColor: theme === "dark" ? colors.cardDark : colors.cardLight,
-                  color: theme === "dark" ? colors.textDark : colors.textLight,
-                  borderColor: errors.state
-                    ? "#FF0000"
-                    : theme === "dark"
-                    ? colors.borderDark
-                    : colors.borderLight,
-                },
-              ]}
-              placeholder={t("state_placeholder")}
-              placeholderTextColor={theme === "dark" ? colors.placeholderDark : colors.placeholderLight}
-              value={state}
-              onChangeText={setState}
-            />
-
-            {/* Ciudad */}
-            {errors.city && <Text style={styles.errorText}>{errors.city}</Text>}
-            <TextInput
-              style={[
-                styles.input,
-                errors.city && styles.inputError,
-                {
-                  backgroundColor: theme === "dark" ? colors.cardDark : colors.cardLight,
-                  color: theme === "dark" ? colors.textDark : colors.textLight,
-                  borderColor: errors.city
-                    ? "#FF0000"
-                    : theme === "dark"
-                    ? colors.borderDark
-                    : colors.borderLight,
-                },
-              ]}
-              placeholder={t("city_placeholder")}
-              placeholderTextColor={theme === "dark" ? colors.placeholderDark : colors.placeholderLight}
-              value={city}
-              onChangeText={setCity}
-            />
-
-            {/* Código postal */}
-            {errors.zipCode && <Text style={styles.errorText}>{errors.zipCode}</Text>}
-            <TextInput
-              style={[
-                styles.input,
-                errors.zipCode && styles.inputError,
-                {
-                  backgroundColor: theme === "dark" ? colors.cardDark : colors.cardLight,
-                  color: theme === "dark" ? colors.textDark : colors.textLight,
-                  borderColor: errors.zipCode
-                    ? "#FF0000"
-                    : theme === "dark"
-                    ? colors.borderDark
-                    : colors.borderLight,
-                },
-              ]}
-              placeholder={t("zip_code_placeholder")}
-              placeholderTextColor={theme === "dark" ? colors.placeholderDark : colors.placeholderLight}
-              value={zipCode}
-              onChangeText={setZipCode}
-              keyboardType="numeric"
             />
 
             {/* Dirección */}
@@ -418,9 +422,17 @@ const CreateAdminUser = () => {
                 styles.button,
                 { backgroundColor: colors.primary },
               ]}
-              onPress={() => { handleCreateAdmin(); }}
+              onPress={handleCreateAdmin}
             >
               <Text style={styles.buttonText}>{t("create_admin_button")}</Text>
+            </TouchableOpacity>
+
+            {/* Botón de cancelar abajo */}
+            <TouchableOpacity
+              style={styles.cancelButton}
+              onPress={() => router.back()}
+            >
+              <Text style={styles.cancelButtonText}>{t("cancel")}</Text>
             </TouchableOpacity>
           </ScrollView>
         </KeyboardAvoidingView>
@@ -489,6 +501,32 @@ const styles = StyleSheet.create({
   link: {
     color: "#002366",
     textDecorationLine: "underline",
+  },
+  backButton: {
+    alignSelf: "flex-start",
+    marginBottom: 12,
+    paddingVertical: 6,
+    paddingHorizontal: 16,
+    backgroundColor: "#e0e0e0",
+    borderRadius: 6,
+  },
+  backButtonText: {
+    color: "#002366",
+    fontWeight: "bold",
+    fontSize: 16,
+  },
+  cancelButton: {
+    marginTop: 24,
+    alignSelf: "center",
+    paddingVertical: 10,
+    paddingHorizontal: 32,
+    backgroundColor: "#e74c3c",
+    borderRadius: 8,
+  },
+  cancelButtonText: {
+    color: "#fff",
+    fontWeight: "bold",
+    fontSize: 16,
   },
 });
 
