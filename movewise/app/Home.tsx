@@ -670,7 +670,21 @@ const Home: React.FC = () => {
             {getCurrentTabTitle()}
           </Text>
         </View>
-
+        {/* Botón de settings */}
+        <TouchableOpacity
+          onPress={() => {
+            // Aquí navega a tu pantalla de settings, por ejemplo:
+            router.push("/Settings");
+          }}
+          style={{ marginLeft: 12, padding: 6, borderRadius: 4 }}
+          activeOpacity={0.7}
+        >
+          <Ionicons
+            name="settings-outline"
+            size={28}
+            color="#FFFFFF"
+          />
+        </TouchableOpacity>
         <TouchableOpacity
           onPress={handleLogout}
           style={styles.logoutButton}
