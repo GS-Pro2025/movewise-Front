@@ -9,8 +9,12 @@ import {
   ImageBackground,
   Modal,
   TouchableWithoutFeedback,
-  Keyboard
+  Keyboard,
+  useColorScheme,
+  KeyboardAvoidingView,
+  Platform,
 } from "react-native";
+import { Picker } from "@react-native-picker/picker";
 import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import Toast from "react-native-toast-message";
@@ -30,6 +34,8 @@ import CheckBox from "react-native-check-box";
 import { registerUserWithCompany } from "@/hooks/api/RegisterUserWIthCompany";
 import { getTerms_and_conditions } from "@/hooks/api/GetTerms_and_conditions";
 import { WebView } from "react-native-webview";
+import colors from "@/app/Colors"; 
+
 const RegistryUser = () => {
   const { t } = useTranslation();
 
@@ -68,6 +74,7 @@ const RegistryUser = () => {
   const [searchTerm, setSearchTerm] = useState(""); // Added state for search term
   const [isChecked, setIsChecked] = useState(false); // Estado para el checkbox
   const insets = useSafeAreaInsets(); 
+  const theme = useColorScheme(); // <-- Obtén el tema
   const memoizedStateItems = useMemo(() => 
     stateList.map((state) => ({
       label: state.label,
@@ -272,22 +279,62 @@ const RegistryUser = () => {
   return (
     <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
       <ImageBackground
-        source={require("../../../assets/images/bg_login.jpg")}
-        style={styles.background}
+        source={
+          theme === "dark"
+            ? require("../../../assets/images/patron_modo_oscuro.png")
+            : require("../../../assets/images/patron_modo_claro.png")
+        }
+        style={[
+          styles.background,
+          { backgroundColor: theme === "dark" ? "#0B2863" : "#fff" },
+        ]}
         resizeMode="cover"
       >
+        <KeyboardAvoidingView
+        style={{ flex: 1 }}
+        behavior={Platform.OS === "ios" ? "padding" : "height"}
+        keyboardVerticalOffset={Platform.OS === "ios" ? 0 : 24}
+      >
+
+      
         <ScrollView contentContainerStyle={styles.container}>
-          <Text style={styles.title}>{t("register_user_admin", { companyName: companyData?.name })}</Text>
+          <Text
+            style={[
+              styles.title,
+              { color: theme === "dark" ? colors.textDark : colors.primary },
+            ]}
+          >
+            {t("register_user_admin", { companyName: companyData?.name })}
+          </Text>
     
           {/* Sección de credenciales */}
           <View style={styles.separator} />
           <View style={styles.section}>
-            <Text style={styles.textUserFields}>{t("user_admin_credentials")}</Text>
+            <Text
+              style={[
+                styles.textUserFields,
+                { color: theme === "dark" ? colors.textDark : colors.primary },
+              ]}
+            >
+              {t("user_admin_credentials")}
+            </Text>
             {errors.email && <Text style={styles.errorText}>{errors.email}</Text>}
             <TextInput
-              style={[styles.input, errors.email && styles.inputError]}
+              style={[
+                styles.input,
+                errors.email && styles.inputError,
+                {
+                  backgroundColor: theme === "dark" ? colors.cardDark : colors.cardLight,
+                  color: theme === "dark" ? colors.textDark : colors.textLight,
+                  borderColor: errors.email
+                    ? "#FF0000"
+                    : theme === "dark"
+                    ? colors.borderDark
+                    : colors.borderLight,
+                },
+              ]}
               placeholder={t("email_placeholder")}
-              placeholderTextColor="#888"
+              placeholderTextColor={theme === "dark" ? colors.placeholderDark : colors.placeholderLight}
               value={email}
               onChangeText={setEmail}
               keyboardType="email-address"
@@ -295,17 +342,41 @@ const RegistryUser = () => {
             />
             {errors.userName && <Text style={styles.errorText}>{errors.userName}</Text>}
             <TextInput
-              style={[styles.input, errors.userName && styles.inputError]}
+              style={[
+                styles.input,
+                errors.userName && styles.inputError,
+                {
+                  backgroundColor: theme === "dark" ? colors.cardDark : colors.cardLight,
+                  color: theme === "dark" ? colors.textDark : colors.textLight,
+                  borderColor: errors.userName
+                    ? "#FF0000"
+                    : theme === "dark"
+                    ? colors.borderDark
+                    : colors.borderLight,
+                },
+              ]}
               placeholder={t("username_placeholder")}
-              placeholderTextColor="#888"
+              placeholderTextColor={theme === "dark" ? colors.placeholderDark : colors.placeholderLight}
               value={userName}
               onChangeText={setUserName}
             />
             {errors.password && <Text style={styles.errorText}>{errors.password}</Text>}
             <TextInput
-              style={[styles.input, errors.password && styles.inputError]}
+              style={[
+                styles.input,
+                errors.password && styles.inputError,
+                {
+                  backgroundColor: theme === "dark" ? colors.cardDark : colors.cardLight,
+                  color: theme === "dark" ? colors.textDark : colors.textLight,
+                  borderColor: errors.password
+                    ? "#FF0000"
+                    : theme === "dark"
+                    ? colors.borderDark
+                    : colors.borderLight,
+                },
+              ]}
               placeholder={t("password_placeholder")}
-              placeholderTextColor="#888"
+              placeholderTextColor={theme === "dark" ? colors.placeholderDark : colors.placeholderLight}
               value={password}
               onChangeText={setPassword}
               secureTextEntry
@@ -313,21 +384,47 @@ const RegistryUser = () => {
           </View>
           <View style={styles.separator} />
           {/* Resto de campos */}
-          {errors.firstName && <Text style={styles.errorText}>{errors.firstName}</Text>}
+          
           <View style={styles.section}>
-            <TextInput
-              style={[styles.input, errors.firstName && styles.inputError]}
-              placeholder={t("first_name_placeholder")}
-              placeholderTextColor="#888"
-              value={firstName}
-              onChangeText={setFirstName}
-            />
+          {errors.firstName && <Text style={styles.errorText}>{errors.firstName}</Text>}
+          <TextInput
+            style={[
+              styles.input,
+              errors.firstName && styles.inputError,
+              {
+                backgroundColor: theme === "dark" ? colors.cardDark : colors.cardLight,
+                color: theme === "dark" ? colors.textDark : colors.textLight,
+                borderColor: errors.firstName
+                  ? "#FF0000"
+                  : theme === "dark"
+                  ? colors.borderDark
+                  : colors.borderLight,
+              },
+            ]}
+            placeholder={t("first_name_placeholder")}
+            placeholderTextColor={theme === "dark" ? colors.placeholderDark : colors.placeholderLight}
+            value={firstName}
+            onChangeText={setFirstName}
+          />
+
     
             {errors.lastName && <Text style={styles.errorText}>{errors.lastName}</Text>}
             <TextInput
-              style={[styles.input, errors.lastName && styles.inputError]}
+              style={[
+                styles.input,
+                errors.firstName && styles.inputError,
+                {
+                  backgroundColor: theme === "dark" ? colors.cardDark : colors.cardLight,
+                  color: theme === "dark" ? colors.textDark : colors.textLight,
+                  borderColor: errors.firstName
+                    ? "#FF0000"
+                    : theme === "dark"
+                    ? colors.borderDark
+                    : colors.borderLight,
+                },
+              ]}
               placeholder={t("last_name_placeholder")}
-              placeholderTextColor="#888"
+              placeholderTextColor={theme === "dark" ? colors.placeholderDark : colors.placeholderLight}
               value={lastName}
               onChangeText={setLastName}
             />
@@ -337,12 +434,24 @@ const RegistryUser = () => {
             <View style={{ zIndex: 1000, marginTop: 16 }}>
               <TouchableOpacity
                 onPress={() => setDatePickerVisibility(true)}
-                style={[styles.input, { flexDirection: "row", justifyContent: "space-between" }]}
+                style={[
+                  styles.input,
+                  {
+                    flexDirection: "row",
+                    justifyContent: "space-between",
+                    backgroundColor: theme === "dark" ? colors.cardDark : colors.cardLight,
+                    borderColor: errors.birthDate
+                      ? "#FF0000"
+                      : theme === "dark"
+                      ? colors.borderDark
+                      : colors.borderLight,
+                  },
+                ]}
               >
-                <Text style={{ color: birthDate ? "#000" : "#9ca3af" }}>
+                <Text style={{ color: birthDate ? (theme === "dark" ? colors.textDark : colors.textLight) : (theme === "dark" ? colors.placeholderDark : colors.placeholderLight) }}>
                   {birthDate ? birthDate : t("birthdate_placeholder")}
                 </Text>
-                <MaterialIcons name="calendar-today" size={20} color="#9ca3af" />
+                <MaterialIcons name="calendar-today" size={20} color={theme === "dark" ? colors.placeholderDark : colors.placeholderLight} />
               </TouchableOpacity>
               <DateTimePickerModal
                 isVisible={isDatePickerVisible}
@@ -354,46 +463,60 @@ const RegistryUser = () => {
                 onCancel={() => setDatePickerVisibility(false)}
               />
             </View>
-    
             {errors.idType && <Text style={styles.errorText}>{errors.idType}</Text>}
-            <DropDownPicker
-              open={openIdType}
-              value={idType}
-              items={[
-                { label: t("id_type_drivers_license"), value: "DL" },
-                { label: t("id_type_state_id"), value: "SI" },
-                { label: t("id_type_green_card"), value: "GC" },
-                { label: t("id_type_passport"), value: "PA" },
+            <View
+              style={[
+                styles.input,
+                {
+                  paddingHorizontal: 0,
+                  paddingVertical: 0,
+                  justifyContent: "center",
+                  borderColor: errors.idType
+                    ? "#FF0000"
+                    : theme === "dark"
+                    ? colors.borderDark
+                    : colors.borderLight,
+                  backgroundColor: theme === "dark" ? colors.cardDark : colors.cardLight,
+                },
               ]}
-              setOpen={setOpenIdType}
-              setValue={setIdType}
-              setItems={() => {}}
-              placeholder={t("select_id_type_placeholder")}
-              placeholderStyle={{ color: "#9ca3af" }}
-              style={[styles.input, { borderColor: errors.idType ? "red" : "#0458AB" }]}
-              listMode="MODAL"
-              modalTitle={t("select_id_type_modal_title")}
-              modalProps={{
-                animationType: "slide",
-              }}
-              searchable={true}
-              searchPlaceholder={t("search_placeholder")}
-              searchPlaceholderTextColor="#9ca3af"
-              onChangeSearchText={(text) => setSearchTerm(text)}
-              scrollViewProps={{
-                nestedScrollEnabled: true,
-              }}
-            />
-    
+            >
+              <Picker
+                selectedValue={idType}
+                onValueChange={(itemValue) => setIdType(itemValue)}
+                style={{
+                  color: theme === "dark" ? colors.textDark : colors.textLight,
+                  backgroundColor: "transparent",
+                }}
+                dropdownIconColor={theme === "dark" ? colors.textDark : colors.textLight}
+              >
+                <Picker.Item label={t("select_id_type_placeholder")} value="" color={theme === "dark" ? colors.placeholderDark : colors.placeholderLight} />
+                <Picker.Item label={t("id_type_drivers_license")} value="DL" />
+                <Picker.Item label={t("id_type_state_id")} value="SI" />
+                <Picker.Item label={t("id_type_green_card")} value="GC" />
+                <Picker.Item label={t("id_type_passport")} value="PA" />
+              </Picker>
+            </View>
             {errors.idNumber && <Text style={styles.errorText}>{errors.idNumber}</Text>}
             <TextInput
-              style={[styles.input, errors.idNumber && styles.inputError]}
+              style={[
+                styles.input,
+                errors.idNumber && styles.inputError,
+                {
+                  backgroundColor: theme === "dark" ? colors.cardDark : colors.cardLight,
+                  color: theme === "dark" ? colors.textDark : colors.textLight,
+                  borderColor: errors.idNumber
+                    ? "#FF0000"
+                    : theme === "dark"
+                    ? colors.borderDark
+                    : colors.borderLight,
+                },
+              ]}
               placeholder={t("identification_placeholder")}
-              placeholderTextColor="#888"
+              placeholderTextColor={theme === "dark" ? colors.placeholderDark : colors.placeholderLight}
               value={idNumber}
               onChangeText={setIdNumber}
             />
-    
+
             {errors.state && <Text style={styles.errorText}>{errors.state}</Text>}
             <DropDownPicker
               open={openState}
@@ -402,8 +525,18 @@ const RegistryUser = () => {
               setOpen={setOpenState}
               setValue={setState}
               placeholder={t("select_state_placeholder")}
-              placeholderStyle={{ color: "#9ca3af" }}
-              style={[styles.input, { borderColor: errors.state ? "red" : "#0458AB" }]}
+              placeholderStyle={{ color: theme === "dark" ? colors.placeholderDark : colors.placeholderLight }}
+              style={[
+                styles.input,
+                {
+                  borderColor: errors.state
+                    ? "#FF0000"
+                    : theme === "dark"
+                    ? colors.borderDark
+                    : colors.borderLight,
+                  backgroundColor: theme === "dark" ? colors.cardDark : colors.cardLight,
+                },
+              ]}
               dropDownContainerStyle={{ maxHeight: 200 }}
               listMode="MODAL"
               modalTitle={t("select_state_modal_title")}
@@ -412,63 +545,123 @@ const RegistryUser = () => {
               }}
               searchable={true}
               searchPlaceholder={t("search_state_placeholder")}
-              searchPlaceholderTextColor="#9ca3af"
+              searchPlaceholderTextColor={theme === "dark" ? colors.placeholderDark : colors.placeholderLight}
               onChangeSearchText={setSearchTerm}
               scrollViewProps={{
                 nestedScrollEnabled: true,
               }}
             />
 
-    
             {errors.city && <Text style={styles.errorText}>{errors.city}</Text>}
             <TextInput
-              style={[styles.input, errors.city && styles.inputError]}
+              style={[
+                styles.input,
+                errors.city && styles.inputError,
+                {
+                  backgroundColor: theme === "dark" ? colors.cardDark : colors.cardLight,
+                  color: theme === "dark" ? colors.textDark : colors.textLight,
+                  borderColor: errors.city
+                    ? "#FF0000"
+                    : theme === "dark"
+                    ? colors.borderDark
+                    : colors.borderLight,
+                },
+              ]}
               placeholder={t("city_placeholder")}
-              placeholderTextColor="#888"
+              placeholderTextColor={theme === "dark" ? colors.placeholderDark : colors.placeholderLight}
               value={city}
               onChangeText={setCity}
             />
+
     
             {errors.adressPerson && <Text style={styles.errorText}>{errors.adressPerson}</Text>}
             <TextInput
-              style={[styles.input, errors.adressPerson && styles.inputError]}
+              style={[
+                styles.input,
+                errors.adressPerson && styles.inputError,
+                {
+                  backgroundColor: theme === "dark" ? colors.cardDark : colors.cardLight,
+                  color: theme === "dark" ? colors.textDark : colors.textLight,
+                  borderColor: errors.adressPerson
+                    ? "#FF0000"
+                    : theme === "dark"
+                    ? colors.borderDark
+                    : colors.borderLight,
+                },
+              ]}
               placeholder={t("address_placeholder")}
-              placeholderTextColor="#888"
+              placeholderTextColor={theme === "dark" ? colors.placeholderDark : colors.placeholderLight}
               value={adressPerson}
               onChangeText={setAddress}
             />
     
             {errors.phone && <Text style={styles.errorText}>{errors.phone}</Text>}
             <TextInput
-              style={[styles.input, errors.phone && styles.inputError]}
+              style={[
+                styles.input,
+                errors.phone && styles.inputError,
+                {
+                  backgroundColor: theme === "dark" ? colors.cardDark : colors.cardLight,
+                  color: theme === "dark" ? colors.textDark : colors.textLight,
+                  borderColor: errors.phone
+                    ? "#FF0000"
+                    : theme === "dark"
+                    ? colors.borderDark
+                    : colors.borderLight,
+                },
+              ]}
               placeholder={t("phone_placeholder")}
-              placeholderTextColor="#888"
+              placeholderTextColor={theme === "dark" ? colors.placeholderDark : colors.placeholderLight}
               keyboardType="numeric"
               value={phone}
               onChangeText={setPhone}
             />
               {/* Checkbox de Términos y Condiciones */}
               <View style={styles.termsContainer}>
-              <CheckBox
-                isChecked={isChecked}
-                onClick={() => setIsChecked(!isChecked)}
-                checkBoxColor="#002366"
-              />
-              <Text style={styles.termsText}>
-                {t("accept_terms")}{" "}
-                <Text style={styles.link} onPress={handleDownloadTerms}>
-                  {t("terms_and_conditions")}
+                <CheckBox
+                  isChecked={isChecked}
+                  onClick={() => setIsChecked(!isChecked)}
+                  checkBoxColor={theme === "dark" ? colors.primaryDark : colors.primary}
+                />
+                <Text
+                  style={[
+                    styles.termsText,
+                    { color: theme === "dark" ? colors.textDark : colors.textLight }
+                  ]}
+                >
+                  {t("accept_terms")}{" "}
+                  <Text
+                    style={[
+                      styles.link,
+                      { color: theme === "dark" ? colors.secondary : colors.primary }
+                    ]}
+                    onPress={handleDownloadTerms}
+                  >
+                    {t("terms_and_conditions")}
+                  </Text>
                 </Text>
-              </Text>
-            </View>
-            <TouchableOpacity style={styles.button} onPress={handleRegister}>
+              </View>
+            <TouchableOpacity
+              style={[
+                styles.button,
+                { backgroundColor: colors.primary },
+              ]}
+              onPress={handleRegister}
+            >
               <Text style={styles.buttonText}>{t("register_user_button")}</Text>
             </TouchableOpacity>
-            <TouchableOpacity style={styles.backButton} onPress={() => router.back()}>
+            <TouchableOpacity
+              style={[
+                styles.backButton,
+                { backgroundColor: "#FF0000" },
+              ]}
+              onPress={() => router.back()}
+            >
               <Text style={styles.buttonText}>{t("back")}</Text>
             </TouchableOpacity>
           </View>
         </ScrollView>
+        </KeyboardAvoidingView>
         {/* Modal con WebView */}
 
         <Modal visible={termsVisible} onRequestClose={() => setTermsVisible(false)}>

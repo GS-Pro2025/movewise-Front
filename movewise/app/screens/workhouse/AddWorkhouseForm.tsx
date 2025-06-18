@@ -115,7 +115,7 @@ const AddWorkhouseForm: React.FC<AddWorkhouseFormProps> = ({ visible, onClose, o
                 date: formatDateForAPI(date),
                 status: "Pending",
                 person_id: 7,
-                job: 5,
+                job: 1,
                 customer_factory: selectedCustomer!,
             };
 

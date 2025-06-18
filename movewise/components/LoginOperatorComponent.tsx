@@ -3,7 +3,6 @@ import { loginUser } from "@/hooks/api/OperatorLoginClient";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { router } from "expo-router";
 import React, { useState } from "react";
-import { useTranslation } from "react-i18next";
 import {
   View,
   Text,
@@ -13,13 +12,20 @@ import {
   ImageBackground,
   StatusBar,
   ActivityIndicator,
+  KeyboardAvoidingView,
+  Platform,
+  ScrollView,
+  useColorScheme,
 } from "react-native";
 import Toast from "react-native-toast-message";
+import colors from "../app/Colors"; // Asegúrate de importar tu archivo de colores
+import { useTranslation } from "react-i18next";
 
 const IdLoginScreen: React.FC = () => {
   const { t } = useTranslation();
   const [id_number, setIdNumber] = useState("");
   const [loading, setLoading] = useState(false);
+  const theme = useColorScheme();
 
   const handleLogin = async () => {
     // console.log("🔍 ID ingresado:", id_number);
@@ -69,8 +75,10 @@ const IdLoginScreen: React.FC = () => {
         text1: t("login_successful"),
         text2: `${t("welcome")} ${operatorData.first_name ?? t("user")}`,
       });
+      // esperamos 3 segundos para redirigir a  la pantalla de inicio
+      await new Promise(resolve => setTimeout(resolve, 500));
+      router.replace("/OperatorHome");
 
-      router.push("/OperatorHome");
     } catch (error: any) {
       console.error("❌ Error en login operator:", error);
       Toast.show({
@@ -86,43 +94,83 @@ const IdLoginScreen: React.FC = () => {
 
   return (
     <ImageBackground
-      source={require("../assets/images/bg_login.jpg")}
-      style={styles.background}
+      source={
+        theme === "dark"
+          ? require("../assets/images/patron_modo_oscuro.png")
+          : require("../assets/images/patron_modo_claro.png")
+      }
+      style={[
+        styles.background,
+        { backgroundColor: theme === "dark" ? "#0B2863" : "#fff" },
+      ]}
       resizeMode="cover"
     >
-      <StatusBar barStyle="light-content" />
-      <View style={styles.container}>
-        <Text style={styles.title}>{t("welcome_to")}{"\n"}Movewise</Text>
-
-        <Text style={styles.label}>{t("identification_number")}</Text>
-        <TextInput
-          style={styles.input}
-          placeholder={t("id_placeholder")}
-          placeholderTextColor="#666"
-          keyboardType="default"
-          value={id_number}
-          onChangeText={setIdNumber}
-        />
-
-        <TouchableOpacity
-          style={styles.button}
-          onPress={handleLogin}
-          disabled={loading}
-        >
-          {loading ? (
-            <ActivityIndicator color="#fff" />
-          ) : (
-            <Text style={styles.buttonText}>{t("login_button")}</Text>
-          )}
-        </TouchableOpacity>
-        <TouchableOpacity
-          style={styles.backButton}
-          onPress={() => router.replace("/Login")}>
-          <Text style={styles.buttonText}>
-            {t("back_to_admin_login")}
+      <StatusBar barStyle={theme === "dark" ? "light-content" : "dark-content"} />
+      <KeyboardAvoidingView
+        style={{ flex: 1 }}
+        behavior={Platform.OS === "ios" ? "padding" : "height"}
+        keyboardVerticalOffset={Platform.OS === "ios" ? 0 : 24}
+      >
+        <ScrollView contentContainerStyle={styles.container} keyboardShouldPersistTaps="handled">
+          <Text
+            style={[
+              styles.title,
+              { color: theme === "dark" ? colors.textDark : colors.primary }
+            ]}
+          >
+            {t("welcome_to")}{"\n"}Movewise
           </Text>
-        </TouchableOpacity>
-      </View>
+
+          <Text
+            style={[
+              styles.label,
+              { color: theme === "dark" ? colors.textDark : colors.primary }
+            ]}
+          >
+            {t("identification_number")}
+          </Text>
+          <TextInput
+            style={[
+              styles.input,
+              {
+                backgroundColor: theme === "dark" ? colors.cardDark : colors.cardLight,
+                color: theme === "dark" ? colors.textDark : colors.textLight,
+                borderColor: theme === "dark" ? colors.borderDark : colors.borderLight,
+              },
+            ]}
+            placeholder={t("id_placeholder")}
+            placeholderTextColor={theme === "dark" ? colors.placeholderDark : colors.placeholderLight}
+            keyboardType="default"
+            value={id_number}
+            onChangeText={setIdNumber}
+          />
+
+          <TouchableOpacity
+            style={[
+              styles.button,
+              { backgroundColor: colors.primary }
+            ]}
+            onPress={handleLogin}
+            disabled={loading}
+          >
+            {loading ? (
+              <ActivityIndicator color="#fff" />
+            ) : (
+              <Text style={styles.buttonText}>{t("login_button")}</Text>
+            )}
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={[
+              styles.backButton,
+              { backgroundColor: "#FF0000" }
+            ]}
+            onPress={() => router.replace("/Login")}>
+            <Text style={styles.buttonText}>
+              {t("back_to_admin_login")}
+            </Text>
+          </TouchableOpacity>
+        </ScrollView>
+      </KeyboardAvoidingView>
     </ImageBackground>
   );
 };
@@ -154,7 +202,6 @@ const styles = StyleSheet.create({
   },
   backButton: {
     height: 48,
-    backgroundColor: "#FF0000",
     borderRadius: 10,
     justifyContent: "center",
     alignItems: "center",
@@ -164,7 +211,6 @@ const styles = StyleSheet.create({
   input: {
     height: 48,
     borderWidth: 1.5,
-    borderColor: "#002366",
     borderRadius: 8,
     paddingHorizontal: 16,
     backgroundColor: "#fff",
@@ -174,7 +220,6 @@ const styles = StyleSheet.create({
   },
   button: {
     height: 48,
-    backgroundColor: "#0458AB",
     borderRadius: 8,
     justifyContent: "center",
     alignItems: "center",
