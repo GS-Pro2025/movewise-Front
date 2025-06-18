@@ -574,5 +574,7 @@
   "shift_name":"Shift Name",
   "work_history":"Work History",
   "search_by_name":"Search by name",
-  "create":"Create"
+  "create":"Create",
+  "create_admin_button": "Create Admin",
+  "admin_created": "Admin created successfully"
 }

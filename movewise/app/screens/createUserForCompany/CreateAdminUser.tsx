@@ -17,9 +17,11 @@ import { Picker } from "@react-native-picker/picker";
 import DateTimePickerModal from "react-native-modal-datetime-picker";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import colors from "@/app/Colors";
+import { useTranslation } from "react-i18next"; // <-- Añadido
 
 const CreateAdminUser = () => {
   const theme = useColorScheme();
+  const { t } = useTranslation(); // <-- Añadido
 
   // Estados para los campos
   const [email, setEmail] = useState("");
@@ -37,8 +39,33 @@ const CreateAdminUser = () => {
   const [phone, setPhone] = useState("");
   const [isDatePickerVisible, setDatePickerVisibility] = useState(false);
 
-  // Errores (puedes usarlos si quieres validación visual)
   const [errors, setErrors] = useState<{ [key: string]: string }>({});
+
+  const validateFields = () => {
+    const newErrors: { [key: string]: string } = {};
+    if (!email) newErrors.email = t("email_required");
+    if (!userName) newErrors.userName = t("username_required");
+    if (!password) newErrors.password = t("password_required");
+    if (!firstName) newErrors.firstName = t("first_name_required");
+    if (!lastName) newErrors.lastName = t("last_name_required");
+    if (!birthDate) newErrors.birthDate = t("birthdate_required");
+    if (!idType) newErrors.idType = t("id_type_required");
+    if (!idNumber) newErrors.idNumber = t("id_number_required");
+    if (!state) newErrors.state = t("state_required");
+    if (!city) newErrors.city = t("city_required");
+    if (!zipCode) newErrors.zipCode = t("zip_code_required");
+    if (!adressPerson) newErrors.adressPerson = t("address_required");
+    if (!phone) newErrors.phone = t("phone_required");
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
+  const handleCreateAdmin = () => {
+    if (!validateFields()) {
+      return;
+    }
+    // Tu lógica de envío aquí
+  };
 
   return (
     <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
@@ -66,7 +93,7 @@ const CreateAdminUser = () => {
                 { color: theme === "dark" ? colors.textDark : colors.primary },
               ]}
             >
-              Crear nuevo administrador
+              {t("create_new_admin")}
             </Text>
 
             {/* Email */}
@@ -85,7 +112,7 @@ const CreateAdminUser = () => {
                     : colors.borderLight,
                 },
               ]}
-              placeholder="Correo electrónico"
+              placeholder={t("email_placeholder")}
               placeholderTextColor={theme === "dark" ? colors.placeholderDark : colors.placeholderLight}
               value={email}
               onChangeText={setEmail}
@@ -109,7 +136,7 @@ const CreateAdminUser = () => {
                     : colors.borderLight,
                 },
               ]}
-              placeholder="Nombre de usuario"
+              placeholder={t("username_placeholder")}
               placeholderTextColor={theme === "dark" ? colors.placeholderDark : colors.placeholderLight}
               value={userName}
               onChangeText={setUserName}
@@ -131,7 +158,7 @@ const CreateAdminUser = () => {
                     : colors.borderLight,
                 },
               ]}
-              placeholder="Contraseña"
+              placeholder={t("password_placeholder")}
               placeholderTextColor={theme === "dark" ? colors.placeholderDark : colors.placeholderLight}
               value={password}
               onChangeText={setPassword}
@@ -154,7 +181,7 @@ const CreateAdminUser = () => {
                     : colors.borderLight,
                 },
               ]}
-              placeholder="Nombre"
+              placeholder={t("first_name_placeholder")}
               placeholderTextColor={theme === "dark" ? colors.placeholderDark : colors.placeholderLight}
               value={firstName}
               onChangeText={setFirstName}
@@ -176,7 +203,7 @@ const CreateAdminUser = () => {
                     : colors.borderLight,
                 },
               ]}
-              placeholder="Apellido"
+              placeholder={t("last_name_placeholder")}
               placeholderTextColor={theme === "dark" ? colors.placeholderDark : colors.placeholderLight}
               value={lastName}
               onChangeText={setLastName}
@@ -202,7 +229,7 @@ const CreateAdminUser = () => {
                 ]}
               >
                 <Text style={{ color: birthDate ? (theme === "dark" ? colors.textDark : colors.textLight) : (theme === "dark" ? colors.placeholderDark : colors.placeholderLight) }}>
-                  {birthDate ? birthDate : "Fecha de nacimiento"}
+                  {birthDate ? birthDate : t("birthdate_placeholder")}
                 </Text>
                 <MaterialIcons name="calendar-today" size={20} color={theme === "dark" ? colors.placeholderDark : colors.placeholderLight} />
               </TouchableOpacity>
@@ -244,11 +271,11 @@ const CreateAdminUser = () => {
                 }}
                 dropdownIconColor={theme === "dark" ? colors.textDark : colors.textLight}
               >
-                <Picker.Item label="Tipo de identificación" value="" color={theme === "dark" ? colors.placeholderDark : colors.placeholderLight} />
-                <Picker.Item label="Licencia de conducir" value="DL" />
-                <Picker.Item label="ID estatal" value="SI" />
-                <Picker.Item label="Green Card" value="GC" />
-                <Picker.Item label="Pasaporte" value="PA" />
+                <Picker.Item label={t("id_type_placeholder")} value="" color={theme === "dark" ? colors.placeholderDark : colors.placeholderLight} />
+                <Picker.Item label={t("id_type_drivers_license")} value="DL" />
+                <Picker.Item label={t("id_type_state_id")} value="SI" />
+                <Picker.Item label={t("id_type_green_card")} value="GC" />
+                <Picker.Item label={t("id_type_passport")} value="PA" />
               </Picker>
             </View>
 
@@ -268,7 +295,7 @@ const CreateAdminUser = () => {
                     : colors.borderLight,
                 },
               ]}
-              placeholder="Número de identificación"
+              placeholder={t("id_number_placeholder")}
               placeholderTextColor={theme === "dark" ? colors.placeholderDark : colors.placeholderLight}
               value={idNumber}
               onChangeText={setIdNumber}
@@ -290,7 +317,7 @@ const CreateAdminUser = () => {
                     : colors.borderLight,
                 },
               ]}
-              placeholder="Estado"
+              placeholder={t("state_placeholder")}
               placeholderTextColor={theme === "dark" ? colors.placeholderDark : colors.placeholderLight}
               value={state}
               onChangeText={setState}
@@ -312,7 +339,7 @@ const CreateAdminUser = () => {
                     : colors.borderLight,
                 },
               ]}
-              placeholder="Ciudad"
+              placeholder={t("city_placeholder")}
               placeholderTextColor={theme === "dark" ? colors.placeholderDark : colors.placeholderLight}
               value={city}
               onChangeText={setCity}
@@ -334,7 +361,7 @@ const CreateAdminUser = () => {
                     : colors.borderLight,
                 },
               ]}
-              placeholder="Código postal"
+              placeholder={t("zip_code_placeholder")}
               placeholderTextColor={theme === "dark" ? colors.placeholderDark : colors.placeholderLight}
               value={zipCode}
               onChangeText={setZipCode}
@@ -357,7 +384,7 @@ const CreateAdminUser = () => {
                     : colors.borderLight,
                 },
               ]}
-              placeholder="Dirección"
+              placeholder={t("address_placeholder")}
               placeholderTextColor={theme === "dark" ? colors.placeholderDark : colors.placeholderLight}
               value={adressPerson}
               onChangeText={setAddress}
@@ -379,7 +406,7 @@ const CreateAdminUser = () => {
                     : colors.borderLight,
                 },
               ]}
-              placeholder="Teléfono"
+              placeholder={t("phone_placeholder")}
               placeholderTextColor={theme === "dark" ? colors.placeholderDark : colors.placeholderLight}
               keyboardType="numeric"
               value={phone}
@@ -391,9 +418,9 @@ const CreateAdminUser = () => {
                 styles.button,
                 { backgroundColor: colors.primary },
               ]}
-              onPress={() => {/* handleCrearAdmin */}}
+              onPress={() => { handleCreateAdmin(); }}
             >
-              <Text style={styles.buttonText}>Crear administrador</Text>
+              <Text style={styles.buttonText}>{t("create_admin_button")}</Text>
             </TouchableOpacity>
           </ScrollView>
         </KeyboardAvoidingView>
