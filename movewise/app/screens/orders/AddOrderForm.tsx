@@ -283,23 +283,94 @@ export default function AddOrderModal({ visible, onClose }: AddOrderFormProps) {
     if (!validateFields()) return;
 
     //validate fields
-    if (
-      !customerName?.trim() ||
-      !customerLastName?.trim() ||
-      !address?.trim() ||
-      // !email?.trim() ||
-      !cellPhone?.trim() ||
-      !date ||
-      !weight ||
-      !keyReference ||
-      !company
-    ) {
+    // Validar campos obligatorios
+    if (!customerName?.trim()) {
       Toast.show({
         text1: t('error'),
-        text2: t('please_fill_all_required_fields'), // Asegúrate de tener esta traducción
+        text2: t('customer_name_required'),
         type: 'error',
       });
-      return;
+      return false;
+    }
+    
+    if (!customerLastName?.trim()) {
+      Toast.show({
+        text1: t('error'),
+        text2: t('customer_last_name_required'),
+        type: 'error',
+      });
+      return false;
+    }
+    
+    if (!date) {
+      Toast.show({
+        text1: t('error'),
+        text2: t('date_required'),
+        type: 'error',
+      });
+      return false;
+    }
+    
+    if (!keyReference) {
+      Toast.show({
+        text1: t('error'),
+        text2: t('key_reference_required'),
+        type: 'error',
+      });
+      return false;
+    }
+    
+    if (!weight) {
+      Toast.show({
+        text1: t('error'),
+        text2: t('weight_required'),
+        type: 'error',
+      });
+      return false;
+    }
+    
+    if (!company) {
+      Toast.show({
+        text1: t('error'),
+        text2: t('company_required'),
+        type: 'error',
+      });
+      return false;
+    }
+    
+    if (!email?.trim()) {
+      Toast.show({
+        text1: t('error'),
+        text2: t('email_required'),
+        type: 'error',
+      });
+      return false;
+    }
+    
+    // Validar formato de email
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    const newErrors: Record<string, string> = {};
+    
+    if (!emailRegex.test(email)) {
+      Toast.show({
+        text1: t('error'),
+        text2: t('invalid_email_format'),
+        type: 'error',
+      });
+      return false;
+    }
+    
+    // Add other validation checks here and populate newErrors if needed
+    // Example: if (!someField) newErrors.someField = 'This field is required';
+    
+    // Validar si hay errores y mostrarlos
+    if (Object.keys(newErrors).length > 0) {
+      setErrors(newErrors);
+      // Hacer scroll al primer error
+      if (newErrors.country || newErrors.stateRegion || newErrors.city) {
+        // Los errores de ubicación ya están en la parte superior
+      }
+      return false;
     }
 
 
@@ -441,22 +512,31 @@ export default function AddOrderModal({ visible, onClose }: AddOrderFormProps) {
   const validateFields = async () => {
     let newErrors: { [key: string]: string } = {};
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!state) newErrors.state = t('state_required');
+    
+    // Validar campos de ubicación
+    if (!country) newErrors.country = t('country_required');
+    if (!stateRegion) newErrors.stateRegion = t('state_region_required');
+    if (!city) newErrors.city = t('city_required');
+    
+    // Validar otros campos obligatorios
     if (!date) newErrors.date = t('date_required');
     if (!keyReference) newErrors.keyReference = t('key_reference_required');
     if (!customerName) newErrors.customerName = t('customer_name_required');
     if (!customerLastName) newErrors.customerLastName = t('customer_last_name_required');
-    if (!email) { newErrors.email = t('email_required'); } else if (!emailRegex.test(email)) { newErrors.email = t('invalid_email_format'); }
+    if (!email) { 
+      newErrors.email = t('email_required'); 
+    } else if (!emailRegex.test(email)) { 
+      newErrors.email = t('invalid_email_format'); 
+    }
     if (!weight) newErrors.weight = t('weight_required');
     if (!job) newErrors.job = t('job_required');
     if (!company) newErrors.company = t('company_required');
     if (!dispatchTicket) newErrors.dispatchTicket = t('dispatch_ticket_required');
-    //validamos el tamaño del dispatch ticket 5mb
-    if (!dispatchTicket) {
-      newErrors.dispatchTicket = t('dispatch_ticket_required');
-    } else {
+    
+    // Validar el tamaño del dispatch ticket 5mb
+    if (dispatchTicket) {
       const fileInfo = await FileSystem.getInfoAsync(dispatchTicket.uri);
-      if (fileInfo.exists && fileInfo.size && fileInfo.size > 5 * 1024 * 1024) { // Verificar si el archivo existe y tiene tamaño
+      if (fileInfo.exists && fileInfo.size && fileInfo.size > 5 * 1024 * 1024) {
         newErrors.dispatchTicket = t('dispatch_ticket_size_exceeded');
         Toast.show({
           type: 'error',
@@ -620,10 +700,21 @@ export default function AddOrderModal({ visible, onClose }: AddOrderFormProps) {
                 value={country}
                 items={countriesList}
                 setOpen={setOpenCountry}
-                setValue={setCountry}
+                setValue={(value) => {
+                  setCountry(value);
+                  // Limpiar error al seleccionar un país
+                  if (errors.country) {
+                    setErrors(prev => ({ ...prev, country: '' }));
+                  }
+                }}
                 placeholder={t('select_country')}
                 placeholderStyle={{ color: '#9ca3af' }}
-                style={[styles.input, { borderColor: errors.country ? "red" : "#0458AB" }]}
+                style={[
+                  styles.input, 
+                  { 
+                    borderColor: errors.country ? "red" : (colorScheme === 'dark' ? '#64748b' : '#0458AB')
+                  }
+                ]}
                 listMode="MODAL"
                 modalTitle={t('select_country')}
                 searchable={true}
@@ -631,6 +722,11 @@ export default function AddOrderModal({ visible, onClose }: AddOrderFormProps) {
                 loading={loadingCountries}
                 dropDownContainerStyle={{ maxHeight: 500 }}
               />
+              {errors.country && (
+                <Text style={{ color: 'red', fontSize: 12, marginTop: 4 }}>
+                  {errors.country}
+                </Text>
+              )}
             </View>
 
             {/* Selector de Estado/Región */}
@@ -641,13 +737,21 @@ export default function AddOrderModal({ visible, onClose }: AddOrderFormProps) {
                 value={stateRegion}
                 items={stateList}
                 setOpen={setOpenStateRegion}
-                setValue={setStateRegion}
+                setValue={(value) => {
+                  setStateRegion(value);
+                  // Limpiar error al seleccionar un estado/región
+                  if (errors.stateRegion) {
+                    setErrors(prev => ({ ...prev, stateRegion: '' }));
+                  }
+                }}
                 placeholder={t('select_state_region')}
                 placeholderStyle={{ color: '#9ca3af' }}
                 style={[
                   styles.input,
                   {
-                    borderColor: errors.stateRegion ? "red" : "#0458AB",
+                    borderColor: errors.stateRegion 
+                      ? "red" 
+                      : (!country || colorScheme === 'dark' ? '#64748b' : '#0458AB'),
                     ...(!country ? styles.disabledInput : {})
                   }
                 ]}
@@ -659,6 +763,11 @@ export default function AddOrderModal({ visible, onClose }: AddOrderFormProps) {
                 disabled={!country}
                 dropDownContainerStyle={{ maxHeight: 500 }}
               />
+              {errors.stateRegion && (
+                <Text style={{ color: 'red', fontSize: 12, marginTop: 4 }}>
+                  {errors.stateRegion}
+                </Text>
+              )}
             </View>
 
             {/* Selector de Ciudad */}
@@ -669,13 +778,21 @@ export default function AddOrderModal({ visible, onClose }: AddOrderFormProps) {
                 value={city}
                 items={citiesList}
                 setOpen={setOpenCity}
-                setValue={setCity}
+                setValue={(value) => {
+                  setCity(value);
+                  // Limpiar error al seleccionar una ciudad
+                  if (errors.city) {
+                    setErrors(prev => ({ ...prev, city: '' }));
+                  }
+                }}
                 placeholder={t('select_city')}
                 placeholderStyle={{ color: '#9ca3af' }}
                 style={[
                   styles.input,
                   {
-                    borderColor: errors.city ? "red" : "#0458AB",
+                    borderColor: errors.city 
+                      ? "red" 
+                      : (!stateRegion || colorScheme === 'dark' ? '#64748b' : '#0458AB'),
                     ...(!stateRegion ? styles.disabledInput : {})
                   }
                 ]}
@@ -687,6 +804,11 @@ export default function AddOrderModal({ visible, onClose }: AddOrderFormProps) {
                 disabled={!stateRegion}
                 dropDownContainerStyle={{ maxHeight: 500 }}
               />
+              {errors.city && (
+                <Text style={{ color: 'red', fontSize: 12, marginTop: 4 }}>
+                  {errors.city}
+                </Text>
+              )}
             </View>
 
             <View style={{ zIndex: 2000, marginTop: 16 }}>

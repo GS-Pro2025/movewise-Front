@@ -610,5 +610,6 @@
   "shift_name":"Nombre de turno",
   "work_history":"Historial de Trabajo",
   "search_by_name":"Buscar por nombre",
-  "create":"Crear"
+  "create":"Crear",
+  "state_region_required":"Region es obligatoria"
 } 
