@@ -164,6 +164,7 @@ const Step1Form = ({ formData, updateFormData, onNext, isEditing, onclose }: Ste
     const validateForm = (): boolean => {
         const newErrors: Record<string, string> = {};
 
+        // Required fields validation
         if (!localData.first_name.trim()) {
             newErrors.first_name = 'First name is required';
         } else if (localData.first_name.length < 2) {
@@ -176,9 +177,8 @@ const Step1Form = ({ formData, updateFormData, onNext, isEditing, onclose }: Ste
             newErrors.last_name = 'Last name must be at least 2 characters long';
         }
 
-        if (!localData.birth_date) {
-            newErrors.birth_date = t("birth_date_required");
-        } else {
+        // Birth date is optional but validate if provided
+        if (localData.birth_date) {
             const today = new Date();
             const dob = new Date(localData.birth_date);
             const age = today.getFullYear() - dob.getFullYear();
@@ -197,25 +197,25 @@ const Step1Form = ({ formData, updateFormData, onNext, isEditing, onclose }: Ste
             newErrors.id_number = 'ID number must be at least 5 characters long';
         }
 
-        // if (!localData.address.trim()) {
-        //     newErrors.address = t("address_required");
-        // }
+        // Address is required
+        if (!localData.address.trim()) {
+            newErrors.address = t("address_required");
+        }
 
-        // Validación mejorada para el teléfono usando el PhoneInput
-        // if (!formattedPhone.trim()) {
-        //     newErrors.phone = t("phone_required");
-        // } else {
-        //     // Convertir a formato E.164 para validación
-        //     const e164Number = formattedPhone.replace('-', '');
-        //     const checkValid = phoneInput.current?.isValidNumber(e164Number);
-        //     if (!checkValid) {
-        //         newErrors.phone = t("phone_invalid") || 'Please enter a valid phone number';
-        //     }
-        // }
+        // Phone is required and should be valid
+        if (!formattedPhone.trim()) {
+            newErrors.phone = t("phone_required");
+        } else {
+            // Convert to E.164 format for validation
+            const e164Number = formattedPhone.replace('-', '');
+            const checkValid = phoneInput.current?.isValidNumber(e164Number);
+            if (!checkValid) {
+                newErrors.phone = t("phone_invalid") || 'Please enter a valid phone number';
+            }
+        }
 
-        if (!localData.email) {
-            newErrors.email = 'Email is required';
-        } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(localData.email)) {
+        // Email is optional but validate format if provided
+        if (localData.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(localData.email)) {
             newErrors.email = 'Please enter a valid email address';
         }
 
@@ -280,7 +280,7 @@ const Step1Form = ({ formData, updateFormData, onNext, isEditing, onclose }: Ste
                     value={localData.birth_date}
                     onChangeDate={(date) => handleChange('birth_date', date)}
                     error={errors.birth_date}
-                    required={true}
+                    required={false}
                 />
 
                 <DropdownInput
@@ -306,13 +306,14 @@ const Step1Form = ({ formData, updateFormData, onNext, isEditing, onclose }: Ste
                     value={localData.address}
                     onChangeText={(text) => handleChange('address', text)}
                     error={errors.address}
-                    required={false}
+                    required={true}
                 />
 
                 {/* Campo de teléfono con react-phone-number-input */}
                 <View style={styles.inputContainer}>
                     <Text style={[styles.label, { color: isDarkMode ? colors.textDark : colors.textLight }]}>
-                        {t("phone")} 
+                        {t("phone")}
+                        <Text style={{ color: 'red' }}>*</Text>
                     </Text>
                     <PhoneInput
                         ref={phoneInput}
@@ -416,7 +417,7 @@ const Step1Form = ({ formData, updateFormData, onNext, isEditing, onclose }: Ste
                     onChangeText={(text) => handleChange('email', text)}
                     keyboardType="email-address"
                     error={errors.email}
-                    required={true}
+                    required={false}
                 />
                 <View style={styles.buttonContainer}>
                     <TouchableOpacity 
