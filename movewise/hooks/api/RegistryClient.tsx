@@ -9,8 +9,6 @@ interface Person {
     address: string;
     id_number: string;
     type_id: string;
-    state: string; 
-    city: string;  
 }
 
 interface RegisterRequestBody {

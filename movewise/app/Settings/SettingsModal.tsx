@@ -1,6 +1,8 @@
 import React, { useState } from "react";
-import { Modal, View, Text, TouchableOpacity, StyleSheet } from "react-native";
+import { Modal, View, Text, TouchableOpacity, StyleSheet, useColorScheme } from "react-native";
 import { useTranslation } from "react-i18next";
+import colors from "@/app/Colors";
+import { useRouter } from "expo-router";
 
 interface SettingsModalProps {
     visible: boolean;
@@ -11,7 +13,12 @@ interface SettingsModalProps {
 
 const SettingsModal: React.FC<SettingsModalProps> = ({ visible, onClose, onOpenJobsModal, onOpenCustomerListModal }) => {
     const { t } = useTranslation();
+    const theme = useColorScheme();
 
+    const isDark = theme === "dark";
+
+    const router = useRouter();
+    
     return (
         <Modal
             visible={visible}
@@ -20,9 +27,30 @@ const SettingsModal: React.FC<SettingsModalProps> = ({ visible, onClose, onOpenJ
             onRequestClose={onClose}
         >
             <View style={styles.modalContainer}>
-                <View style={styles.modalContent}>
-                    <View style={styles.header}>
-                        <Text style={styles.headerTitle}>{t("settings")}</Text>
+                <View
+                    style={[
+                        styles.modalContent,
+                        {
+                            backgroundColor: isDark ? colors.cardDark : "#fff",
+                        },
+                    ]}
+                >
+                    <View
+                        style={[
+                            styles.header,
+                            {
+                                borderBottomColor: isDark ? colors.primary : "#0458AB",
+                            },
+                        ]}
+                    >
+                        <Text
+                            style={[
+                                styles.headerTitle,
+                                { color: isDark ? colors.primary : "#0458AB" },
+                            ]}
+                        >
+                            {t("settings")}
+                        </Text>
                     </View>
                     {/* Opciones de configuración */}
                     <TouchableOpacity
@@ -32,7 +60,14 @@ const SettingsModal: React.FC<SettingsModalProps> = ({ visible, onClose, onOpenJ
                             onOpenJobsModal();
                         }}
                     >
-                        <Text style={styles.modalOptionText}>{t("option_jobs_and_tools")}</Text>
+                        <Text
+                            style={[
+                                styles.modalOptionText,
+                                { color: isDark ? colors.textDark : "#333" },
+                            ]}
+                        >
+                            {t("option_jobs_and_tools")}
+                        </Text>
                     </TouchableOpacity>
 
                     <TouchableOpacity
@@ -42,11 +77,41 @@ const SettingsModal: React.FC<SettingsModalProps> = ({ visible, onClose, onOpenJ
                             onOpenCustomerListModal();
                         }}
                     >
-                        <Text style={styles.modalOptionText}>{t("customer_factory_option")}</Text>
+                        <Text
+                            style={[
+                                styles.modalOptionText,
+                                { color: isDark ? colors.textDark : "#333" },
+                            ]}
+                        >
+                            {t("customer_factory_option")}
+                        </Text>
                     </TouchableOpacity>
-
+                    <TouchableOpacity
+                        style={styles.modalOption}
+                        onPress={() => {
+                            onClose();
+                            router.push("/Settings/Options/createUserForCompany/CreateAdminUser");
+                        }}
+                    >
+                        <Text
+                            style={[
+                                styles.modalOptionText,
+                                { color: isDark ? colors.textDark : "#333" },
+                            ]}
+                        >
+                            {t("create_admin_option")}
+                        </Text>
+                    </TouchableOpacity>
                     <TouchableOpacity style={styles.modalOption} onPress={onClose}>
-                        <Text style={[styles.modalOptionText, styles.closeButtonText]}>{t("close")}</Text>
+                        <Text
+                            style={[
+                                styles.modalOptionText,
+                                styles.closeButtonText,
+                                { color: isDark ? colors.error : "#e74c3c" },
+                            ]}
+                        >
+                            {t("close")}
+                        </Text>
                     </TouchableOpacity>
                 </View>
             </View>
@@ -93,7 +158,7 @@ const styles = StyleSheet.create({
         color: "#333",
     },
     closeButtonText: {
-        color: "#e74c3c", 
+        color: "#e74c3c",
     },
 });
 

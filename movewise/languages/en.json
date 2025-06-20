@@ -574,5 +574,18 @@
   "shift_name":"Shift Name",
   "work_history":"Work History",
   "search_by_name":"Search by name",
-  "create":"Create"
+  "create":"Create",
+  "create_admin_button": "Create Admin",
+  "admin_created": "Admin created successfully",
+  "create_admin_option": "Create Admin",
+  "id_type_placeholder": "Select ID Type",
+  "create_new_admin": "Create New Admin",
+  "admin_created_successfully": "admin created successfully",
+  "admin_creation_failed": "admin creation failed",
+  "all_locations": "All Locations",
+  "user_already_exists": "A user already exists for this person.",
+  "user_created_for_existing_person": "User created for existing person.",
+  "registration_successful": "Registration successful.",
+  "invalid_data": "Invalid data. Please check the form.",
+  "truck_history": "Truck History"
 }

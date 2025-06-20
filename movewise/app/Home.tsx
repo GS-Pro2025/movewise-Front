@@ -36,6 +36,9 @@ import { AdminInfo, GetAdminInfo } from '@/hooks/api/GetAdminByToken';
 import InfoAdminModal from '@/app/modals/InfoAdminModal';
 import EditAdminModal from '@/app/modals/EditAdminModal';
 import OperatorList from "./screens/operators/OperatorList";
+import SettingsModal from "./Settings/SettingsModal";
+import ListOfCustomersModal from "./Settings/Options/CompanyCustomers/ListOfCustomersModal";
+import ListJobsModal from "./Settings/Options/JobAndTools/ListJobsModal";
 
 const { width: screenWidth, height: screenHeight } = Dimensions.get('window');
 
@@ -104,7 +107,11 @@ const Home: React.FC = () => {
   //estados para menu de operadores
   const [isOperatorsMenuVisible, setIsOperatorsMenuVisible] = useState(false);
   const operatorsMenuAnim = useRef(new Animated.Value(0)).current;
-
+  //estados para el settings
+  const [isSettingsModalVisible, setIsSettingsModalVisible] = useState(false);
+  //Opciones de settings
+  const [isCustomersModalVisible, setIsCustomersModalVisible] = useState(false);
+  const [isListJobsModalVisible, setIsListJobsModalVisible] = useState(false);
   
   // Configuración de pestañas principales
   const mainTabs: TabItem[] = useMemo(() => [
@@ -670,7 +677,18 @@ const Home: React.FC = () => {
             {getCurrentTabTitle()}
           </Text>
         </View>
-
+        {/* Botón de settings */}
+        <TouchableOpacity
+          onPress={() => setIsSettingsModalVisible(true)}
+          style={{ marginLeft: 12, padding: 6, borderRadius: 4 }}
+          activeOpacity={0.7}
+        >
+          <Ionicons
+            name="settings-outline"
+            size={28}
+            color="#FFFFFF"
+          />
+        </TouchableOpacity>
         <TouchableOpacity
           onPress={handleLogout}
           style={styles.logoutButton}
@@ -814,7 +832,27 @@ const Home: React.FC = () => {
           setIsEditModalVisible(true);
         }}
       />
-
+      <SettingsModal
+        visible={isSettingsModalVisible}
+        onClose={() => setIsSettingsModalVisible(false)}
+        onOpenJobsModal={() => {
+          setIsSettingsModalVisible(false);
+          setIsListJobsModalVisible(true);
+          // Si necesitas seleccionar un job específico, ajusta aquí setSelectedJobId/setSelectedJobName
+        }}
+        onOpenCustomerListModal={() => {
+          setIsSettingsModalVisible(false);
+          setIsCustomersModalVisible(true);
+        }}
+      />
+      <ListOfCustomersModal
+        visible={isCustomersModalVisible}
+        onClose={() => setIsCustomersModalVisible(false)}
+      />
+      <ListJobsModal
+        visible={isListJobsModalVisible}
+        onClose={() => setIsListJobsModalVisible(false)}
+      />
       <EditAdminModal
         visible={isEditModalVisible}
         onClose={() => setIsEditModalVisible(false)}
