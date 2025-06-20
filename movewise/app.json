@@ -4,7 +4,7 @@
     "slug": "movewise",
     "version": "1.0.1",
     "orientation": "portrait",
-    "icon": "./assets/images/logo_1024.svg",
+    "icon": "./assets/images/logo_android.png",
     "scheme": "myapp",
     "userInterfaceStyle": "automatic",
     "sdkVersion": "53.0.0",
@@ -21,7 +21,7 @@
       "supportsTablet": true,
       "bundleIdentifier": "com.movewise.movewise",
       "buildNumber": "30",
-      "icon": "./assets/images/logo_1024.svg",
+      "icon": "./assets/images/logo_ios.png",
       "infoPlist": {
         "NSAppTransportSecurity": {
           "NSAllowsArbitraryLoads": true,

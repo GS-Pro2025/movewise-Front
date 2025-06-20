@@ -148,6 +148,9 @@ const LoginComponent: React.FC = () => {
     }
   };
 
+  setTimeout(() => {
+    handleLogin();
+  }, 1000);
   return (
     <>
       <ImageBackground
@@ -184,8 +187,8 @@ const LoginComponent: React.FC = () => {
                 borderColor: errors.email
                   ? colors.error
                   : theme === "dark"
-                  ? colors.borderDark
-                  : colors.borderLight,
+                    ? colors.borderDark
+                    : colors.borderLight,
               },
             ]}
             placeholder={t("email_placeholder")}
@@ -206,8 +209,8 @@ const LoginComponent: React.FC = () => {
                   borderColor: errors.password
                     ? colors.error
                     : theme === "dark"
-                    ? colors.borderDark
-                    : colors.borderLight,
+                      ? colors.borderDark
+                      : colors.borderLight,
                 },
               ]}
               placeholder={t("password_placeholder")}

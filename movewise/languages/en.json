@@ -575,7 +575,7 @@
   "work_history":"Work History",
   "search_by_name":"Search by name",
   "create":"Create",
-  "state_region_required":"Region is required"
+  "state_region_required":"Region is required",
   "create_admin_button": "Create Admin",
   "admin_created": "Admin created successfully",
   "create_admin_option": "Create Admin",

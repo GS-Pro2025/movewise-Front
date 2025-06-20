@@ -2,9 +2,7 @@ import axios, { AxiosInstance } from "axios";
 
 
 
-export const  url = 'http://192.168.18.164:8000'
-
-
+export const  url = 'https://movingwise.biz'
 
 import AsyncStorage from "@react-native-async-storage/async-storage";
 let token : string | null ;
