@@ -611,6 +611,7 @@
   "work_history":"Historial de Trabajo",
   "search_by_name":"Buscar por nombre",
   "create":"Crear",
+  "state_region_required":"Region es obligatoria"
   "create_admin_button": "Crear Administrador",
   "admin_created": "Administrador creado",
   "create_admin_option": "Crear Administrador",

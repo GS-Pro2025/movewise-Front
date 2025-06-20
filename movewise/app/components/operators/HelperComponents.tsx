@@ -25,7 +25,10 @@ function FormInput({ label, value, onChangeText, keyboardType = 'default', error
   const isDarkMode = useColorScheme() === 'dark';
   return (
     <View style={[styles.inputContainer, { backgroundColor: isDarkMode ? colors.backgroundDark : colors.backgroundLight }]}>
-      <Text style={[styles.inputLabel, { color: isDarkMode ? colors.textDark : colors.primary }]}>{label}</Text>
+      <Text style={[styles.inputLabel, { color: isDarkMode ? colors.textDark : colors.primary }]}>{label}
+
+        {required && <Text style={{ color: 'red' }}>*</Text>}
+      </Text>
       <View style={[styles.textInputContainer, error ? styles.inputError : null]}>
         <TextInput
           style={styles.textInput}
@@ -87,7 +90,9 @@ function DateInput({ label, value, onChangeDate, error, required = false }: Date
 
   return (
     <View style={[styles.inputContainer, { backgroundColor: isDarkMode ? colors.backgroundDark : colors.backgroundLight }]}>
-      <Text style={[styles.inputLabel, { color: isDarkMode ? colors.textDark : colors.primary }]}>{label}</Text>
+      <Text style={[styles.inputLabel, { color: isDarkMode ? colors.textDark : colors.primary }]}>{label}
+        {required && <Text style={{ color: 'red' }}>*</Text>}
+      </Text>
       <TouchableOpacity
         style={[styles.textInputContainer, error ? styles.inputError : null]}
         onPress={() => setShowDatePicker(true)}
@@ -117,7 +122,9 @@ function DropdownInput({ label, value, onChange, options, error, required = fals
 
   return (
     <View style={[styles.inputContainer, { backgroundColor: isDarkMode ? colors.backgroundDark : colors.backgroundLight }]}>
-      <Text style={[styles.inputLabel, { color: isDarkMode ? colors.textDark : colors.primary }]}>{label}</Text>
+      <Text style={[styles.inputLabel, { color: isDarkMode ? colors.textDark : colors.primary }]}>{label}
+        {required && <Text style={{ color: 'red' }}>*</Text>}
+      </Text>
       <TouchableOpacity
         style={[styles.textInputContainer, error ? styles.inputError : null]}
         onPress={() => setIsOpen(!isOpen)}
@@ -152,7 +159,9 @@ function RadioGroup({ label, options, selectedValue, onSelect, error, required =
 
   return (
     <View style={[styles.inputContainer, { backgroundColor: isDarkMode ? colors.backgroundDark : colors.backgroundLight }]}>
-      <Text style={[styles.inputLabel, { color: isDarkMode ? colors.textDark : colors.primary }]}>{label}</Text>
+      <Text style={[styles.inputLabel, { color: isDarkMode ? colors.textDark : colors.primary }]}>{label}
+        {required && <Text style={{ color: 'red' }}>*</Text>}
+      </Text>
       <View style={styles.radioGroupContainer}>
         {options.map((option) => (
           <TouchableOpacity

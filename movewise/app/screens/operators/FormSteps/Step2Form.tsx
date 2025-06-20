@@ -202,15 +202,15 @@ const Step2Form = ({ formData, updateFormData, onNext, onBack, isEditing }: Step
                 <Text style={[styles.sectionTitle, { color: isDarkMode ? colors.textDark : colors.primary }]}>{t("license_info")}</Text>
 
                 <FormInput
-                    label={`${t("license_number")} (*)`}
+                    label={t("license_number")}
                     value={localData.number_licence}
                     onChangeText={(text) => handleChange('number_licence', text)}
                     error={errors.number_licence}
-                    required={true}
+                    required={false}
                 />
 
                 <FormInput
-                    label={`${t("zipcode_label")} (*)`}
+                    label={t("zipcode_label")}
                     value={localData.zipcode}
                     onChangeText={(text) => handleChange('zipcode', text)}
                     keyboardType="numeric"
@@ -219,25 +219,25 @@ const Step2Form = ({ formData, updateFormData, onNext, onBack, isEditing }: Step
                 />
 
                 <CrossPlatformImageUpload
-                    label={`${t("front_license_photo")} (*)`}
+                    label={t("front_license_photo")}
                     image={localData.license_front}
                     onImageSelected={(image) => handleChange('license_front', image)}
                     error={errors.license_front}
-                    required={true}
+                    required={false}
                 />
 
                 <CrossPlatformImageUpload
-                    label={`${t("back_license_photo")} (*)`}
+                    label={t("back_license_photo")}
                     image={localData.license_back}
                     onImageSelected={(image) => handleChange('license_back', image)}
                     error={errors.license_back}
-                    required={true}
+                    required={false}
                 />
 
                 <Text style={[styles.subSectionTitle, { color: isDarkMode ? colors.textDark : colors.primary }]}>{t("children_info")}</Text>
 
                 <RadioGroup
-                    label={`${t("question_children")}`}
+                    label={t("question_children")}
                     options={[
                         { label: 'Yes', value: true },
                         { label: 'No', value: false }
@@ -245,7 +245,7 @@ const Step2Form = ({ formData, updateFormData, onNext, onBack, isEditing }: Step
                     selectedValue={localData.has_minors}
                     onSelect={(value) => handleChange('has_minors', value)}
                     error={errors.has_minors}
-                    required={true}
+                    required={false}
                 />
 
                 {localData.has_minors && (
@@ -273,23 +273,23 @@ const Step2Form = ({ formData, updateFormData, onNext, onBack, isEditing }: Step
                             <Text style={[styles.subsectionTitle, { color: isDarkMode ? colors.textDark : colors.primary }]}>{t("add_child")}:</Text>
 
                             <FormInput
-                                label={`${t("name")} (*)`}
+                                label={t("name")}
                                 value={currentSon.name || ''}
                                 onChangeText={(text) => handleSonChange('name', text)}
                                 error={sonErrors.name}
-                                required={true}
+                                required={false}
                             />
 
                             <DateInput
-                                label={`${t("birth_date")} (*)`}
+                                label={t("birth_date")}
                                 value={currentSon.birth_date || ''}
                                 onChangeDate={(date) => handleSonChange('birth_date', date)}
                                 error={sonErrors.birth_date}
-                                required={true}
+                                required={false}
                             />
 
                             <DropdownInput
-                                label={`${t("gender")} (*)`}
+                                label={t("gender")}
                                 value={
                                     currentSon.gender === 'M'
                                         ? t("male")
@@ -300,7 +300,7 @@ const Step2Form = ({ formData, updateFormData, onNext, onBack, isEditing }: Step
                                 onChange={(value) => handleSonChange('gender', value)}
                                 options={['M', 'F']}
                                 error={sonErrors.gender}
-                                required={true}
+                                required={false}
                             />
 
                             <TouchableOpacity style={styles.addButton} onPress={addSon}>
