@@ -177,8 +177,10 @@ const Step1Form = ({ formData, updateFormData, onNext, isEditing, onclose }: Ste
             newErrors.last_name = 'Last name must be at least 2 characters long';
         }
 
-        // Birth date is optional but validate if provided
-        if (localData.birth_date) {
+        // Birth date is required
+        if (!localData.birth_date) {
+            newErrors.birth_date = t("birth_date_required") || 'Birth date is required';
+        } else {
             const today = new Date();
             const dob = new Date(localData.birth_date);
             const age = today.getFullYear() - dob.getFullYear();
@@ -197,15 +199,10 @@ const Step1Form = ({ formData, updateFormData, onNext, isEditing, onclose }: Ste
             newErrors.id_number = 'ID number must be at least 5 characters long';
         }
 
-        // Address is required
-        if (!localData.address.trim()) {
-            newErrors.address = t("address_required");
-        }
-
-        // Phone is required and should be valid
-        if (!formattedPhone.trim()) {
-            newErrors.phone = t("phone_required");
-        } else {
+        // Address is optional
+        
+        // Phone is optional but should be valid if provided
+        if (formattedPhone.trim()) {
             // Convert to E.164 format for validation
             const e164Number = formattedPhone.replace('-', '');
             const checkValid = phoneInput.current?.isValidNumber(e164Number);
@@ -214,8 +211,10 @@ const Step1Form = ({ formData, updateFormData, onNext, isEditing, onclose }: Ste
             }
         }
 
-        // Email is optional but validate format if provided
-        if (localData.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(localData.email)) {
+        // Email is required and must be valid
+        if (!localData.email) {
+            newErrors.email = t("email_required") || 'Email is required';
+        } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(localData.email)) {
             newErrors.email = 'Please enter a valid email address';
         }
 
@@ -280,7 +279,7 @@ const Step1Form = ({ formData, updateFormData, onNext, isEditing, onclose }: Ste
                     value={localData.birth_date}
                     onChangeDate={(date) => handleChange('birth_date', date)}
                     error={errors.birth_date}
-                    required={false}
+                    required={true}
                 />
 
                 <DropdownInput
@@ -306,14 +305,13 @@ const Step1Form = ({ formData, updateFormData, onNext, isEditing, onclose }: Ste
                     value={localData.address}
                     onChangeText={(text) => handleChange('address', text)}
                     error={errors.address}
-                    required={true}
+                    required={false}
                 />
 
                 {/* Campo de teléfono con react-phone-number-input */}
                 <View style={styles.inputContainer}>
                     <Text style={[styles.label, { color: isDarkMode ? colors.textDark : colors.textLight }]}>
                         {t("phone")}
-                        <Text style={{ color: 'red' }}>*</Text>
                     </Text>
                     <PhoneInput
                         ref={phoneInput}
@@ -417,7 +415,7 @@ const Step1Form = ({ formData, updateFormData, onNext, isEditing, onclose }: Ste
                     onChangeText={(text) => handleChange('email', text)}
                     keyboardType="email-address"
                     error={errors.email}
-                    required={false}
+                    required={true}
                 />
                 <View style={styles.buttonContainer}>
                     <TouchableOpacity 
