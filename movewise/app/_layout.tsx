@@ -12,6 +12,7 @@ import Toast from 'react-native-toast-message';
 import { ActionSheetProvider } from '@expo/react-native-action-sheet';
 import LottieView from 'lottie-react-native';
 import '../languages/i18n'; // Importa la configuración de i18n
+import { GestureHandlerRootView } from 'react-native-gesture-handler';
 
 // Evita que la pantalla de carga desaparezca antes de que se carguen los assets
 SplashScreen.preventAutoHideAsync();
@@ -20,26 +21,26 @@ const CustomSplashScreen = ({ onFinish }: { onFinish: () => void }) => {
   const colorScheme = useColorScheme();
   const [animationFinished, setAnimationFinished] = useState(false);
   const [timerFinished, setTimerFinished] = useState(false);
-  
+
   useEffect(() => {
     // Timer mínimo de 3 segundos
     const timer = setTimeout(() => {
       setTimerFinished(true);
     }, 3000);
-    
+
     return () => clearTimeout(timer);
   }, []);
-  
+
   useEffect(() => {
     // Solo cierra cuando ambos hayan terminado
     if (animationFinished && timerFinished) {
       onFinish();
     }
   }, [animationFinished, timerFinished, onFinish]);
-  
+
   return (
     <View style={[
-      styles.splashContainer, 
+      styles.splashContainer,
       { backgroundColor: colorScheme === 'dark' ? '#000000' : '#FFFFFF' }
     ]}>
       <LottieView
@@ -61,7 +62,7 @@ export default function RootLayout() {
   const [loaded] = useFonts({
     SpaceMono: require('../assets/fonts/SpaceMono-Regular.ttf'),
   });
-  
+
   const [showCustomSplash, setShowCustomSplash] = useState(true);
   const [appReady, setAppReady] = useState(false);
 
@@ -90,7 +91,7 @@ export default function RootLayout() {
   if (!loaded || !appReady) {
     return (
       <View style={[
-        styles.loadingContainer, 
+        styles.loadingContainer,
         { backgroundColor: colorScheme === 'dark' ? '#000000' : '#FFFFFF' }
       ]} />
     );
@@ -103,22 +104,24 @@ export default function RootLayout() {
 
   // Renderiza la aplicación principal
   return (
-    <ActionSheetProvider>
-      <AlertNotificationRoot>
-        <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
-          <Stack screenOptions={{ headerShown: false }}>
-            <Stack.Screen name="index" />
-            <Stack.Screen name="+not-found" />
-            <Stack.Screen 
-              name="screens/operators/OperatorView" 
-              options={{ presentation: 'modal' }} 
-            />
-          </Stack>
-          <StatusBar style="auto" />
-        </ThemeProvider>
-        <Toast />
-      </AlertNotificationRoot>
-    </ActionSheetProvider>
+    <GestureHandlerRootView style={{ flex: 1 }}>
+      <ActionSheetProvider>
+        <AlertNotificationRoot>
+          <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
+            <Stack screenOptions={{ headerShown: false }}>
+              <Stack.Screen name="index" />
+              <Stack.Screen name="+not-found" />
+              <Stack.Screen
+                name="screens/operators/OperatorView"
+                options={{ presentation: 'modal' }}
+              />
+            </Stack>
+            <StatusBar style="auto" />
+          </ThemeProvider>
+          <Toast />
+        </AlertNotificationRoot>
+      </ActionSheetProvider>
+    </GestureHandlerRootView>
   );
 }
 

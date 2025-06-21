@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { View, Text, FlatList, TouchableOpacity, useColorScheme, StyleSheet, Alert, TextInput } from 'react-native';
+import { View, Text, FlatList, TouchableOpacity, useColorScheme, StyleSheet, Alert, TextInput, Platform } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { Swipeable } from 'react-native-gesture-handler';
 import { useNavigation } from '@react-navigation/native';
@@ -311,7 +311,8 @@ const styles = StyleSheet.create({
         backgroundColor: '#f5f5f5',
         borderRadius: 25,
         paddingHorizontal: 15,
-        paddingVertical: 2,
+        paddingVertical: Platform.OS === 'ios' ? 10 : 2,
+        height: Platform.OS === 'ios' ? 50 : 40,
         borderWidth: 1,
         borderColor: '#ddd',
     },
@@ -322,7 +323,8 @@ const styles = StyleSheet.create({
         flex: 1,
         fontSize: 16,
         color: '#333',
-        height: 40,
+        height: Platform.OS === 'ios' ? 40 : 'auto',
+        paddingVertical: Platform.OS === 'ios' ? 8 : 0,
     },
     clearButton: {
         padding: 5,
