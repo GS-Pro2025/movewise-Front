@@ -124,11 +124,10 @@ const OperatorModal: React.FC<OperatorModalProps> = ({ visible, onClose, orderKe
   const handleSave = async () => {
     console.log("Operadores antes de guardar:", operators);
 
-    // Prevenir múltiples ejecuciones
     if (loading) return;
 
     try {
-      setLoading(true); // Activar loading para prevenir múltiples clicks
+      setLoading(true);
 
       const token = await AsyncStorage.getItem("userToken");
       if (!token) throw new Error(t("authentication_required"));
@@ -171,25 +170,21 @@ const OperatorModal: React.FC<OperatorModalProps> = ({ visible, onClose, orderKe
             ? `${responseData.data.created.length} ${t("assignments_saved")}.`
             : "";
 
-          // Mostrar toast y esperar un poco antes de continuar
           Toast.show({
             type: "info",
             text1: t("partial_success"),
             text2: `${successMessage}\n\n${t("conflicts")}: ${conflictMessages}`,
           });
 
-          // Esperar un poco antes de actualizar el estado
-          await new Promise(resolve => setTimeout(resolve, 100));
-
           updateOperatorsWithConflicts(responseData.data.conflicts);
           await fetchAssignedOperators();
-
-          // Esperar antes de llamar onSave
-          setTimeout(() => {
-            onSave(); // ejecuta handleSaveOperators en el componente padre
-          }, 1500);
-
-        } else if (response.status === 400) {
+          
+          // Call onSave to notify parent about the partial success
+          onSave();
+          return;
+        } 
+        
+        if (response.status === 400) {
           const errorMessages = responseData.data
             .map((e: { operator_id?: number; index?: number; message?: string; errors?: any }) =>
               `${t("operator")} ${e.operator_id || `#${(e.index ?? -1) + 1}`}: ${e.message || JSON.stringify(e.errors)}`)
@@ -200,13 +195,13 @@ const OperatorModal: React.FC<OperatorModalProps> = ({ visible, onClose, orderKe
             text1: t("error"),
             text2: errorMessages,
           });
-        } else {
-          throw new Error(responseData.messUser || t("unknown_error"));
+          return;
         }
-        return;
+        
+        throw new Error(responseData.messUser || t("unknown_error"));
       }
 
-      // Éxito completo
+      // Success case
       setOperators([]);
       await fetchAssignedOperators();
 
@@ -216,10 +211,8 @@ const OperatorModal: React.FC<OperatorModalProps> = ({ visible, onClose, orderKe
         text2: t("assignments_saved"),
       });
 
-      // Dar tiempo para que se procese todo antes de cerrar
-      setTimeout(() => {
-        onSave(); // Esto ejecuta handleSaveOperators en el padre y cerrará ambos modales
-      }, 1500);
+      // Call onSave to notify parent about successful save
+      onSave();
 
     } catch (error) {
       console.error(t("error"), error);
@@ -229,10 +222,7 @@ const OperatorModal: React.FC<OperatorModalProps> = ({ visible, onClose, orderKe
         text2: t("could_not_save_assignments"),
       });
     } finally {
-      // se desactiva el loading
-      setTimeout(() => {
-        setLoading(false);
-      }, 100);
+      setLoading(false);
     }
   };
 

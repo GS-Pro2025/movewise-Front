@@ -575,6 +575,7 @@
   "work_history":"Work History",
   "search_by_name":"Search by name",
   "create":"Create",
+  "state_region_required":"Region is required",
   "create_admin_button": "Create Admin",
   "admin_created": "Admin created successfully",
   "create_admin_option": "Create Admin",
@@ -591,4 +592,7 @@
   "username_already_exists": "Username already exists. Please choose a different username.",
   "email_already_registered_for_user": "Email is already registered for a user.",
   "id_number_already_registered_for_user": "ID number is already registered for a user."
+  "select_location": "Select Location",
+  "search_location":"Search Location" ,
+  "select_status":"Select Status"
 }

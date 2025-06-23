@@ -114,7 +114,7 @@ const Step3Form = ({ formData, updateFormData, onBack, onSubmit, isEditing }: St
         <ScrollView>
             <View style={styles.stepForm}>
                 <FormInput
-                    label={`${t("operator_code")} (*)`}
+                    label={t("operator_code")}
                     value={localData.code}
                     onChangeText={(text) => handleChange('code', text)}
                     error={errors.code}
@@ -122,7 +122,7 @@ const Step3Form = ({ formData, updateFormData, onBack, onSubmit, isEditing }: St
                 />
 
                 <FormInput
-                    label={`${t("salary")} (*)`}
+                    label={t("salary")}
                     value={localData.salary.toString()}
                     onChangeText={(text) => handleChange('salary', text)}
                     keyboardType="numeric"
@@ -131,7 +131,7 @@ const Step3Form = ({ formData, updateFormData, onBack, onSubmit, isEditing }: St
                 />
 
                 <DropdownInput
-                    label={`${t("tshirt_size")} (*)`}
+                    label={t("tshirt_size")}
                     value={localData.size_t_shift}
                     onChange={(value) => handleChange('size_t_shift', value)}
                     options={['S', 'M', 'L', 'XL']}
@@ -140,7 +140,7 @@ const Step3Form = ({ formData, updateFormData, onBack, onSubmit, isEditing }: St
                 />
 
                 <FormInput
-                    label={`${t("tshirt_name")} (*)`}
+                    label={t("tshirt_name")}
                     value={localData.name_t_shift}
                     onChangeText={(text) => handleChange('name_t_shift', text)}
                     error={errors.name_t_shift}
@@ -148,7 +148,7 @@ const Step3Form = ({ formData, updateFormData, onBack, onSubmit, isEditing }: St
                 />
 
                 <CrossPlatformImageUpload
-                    label={`${t("operator_photo")} (*)`}
+                    label={t("operator_photo")}
                     image={localData.photo}
                     onImageSelected={(image) => handleChange('photo', image)}
                     error={errors.photo}
@@ -156,7 +156,7 @@ const Step3Form = ({ formData, updateFormData, onBack, onSubmit, isEditing }: St
                 />
 
                 <DropdownInput
-                    label={`${t("status")} (*)`}
+                    label={t("status")}
                     value={localData.status || 'active'} // Garantizar valor por defecto
                     onChange={(value) => handleChange("status", value)}
                     options={statusOptions}

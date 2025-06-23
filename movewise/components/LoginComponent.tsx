@@ -85,6 +85,7 @@ const LoginComponent: React.FC = () => {
   };
 
   const handleLogin = async () => {
+
     if (!validateFields()) {
       Toast.show({
         type: "error",
@@ -147,7 +148,7 @@ const LoginComponent: React.FC = () => {
       });
     }
   };
-
+ 
   return (
     <>
       <ImageBackground
