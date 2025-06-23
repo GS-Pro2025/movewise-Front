@@ -623,5 +623,8 @@
   "user_created_for_existing_person": "Usuario creado para persona ya existente.",
   "registration_successful": "Registro exitoso.",
   "invalid_data": "Datos inválidos. Por favor revisa el formulario.",
-  "truck_history": "Historial de camiones"
+  "truck_history": "Historial de camiones",
+  "username_already_exists": "El nombre de usuario ya existe. Por favor, elige otro.",
+  "email_already_registered_for_user": "El correo electrónico ya está registrado para un usuario.",
+  "id_number_already_registered_for_user": "El número de identificación ya está registrado para un usuario."
 } 
