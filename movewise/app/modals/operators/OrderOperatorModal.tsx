@@ -3,12 +3,12 @@ import { useState, useEffect, useCallback, memo } from "react";
 import { useRouter } from "expo-router";
 import DateTimePicker, { DateTimePickerEvent } from '@react-native-community/datetimepicker';
 import { Ionicons } from '@expo/vector-icons';
-import { GestureHandlerRootView, Swipeable } from "react-native-gesture-handler";
+import { GestureHandlerRootView, ScrollView, Swipeable } from "react-native-gesture-handler";
 import { TouchableHighlight } from "react-native";
 import Toast from "react-native-toast-message";
 import { DeleteOrder } from "@/hooks/api/DeleteOrder";
 import { useTranslation } from "react-i18next";
-// import InfoOrderModal from './InfoOrderModal';
+import InfoOrderModal from '@/app/screens/orders/InfoOrderModal';
 import { useLocalSearchParams } from 'expo-router';
 import { useFocusEffect } from "expo-router";
 import { getOrdersAllStatus, OrdersResponse } from "@/hooks/api/GetOrders";
@@ -16,7 +16,7 @@ import colors from "@/app/Colors";
 import { Picker } from '@react-native-picker/picker';
 import { formatLocalDate } from "@/app/components/orders/FormattedDate";
 import { getRegisteredLocations } from "@/hooks/api/GetRegisteredLocations";
-import InfoOrderModal from '@/app/screens/orders/InfoOrderModal';
+import { Platform, Dimensions } from "react-native";
 
 interface OrderModalProps {
   visible: boolean;
@@ -82,6 +82,11 @@ const OrderModal = () => {
   const isDarkMode = colorScheme === "dark";
   const router = useRouter();
 
+
+  const [showLocationModal, setShowLocationModal] = useState(false);
+  const [showStatusModal, setShowStatusModal] = useState(false);
+
+  const [locationSearch, setLocationSearch] = useState('');  // Add this line
   useEffect(() => {
     const handler = setTimeout(() => {
       setSearchText(searchQuery);
@@ -286,6 +291,8 @@ const OrderModal = () => {
         </TouchableOpacity>
       </View>
     );
+    const { width } = Dimensions.get('window');
+
 
     return (
       <GestureHandlerRootView>
@@ -345,88 +352,260 @@ const OrderModal = () => {
         <Text style={[styles.title, { color: isDarkMode ? colors.darkText : colors.primary }]}>
           {t("Orders")}
         </Text>
-        
+
         <View style={styles.headerRight}>
-          <View style={styles.locationPickerContainer}>
-            <Picker
-              selectedValue={locationFilter || ''}
-              style={[styles.locationPicker, { color: isDarkMode ? colors.darkText : colors.primary }]}
-              dropdownIconColor={isDarkMode ? colors.darkText : colors.primary}
-              onValueChange={(itemValue) => setLocationFilter(itemValue || null)}
-            >
-              <Picker.Item label={t('all_locations') || 'All Locations'} value="" />
-              {locations.map((location, index) => (
-                <Picker.Item key={index} label={location} value={location} />
-              ))}
-            </Picker>
-          </View>
+          <TouchableOpacity
+            style={[styles.addButton, { backgroundColor: isDarkMode ? colors.secondary : colors.primary }]}
+            onPress={() => setModalAddOrderVisible(true)}
+          >
+            <Ionicons name="add" size={20} color={colors.lightBackground} />
+          </TouchableOpacity>
         </View>
       </View>
 
-      {/* Filtros: Fecha + Estado */}
-      <View style={[styles.filtersRow, { backgroundColor: isDarkMode ? colors.third : colors.lightBackground }]}>
-        <View style={styles.filterItem}>
+
+      <View style={[styles.compactFiltersContainer, { backgroundColor: isDarkMode ? colors.third : colors.lightBackground }]}>
+
+        {/* Primera fila: Ubicación y Estado */}
+        <View style={styles.filterRow}>
+
+          {/* Selector de Ubicación */}
           <TouchableOpacity
-            style={[styles.datePickerButton, {
-              borderColor: isDarkMode ? colors.secondary : colors.primary,
+            style={[styles.filterButton, {
               backgroundColor: isDarkMode ? colors.backgroundDark : colors.backgroundLight,
+              borderColor: isDarkMode ? colors.secondary : colors.primary
+            }]}
+            onPress={() => setShowLocationModal(true)}
+          >
+            <Ionicons name="location-outline" size={16} color={isDarkMode ? colors.secondary : colors.primary} />
+            <Text style={[styles.filterButtonText, { color: isDarkMode ? colors.darkText : colors.primary }]} numberOfLines={1}>
+              {locationFilter || t('all_locations') || 'All Locations'}
+            </Text>
+            <Ionicons name="chevron-down" size={14} color={isDarkMode ? colors.secondary : colors.primary} />
+          </TouchableOpacity>
+
+          {/* Selector de Estado */}
+          <TouchableOpacity
+            style={[styles.filterButton, {
+              backgroundColor: isDarkMode ? colors.backgroundDark : colors.backgroundLight,
+              borderColor: isDarkMode ? colors.secondary : colors.primary
+            }]}
+            onPress={() => setShowStatusModal(true)}
+          >
+            <Ionicons name="flag-outline" size={16} color={isDarkMode ? colors.secondary : colors.primary} />
+            <Text style={[styles.filterButtonText, { color: isDarkMode ? colors.darkText : colors.primary }]} numberOfLines={1}>
+              {statusFilter ? t(statusFilter.toLowerCase()) : t("all_statuses") || "All Status"}
+            </Text>
+            <Ionicons name="chevron-down" size={14} color={isDarkMode ? colors.secondary : colors.primary} />
+          </TouchableOpacity>
+        </View>
+
+        {/* Segunda fila: Fecha y Búsqueda */}
+        <View style={styles.filterRow}>
+
+          {/* Selector de Fecha */}
+          <TouchableOpacity
+            style={[styles.filterButton, {
+              backgroundColor: isDarkMode ? colors.backgroundDark : colors.backgroundLight,
+              borderColor: selectedDate ? (isDarkMode ? colors.secondary : colors.primary) : '#ddd'
             }]}
             onPress={() => setShowDatePicker(true)}
           >
-            <Text style={{ color: isDarkMode ? colors.darkText : colors.lightText, fontSize: 14 }}>
-              {selectedDate ? selectedDate.toLocaleDateString() : t("select_date")}
+            <Ionicons name="calendar-outline" size={16} color={isDarkMode ? colors.secondary : colors.primary} />
+            <Text style={[styles.filterButtonText, { color: isDarkMode ? colors.darkText : colors.primary }]} numberOfLines={1}>
+              {selectedDate ? selectedDate.toLocaleDateString() : t("select_date") || "Select Date"}
             </Text>
-            <Ionicons name="calendar" size={20} color={isDarkMode ? colors.secondary : colors.primary} />
+            {selectedDate ? (
+              <TouchableOpacity onPress={clearDateFilter} hitSlop={{ top: 5, bottom: 5, left: 5, right: 5 }}>
+                <Ionicons name="close-circle" size={16} color={isDarkMode ? colors.secondary : colors.primary} />
+              </TouchableOpacity>
+            ) : (
+              <Ionicons name="chevron-down" size={14} color={isDarkMode ? colors.secondary : colors.primary} />
+            )}
           </TouchableOpacity>
-          {showDatePicker && (
-            <DateTimePicker
-              value={selectedDate || new Date()}
-              mode="date"
-              display="default"
-              onChange={onDateChange}
+
+          {/* Búsqueda compacta */}
+          <View style={[styles.searchCompact, {
+            backgroundColor: isDarkMode ? colors.backgroundDark : colors.backgroundLight,
+            borderColor: '#ddd'
+          }]}>
+            <Ionicons name="search" size={16} color={isDarkMode ? colors.secondary : colors.primary} />
+            <TextInput
+              style={[styles.searchInputCompact, { color: isDarkMode ? colors.darkText : colors.lightText }]}
+              placeholder={t("search") || "Search"}
+              placeholderTextColor={isDarkMode ? colors.placeholderDark : colors.placeholderLight}
+              value={searchQuery}
+              onChangeText={setSearchQuery}
             />
-          )}
-          {selectedDate && (
-            <TouchableOpacity onPress={clearDateFilter} style={styles.clearButton}>
-              <Ionicons name="close-circle" size={20} color={isDarkMode ? colors.secondary : colors.primary} />
-            </TouchableOpacity>
-          )}
+            {searchQuery.length > 0 && (
+              <TouchableOpacity onPress={() => setSearchQuery('')} hitSlop={{ top: 5, bottom: 5, left: 5, right: 5 }}>
+                <Ionicons name="close-circle" size={16} color={isDarkMode ? colors.secondary : colors.primary} />
+              </TouchableOpacity>
+            )}
+          </View>
         </View>
 
-        <View style={styles.filterItem}>
-          <Picker
-            selectedValue={statusFilter}
-            onValueChange={(itemValue) => setStatusFilter(itemValue)}
-            style={[styles.picker, {
-              color: isDarkMode ? colors.darkText : colors.lightText,
-              backgroundColor: isDarkMode ? colors.backgroundDark : colors.backgroundLight,
-            }]}
-            dropdownIconColor={isDarkMode ? colors.secondary : colors.primary}
-          >
-            <Picker.Item label={t("all_statuses")} value={null} />
-            <Picker.Item label={t("pending")} value="PENDING" />
-            <Picker.Item label={t("in_progress")} value="IN_PROGRESS" />
-            <Picker.Item label={t("completed")} value="FINISHED" />
-          </Picker>
-        </View>
-      </View>
-
-      {/* Barra de búsqueda */}
-      <View style={[styles.searchContainer, { backgroundColor: isDarkMode ? colors.third : colors.lightBackground }]}>
-        <Ionicons name="search" size={20} color={isDarkMode ? colors.secondary : colors.primary} />
-        <TextInput
-          style={[styles.searchInput, { color: isDarkMode ? colors.darkText : colors.lightText }]}
-          placeholder={t("search_placeholder")}
-          placeholderTextColor={isDarkMode ? colors.placeholderDark : colors.placeholderLight}
-          value={searchQuery}
-          onChangeText={setSearchQuery}
-        />
-        {searchQuery.length > 0 && (
-          <TouchableOpacity onPress={() => setSearchQuery('')}>
-            <Ionicons name="close-circle" size={18} color={isDarkMode ? colors.secondary : colors.primary} />
-          </TouchableOpacity>
+        {showDatePicker && (
+          <DateTimePicker
+            value={selectedDate || new Date()}
+            mode="date"
+            display={Platform.OS === 'ios' ? 'compact' : 'default'}
+            onChange={onDateChange}
+          />
         )}
       </View>
+      {/* Modal para Ubicación */}
+      <Modal
+        visible={showLocationModal}
+        transparent={false} // Cambiado a false para ocupar toda la pantalla
+        animationType="slide"
+        onRequestClose={() => {
+          setShowLocationModal(false);
+          setLocationSearch(''); // Resetear búsqueda al cerrar
+        }}
+      >
+        <SafeAreaView style={[styles.fullScreenModalContainer, {
+          backgroundColor: isDarkMode ? colors.backgroundDark : colors.backgroundLight
+        }]}>
+          {/* Header con botón de cerrar */}
+          <View style={styles.modalHeader}>
+            <Text style={[styles.fullScreenModalTitle, {
+              color: isDarkMode ? colors.darkText : colors.primary
+            }]}>
+              {t('select_location') || 'Select Location'}
+            </Text>
+            <TouchableOpacity
+              onPress={() => {
+                setShowLocationModal(false);
+                setLocationSearch('');
+              }}
+              style={styles.closeButton}
+            >
+              <Ionicons
+                name="close"
+                size={24}
+                color={isDarkMode ? colors.darkText : colors.primary}
+              />
+            </TouchableOpacity>
+          </View>
+
+          {/* Buscador dentro del modal */}
+          <View style={[styles.modalSearchContainer, {
+            backgroundColor: isDarkMode ? colors.backgroundDark : colors.backgroundLight
+          }]}>
+            <Ionicons
+              name="search"
+              size={20}
+              color={isDarkMode ? colors.placeholderDark : colors.placeholderLight}
+            />
+            <TextInput
+              style={[styles.modalSearchInput, {
+                color: isDarkMode ? colors.darkText : colors.lightText
+              }]}
+              placeholder={t("search_location") || "Search location..."}
+              placeholderTextColor={isDarkMode ? colors.placeholderDark : colors.placeholderLight}
+              value={locationSearch}
+              onChangeText={setLocationSearch}
+              autoFocus={true}
+            />
+          </View>
+
+          {/* Lista de ubicaciones con scroll */}
+          <ScrollView style={styles.modalScrollContainer}>
+            {/* Opción "Todas las ubicaciones" */}
+            <TouchableOpacity
+              style={[styles.fullModalOption, locationFilter === null && styles.fullModalOptionSelected]}
+              onPress={() => {
+                setLocationFilter(null);
+                setShowLocationModal(false);
+                setLocationSearch('');
+              }}
+            >
+              <Text style={[styles.fullModalOptionText, {
+                color: locationFilter === null ?
+                  colors.primary :
+                  (isDarkMode ? colors.darkText : colors.lightText)
+              }]}>
+                {t('all_locations') || 'All Locations'}
+              </Text>
+              {locationFilter === null &&
+                <Ionicons name="checkmark" size={20} color={colors.primary} />}
+            </TouchableOpacity>
+
+            {/* Lista filtrada de ubicaciones */}
+            {locations
+              .filter(location =>
+                location.toLowerCase().includes(locationSearch.toLowerCase())
+              )
+              .map((location, index) => (
+                <TouchableOpacity
+                  key={index}
+                  style={[styles.fullModalOption, locationFilter === location && styles.fullModalOptionSelected]}
+                  onPress={() => {
+                    setLocationFilter(location);
+                    setShowLocationModal(false);
+                    setLocationSearch('');
+                  }}
+                >
+                  <Text style={[styles.fullModalOptionText, {
+                    color: locationFilter === location ?
+                      colors.primary :
+                      (isDarkMode ? colors.darkText : colors.lightText)
+                  }]}>
+                    {location}
+                  </Text>
+                  {locationFilter === location &&
+                    <Ionicons name="checkmark" size={20} color={colors.primary} />}
+                </TouchableOpacity>
+              ))
+            }
+          </ScrollView>
+        </SafeAreaView>
+      </Modal>
+
+
+      {/* Modal para Estado */}
+      <Modal
+        visible={showStatusModal}
+        transparent={true}
+        animationType="fade"
+        onRequestClose={() => setShowStatusModal(false)}
+      >
+        <TouchableOpacity
+          style={styles.modalOverlay}
+          activeOpacity={1}
+          onPress={() => setShowStatusModal(false)}
+        >
+          <View style={[styles.modalContent, { backgroundColor: isDarkMode ? colors.backgroundDark : colors.backgroundLight }]}>
+            <Text style={[styles.modalTitle, { color: isDarkMode ? colors.darkText : colors.primary }]}>
+              {t('select_status') || 'Select Status'}
+            </Text>
+
+            {[
+              { label: t("all_statuses") || "All Statuses", value: null },
+              { label: t("pending") || "Pending", value: "PENDING" },
+              { label: t("in_progress") || "In Progress", value: "IN_PROGRESS" },
+              { label: t("completed") || "Completed", value: "FINISHED" }
+            ].map((status, index) => (
+              <TouchableOpacity
+                key={index}
+                style={[styles.modalOption, statusFilter === status.value && styles.modalOptionSelected]}
+                onPress={() => {
+                  setStatusFilter(status.value);
+                  setShowStatusModal(false);
+                }}
+              >
+                <Text style={[styles.modalOptionText, {
+                  color: statusFilter === status.value ? colors.primary : (isDarkMode ? colors.darkText : colors.lightText)
+                }]}>
+                  {status.label}
+                </Text>
+                {statusFilter === status.value && <Ionicons name="checkmark" size={20} color={colors.primary} />}
+              </TouchableOpacity>
+            ))}
+          </View>
+        </TouchableOpacity>
+      </Modal>
 
       {/* Lista de órdenes */}
       {loading ? (
@@ -475,15 +654,151 @@ const OrderModal = () => {
         userRole={"operator"}
         isWorkhouse={false}
       />
-      
+
       <Toast />
     </SafeAreaView>
   );
 };
 
 const styles = StyleSheet.create({
+  fullScreenModalContainer: {
+    flex: 1,
+  },
+  modalHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    padding: 16,
+    borderBottomWidth: 1,
+    borderBottomColor: '#eee',
+  },
+  fullScreenModalTitle: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    flex: 1,
+    textAlign: 'center',
+    marginLeft: 24, // Compensa el espacio del botón de cerrar
+  },
+  closeButton: {
+    padding: 8,
+  },
+  modalSearchContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    padding: 16,
+    borderBottomWidth: 1,
+    borderBottomColor: '#eee',
+  },
+  modalSearchInput: {
+    flex: 1,
+    fontSize: 16,
+    marginLeft: 8,
+  },
+  modalScrollContainer: {
+    flex: 1,
+    paddingHorizontal: 16,
+  },
+  fullModalOption: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingVertical: 16,
+    borderBottomWidth: 1,
+    borderBottomColor: '#eee',
+  },
+  fullModalOptionSelected: {
+    backgroundColor: 'rgba(0, 122, 255, 0.1)',
+  },
+  fullModalOptionText: {
+    fontSize: 16,
+    flex: 1,
+  },
   container: {
     flex: 1,
+  },
+  headerRight: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+  },
+
+  filtersContainer: {
+    paddingHorizontal: 16,
+    paddingVertical: 16,
+    gap: 16,
+  },
+
+  filterSection: {
+    width: '100%',
+  },
+
+  filterLabel: {
+    fontSize: 14,
+    fontWeight: '600',
+    marginBottom: 8,
+    paddingHorizontal: 4,
+  },
+
+  pickerContainer: {
+    borderWidth: 1.5,
+    borderRadius: 12,
+    overflow: 'hidden',
+    minHeight: Platform.OS === 'ios' ? 50 : 45,
+    justifyContent: 'center',
+  },
+
+  optimizedPicker: {
+    height: Platform.OS === 'ios' ? 50 : 45,
+    width: '100%',
+    fontSize: Platform.OS === 'ios' ? 16 : 14,
+  },
+
+  pickerItemIOS: {
+    fontSize: 16,
+    height: 120,
+  },
+
+  dateFilterContainer: {
+    position: 'relative',
+  },
+
+  datePickerButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: 16,
+    paddingVertical: 14,
+    borderRadius: 12,
+    borderWidth: 1.5,
+    minHeight: 50,
+  },
+
+  clearDateButton: {
+    position: 'absolute',
+    top: 15,
+    right: 40,
+    zIndex: 1,
+  },
+
+  // Actualiza también estos estilos existentes:
+  searchContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 20,
+    paddingVertical: 12,
+    gap: 12,
+    display: 'none', // Lo ocultamos porque ahora está integrado
+    backgroundColor: 'transparent', // Cambio aquí
+  },
+
+  searchInput: {
+    flex: 1,
+    height: 45,
+    paddingHorizontal: 16,
+    borderRadius: 12,
+    borderWidth: 1.5,
+    borderColor: '#ddd',
+    fontSize: 15,
   },
   header: {
     flexDirection: 'row',
@@ -498,11 +813,7 @@ const styles = StyleSheet.create({
     fontSize: 24,
     fontWeight: 'bold',
   },
-  headerRight: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 12,
-  },
+
   locationPickerContainer: {
     width: 120,
     height: 52,
@@ -532,15 +843,7 @@ const styles = StyleSheet.create({
     flex: 1,
     position: 'relative',
   },
-  datePickerButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingHorizontal: 12,
-    height: 52,
-    borderRadius: 8,
-    borderWidth: 1,
-  },
+
   clearButton: {
     position: 'absolute',
     top: 10,
@@ -551,21 +854,6 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: '#ddd',
     height: 52,
-  },
-  searchContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: 20,
-    paddingVertical: 12,
-    gap: 12,
-  },
-  searchInput: {
-    flex: 1,
-    height: 40,
-    paddingHorizontal: 12,
-    borderRadius: 8,
-    borderWidth: 1,
-    borderColor: '#ddd',
   },
   listContainer: {
     paddingHorizontal: 16,
@@ -660,6 +948,96 @@ const styles = StyleSheet.create({
   emptyText: {
     fontSize: 16,
     textAlign: 'center',
+  },
+
+  compactFiltersContainer: {
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    gap: 8,
+  },
+
+  filterRow: {
+    flexDirection: 'row',
+    gap: 8,
+  },
+
+  filterButton: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 12,
+    paddingVertical: 10,
+    borderRadius: 8,
+    borderWidth: 1,
+    gap: 6,
+    minHeight: 40,
+  },
+
+  filterButtonText: {
+    flex: 1,
+    fontSize: 13,
+    fontWeight: '500',
+  },
+
+  searchCompact: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 12,
+    paddingVertical: 10,
+    borderRadius: 8,
+    borderWidth: 1,
+    gap: 8,
+    minHeight: 40,
+  },
+
+  searchInputCompact: {
+    flex: 1,
+    fontSize: 13,
+    padding: 0,
+  },
+
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    width: '100%',
+    height: '100%',
+  },
+
+  modalContent: {
+    width: '100%',
+    maxWidth: 300,
+    borderRadius: 12,
+    padding: 20,
+    maxHeight: '60%',
+  },
+
+  modalTitle: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    marginBottom: 16,
+    textAlign: 'center',
+  },
+
+  modalOption: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingVertical: 12,
+    paddingHorizontal: 8,
+    borderRadius: 8,
+    marginBottom: 4,
+  },
+
+  modalOptionSelected: {
+    backgroundColor: 'rgba(0, 122, 255, 0.1)',
+  },
+
+  modalOptionText: {
+    fontSize: 16,
+    flex: 1,
   },
 });
 

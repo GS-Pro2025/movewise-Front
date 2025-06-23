@@ -19,6 +19,8 @@
     "@expo/react-native-action-sheet": "^4.1.1",
     "@expo/vector-icons": "^14.0.2",
     "@hookform/resolvers": "^5.0.1",
+    "@lottiefiles/dotlottie-react": "^0.6.5",
+    "@lottiefiles/lottie-player": "^2.0.12",
     "@react-native-async-storage/async-storage": "^2.1.2",
     "@react-native-community/datetimepicker": "8.3.0",
     "@react-native-picker/picker": "^2.11.0",
