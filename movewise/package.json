@@ -28,7 +28,7 @@
     "@react-navigation/native": "^7.0.14",
     "axios": "^1.8.4",
     "date-fns": "^4.1.0",
-    "expo": "~53.0.0",
+    "expo": "~53.0.12",
     "expo-blur": "~14.1.4",
     "expo-checkbox": "~4.1.4",
     "expo-constants": "~17.1.6",
@@ -73,7 +73,8 @@
     "react-native-vector-icons": "^10.2.0",
     "react-native-web": "^0.20.0",
     "react-native-webview": "^13.12.5",
-    "react-phone-number-input": "^3.4.12"
+    "react-phone-number-input": "^3.4.12",
+    "undefined": "\\"
   },
   "devDependencies": {
     "@babel/core": "^7.25.2",

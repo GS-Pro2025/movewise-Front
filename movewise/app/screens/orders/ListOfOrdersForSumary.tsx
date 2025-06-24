@@ -161,67 +161,83 @@ const ListOfOrdersForSummary: React.FC = () => {
   };
 
   return (
-    <SafeAreaView style={{ flex: 1 }}>
-      {/* Header con espacio aumentado para iOS */}
-      
-      {/* Barra de búsqueda */}
-      <View style={[styles.searchContainer, { 
-        backgroundColor: isDarkMode ? colors.third : colors.lightBackground 
-      }]}>
-        <Ionicons 
-          name="search" 
-          size={20} 
-          color={isDarkMode ? colors.secondary : colors.primary} 
-        />
-        <TextInput
-          style={[styles.searchInput, { 
-            color: isDarkMode ? colors.darkText : colors.lightText 
-          }]}
-          placeholder={t("search_placeholder")}
-          placeholderTextColor={isDarkMode ? colors.placeholderDark : colors.placeholderLight}
-          value={searchText}
-          onChangeText={setSearchText}
-        />
-        {searchText.length > 0 && (
-          <TouchableOpacity onPress={() => setSearchText('')}>
-            <Ionicons 
-              name="close-circle" 
-              size={18} 
-              color={isDarkMode ? colors.secondary : colors.primary} 
-            />
-          </TouchableOpacity>
-        )}
-      </View>
-
-      {/* Filtro de fecha única */}
-      <View style={[styles.datePickerContainer, { 
-        backgroundColor: isDarkMode ? colors.third : colors.lightBackground 
-      }]}>
-        <TouchableOpacity
-          style={[styles.datePickerButton, {
-            borderColor: isDarkMode ? colors.secondary : colors.primary,
-            backgroundColor: isDarkMode ? colors.third : colors.highlightLight,
-          }]}
-          onPress={() => setShowDatePicker(true)}
-        >
-          <Text style={{ color: isDarkMode ? colors.darkText : colors.lightText }}>
-            {selectedDate ? selectedDate.toLocaleDateString() : t("select_date")}
-          </Text>
+    <SafeAreaView style={[styles.container, { backgroundColor: isDarkMode ? colors.third : colors.lightBackground }]}>
+      {/* Header with search and filters */}
+      <View style={styles.headerContainer}>
+        {/* Search bar */}
+        <View style={[styles.searchContainer, { 
+          backgroundColor: isDarkMode ? colors.cardDark : colors.lightBackground,
+          borderRadius: 8,
+          paddingHorizontal: 10,
+          marginBottom: 8,
+        }]}>
           <Ionicons 
-            name="calendar" 
+            name="search" 
             size={20} 
             color={isDarkMode ? colors.secondary : colors.primary} 
           />
-        </TouchableOpacity>
-        {selectedDate && (
-          <TouchableOpacity onPress={clearDateFilter} style={{ marginLeft: 10 }}>
-            <Ionicons 
-              name="close-circle" 
-              size={20} 
-              color={isDarkMode ? colors.secondary : colors.primary} 
-            />
-          </TouchableOpacity>
-        )}
+          <TextInput
+            style={[styles.searchInput, { 
+              color: isDarkMode ? colors.darkText : colors.textDark,
+              backgroundColor: isDarkMode ? colors.cardDark : colors.lightBackground,
+            }]}
+            placeholder={t("search_placeholder")}
+            placeholderTextColor={isDarkMode ? colors.placeholderDark : colors.placeholderLight}
+            value={searchText}
+            onChangeText={setSearchText}
+            returnKeyType="search"
+          />
+          {searchText.length > 0 && (
+            <TouchableOpacity 
+              onPress={() => setSearchText('')}
+              style={{ padding: 4 }}
+            >
+              <Ionicons 
+                name="close-circle" 
+                size={18} 
+                color={isDarkMode ? colors.secondary : colors.primary} 
+              />
+            </TouchableOpacity>
+          )}
+        </View>
+
+        {/* Date filter row */}
+        <View style={styles.filterRow}>
+          <View style={styles.datePickerContainer}>
+            <TouchableOpacity
+              style={[styles.datePickerButton, {
+                borderColor: isDarkMode ? colors.borderDark : colors.borderLight,
+                backgroundColor: isDarkMode ? colors.cardDark : colors.lightBackground,
+              }]}
+              onPress={() => setShowDatePicker(true)}
+            >
+              <Text style={{ 
+                color: isDarkMode ? colors.darkText : colors.textDark,
+                marginRight: 8,
+              }}>
+                {selectedDate ? selectedDate.toLocaleDateString() : t("select_date")}
+              </Text>
+              <Ionicons 
+                name="calendar" 
+                size={18} 
+                color={isDarkMode ? colors.secondary : colors.primary} 
+              />
+            </TouchableOpacity>
+            {selectedDate && (
+              <TouchableOpacity 
+                onPress={clearDateFilter} 
+                style={{ marginLeft: 8, padding: 4 }}
+              >
+                <Ionicons 
+                  name="close-circle" 
+                  size={20} 
+                  color={isDarkMode ? colors.secondary : colors.primary} 
+                />
+              </TouchableOpacity>
+            )}
+          </View>
+        </View>
+        
         {showDatePicker && (
           <DateTimePicker
             value={selectedDate || new Date()}
@@ -233,119 +249,178 @@ const ListOfOrdersForSummary: React.FC = () => {
       </View>
 
       {loading ? (
-        <View style={styles.loadingContainer}>
-          <ActivityIndicator size="large" color={colors.primary} />
+        <View style={[styles.loadingContainer, { backgroundColor: isDarkMode ? colors.third : colors.lightBackground }]}>
+          <ActivityIndicator size="large" color={isDarkMode ? colors.secondary : colors.primary} />
         </View>
       ) : (
-        <FlatList
-          data={orders}
-          keyExtractor={(item) => item.key}
-          renderItem={renderItem}
-          contentContainerStyle={styles.listContainer}
-          refreshing={refreshing}
-          onRefresh={loadOrders}
-          ListEmptyComponent={
-            <View style={styles.emptyContainer}>
-              <Text style={[styles.emptyText, { 
-                color: isDarkMode ? colors.emptyTextDark : colors.emptyTextLight 
+        <View style={{ flex: 1, maxWidth: '100%' }}>
+          <FlatList
+            data={orders}
+            keyExtractor={(item) => item.key}
+            renderItem={renderItem}
+            contentContainerStyle={[styles.listContainer, { 
+              paddingHorizontal: 5,
+              maxWidth: '100%',
+            }]}
+            refreshing={refreshing}
+            onRefresh={loadOrders}
+            ListEmptyComponent={
+              <View style={[styles.emptyContainer, { 
+                backgroundColor: isDarkMode ? colors.third : colors.lightBackground,
               }]}>
-                {t("no_matching_orders")}
-              </Text>
-            </View>
-          }
-        />
+                <Ionicons 
+                  name="document-text-outline" 
+                  size={48} 
+                  color={isDarkMode ? colors.placeholderDark : colors.placeholderLight} 
+                  style={{ marginBottom: 16 }}
+                />
+                <Text style={[styles.emptyText, { 
+                  color: isDarkMode ? colors.placeholderDark : colors.placeholderLight,
+                }]}>
+                  {t("no_matching_orders")}
+                </Text>
+              </View>
+            }
+            // Performance optimizations
+            initialNumToRender={10}
+            maxToRenderPerBatch={5}
+            updateCellsBatchingPeriod={50}
+            windowSize={11}
+            removeClippedSubviews={true}
+          />
+        </View>
       )}
     </SafeAreaView>
   );
 };
 
 const styles = StyleSheet.create({
+  // Main container styles
+  container: {
+    flex: 1,
+    maxWidth: 800, // Limit maximum width for larger screens
+    width: '100%',
+    alignSelf: 'center',
+  },
   header: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
     paddingHorizontal: 15,
+    paddingVertical: 10,
     borderBottomWidth: 1,
+    borderBottomColor: '#e0e0e0',
   },
   title: {
     fontSize: 20,
     fontWeight: 'bold',
   },
+  // Combined header container for search and filters
+  headerContainer: {
+    padding: 10,
+    backgroundColor: 'transparent',
+  },
   searchContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: 15,
-    paddingVertical: 10,
+    marginBottom: 10,
+    paddingHorizontal: 5,
   },
   searchInput: {
     flex: 1,
     height: 40,
     marginLeft: 10,
-    paddingHorizontal: 10,
+    paddingHorizontal: 12,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: '#e0e0e0',
   },
-  datePickerContainer: {
+  filterRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    padding: 15,
+    marginTop: 5,
+  },
+  datePickerContainer: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginRight: 10,
   },
   datePickerButton: {
+    flex: 1,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingHorizontal: 10,
+    paddingHorizontal: 12,
     paddingVertical: 8,
-    borderRadius: 5,
+    borderRadius: 8,
     borderWidth: 1,
-    flex: 1,
+    borderColor: '#e0e0e0',
+    height: 40,
   },
+  // Order item styles
   orderItem: {
     flexDirection: 'row',
     padding: 15,
     borderBottomWidth: 1,
     borderBottomColor: '#e0e0e0',
+    maxWidth: '100%',
   },
   orderIconContainer: {
     marginRight: 15,
+    justifyContent: 'center',
   },
   orderDetails: {
     flex: 1,
+    justifyContent: 'center',
+    marginRight: 10,
   },
   orderRef: {
     fontWeight: 'bold',
     fontSize: 16,
+    marginBottom: 4,
   },
   customerName: {
     fontSize: 14,
-    marginTop: 4,
+    color: '#666',
   },
   orderStatus: {
     alignItems: 'flex-end',
+    justifyContent: 'center',
+    minWidth: 100,
   },
   statusText: {
-    fontWeight: 'bold',
+    fontWeight: '600',
     fontSize: 14,
+    textAlign: 'right',
   },
   dateText: {
     fontSize: 12,
     marginTop: 4,
+    color: '#888',
   },
+  // Loading and empty states
   loadingContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  emptyContainer: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
     padding: 20,
   },
+  emptyContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 40,
+  },
   emptyText: {
     fontSize: 16,
     textAlign: 'center',
+    color: '#888',
   },
+  // List container
   listContainer: {
     paddingBottom: 20,
+    paddingHorizontal: 10,
   },
 });
 
