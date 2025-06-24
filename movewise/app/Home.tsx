@@ -112,7 +112,25 @@ const Home: React.FC = () => {
   //Opciones de settings
   const [isCustomersModalVisible, setIsCustomersModalVisible] = useState(false);
   const [isListJobsModalVisible, setIsListJobsModalVisible] = useState(false);
-  
+
+  const [screenData, setScreenData] = useState(Dimensions.get('window'));
+  const [isLandscape, setIsLandscape] = useState(false);
+
+  useEffect(() => {
+    const onChange = (result: any) => {
+      setScreenData(result.window);
+      setIsLandscape(result.window.width > result.window.height);
+    };
+
+    const subscription = Dimensions.addEventListener('change', onChange);
+
+    // Verificar orientación inicial
+    const { width, height } = Dimensions.get('window');
+    setIsLandscape(width > height);
+
+    return () => subscription?.remove();
+  }, []);
+
   // Configuración de pestañas principales
   const mainTabs: TabItem[] = useMemo(() => [
     { id: 'orders', title: t("orders"), icon: 'cube-outline' },
@@ -164,7 +182,7 @@ const Home: React.FC = () => {
 
     return { MAX_VISIBLE_TABS, visibleTabs, hiddenTabs, hasMoreTabs };
   }, [mainTabs]);
-  
+
   // Usar allTabs para el renderizado de contenido
   const tabs = allTabs;
 
@@ -640,11 +658,19 @@ const Home: React.FC = () => {
     >
       <StatusBar barStyle={isDarkMode ? "light-content" : "dark-content"} />
 
-      {/* Header */}
-      <View style={[styles.header, {
-        backgroundColor: isDarkMode ? colors.third : colors.primary,
-        paddingTop: Platform.OS === 'ios' ? 40 : 20
-      }]}>
+      {/* Header con padding adaptativo */}
+      <View style={[
+        styles.header,
+        {
+          backgroundColor: isDarkMode ? colors.third : colors.primary,
+          // Padding adaptativo basado en orientación
+          paddingTop: isLandscape ? 40 : 15,
+          paddingLeft: isLandscape ? 30 : 15,
+          paddingRight: isLandscape ? 30 : 15,
+          paddingVertical: isLandscape ? 30 : 15,
+          minHeight: isLandscape ? 50 : 70, // Altura mínima adaptativa
+        }
+      ]}>
         <TouchableOpacity
           style={styles.avatarContainer}
           onPress={handleAvatarPress}
@@ -867,6 +893,7 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     position: 'relative',
+    paddingTop: Platform.OS === 'ios' ? 0 : 0, // Dejar que SafeAreaView maneje esto
   },
   scrollView: {
     flex: 1,
@@ -886,10 +913,12 @@ const styles = StyleSheet.create({
     backgroundColor: 'transparent',
     zIndex: 999,
   },
+
   header: {
     flexDirection: "row",
     alignItems: "center",
     paddingHorizontal: 16,
+    paddingTop: 15,
     paddingBottom: 15,
     elevation: 4,
     shadowColor: '#000',
