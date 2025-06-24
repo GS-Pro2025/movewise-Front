@@ -2,7 +2,9 @@ import axios, { AxiosInstance } from "axios";
 
 
 
+
 export const  url = 'https://movingwise.biz'
+
 
 import AsyncStorage from "@react-native-async-storage/async-storage";
 let token : string | null ;
