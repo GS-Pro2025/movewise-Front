@@ -589,6 +589,9 @@
   "registration_successful": "Registration successful.",
   "invalid_data": "Invalid data. Please check the form.",
   "truck_history": "Truck History",
+  "username_already_exists": "Username already exists. Please choose a different username.",
+  "email_already_registered_for_user": "Email is already registered for a user.",
+  "id_number_already_registered_for_user": "ID number is already registered for a user."
   "select_location": "Select Location",
   "search_location":"Search Location" ,
   "select_status":"Select Status"
