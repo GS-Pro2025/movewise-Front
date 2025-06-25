@@ -9,7 +9,7 @@ import { Image } from 'react-native';
 import AddOrderformApi from '@/hooks/api/AddOrderFormApi';
 import { AddOrderForm } from '@/models/ModelAddOrderForm';
 import DateTimePickerModal from "react-native-modal-datetime-picker";
-import { MaterialIcons } from '@expo/vector-icons';
+import { Ionicons, MaterialIcons } from '@expo/vector-icons';
 import { KeyboardAvoidingView, Platform } from 'react-native';
 import { job } from '@/models/ModelJob';
 import { ListJobs } from '@/hooks/api/JobClient';
