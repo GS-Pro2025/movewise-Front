@@ -627,5 +627,8 @@
   "truck_history": "Historial de camiones",
   "select_location": "Seleccionar ubicación", 
   "search_location":"Buscar ubicación",
-  "select_status":"Seleccionar estado"
+  "select_status":"Seleccionar estado",
+  "search_by_name_or_id":"Buscar por nombre o cédula...",
+  "no_operators_found":"No se encontraron operadores",
+  "add_selected_operators":"Agregar seleccionados"
 } 

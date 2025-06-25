@@ -50,7 +50,6 @@ interface OperatorModalProps {
   onSave: () => void;
 }
 
-
 const OperatorModal: React.FC<OperatorModalProps> = ({ visible, onClose, orderKey, onSave }) => {
   const router = useRouter();
   const { t } = useTranslation();
@@ -63,6 +62,10 @@ const OperatorModal: React.FC<OperatorModalProps> = ({ visible, onClose, orderKe
   const [selectedOperatorIndex, setSelectedOperatorIndex] = useState<number | null>(null);
   const colorScheme = useColorScheme();
   const isDarkMode = colorScheme === "dark";
+
+  const handleCloseAddOperator = () => {
+    setAddOperatorVisible(false); // This hides the AddOperatorForm modal
+  };
 
   useEffect(() => {
     if (visible && orderKey) {
@@ -105,6 +108,15 @@ const OperatorModal: React.FC<OperatorModalProps> = ({ visible, onClose, orderKe
       setLoading(false);
     }
   };
+
+
+  const getAllAssignedOperatorIds = () => {
+    const assignedIds = assignedOperators.map(op => op.id); // IDs de operadores sincronizados
+    const localIds = operators.map(op => op.id_operator); // IDs de operadores en estado local
+    return [...assignedIds, ...localIds];
+  };
+
+
   const validateFields = () => {
     const errors = operators.filter(op =>
       op.role === "driver" && !op.truckId
@@ -178,12 +190,12 @@ const OperatorModal: React.FC<OperatorModalProps> = ({ visible, onClose, orderKe
 
           updateOperatorsWithConflicts(responseData.data.conflicts);
           await fetchAssignedOperators();
-          
+
           // Call onSave to notify parent about the partial success
           onSave();
           return;
-        } 
-        
+        }
+
         if (response.status === 400) {
           const errorMessages = responseData.data
             .map((e: { operator_id?: number; index?: number; message?: string; errors?: any }) =>
@@ -197,7 +209,7 @@ const OperatorModal: React.FC<OperatorModalProps> = ({ visible, onClose, orderKe
           });
           return;
         }
-        
+
         throw new Error(responseData.messUser || t("unknown_error"));
       }
 
@@ -418,9 +430,13 @@ const OperatorModal: React.FC<OperatorModalProps> = ({ visible, onClose, orderKe
 
       <AddOperatorForm
         visible={addOperatorVisible}
-        onClose={() => setAddOperatorVisible(false)}
-        onAddOperator={(newOperator) => setOperators((prev) => [...prev, newOperator])}
+        onClose={handleCloseAddOperator}
+        onAddOperators={(newOperators) => {
+          // Agregar todos los operadores nuevos a la lista
+          setOperators(prev => [...prev, ...newOperators]);
+        }}
         orderKey={orderKey}
+        assignedOperatorIds={getAllAssignedOperatorIds()}
       />
 
       {/* Modal para seleccionar roles */}

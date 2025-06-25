@@ -591,5 +591,8 @@
   "truck_history": "Truck History",
   "select_location": "Select Location",
   "search_location":"Search Location" ,
-  "select_status":"Select Status"
+  "select_status":"Select Status",
+  "search_by_name_or_id":"Search by name or id...",
+  "no_operators_found":"No operators found",
+  "add_selected_operators":"Add selected operators"
 }
