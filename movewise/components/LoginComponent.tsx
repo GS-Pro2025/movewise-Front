@@ -352,8 +352,8 @@ const styles = StyleSheet.create({
   },
   logoContainer: {
     alignItems: "center",
-    marginTop: 60,
-    marginBottom: 10,
+    marginTop: 100,
+    marginBottom: 0,
   },
   logo: {
     width: 120,
@@ -363,13 +363,14 @@ const styles = StyleSheet.create({
   logoText: {
     width: 220,
     height: 100,
-    marginBottom: 10,
+    marginBottom: 0,
     resizeMode: "contain",
   },
   formContainer: {
     flex: 1,
     paddingHorizontal: 24,
     justifyContent: "center",
+    marginBottom: 100
   },
   errorText: {
     color: "#FF0000",
@@ -408,7 +409,7 @@ const styles = StyleSheet.create({
     fontWeight: "600",
   },
   bottomText: {
-    textAlign: "center",
+    textAlign: "left",
     color: "#002366",
     fontSize: 14,
     marginBottom: 8,
