@@ -21,7 +21,7 @@ import { useLocalSearchParams } from "expo-router";
 import { decodeToken, getPersonIdFromToken, isAdmin } from "@/utils/decodeToken";
 import { GetPersonById } from "@/hooks/api/GetPersonById";
 import colors from "../app/Colors";
-
+import { Image } from "react-native";
 const LoginComponent: React.FC = () => {
   const { t } = useTranslation();
   const [email, setEmail] = useState("");
@@ -166,15 +166,29 @@ const LoginComponent: React.FC = () => {
         resizeMode="cover"
       >
         <StatusBar barStyle={theme === "dark" ? "light-content" : "dark-content"} />
-        <View style={styles.container}>
-          <Text
-            style={[
-              styles.title,
-              { color: theme === "dark" ? colors.textDark : colors.primary }
-            ]}
-          >
-            {t("welcome_title")}
-          </Text>
+        <View style={styles.logoContainer}>
+          <Image
+            source={require("../assets/images/logo_android.png")}
+            style={styles.logo}
+            resizeMode="contain"
+          />
+          <Image
+            source={require("../assets/images/RecursoMovewise.png")}
+            style={styles.logoText}
+            resizeMode="contain"
+          />
+        </View>
+      <View
+        style={[
+          styles.formContainer,
+          {
+            backgroundColor:
+              theme === "dark"
+                ? "rgba(17,42,74,0.0)"
+                : "rgba(255,255,255,0.0)",
+          },
+        ]}
+      >
           <TextInput
             style={[
               styles.input,
@@ -335,6 +349,27 @@ const styles = StyleSheet.create({
   },
   inputError: {
     borderColor: "#FF0000", // Highlight input with error in red
+  },
+  logoContainer: {
+    alignItems: "center",
+    marginTop: 60,
+    marginBottom: 10,
+  },
+  logo: {
+    width: 120,
+    height: 120,
+    marginBottom: 10,
+  },
+  logoText: {
+    width: 220,
+    height: 100,
+    marginBottom: 10,
+    resizeMode: "contain",
+  },
+  formContainer: {
+    flex: 1,
+    paddingHorizontal: 24,
+    justifyContent: "center",
   },
   errorText: {
     color: "#FF0000",
