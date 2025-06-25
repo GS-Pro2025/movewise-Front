@@ -353,14 +353,7 @@ const OrderModal = () => {
           {t("Orders")}
         </Text>
 
-        <View style={styles.headerRight}>
-          <TouchableOpacity
-            style={[styles.addButton, { backgroundColor: isDarkMode ? colors.secondary : colors.primary }]}
-            onPress={() => setModalAddOrderVisible(true)}
-          >
-            <Ionicons name="add" size={20} color={colors.lightBackground} />
-          </TouchableOpacity>
-        </View>
+        
       </View>
 
 
@@ -654,7 +647,6 @@ const OrderModal = () => {
         userRole={"operator"}
         isWorkhouse={false}
       />
-
       <Toast />
     </SafeAreaView>
   );
