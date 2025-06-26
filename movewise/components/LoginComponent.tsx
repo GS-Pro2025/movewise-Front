@@ -179,12 +179,23 @@ const LoginComponent: React.FC = () => {
             <View style={{ flex: 1, justifyContent: "center" }}>
               <View style={styles.logoContainer}>
                 <Image
-                  source={require("../assets/images/logo_android.png")}
-                  style={styles.logo}
+                  source={
+                    theme === "dark"
+                      ? require("../assets/images/logo_android.png")
+                      : require("../assets/images/logo_android.png")
+                  }
+                  style={[
+                    styles.logo,
+                    { borderRadius: 30, borderWidth: 2, borderColor: theme === "dark" ? "#fff" : "#002366" }
+                  ]}
                   resizeMode="contain"
                 />
                 <Image
-                  source={require("../assets/images/RecursoMovewise.png")}
+                  source={
+                    theme === "dark"
+                      ? require("../assets/images/RecursoMovewiseBlack.png")
+                      : require("../assets/images/RecursoMovewise.png")
+                  }
                   style={styles.logoText}
                   resizeMode="contain"
                 />
@@ -374,11 +385,14 @@ const LoginComponent: React.FC = () => {
       width: 120,
       height: 120,
       marginBottom: 10,
+      borderRadius: 30, 
+      borderWidth: 2,
+      borderColor: "#002366"
     },
     logoText: {
       width: 220,
       height: 100,
-      marginBottom: 0,
+      marginBottom: 20,
       resizeMode: "contain",
     },
     formContainer: {
