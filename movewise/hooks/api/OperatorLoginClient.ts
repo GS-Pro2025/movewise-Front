@@ -1,7 +1,7 @@
 import apiClient from "./apiClient"; // ajusta el path si es necesario
 
 export interface LoginRequest {
-  id_number: String;
+  code: String;
 }
 
 export interface LoginResponse {
