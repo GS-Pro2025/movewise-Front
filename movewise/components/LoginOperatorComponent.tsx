@@ -1,4 +1,3 @@
-import { getOperatorByNumberId } from "@/hooks/api/GetOperatorByNumberId";
 import { loginUser } from "@/hooks/api/OperatorLoginClient";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { router } from "expo-router";
@@ -20,17 +19,18 @@ import {
 import Toast from "react-native-toast-message";
 import colors from "../app/Colors"; // Asegúrate de importar tu archivo de colores
 import { useTranslation } from "react-i18next";
+import { getOperatorByCode } from "@/hooks/api/GetOperatorByCode";
 
 const IdLoginScreen: React.FC = () => {
   const { t } = useTranslation();
-  const [id_number, setIdNumber] = useState("");
+  const [code, setCode] = useState("");
   const [loading, setLoading] = useState(false);
   const theme = useColorScheme();
 
   const handleLogin = async () => {
     // console.log("🔍 ID ingresado:", id_number);
 
-    if (!id_number || !id_number.trim()) {
+    if (!code || !code.trim()) {
       Toast.show({
         type: "error",
         text1: t("incomplete_fields"),
@@ -43,7 +43,7 @@ const IdLoginScreen: React.FC = () => {
 
     try {
       // console.log("🔐 Iniciando autenticación...");
-      const response = await loginUser({ id_number });
+      const response = await loginUser({ code });
 
       if (!response || !response.token) {
         throw new Error(t("login_failed"));
@@ -60,7 +60,7 @@ const IdLoginScreen: React.FC = () => {
 
 
       // console.log("🔎 Buscando operador con ID:", id_number);
-      const operatorData = await getOperatorByNumberId(id_number);
+      const operatorData = await getOperatorByCode(code);
 
       if (!operatorData || operatorData.error) {
         throw new Error(t("operator_not_found"));
@@ -128,7 +128,7 @@ const IdLoginScreen: React.FC = () => {
               { color: theme === "dark" ? colors.textDark : colors.primary }
             ]}
           >
-            {t("identification_number")}
+            {t("code")}
           </Text>
           <TextInput
             style={[
@@ -139,11 +139,11 @@ const IdLoginScreen: React.FC = () => {
                 borderColor: theme === "dark" ? colors.borderDark : colors.borderLight,
               },
             ]}
-            placeholder={t("id_placeholder")}
+            placeholder={t("enter_your_code")}
             placeholderTextColor={theme === "dark" ? colors.placeholderDark : colors.placeholderLight}
             keyboardType="default"
-            value={id_number}
-            onChangeText={setIdNumber}
+            value={code}
+            onChangeText={setCode}
           />
 
           <TouchableOpacity

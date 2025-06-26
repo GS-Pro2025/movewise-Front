@@ -41,10 +41,13 @@ const CustomSplashScreen = ({ onFinish }: { onFinish: () => void }) => {
   return (
     <View style={[
       styles.splashContainer,
-      { backgroundColor: colorScheme === 'dark' ? '#000000' : '#FFFFFF' }
+      { backgroundColor: colorScheme === 'dark' ? '#0B2863' : '#62A2D5' }
     ]}>
       <LottieView
-        source={require('../assets/images/splashScreen.json')}
+        source={colorScheme === 'dark' 
+          ? require('../assets/images/splashDark.json')
+          : require('../assets/images/splashWhite.json')
+        }
         autoPlay
         loop={false}
         onAnimationFinish={() => setAnimationFinished(true)}
@@ -92,7 +95,7 @@ export default function RootLayout() {
     return (
       <View style={[
         styles.loadingContainer,
-        { backgroundColor: colorScheme === 'dark' ? '#000000' : '#FFFFFF' }
+        { backgroundColor: colorScheme === 'dark' ? '#0B2863' : '#62A2D5' }
       ]} />
     );
   }

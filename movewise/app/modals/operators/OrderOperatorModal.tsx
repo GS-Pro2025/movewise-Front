@@ -280,7 +280,7 @@ const OrderModal = () => {
       </View>
     ) : undefined;
 
-    const renderRightActions = () => (
+    const renderRightActions = !isOperator ? () => (
       <View style={styles.rightSwipeActions}>
         <TouchableOpacity
           style={[styles.deleteAction, { backgroundColor: colors.swipeDelete }]}
@@ -290,7 +290,7 @@ const OrderModal = () => {
           <Text style={styles.actionText}>Delete</Text>
         </TouchableOpacity>
       </View>
-    );
+    ) : undefined;
     const { width } = Dimensions.get('window');
 
 
