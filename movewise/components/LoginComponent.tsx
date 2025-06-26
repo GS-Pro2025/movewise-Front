@@ -8,6 +8,8 @@ import {
   useColorScheme,
   StatusBar,
   ImageBackground,
+  KeyboardAvoidingView,
+  Platform,
 } from "react-native";
 import { useRouter } from "expo-router";
 import Checkbox from "expo-checkbox";
@@ -166,6 +168,11 @@ const LoginComponent: React.FC = () => {
         resizeMode="cover"
       >
         <StatusBar barStyle={theme === "dark" ? "light-content" : "dark-content"} />
+        <KeyboardAvoidingView
+          style={{ flex: 1 }}
+          behavior={Platform.OS === "ios" ? "padding" : "height"}
+          keyboardVerticalOffset={Platform.OS === "ios" ? 0 : 20}
+        >
         <View style={styles.logoContainer}>
           <Image
             source={require("../assets/images/logo_android.png")}
@@ -308,12 +315,14 @@ const LoginComponent: React.FC = () => {
           </TouchableOpacity>
         </View>
         <Toast />
+        </KeyboardAvoidingView>
       </ImageBackground>
       {/* Forgot Password Modal */}
       <ForgotPasswordModal
         visible={forgotPasswordVisible}
         onClose={() => setForgotPasswordVisible(false)}
       />
+
     </>
   );
 };
