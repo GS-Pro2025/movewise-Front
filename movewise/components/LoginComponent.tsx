@@ -8,6 +8,10 @@ import {
   useColorScheme,
   StatusBar,
   ImageBackground,
+  KeyboardAvoidingView,
+  Platform,
+  Keyboard,
+  TouchableWithoutFeedback
 } from "react-native";
 import { useRouter } from "expo-router";
 import Checkbox from "expo-checkbox";
@@ -21,7 +25,7 @@ import { useLocalSearchParams } from "expo-router";
 import { decodeToken, getPersonIdFromToken, isAdmin } from "@/utils/decodeToken";
 import { GetPersonById } from "@/hooks/api/GetPersonById";
 import colors from "../app/Colors";
-
+import { Image } from "react-native";
 const LoginComponent: React.FC = () => {
   const { t } = useTranslation();
   const [email, setEmail] = useState("");
@@ -166,225 +170,270 @@ const LoginComponent: React.FC = () => {
         resizeMode="cover"
       >
         <StatusBar barStyle={theme === "dark" ? "light-content" : "dark-content"} />
-        <View style={styles.container}>
-          <Text
-            style={[
-              styles.title,
-              { color: theme === "dark" ? colors.textDark : colors.primary }
-            ]}
-          >
-            {t("welcome_title")}
-          </Text>
-          <TextInput
-            style={[
-              styles.input,
-              errors.email && styles.inputError,
-              {
-                backgroundColor: theme === "dark" ? colors.cardDark : colors.cardLight,
-                color: theme === "dark" ? colors.textDark : colors.textLight,
-                borderColor: errors.email
-                  ? colors.error
-                  : theme === "dark"
-                  ? colors.borderDark
-                  : colors.borderLight,
-              },
-            ]}
-            placeholder={t("email_placeholder")}
-            placeholderTextColor={theme === "dark" ? colors.placeholderDark : colors.placeholderLight}
-            value={email}
-            onChangeText={setEmail}
-          />
-          {errors.email && <Text style={styles.errorText}>{errors.email}</Text>}
-
-          <View style={styles.inputContainer}>
-            <TextInput
-              style={[
-                styles.input,
-                errors.password && styles.inputError,
-                {
-                  backgroundColor: theme === "dark" ? colors.cardDark : colors.cardLight,
-                  color: theme === "dark" ? colors.textDark : colors.textLight,
-                  borderColor: errors.password
-                    ? colors.error
-                    : theme === "dark"
-                    ? colors.borderDark
-                    : colors.borderLight,
-                },
-              ]}
-              placeholder={t("password_placeholder")}
-              placeholderTextColor={theme === "dark" ? colors.placeholderDark : colors.placeholderLight}
-              secureTextEntry={!passwordVisible}
-              value={password}
-              onChangeText={setPassword}
-            />
-            <TouchableOpacity
-              style={styles.eyeIcon}
-              onPress={() => setPasswordVisible(!passwordVisible)}
-            >
-              <Icon
-                name={passwordVisible ? "visibility" : "visibility-off"}
-                size={24}
-                color={theme === "dark" ? colors.placeholderDark : colors.placeholderLight}
-              />
-            </TouchableOpacity>
-          </View>
-          {errors.password && <Text style={styles.errorText}>{errors.password}</Text>}
-
-          <View style={styles.row}>
-            <View style={styles.checkboxContainer}>
-              <Checkbox
-                value={remember}
-                onValueChange={setRemember}
-                color={theme === "dark" ? colors.primary : colors.primary}
-              />
-              <Text
+        <KeyboardAvoidingView
+          style={{ flex: 1 }}
+          behavior={Platform.OS === "ios" ? "padding" : "height"}
+          keyboardVerticalOffset={Platform.OS === "ios" ? 0 : 20}
+        >
+          <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
+            <View style={{ flex: 1, justifyContent: "center" }}>
+              <View style={styles.logoContainer}>
+                <Image
+                  source={require("../assets/images/logo_android.png")}
+                  style={styles.logo}
+                  resizeMode="contain"
+                />
+                <Image
+                  source={require("../assets/images/RecursoMovewise.png")}
+                  style={styles.logoText}
+                  resizeMode="contain"
+                />
+              </View>
+              <View
                 style={[
-                  styles.checkboxText,
-                  { color: theme === "dark" ? colors.textDark : colors.primary }
+                  styles.formContainer,
+                  {
+                    backgroundColor:
+                      theme === "dark"
+                        ? "rgba(17,42,74,0.0)"
+                        : "rgba(255,255,255,0.0)",
+                  },
                 ]}
               >
-                {t("remember_me")}
-              </Text>
-            </View>
-            <TouchableOpacity onPress={() => setForgotPasswordVisible(true)}>
-              <Text
-                style={[
-                  styles.forgotText,
-                  { color: theme === "dark" ? colors.secondary : colors.primary }
-                ]}
-              >
-                {t("forgot_password")}
-              </Text>
-            </TouchableOpacity>
-          </View>
-          <TouchableOpacity
-            style={[
-              styles.button,
-              { backgroundColor: theme === "dark" ? colors.primary : colors.primary }
-            ]}
-            onPress={handleLogin}
-          >
-            <Text style={[styles.buttonText, { color: colors.white }]}>{t("login_button")}</Text>
-          </TouchableOpacity>
-          <TouchableOpacity
-            style={[
-              styles.button,
-              { backgroundColor: theme === "dark" ? colors.primary : colors.primary }
-            ]}
-            onPress={() => router.push("/OperatorLogin")}
-          >
-            <Text style={[styles.buttonText, { color: colors.white }]}>{t("operator_daily_work")}</Text>
-          </TouchableOpacity>
-          <Text
-            style={[
-              styles.bottomText,
-              { color: theme === "dark" ? colors.textDark : colors.primary }
-            ]}
-          >
-            {t("no_company")}
-          </Text>
-          <TouchableOpacity
-            style={[
-              styles.button,
-              { backgroundColor: theme === "dark" ? colors.primary : colors.primary }
-            ]}
-            onPress={() => router.push("/CompanyRegister")}
-          >
-            <Text style={[styles.buttonText, { color: colors.white }]}>{t("register_company")}</Text>
-          </TouchableOpacity>
-        </View>
-        <Toast />
-      </ImageBackground>
-      {/* Forgot Password Modal */}
-      <ForgotPasswordModal
-        visible={forgotPasswordVisible}
-        onClose={() => setForgotPasswordVisible(false)}
-      />
-    </>
-  );
-};
+                  <TextInput
+                    style={[
+                      styles.input,
+                      errors.email && styles.inputError,
+                      {
+                        backgroundColor: theme === "dark" ? colors.cardDark : colors.cardLight,
+                        color: theme === "dark" ? colors.textDark : colors.textLight,
+                        borderColor: errors.email
+                          ? colors.error
+                          : theme === "dark"
+                          ? colors.borderDark
+                          : colors.borderLight,
+                      },
+                    ]}
+                    placeholder={t("email_placeholder")}
+                    placeholderTextColor={theme === "dark" ? colors.placeholderDark : colors.placeholderLight}
+                    value={email}
+                    onChangeText={setEmail}
+                  />
+                  {errors.email && <Text style={styles.errorText}>{errors.email}</Text>}
 
-export default LoginComponent;
+                  <View style={styles.inputContainer}>
+                    <TextInput
+                      style={[
+                        styles.input,
+                        errors.password && styles.inputError,
+                        {
+                          backgroundColor: theme === "dark" ? colors.cardDark : colors.cardLight,
+                          color: theme === "dark" ? colors.textDark : colors.textLight,
+                          borderColor: errors.password
+                            ? colors.error
+                            : theme === "dark"
+                            ? colors.borderDark
+                            : colors.borderLight,
+                        },
+                      ]}
+                      placeholder={t("password_placeholder")}
+                      placeholderTextColor={theme === "dark" ? colors.placeholderDark : colors.placeholderLight}
+                      secureTextEntry={!passwordVisible}
+                      value={password}
+                      onChangeText={setPassword}
+                    />
+                    <TouchableOpacity
+                      style={styles.eyeIcon}
+                      onPress={() => setPasswordVisible(!passwordVisible)}
+                    >
+                      <Icon
+                        name={passwordVisible ? "visibility" : "visibility-off"}
+                        size={24}
+                        color={theme === "dark" ? colors.placeholderDark : colors.placeholderLight}
+                      />
+                    </TouchableOpacity>
+                  </View>
+                  {errors.password && <Text style={styles.errorText}>{errors.password}</Text>}
 
-const styles = StyleSheet.create({
-  background: {
-    flex: 1,
-  },
-  container: {
-    flex: 1,
-    paddingHorizontal: 32,
-    justifyContent: "center",
-  },
-  title: {
-    fontSize: 32,
-    color: "#002366",
-    fontWeight: "bold",
-    textAlign: "center",
-    marginBottom: 32,
-  },
-  input: {
-    height: 50,
-    borderWidth: 2,
-    borderColor: "#0458AB",
-    borderRadius: 10,
-    paddingHorizontal: 16,
-    marginBottom: 8,
-    backgroundColor: "#fff",
-    fontSize: 16,
-    color: "#000",
-  },
-  inputError: {
-    borderColor: "#FF0000", // Highlight input with error in red
-  },
-  errorText: {
-    color: "#FF0000",
-    fontSize: 12,
-    marginBottom: 8,
-  },
-  row: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    marginBottom: 24,
-  },
-  checkboxContainer: {
-    flexDirection: "row",
-    alignItems: "center",
-  },
-  checkboxText: {
-    color: "#002366",
-    fontSize: 14,
-  },
-  forgotText: {
-    color: "#0458AB",
-    fontWeight: "500",
-  },
-  button: {
-    height: 48,
-    backgroundColor: "#002366",
-    borderRadius: 10,
-    justifyContent: "center",
-    alignItems: "center",
-    marginBottom: 16,
-  },
-  buttonText: {
-    color: "#fff",
-    fontSize: 16,
-    fontWeight: "600",
-  },
-  bottomText: {
-    textAlign: "center",
-    color: "#002366",
-    fontSize: 14,
-    marginBottom: 8,
-  },
-  eyeIcon: {
-    position: "absolute",
-    right: 16,
-    top: 13,
-  },
-  inputContainer: {
-    position: "relative",
-    marginBottom: 8,
-  },
-});
+                  <View style={styles.row}>
+                    <View style={styles.checkboxContainer}>
+                      <Checkbox
+                        value={remember}
+                        onValueChange={setRemember}
+                        color={theme === "dark" ? colors.primary : colors.primary}
+                      />
+                      <Text
+                        style={[
+                          styles.checkboxText,
+                          { color: theme === "dark" ? colors.textDark : colors.primary }
+                        ]}
+                      >
+                        {t("remember_me")}
+                      </Text>
+                    </View>
+                    <TouchableOpacity onPress={() => setForgotPasswordVisible(true)}>
+                      <Text
+                        style={[
+                          styles.forgotText,
+                          { color: theme === "dark" ? colors.secondary : colors.primary }
+                        ]}
+                      >
+                        {t("forgot_password")}
+                      </Text>
+                    </TouchableOpacity>
+                  </View>
+                  <TouchableOpacity
+                    style={[
+                      styles.button,
+                      { backgroundColor: theme === "dark" ? colors.primary : colors.primary }
+                    ]}
+                    onPress={handleLogin}
+                  >
+                    <Text style={[styles.buttonText, { color: colors.white }]}>{t("login_button")}</Text>
+                  </TouchableOpacity>
+                  <TouchableOpacity
+                    style={[
+                      styles.button,
+                      { backgroundColor: theme === "dark" ? colors.primary : colors.primary }
+                    ]}
+                    onPress={() => router.push("/OperatorLogin")}
+                  >
+                    <Text style={[styles.buttonText, { color: colors.white }]}>{t("operator_daily_work")}</Text>
+                  </TouchableOpacity>
+                  <Text
+                    style={[
+                      styles.bottomText,
+                      { color: theme === "dark" ? colors.textDark : colors.primary }
+                    ]}
+                  >
+                    {t("no_company")}
+                  </Text>
+                  <TouchableOpacity
+                    style={[
+                      styles.button,
+                      { backgroundColor: theme === "dark" ? colors.primary : colors.primary }
+                    ]}
+                    onPress={() => router.push("/CompanyRegister")}
+                  >
+                    <Text style={[styles.buttonText, { color: colors.white }]}>{t("register_company")}</Text>
+                  </TouchableOpacity>
+                </View>
+                <Toast />
+              </View>
+            </TouchableWithoutFeedback>
+          </KeyboardAvoidingView>
+        </ImageBackground>
+        {/* Forgot Password Modal */}
+        <ForgotPasswordModal
+          visible={forgotPasswordVisible}
+          onClose={() => setForgotPasswordVisible(false)}
+        />
+
+      </>
+    );
+  };
+
+  export default LoginComponent;
+
+  const styles = StyleSheet.create({
+    background: {
+      flex: 1,
+    },
+    container: {
+      flex: 1,
+      paddingHorizontal: 32,
+      justifyContent: "center",
+    },
+    title: {
+      fontSize: 32,
+      color: "#002366",
+      fontWeight: "bold",
+      textAlign: "center",
+      marginBottom: 32,
+    },
+    input: {
+      height: 50,
+      borderWidth: 2,
+      borderColor: "#0458AB",
+      borderRadius: 10,
+      paddingHorizontal: 16,
+      marginBottom: 8,
+      backgroundColor: "#fff",
+      fontSize: 16,
+      color: "#000",
+    },
+    inputError: {
+      borderColor: "#FF0000", // Highlight input with error in red
+    },
+    logoContainer: {
+      alignItems: "center",
+      marginTop: 100,
+      marginBottom: 0,
+    },
+    logo: {
+      width: 120,
+      height: 120,
+      marginBottom: 10,
+    },
+    logoText: {
+      width: 220,
+      height: 100,
+      marginBottom: 0,
+      resizeMode: "contain",
+    },
+    formContainer: {
+      paddingHorizontal: 24,
+      marginBottom: 100,
+    },
+    errorText: {
+      color: "#FF0000",
+      fontSize: 12,
+      marginBottom: 8,
+    },
+    row: {
+      flexDirection: "row",
+      justifyContent: "space-between",
+      alignItems: "center",
+      marginBottom: 24,
+    },
+    checkboxContainer: {
+      flexDirection: "row",
+      alignItems: "center",
+    },
+    checkboxText: {
+      color: "#002366",
+      fontSize: 14,
+    },
+    forgotText: {
+      color: "#0458AB",
+      fontWeight: "500",
+    },
+    button: {
+      height: 48,
+      backgroundColor: "#002366",
+      borderRadius: 10,
+      justifyContent: "center",
+      alignItems: "center",
+      marginBottom: 16,
+    },
+    buttonText: {
+      color: "#fff",
+      fontSize: 16,
+      fontWeight: "600",
+    },
+    bottomText: {
+      textAlign: "left",
+      color: "#002366",
+      fontSize: 14,
+      marginBottom: 8,
+    },
+    eyeIcon: {
+      position: "absolute",
+      right: 16,
+      top: 13,
+    },
+    inputContainer: {
+      position: "relative",
+      marginBottom: 8,
+    },
+  });
