@@ -93,6 +93,7 @@ const IdLoginScreen: React.FC = () => {
 
 
   return (
+    <>
     <ImageBackground
       source={
         theme === "dark"
@@ -172,6 +173,8 @@ const IdLoginScreen: React.FC = () => {
         </ScrollView>
       </KeyboardAvoidingView>
     </ImageBackground>
+    <Toast/>
+    </>
   );
 };
 
