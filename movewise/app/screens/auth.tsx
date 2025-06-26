@@ -16,9 +16,6 @@ import {
 import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import Toast from "react-native-toast-message";
-import { CreateCompany } from "../../hooks/api/CompanyClient";
-import { registerUser } from "../../hooks/api/RegistryClient";
-import HeaderWithDividerCreateTruck from "@/components/HeaderWithDividerCreateTruck";
 import DropDownPicker from "react-native-dropdown-picker";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import DateTimePickerModal from "react-native-modal-datetime-picker";
@@ -29,9 +26,6 @@ import { useTranslation } from "react-i18next";
 import CheckBox from "react-native-check-box";
 import { registerUserWithCompany } from "@/hooks/api/RegisterUserWIthCompany";
 import { getTerms_and_conditions } from "@/hooks/api/GetTerms_and_conditions";
-import * as FileSystem from "expo-file-system";
-import * as Linking from "expo-linking";
-import * as WebBrowser from "expo-web-browser";
 import { WebView } from "react-native-webview";
 import { Ionicons } from "@expo/vector-icons";
 import CrossPlatformImageUpload, { ImageInfo } from '@/components/CrossPlatformImageUpload';
@@ -66,7 +60,6 @@ const RegistryUser = () => {
   const [idNumber, setIdNumber] = useState("");
   const [state, setState] = useState("");
   const [city, setCity] = useState("");
-  const [zipCode, setZipCode] = useState("");
   const [adressPerson, setAddress] = useState("");
   const [phone, setPhone] = useState("");
   const [openIdType, setOpenIdType] = useState(false);
@@ -283,11 +276,6 @@ const RegistryUser = () => {
   }, []);
   return (
     <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
-      <ImageBackground
-        source={require("../../assets/images/bg_login.jpg")}
-        style={styles.background}
-        resizeMode="cover"
-      >
         <KeyboardAvoidingView
         style={{ flex: 1 }}
         behavior={Platform.OS === "ios" ? "padding" : "height"}
@@ -544,7 +532,6 @@ const RegistryUser = () => {
           </SafeAreaView>
         </Modal>
         <Toast />
-      </ImageBackground>
     </TouchableWithoutFeedback>
   );
 };

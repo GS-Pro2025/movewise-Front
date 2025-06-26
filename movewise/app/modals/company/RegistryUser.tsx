@@ -18,11 +18,6 @@ import { Picker } from "@react-native-picker/picker";
 import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import Toast from "react-native-toast-message";
-// import { CreateCompany } from "../../hooks/api/CompanyClient";
-// import { registerUser } from "../../hooks/api/RegistryClient";
-import { CreateCompany } from "@/hooks/api/CompanyClient";
-import { registerUser } from "@/hooks/api/RegistryClient";
-import HeaderWithDividerCreateTruck from "@/components/HeaderWithDividerCreateTruck";
 import DropDownPicker from "react-native-dropdown-picker";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import DateTimePickerModal from "react-native-modal-datetime-picker";
@@ -35,6 +30,7 @@ import { registerUserWithCompany } from "@/hooks/api/RegisterUserWIthCompany";
 import { getTerms_and_conditions } from "@/hooks/api/GetTerms_and_conditions";
 import { WebView } from "react-native-webview";
 import colors from "@/app/Colors"; 
+import Icon from "react-native-vector-icons/MaterialIcons";
 
 const RegistryUser = () => {
   const { t } = useTranslation();
@@ -56,6 +52,7 @@ const RegistryUser = () => {
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
   const [birthDate, setBirthDate] = useState("");
@@ -73,6 +70,8 @@ const RegistryUser = () => {
   const [userName, setUserName] = useState("");
   const [searchTerm, setSearchTerm] = useState(""); // Added state for search term
   const [isChecked, setIsChecked] = useState(false); // Estado para el checkbox
+  const [passwordVisible, setPasswordVisible] = useState(false);
+  const [confirmPasswordVisible, setConfirmPasswordVisible] = useState(false);
   const insets = useSafeAreaInsets(); 
   const theme = useColorScheme(); // <-- Obtén el tema
   const memoizedStateItems = useMemo(() => 
@@ -85,6 +84,7 @@ const RegistryUser = () => {
   const [errors, setErrors] = useState<{
     email?: string;
     password?: string;
+    confirmPassword?: string;
     userName?: string; 
     firstName?: string;
     lastName?: string;
@@ -122,6 +122,7 @@ const RegistryUser = () => {
     const newErrors: {
       email?: string;
       password?: string;
+      confirmPassword?: string;
       userName?: string; 
       firstName?: string;
       lastName?: string;
@@ -145,6 +146,11 @@ const RegistryUser = () => {
       newErrors.password = t("password_required");
     } else if (password.length < 6) {
       newErrors.password = t("password_min_length");
+    }
+    if (!confirmPassword.trim()) {
+      newErrors.confirmPassword = t("confirm_password_required");
+    } else if (password !== confirmPassword) {
+      newErrors.confirmPassword = t("passwords_do_not_match");
     }
     if (!userName.trim()) {
       newErrors.userName = t("username_required");
@@ -361,26 +367,71 @@ const RegistryUser = () => {
               onChangeText={setUserName}
             />
             {errors.password && <Text style={styles.errorText}>{errors.password}</Text>}
-            <TextInput
-              style={[
-                styles.input,
-                errors.password && styles.inputError,
-                {
-                  backgroundColor: theme === "dark" ? colors.cardDark : colors.cardLight,
-                  color: theme === "dark" ? colors.textDark : colors.textLight,
-                  borderColor: errors.password
-                    ? "#FF0000"
-                    : theme === "dark"
-                    ? colors.borderDark
-                    : colors.borderLight,
-                },
-              ]}
-              placeholder={t("password_placeholder")}
-              placeholderTextColor={theme === "dark" ? colors.placeholderDark : colors.placeholderLight}
-              value={password}
-              onChangeText={setPassword}
-              secureTextEntry
-            />
+            <View style={styles.inputContainer}>
+              <TextInput
+                style={[
+                  styles.input,
+                  errors.password && styles.inputError,
+                  {
+                    backgroundColor: theme === "dark" ? colors.cardDark : colors.cardLight,
+                    color: theme === "dark" ? colors.textDark : colors.textLight,
+                    borderColor: errors.password
+                      ? "#FF0000"
+                      : theme === "dark"
+                      ? colors.borderDark
+                      : colors.borderLight,
+                  },
+                ]}
+                placeholder={t("password_placeholder")}
+                placeholderTextColor={theme === "dark" ? colors.placeholderDark : colors.placeholderLight}
+                value={password}
+                onChangeText={setPassword}
+                secureTextEntry={!passwordVisible}
+              />
+              <TouchableOpacity
+                style={styles.eyeIcon}
+                onPress={() => setPasswordVisible(!passwordVisible)}
+              >
+                <Icon
+                  name={passwordVisible ? "visibility" : "visibility-off"}
+                  size={24}
+                  color={theme === "dark" ? colors.placeholderDark : colors.placeholderLight}
+                />
+              </TouchableOpacity>
+            </View>
+            {errors.confirmPassword && <Text style={styles.errorText}>{errors.confirmPassword}</Text>}
+            <View style={styles.inputContainer}>
+              <TextInput
+                style={[
+                  styles.input,
+                  errors.confirmPassword && styles.inputError,
+                  {
+                    backgroundColor: theme === "dark" ? colors.cardDark : colors.cardLight,
+                    color: theme === "dark" ? colors.textDark : colors.textLight,
+                    borderColor: errors.confirmPassword
+                      ? "#FF0000"
+                      : theme === "dark"
+                      ? colors.borderDark
+                      : colors.borderLight,
+                  },
+                ]}
+                placeholder={t("confirm_password_placeholder")}
+                placeholderTextColor={theme === "dark" ? colors.placeholderDark : colors.placeholderLight}
+                value={confirmPassword}
+                onChangeText={setConfirmPassword}
+                secureTextEntry={!confirmPasswordVisible}
+              />
+              <TouchableOpacity
+                style={styles.eyeIcon}
+                onPress={() => setConfirmPasswordVisible(!confirmPasswordVisible)}
+              >
+                <Icon
+                  name={confirmPasswordVisible ? "visibility" : "visibility-off"}
+                  size={24}
+                  color={theme === "dark" ? colors.placeholderDark : colors.placeholderLight}
+                />
+              </TouchableOpacity>
+            </View>
           </View>
           <View style={styles.separator} />
           {/* Resto de campos */}
@@ -778,6 +829,16 @@ const styles = StyleSheet.create({
   closeButtonText: {
     color: "#FFF",
     fontWeight: "bold",
+  },
+  inputContainer: {
+    position: "relative",
+    marginBottom: 8,
+  },
+  eyeIcon: {
+    position: "absolute",
+    right: 16,
+    top: 13,
+    zIndex: 1,
   },
 });
 
