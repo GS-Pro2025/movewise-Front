@@ -1,360 +1,554 @@
-import { Modal, SafeAreaView, ScrollView, View, Text,  TextInput, TouchableOpacity, StyleSheet, useColorScheme } from 'react-native';
-import { useState, useEffect } from 'react';
-// import { ThemedView } from '../../components/ThemedView';
-import {ThemedView} from '@/components/ThemedView'
-import { MaterialIcons } from '@expo/vector-icons';
-import AsyncStorage from '@react-native-async-storage/async-storage';
-import { ToastAndroid, Platform } from 'react-native';
+import React, { useState, useEffect } from 'react';
+import {
+  View,
+  Text,
+  Modal,
+  TouchableOpacity,
+  StyleSheet,
+  useColorScheme,
+  TextInput,
+  FlatList,
+  Image,
+  ActivityIndicator,
+  Alert
+} from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import { Ionicons } from '@expo/vector-icons';
 import { useTranslation } from 'react-i18next';
 import Toast from 'react-native-toast-message';
-import { Ionicons } from '@expo/vector-icons';
-import { GetFreelanceByCode } from '@/hooks/api/FreelanceClient';
-import CreateFreelanceModal from '../workhouse/CreateFreelanceModal';
+import { ListOperatorsAndFreelances } from '@/hooks/api/Get_operators_and_freelances';
 
 interface Operator {
-  id_operator: number; // Changed from id_operator to id to match OperatorModal interface
-  name: string; // Changed to name to match what OperatorModal expects
-  role?: string;
-  additionalCosts?: number;
-  truckId?: number;
+  id_operator: number;
+  code: string;
+  first_name: string;
+  last_name: string;
+  id_number: string;
+  type_id: string;
+  photo: string | null;
+  salary: string;
+  status: string;
+  email?: string;
+  phone?: string;
+  address?: string;
+  birth_date?: string;
 }
 
 interface AddOperatorFormProps {
   visible: boolean;
   onClose: () => void;
-  onAddOperator?: (operator: Operator) => void;
+  onAddOperators: (operators: any[]) => void;
   orderKey: string;
+  assignedOperatorIds: number[];
 }
 
-export default function AddOperatorForm({ visible, onClose, onAddOperator, orderKey }: AddOperatorFormProps) {
-  // obtener si es admin o no
+export default function AddOperatorForm({ visible, onClose, onAddOperators, orderKey, assignedOperatorIds = [] }: AddOperatorFormProps) {
   const { t } = useTranslation();
-  const [isAdmin, setIsAdmin] = useState<boolean>(false);
-  const [showFreelanceForm, setShowFreelanceForm] = useState(false);
-
-
-  //handle close and open modal IOS
-  const handleOpenRegisterFreelanceForm = () => {
-    onClose();
-    setTimeout(() => {
-      setShowFreelanceForm(true)
-    }, 100);
-  }
-
-  const handleCloseRegisterFreelanceForm = () => {
-    setTimeout(() => {
-      setShowFreelanceForm(false)
-    }, 100);
-  }
+  const colorScheme = useColorScheme();
+  const [searchTerm, setSearchTerm] = useState('');
+  const [operators, setOperators] = useState<Operator[]>([]);
+  const [filteredOperators, setFilteredOperators] = useState<Operator[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [page, setPage] = useState(1);
+  const [hasMore, setHasMore] = useState(true);
+  const [loadingMore, setLoadingMore] = useState(false);
+  const [selectedOperators, setSelectedOperators] = useState<Set<number>>(new Set());
+  const [adding, setAdding] = useState(false);
 
   useEffect(() => {
-    async function fetchIsAdmin() {
-      try {
-        const stored = await AsyncStorage.getItem("isAdmin");
-        if (stored !== null) {
-          setIsAdmin(JSON.parse(stored))
-        }
-      } catch (e) {
-        console.error(`error feching admin ${e}`);
+    if (!visible) {
+      setSelectedOperators(new Set());
+    }
+  }, [visible]);
+
+
+  const toggleOperatorSelection = (operatorId: number) => {
+    setSelectedOperators(prev => {
+      const newSet = new Set(prev);
+      if (newSet.has(operatorId)) {
+        newSet.delete(operatorId);
+      } else {
+        newSet.add(operatorId);
       }
-    }
-    fetchIsAdmin()
-  }, [])
+      return newSet;
+    });
+  };
 
-  if (!orderKey) {
-    console.error('orderKey is required');
-    return null;
-  }
-
-  function notifyMessage(msg: string) {
-    if (Platform.OS === 'android') {
-      ToastAndroid.show(msg, ToastAndroid.SHORT)
-    }
-  }
-
-
-
-  const [operatorId, setOperatorId] = useState('');
-  const [name, setName] = useState('');
-  const [cost, setCost] = useState('');
-  const [additionalCost, setAdditionalCost] = useState('');
-  const [fetchedOperatorId, setFetchedOperatorId] = useState<number | null>(null);
-  const colorScheme = useColorScheme();
-
-  const handleSearch = async () => {
-    if (!operatorId.trim()) {
-      resetForm();
-      return;
+  // Cargar operadores
+  const fetchOperators = async (pageNumber = 1, reset = false) => {
+    if (pageNumber === 1) {
+      setLoading(true);
+    } else {
+      setLoadingMore(true);
     }
 
     try {
-      const data = await GetFreelanceByCode(operatorId);
-      // console.log("operador recibido:", data);
-      if (data && data.data.id_operator) {
-        // console.log("Datos recibidos:", data);
-        Toast.show({
-          type: "success",
-          text1: t('operator_found'),
-          text2: t('operator_found_message', {
-            name: `${data.data.first_name} ${data.data.last_name}`
-          })
-        });
-        setName(`${data.data.first_name} ${data.data.last_name}`);
-        setCost(data.data.salary?.toString() ?? '');
-        setFetchedOperatorId(data.data.id_operator);
-      } else {
-        Toast.show({
-          type: "error",
-          text1: t('operator_not_found'),
-          text2: t('operator_not_found_message')
-        });
-        resetForm();
+      console.log(`Fetching operators, page: ${pageNumber}`);
+      const response = await ListOperatorsAndFreelances(pageNumber);
+
+      if (!response || !response.results) {
+        throw new Error('Invalid response format from server');
       }
 
-    } catch (error) {
-      console.error("Error al buscar operador:", error);
-      Toast.show({
-        type: "error",
-        text1: t('operator_not_found'),
-        text2: t('operator_not_found_message')
+      const newOperators = response.results || [];
+      if (reset || pageNumber === 1) {
+        setOperators(newOperators);
+      } else {
+        setOperators(prev => [...prev, ...newOperators]);
+      }
+
+      setHasMore(!!response.next);
+      setPage(pageNumber);
+    } catch (error: any) {
+      console.error('Error fetching operators:', {
+        message: error.message,
+        response: error.response?.data,
+        status: error.response?.status,
+        config: {
+          url: error.config?.url,
+          method: error.config?.method,
+          params: error.config?.params,
+          headers: error.config?.headers
+        }
       });
-      resetForm();
+
+      let errorMessage = t('error_fetching_operators') || 'Error al cargar operadores';
+
+      if (error.response?.data?.detail) {
+        errorMessage = error.response.data.detail;
+      } else if (error.response?.data) {
+        errorMessage = JSON.stringify(error.response.data);
+      }
+
+      Toast.show({
+        type: 'error',
+        text1: t('error'),
+        text2: errorMessage,
+      });
+    } finally {
+      setLoading(false);
+      setLoadingMore(false);
     }
   };
 
+  // Filtrar operadores por término de búsqueda
+  useEffect(() => {
+    if (!searchTerm.trim()) {
+      setFilteredOperators(operators);
+    } else {
+      const filtered = operators.filter(operator => {
+        const fullName = `${operator.first_name || ''} ${operator.last_name || ''}`.toLowerCase();
+        const idNumber = (operator.id_number || '').toLowerCase();
+        const search = searchTerm.toLowerCase();
 
-  // Función auxiliar para resetear el formulario
-  const resetForm = () => {
-    setName('');
-    setCost('');
-    setFetchedOperatorId(null);
-  };
+        return fullName.includes(search) || idNumber.includes(search);
+      });
+      setFilteredOperators(filtered);
+    }
+  }, [searchTerm, operators]);
 
-  const handleSubmit = () => {
-    // console.log("Submitting operator data: ", fetchedOperatorId)
-    if (!fetchedOperatorId) {
-      notifyMessage("Busque un operador válido primero");
+  // Cargar operadores al abrir el modal
+  useEffect(() => {
+    if (visible) {
+      fetchOperators(1, true);
+      setSearchTerm('');
+    }
+  }, [visible]);
+
+  const handleAddSelectedOperators = () => {
+    if (selectedOperators.size === 0) {
+      Toast.show({
+        type: 'error',
+        text1: t('error'),
+        text2: t('no_operators_selected') || 'Selecciona al menos un operador',
+      });
       return;
     }
 
-    // Create new operator with the proper structure to match OperatorModal interface
-    const newOperator: Operator = {
-      id_operator: fetchedOperatorId, // Changed from id_operator to id
-      name: name, // Use the full name, not just first name
-      role: "operator",
-      additionalCosts: additionalCost.trim() !== '' ? parseFloat(additionalCost) : 0,
-    };
+    setAdding(true);
 
-    if (onAddOperator) {
-      onAddOperator(newOperator);
+    try {
+      // Obtener los operadores seleccionados
+      const selected = operators.filter(op => selectedOperators.has(op.id_operator));
+
+      // Crear la lista en el formato esperado por el padre
+      const operatorsToAdd = selected.map(operator => ({
+        id_operator: operator.id_operator,
+        name: `${operator.first_name} ${operator.last_name}`,
+      }));
+
+      // Llamar a la función del padre con todos los operadores
+      if (onAddOperators) {
+        onAddOperators(operatorsToAdd);
+      }
+
+      Toast.show({
+        type: 'success',
+        text1: t('operators_added'),
+        text2: t('operators_added_message', { count: selected.length }),
+      });
+
+      // Cerrar el modal después de agregar
+      onClose();
+    } catch (error) {
+      console.error('Error adding operators:', error);
+      Toast.show({
+        type: 'error',
+        text1: t('error'),
+        text2: t('error_adding_operators') || 'Error al agregar operadores',
+      });
+    } finally {
+      setAdding(false);
     }
-
-    // Limpiar formulario
-    setOperatorId('');
-    setName('');
-    setCost('');
-    setAdditionalCost('');
-    setFetchedOperatorId(null);
-    onClose();
   };
 
+  // Cargar más operadores
+  const loadMoreOperators = () => {
+    if (hasMore && !loadingMore) {
+      fetchOperators(page + 1);
+    }
+  };
+
+  const handleClose = () => {
+    setSelectedOperators(new Set());
+    onClose(); // Call the parent's onClose handler
+  };
+
+  // Renderizar item de operador
+  const renderOperatorItem = ({ item }: { item: Operator }) => {
+    const isSelected = selectedOperators.has(item.id_operator);
+    const isAssigned = assignedOperatorIds.includes(item.id_operator);
+
+    return (
+      <TouchableOpacity
+        style={[
+          styles.operatorItem,
+          {
+            backgroundColor: isAssigned
+              ? (colorScheme === 'dark' ? '#2d3748' : '#e5e7eb')
+              : isSelected
+                ? (colorScheme === 'dark' ? '#2d3748' : '#ebf8ff')
+                : (colorScheme === 'dark' ? '#1e293b' : '#f8fafc'),
+            borderColor: isAssigned
+              ? (colorScheme === 'dark' ? '#64748b' : '#d1d5db')
+              : isSelected
+                ? (colorScheme === 'dark' ? '#4ade80' : '#38b2ac')
+                : (colorScheme === 'dark' ? '#334155' : '#e5e7eb'),
+            borderWidth: 2,
+            opacity: isAssigned ? 0.6 : 1,
+          }
+        ]}
+        onPress={() => {
+          if (!isAssigned) {
+            toggleOperatorSelection(item.id_operator);
+          }
+        }}
+        disabled={isAssigned}
+      >
+        <View style={styles.operatorInfo}>
+          <View style={styles.photoContainer}>
+            {item.photo ? (
+              <Image source={{ uri: item.photo }} style={styles.operatorPhoto} />
+            ) : (
+              <View style={[styles.operatorPhoto, styles.noPhoto]}>
+                <Ionicons
+                  name="person"
+                  size={30}
+                  color={colorScheme === 'dark' ? '#64748b' : '#94a3b8'}
+                />
+              </View>
+            )}
+          </View>
+
+          <View style={styles.operatorDetails}>
+            <Text style={[
+              styles.operatorName,
+              {
+                color: isAssigned
+                  ? (colorScheme === 'dark' ? '#94a3b8' : '#9ca3af')
+                  : (colorScheme === 'dark' ? '#ffffff' : '#1f2937')
+              }
+            ]}>
+              {`${item.first_name} ${item.last_name}`}
+            </Text>
+            <Text style={[styles.operatorId, { color: colorScheme === 'dark' ? '#94a3b8' : '#6b7280' }]}>
+              ID: {item.id_number}
+            </Text>
+            <Text style={[styles.operatorCode, { color: colorScheme === 'dark' ? '#94a3b8' : '#6b7280' }]}>
+              {item.code}
+            </Text>
+          </View>
+        </View>
+
+        <View style={styles.checkboxContainer}>
+          {isAssigned ? (
+            <Ionicons
+              name="checkmark-done"
+              size={24}
+              color={colorScheme === 'dark' ? '#94a3b8' : '#64748b'}
+            />
+          ) : isSelected ? (
+            <Ionicons
+              name="checkmark-circle"
+              size={24}
+              color={colorScheme === 'dark' ? '#4ade80' : '#38b2ac'}
+            />
+          ) : (
+            <Ionicons
+              name="ellipse-outline"
+              size={24}
+              color={colorScheme === 'dark' ? '#64748b' : '#cbd5e1'}
+            />
+          )}
+        </View>
+      </TouchableOpacity>
+    );
+  };
+
+  // Renderizar footer con indicador de carga
+  const renderFooter = () => {
+    if (!loadingMore) return null;
+
+    return (
+      <View style={styles.footerLoader}>
+        <ActivityIndicator size="small" color={colorScheme === 'dark' ? '#ffffff' : '#0458AB'} />
+        <Text style={[styles.loadingText, { color: colorScheme === 'dark' ? '#ffffff' : '#6b7280' }]}>
+          {t('loading_more') || 'Cargando más...'}
+        </Text>
+      </View>
+    );
+  };
 
   const styles = StyleSheet.create({
-    createNewButton: {
-      flexDirection: 'row',
-      alignItems: 'center',
-      justifyContent: 'center',
-      backgroundColor: colorScheme === 'dark' ? '#2d3748' : '#fff',
-      borderWidth: 2,
-      borderColor: colorScheme === 'dark' ? '#4a5568' : '#0458AB',
-      borderStyle: 'dashed',
-      padding: 16,
-      borderRadius: 8,
-      marginVertical: 16,
-    },
-    createNewButtonText: {
-      color: colorScheme === 'dark' ? '#fff' : '#0458AB',
-      fontWeight: 'bold',
-      marginLeft: 8,
-    },
     container: {
       flex: 1,
-      padding: 19,
-      borderRadius: 10,
-      backgroundColor: colorScheme === 'dark' ? '#112A4A' : '#ffffff',
+      backgroundColor: colorScheme === 'dark' ? '#0f172a' : '#ffffff',
     },
     header: {
-      backgroundColor: colorScheme === 'dark' ? '#112A4A' : '#ffffff',
-      paddingVertical: 10,
       flexDirection: 'row',
       alignItems: 'center',
-      justifyContent: 'center',
-      borderBottomWidth: 2,
-      borderBottomColor: colorScheme === 'dark' ? 'rgba(0, 0, 0, 0.2)' : 'rgba(0, 0, 0, 0.1)',
+      justifyContent: 'space-between',
+      padding: 16,
+      borderBottomWidth: 1,
+      borderBottomColor: colorScheme === 'dark' ? '#334155' : '#e5e7eb',
     },
-    textLarge: {
-      fontSize: 20,
+    headerTitle: {
+      fontSize: 18,
       fontWeight: 'bold',
-      color: colorScheme === 'dark' ? '#ffffff' : '#0458AB',
-      marginTop: 16,
-      marginBottom: 8,
-    },
-    text: {
-      fontSize: 14,
-      fontWeight: '600',
-      color: colorScheme === 'dark' ? '#ffffff' : '#0458AB',
-      marginTop: 8,
-    },
-    input: {
-      borderWidth: 2,
-      borderColor: colorScheme === 'dark' ? '#64748b' : '#d1d5db',
-      backgroundColor: colorScheme === 'dark' ? '#FFFFFF36' : '#ffffff',
-      padding: 8,
-      borderRadius: 8,
       color: colorScheme === 'dark' ? '#ffffff' : '#1f2937',
     },
-    buttonContainer: {
+    closeButton: {
+      padding: 8,
+    },
+    searchContainer: {
+      padding: 16,
+    },
+    searchInput: {
+      backgroundColor: colorScheme === 'dark' ? '#1e293b' : '#f9fafb',
+      borderWidth: 1,
+      borderColor: colorScheme === 'dark' ? '#475569' : '#d1d5db',
+      borderRadius: 8,
+      paddingHorizontal: 12,
+      paddingVertical: 10,
+      fontSize: 16,
+      color: colorScheme === 'dark' ? '#ffffff' : '#1f2937',
+    },
+    listContainer: {
+      flex: 1,
+      paddingHorizontal: 16,
+    },
+    operatorItem: {
       flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+      padding: 12,
+      marginVertical: 4,
+      borderRadius: 8,
+      borderWidth: 1,
+      borderColor: colorScheme === 'dark' ? '#334155' : '#e5e7eb',
+    },
+    operatorInfo: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      flex: 1,
+    },
+    photoContainer: {
+      marginRight: 12,
+    },
+    operatorPhoto: {
+      width: 50,
+      height: 50,
+      borderRadius: 25,
+    },
+    noPhoto: {
+      backgroundColor: colorScheme === 'dark' ? '#374151' : '#f3f4f6',
       justifyContent: 'center',
+      alignItems: 'center',
+    },
+    operatorDetails: {
+      flex: 1,
+    },
+    operatorName: {
+      fontSize: 16,
+      fontWeight: '600',
+      marginBottom: 2,
+    },
+    operatorId: {
+      fontSize: 14,
+      marginBottom: 2,
+    },
+    operatorCode: {
+      fontSize: 12,
+    },
+    addButton: {
+      paddingHorizontal: 16,
+      paddingVertical: 8,
+      borderRadius: 6,
+      minWidth: 80,
+      alignItems: 'center',
+    },
+    addButtonText: {
+      color: '#ffffff',
+      fontWeight: '600',
+      fontSize: 14,
+    },
+    footerLoader: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'center',
+      padding: 16,
+    },
+    loadingText: {
+      marginLeft: 8,
+      fontSize: 14,
+    },
+    emptyContainer: {
+      flex: 1,
+      justifyContent: 'center',
+      alignItems: 'center',
+      padding: 32,
+    },
+    emptyText: {
+      fontSize: 16,
+      color: colorScheme === 'dark' ? '#94a3b8' : '#6b7280',
+      textAlign: 'center',
       marginTop: 16,
     },
-    buttonCancel: {
-      backgroundColor: colorScheme === 'dark' ? '#0458AB' : '#545257',
-      padding: 10,
-      borderRadius: 6,
+    loadingContainer: {
       flex: 1,
-      alignItems: 'center',
-      marginRight: 8,
-    },
-    buttonSave: {
-      backgroundColor: colorScheme === 'dark' ? '#FFFFFF' : '#0458AB',
-      padding: 10,
-      borderRadius: 6,
-      flex: 1,
+      justifyContent: 'center',
       alignItems: 'center',
     },
-    buttonTextCancel: {
-      color: '#FFFFFF',
-      fontWeight: 'bold',
+    checkboxContainer: {
+      padding: 8,
     },
-    buttonTextSave: {
-      color: colorScheme === 'dark' ? '#0458AB' : '#FFFFFF',
+    addSelectedButton: {
+      padding: 16,
+      margin: 16,
+      borderRadius: 8,
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
+    addSelectedButtonText: {
+      color: '#ffffff',
       fontWeight: 'bold',
+      fontSize: 16,
     },
   });
 
   return (
-    <>
-      <Modal visible={visible} transparent animationType="slide">
-        <SafeAreaView style={{ flex: 1, backgroundColor: colorScheme === 'dark' ? '#112A4A' : '#FFFFFF' }}>
-          <ScrollView contentContainerStyle={{ flexGrow: 1 }}>
-            <View style={styles.header}>
-              <Text style={styles.textLarge}>{t('add_operator')}</Text>
-            </View>
-            <Text style={[styles.text, { fontSize: 12, textAlign: 'center' }]}>
-              {t("current_order")} #
-              <Text style={{ fontWeight: 'bold', color: colorScheme === 'dark' ? 'green' : '#0458AB' }}>{orderKey}</Text></Text>
+    <Modal
+      visible={visible}
+      animationType="slide"
+      presentationStyle="pageSheet"
+      onRequestClose={handleClose}
+    >
+      <SafeAreaView style={styles.container}>
+        {/* Header */}
+        <View style={styles.header}>
+          <Text style={styles.headerTitle}>
+            {t('add_operator') || 'Agregar Operador'}
+          </Text>
+          <TouchableOpacity style={styles.closeButton} onPress={handleClose}>
+            <Ionicons
+              name="close"
+              size={24}
+              color={colorScheme === 'dark' ? '#ffffff' : '#1f2937'}
+            />
+          </TouchableOpacity>
+        </View>
 
-            <ThemedView style={styles.container}>
-              <Text style={styles.text}>{t("search_operator_id")}</Text>
-              <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 12 }}>
-                <TextInput
-                  style={[styles.input, { flex: 0.8, marginRight: 8 }]}
-                  placeholder={t('operator_id_placeholder')}
-                  placeholderTextColor="#9ca3af"
-                  value={operatorId}
-                  onChangeText={setOperatorId}
-                  keyboardType="default"
-                />
-                <TouchableOpacity
-                  style={{
-                    backgroundColor: colorScheme === 'dark' ? '#FFFFFF' : '#0458AB',
-                    height: 45,
-                    flex: 0.2,
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    borderRadius: 8,
-                  }}
-                  onPress={handleSearch}
-                >
-                  <MaterialIcons
-                    name="search"
-                    size={22}
-                    color={colorScheme === 'dark' ? '#0458AB' : '#FFFFFF'}
-                  />
-                </TouchableOpacity>
-              </View>
+        {/* Buscador */}
+        <View style={styles.searchContainer}>
+          <TextInput
+            style={styles.searchInput}
+            placeholder={t('search_by_name_or_id') || 'Buscar por nombre o cédula...'}
+            placeholderTextColor={colorScheme === 'dark' ? '#94a3b8' : '#9ca3af'}
+            value={searchTerm}
+            onChangeText={setSearchTerm}
+            autoCapitalize="none"
+          />
+        </View>
 
-              <Text style={styles.text}>{t('name')}</Text>
-              <TextInput
-                style={styles.input}
-                placeholder={t('name_placeholder')}
-                placeholderTextColor="#9ca3af"
-                value={name}
-                onChangeText={setName}
-                editable={false}
+        {/* Lista de operadores */}
+        <View style={styles.listContainer}>
+          {loading ? (
+            <View style={styles.loadingContainer}>
+              <ActivityIndicator
+                size="large"
+                color={colorScheme === 'dark' ? '#ffffff' : '#0458AB'}
               />
-              {isAdmin && (
+              <Text style={[styles.emptyText, { marginTop: 16 }]}>
+                {t('loading') || 'Cargando...'}
+              </Text>
+            </View>
+          ) : filteredOperators.length === 0 ? (
+            <View style={styles.emptyContainer}>
+              <Ionicons
+                name="people-outline"
+                size={48}
+                color={colorScheme === 'dark' ? '#475569' : '#9ca3af'}
+              />
+              <Text style={styles.emptyText}>
+                {searchTerm
+                  ? (t('no_operators_found') || 'No se encontraron operadores')
+                  : (t('no_operators_available') || 'No hay operadores disponibles')
+                }
+              </Text>
+            </View>
+          ) : (
+            <FlatList
+              data={filteredOperators}
+              renderItem={renderOperatorItem}
+              keyExtractor={(item) => item.id_operator.toString()}
+              onEndReached={loadMoreOperators}
+              onEndReachedThreshold={0.1}
+              ListFooterComponent={renderFooter}
+              showsVerticalScrollIndicator={false}
+            />
+          )}
+        </View>
 
-                <>
-                  <Text style={styles.text}>{t('cost')}</Text>
-                  <TextInput
-                    style={styles.input}
-                    placeholder={t('cost_placeholder')}
-                    placeholderTextColor="#9ca3af"
-                    value={cost}
-                    onChangeText={setCost}
-                    editable={false}
-                  />
-                  <Text style={styles.text}>
-                    {t('additional_cost')}
-                  </Text>
-                  <TextInput
-                    style={styles.input}
-                    placeholder={t('additional_cost_placeholder')}
-                    placeholderTextColor="#9ca3af"
-                    value={additionalCost}
-                    onChangeText={setAdditionalCost}
-                    keyboardType="numeric"
-                  />
-                  <TouchableOpacity
-                    style={styles.createNewButton}
-                    onPress={handleOpenRegisterFreelanceForm}
-                  >
-                    <Ionicons
-                      name="add-circle"
-                      size={20}
-                      color={colorScheme === 'dark' ? '#fff' : '#0458AB'}
-                    />
-                    <Text style={styles.createNewButtonText}>
-                      {t("create_new_freelance")}
-                    </Text>
-                  </TouchableOpacity>
-                </>
-              )}
-
-              <View style={styles.buttonContainer}>
-                <TouchableOpacity style={styles.buttonCancel} onPress={onClose}>
-                  <Text style={styles.buttonTextCancel}>{t('cancel')}</Text>
-                </TouchableOpacity>
-                <TouchableOpacity style={styles.buttonSave} onPress={handleSubmit}>
-                  <Text style={styles.buttonTextSave}>{t('add')}</Text>
-                </TouchableOpacity>
-              </View>
-            </ThemedView>
-
-
-          </ScrollView>
-        </SafeAreaView>
-        <Toast />
-      </Modal>
-      <CreateFreelanceModal
-        visible={showFreelanceForm}
-        onClose={handleCloseRegisterFreelanceForm}
-        onSuccess={onClose}
-        isFromFreelance={false}
-        workHouseKey={orderKey}
-      />
-    </>
+        <TouchableOpacity
+          style={[
+            styles.addSelectedButton,
+            {
+              backgroundColor: colorScheme === 'dark' ? '#0458AB' : '#0458AB',
+              opacity: selectedOperators.size > 0 ? 1 : 0.5
+            }
+          ]}
+          onPress={handleAddSelectedOperators}
+          disabled={selectedOperators.size === 0 || adding}
+        >
+          {adding ? (
+            <ActivityIndicator size="small" color="#ffffff" />
+          ) : (
+            <Text style={styles.addSelectedButtonText}>
+              {t('add_selected_operators', { count: selectedOperators.size }) || `Agregar seleccionados (${selectedOperators.size})`}
+            </Text>
+          )}
+        </TouchableOpacity>
+      </SafeAreaView>
+    </Modal>
   );
 }

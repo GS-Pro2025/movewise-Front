@@ -594,5 +594,8 @@
   "id_number_already_registered_for_user": "ID number is already registered for a user.",
   "select_location": "Select Location",
   "search_location":"Search Location" ,
-  "select_status":"Select Status"
+  "select_status":"Select Status",
+  "search_by_name_or_id":"Search by name or id...",
+  "no_operators_found":"No operators found",
+  "add_selected_operators":"Add selected operators"
 }
