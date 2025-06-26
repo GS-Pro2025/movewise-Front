@@ -630,5 +630,8 @@
   "id_number_already_registered_for_user": "El número de identificación ya está registrado para un usuario.",
   "select_location": "Seleccionar ubicación", 
   "search_location":"Buscar ubicación",
-  "select_status":"Seleccionar estado"
+  "select_status":"Seleccionar estado",
+  "search_by_name_or_id":"Buscar por nombre o cédula...",
+  "no_operators_found":"No se encontraron operadores",
+  "add_selected_operators":"Agregar seleccionados"
 } 
