@@ -11,9 +11,11 @@
     "runtimeVersion": {
       "policy": "sdkVersion"
     },
-    "assetBundlePatterns": ["**/*"],
+    "assetBundlePatterns": [
+      "**/*"
+    ],
     "splash": {
-      "image": "./assets/images/splash_screen_principal.svg",
+      "image": "./assets/images/logo_android.png",
       "resizeMode": "contain",
       "backgroundColor": "#ffffff"
     },
@@ -41,9 +43,9 @@
     },
     "android": {
       "jsEngine": "jsc",
-      "icon": "./assets/images/logo_512.svg",
+      "icon": "./assets/images/logo_android.png",
       "adaptiveIcon": {
-        "foregroundImage": "./assets/images/adaptive-icon.png",
+        "foregroundImage": "./assets/images/logo_android.png",
         "backgroundColor": "#ffffff"
       },
       "permissions": [
@@ -68,7 +70,8 @@
           "photosPermission": "The app needs access to the photos to upload evidence of orders.",
           "cameraPermission": "The app needs access to the camera to take photos of work completion evidence."
         }
-      ]
+      ],
+      "expo-web-browser"
     ],
     "extra": {
       "router": {
