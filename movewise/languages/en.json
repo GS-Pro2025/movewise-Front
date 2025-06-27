@@ -595,5 +595,6 @@
   "search_by_name_or_id":"Search by name or id...",
   "no_operators_found":"No operators found",
   "add_selected_operators":"Add selected operators",
-  "enter_your_code":"Enter your code"
+  "enter_your_code":"Enter your code",
+  "continue_order":"Continue Order"
 }

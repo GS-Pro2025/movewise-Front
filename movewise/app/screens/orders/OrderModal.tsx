@@ -654,7 +654,8 @@ const OrderModal = () => {
         onClose={() => setInfoModalVisible(false)}
         order={selectedOrderInfo}
         userRole={"admin"}
-        isWorkhouse={false}
+        isWorkhouse={selectedOrderInfo?.key_ref?.startsWith('WH') || false}
+        isFromWorkhouse={selectedOrderInfo?.key_ref?.startsWith('WH') || false}
       />
 
       <Modal visible={modalAddOrderVisible} animationType="slide">

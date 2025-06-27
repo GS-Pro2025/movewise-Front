@@ -631,5 +631,6 @@
   "search_by_name_or_id":"Buscar por nombre o cédula...",
   "no_operators_found":"No se encontraron operadores",
   "add_selected_operators":"Agregar seleccionados",
-  "enter_your_code":"Ingrese su código"
+  "enter_your_code":"Ingrese su código",
+  "continue_order":"Continuar Orden"
 } 
