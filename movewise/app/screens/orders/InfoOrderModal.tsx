@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import {
   Modal,
   SafeAreaView,
@@ -24,6 +24,7 @@ import Toast from 'react-native-toast-message';
 import { url } from "@/hooks/api/apiClient";
 import CrossPlatformImageUpload from '@/components/CrossPlatformImageUpload';
 import { ImageInfo } from '@/components/CrossPlatformImageUpload';
+import AddOrderModal from './AddOrderForm';
 
 interface Operator {
   id_assign: number;
@@ -40,6 +41,7 @@ interface InfoOrderModalProps {
   order: Order | null;
   isWorkhouse: boolean;
   userRole?: string; // Add user role prop
+  isFromWorkhouse?: boolean;
 }
 
 const InfoOrderModal: React.FC<InfoOrderModalProps> = ({
@@ -47,7 +49,8 @@ const InfoOrderModal: React.FC<InfoOrderModalProps> = ({
   onClose,
   order,
   isWorkhouse = false,
-  userRole
+  userRole,
+  isFromWorkhouse = false
 }) => {
   const { width } = Dimensions.get('window');
   const { t } = useTranslation();
@@ -66,6 +69,15 @@ const InfoOrderModal: React.FC<InfoOrderModalProps> = ({
   const [completeWorkModalVisible, setCompleteWorkModalVisible] = useState(false);
   const [evidence, setEvidence] = useState<ImageInfo | null>(null);
   const [uploading, setUploading] = useState(false);
+  const [addOrderModalVisible, setAddOrderModalVisible] = useState(false);
+
+  const handleOpenModal = () => {
+
+    // onClose();
+    setTimeout(() => {
+      setAddOrderModalVisible(true);
+    }, 500);
+  };
 
   const fetchOperators = async (orderKey: string) => {
     try {
@@ -123,13 +135,13 @@ const InfoOrderModal: React.FC<InfoOrderModalProps> = ({
 
   const formatDate = (dateString: string | null) => {
     if (!dateString) return t('not_found');
-    
+
     // Crear la fecha en la zona horaria local
     const date = new Date(dateString);
-    
+
     // Ajustar por la diferencia de zona horaria para obtener la fecha correcta
     const adjustedDate = new Date(date.getTime() + (date.getTimezoneOffset() * 60000));
-    
+
     // Formatear la fecha ajustada
     return adjustedDate.toLocaleDateString('en-US', {
       year: 'numeric',
@@ -141,13 +153,13 @@ const InfoOrderModal: React.FC<InfoOrderModalProps> = ({
 
   const formatGroupedDate = (dateString: string) => {
     if (!dateString) return '';
-    
+
     // Crear la fecha en la zona horaria local
     const date = new Date(dateString);
-    
+
     // Ajustar por la diferencia de zona horaria para obtener la fecha correcta
     const adjustedDate = new Date(date.getTime() + (date.getTimezoneOffset() * 60000));
-    
+
     // Formatear la fecha ajustada
     return adjustedDate.toLocaleDateString('en-US', {
       year: 'numeric',
@@ -219,7 +231,7 @@ const InfoOrderModal: React.FC<InfoOrderModalProps> = ({
 
       const token = await AsyncStorage.getItem('userToken');
       if (!token) throw new Error(t("no_auth_token"));
-      
+
       const response = await fetch(
         `${url}/orders/status/${removeDashes(order.key)}/`,
         {
@@ -240,15 +252,15 @@ const InfoOrderModal: React.FC<InfoOrderModalProps> = ({
       // Limpiar estados antes de cerrar
       setEvidence(null);
       setUploading(false);
-      
+
       // Cerrar el modal de confirmación primero
       setCompleteWorkModalVisible(false);
-      
+
       // Pequeño retraso para permitir la animación del modal
       setTimeout(() => {
         // Cerrar el modal principal
         onClose();
-        
+
         // Mostrar el toast después de que los modales se hayan cerrado
         Toast.show({
           type: 'success',
@@ -431,7 +443,7 @@ const InfoOrderModal: React.FC<InfoOrderModalProps> = ({
       order.status.toLowerCase() !== 'finished' &&
       order.status.toLowerCase() !== 'inactive';
 
-    if (!isAdmin || !isEditableStatus) return null;
+    if (!isAdmin) return null;
 
     return (
       <View style={[styles.card, { backgroundColor: cardBackground, borderColor }]}>
@@ -441,43 +453,84 @@ const InfoOrderModal: React.FC<InfoOrderModalProps> = ({
         </View>
 
         <View style={styles.cardContent}>
-          <TouchableOpacity
+          {isEditableStatus && (
+            <TouchableOpacity
+              style={[
+                styles.adminActionButton,
+                {
+                  backgroundColor: order?.status === 'finished' ? '#cccccc' : '#4CAF50',
+                  opacity: order?.status === 'finished' ? 0.6 : 1,
+                  marginBottom: 10
+                }
+              ]}
+              onPress={order?.status === 'finished' ? undefined : handleCompleteWork}
+              disabled={order?.status === 'finished'}
+            >
+              <Ionicons
+                name={order?.status === 'finished' ? "checkmark-done" : "checkmark-circle-outline"}
+                size={20}
+                color="#FFFFFF"
+              />
+              <Text style={styles.adminActionButtonText}>
+                {order?.status === 'finished' ? t("completed") : t("complete_work")}
+              </Text>
+            </TouchableOpacity>
+          )}
+
+          {!isFromWorkhouse && (
+            <TouchableOpacity
             style={[
               styles.adminActionButton,
               {
-                backgroundColor: order?.status === 'finished' ? '#cccccc' : '#4CAF50',
-                opacity: order?.status === 'finished' ? 0.6 : 1
+                backgroundColor: '#2196F3',
               }
             ]}
-            onPress={order?.status === 'finished' ? undefined : handleCompleteWork}
-            disabled={order?.status === 'finished'}
+            onPress={handleOpenModal}
           >
             <Ionicons
-              name={order?.status === 'finished' ? "checkmark-done" : "checkmark-circle-outline"}
+              name="add-circle-outline"
               size={20}
               color="#FFFFFF"
             />
             <Text style={styles.adminActionButtonText}>
-              {order?.status === 'finished' ? t("completed") : t("complete_work")}
+              {t("continue_order")}
             </Text>
           </TouchableOpacity>
+          )}
         </View>
       </View>
     );
   };
 
+  // AddOrderModal component
+  const renderAddOrderModal = () => (
+    <Modal
+      visible={addOrderModalVisible}
+      animationType="slide"
+      transparent={false}
+      statusBarTranslucent={true}
+      onRequestClose={() => setAddOrderModalVisible(false)}
+    >
+      <AddOrderModal
+        visible={true}
+        onClose={() => setAddOrderModalVisible(false)}
+        orderData={order}
+      />
+    </Modal>
+  );
+
   if (!order) return null;
 
   return (
-    <Modal 
-      visible={visible} 
-      animationType="slide" 
+    <Modal
+      visible={visible}
+      animationType="slide"
       transparent={false}
       onRequestClose={handleClose}
       statusBarTranslucent={true}
       hardwareAccelerated={true}
     >
-      <SafeAreaView style={[styles.container, { backgroundColor }]}>
+      <SafeAreaView style={[styles.container, { backgroundColor : isDarkMode ? colors.backgroundDark : colors.lightBackground}]}>
         <View style={[styles.header, { borderBottomColor: borderColor }]}>
           <TouchableOpacity onPress={handleClose} style={styles.closeButton}>
             <Ionicons name="arrow-back" size={24} color={primaryColor} />
@@ -635,6 +688,7 @@ const InfoOrderModal: React.FC<InfoOrderModalProps> = ({
           </View>
         </Modal>
       </SafeAreaView>
+      {addOrderModalVisible && renderAddOrderModal()}
     </Modal>
   );
 };

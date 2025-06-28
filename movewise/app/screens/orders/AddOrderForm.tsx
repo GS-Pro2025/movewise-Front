@@ -30,11 +30,13 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 interface AddOrderFormProps {
     visible?: boolean;
     onClose?: () => void;
+    orderData?: any;
 }
 
 const PhoneInput = _PhoneInput as any;
 
-export default function AddOrderModal({ visible, onClose }: AddOrderFormProps) {
+export default function AddOrderModal({ visible, onClose, orderData }: AddOrderFormProps) {
+  if (!visible) return null;
   const router = useRouter();
   const { t } = useTranslation();
 
@@ -64,29 +66,43 @@ export default function AddOrderModal({ visible, onClose }: AddOrderFormProps) {
 
   const [searchTerm, setSearchTerm] = useState<string>(''); // State for search term
   const [openJob, setOpenJob] = useState(false);
-  const [job, setJob] = useState<string | null>(null);
+  const [job, setJob] = useState<string | null>(orderData?.job?.toString() || null);
   const [openCompany, setOpenCompany] = useState(false);
-  const [company, setCompany] = useState<number | null>(null);
+  const [company, setCompany] = useState<number | null>(orderData?.customer_factory || null);
   // CAMBIO PRINCIPAL: Usar getTodayDate() y formatear correctamente
   const [date, setDate] = useState<string>(formatDateForAPI(getTodayDate()));
   const [isDatePickerVisible, setDatePickerVisibility] = useState(false);
-  const [keyReference, setKeyReference] = useState('');
-  const [customerName, setCustomerName] = useState('');
-  const [customerLastName, setCustomerLastName] = useState('');
-  const [cellPhone, setCellPhone] = useState('');
-  const [formattedPhone, setFormattedPhone] = useState('');
+  const [keyReference, setKeyReference] = useState(orderData?.key_ref || '');
+  const [customerName, setCustomerName] = useState(orderData?.person?.first_name || '');
+  const [customerLastName, setCustomerLastName] = useState(orderData?.person?.last_name || '');
+
+  // Extract just the phone number without country code (everything after the last '-')
+  const getPhoneNumberWithoutCountryCode = (phone: string) => {
+    if (!phone) return '';
+    const parts = phone.split('-');
+    return parts.length > 1 ? parts[parts.length - 1] : phone;
+  };
+
+  const [cellPhone, setCellPhone] = useState(
+    orderData?.person?.phone ? getPhoneNumberWithoutCountryCode(orderData.person.phone) : ''
+  );
+  const [formattedPhone, setFormattedPhone] = useState(orderData?.person?.phone || '');
   const [phoneCountryCode, setPhoneCountryCode] = useState<CountryCode>('US');
   const phoneInput = useRef<any>(null);
-  const [address, setAddress] = useState('');
-  const [email, setEmail] = useState('');
-  const [weight, setWeight] = useState('');
+  const [address, setAddress] = useState(orderData?.person?.address || '');
+  const [email, setEmail] = useState(orderData?.person?.email || '');
+  const [weight, setWeight] = useState(orderData?.weight?.toString() || '');
   const [errors, setErrors] = useState<{ [key: string]: string }>({});
   const [jobList, setJobList] = useState<job[]>([]);
   const [companyList, setCompanyList] = useState<any[]>([]);
   const [stateList, setStateList] = useState<any[]>([]);
   const [operatorModalVisible, setOperatorModalVisible] = useState(false); // State for OperatorModal visibility
   const [savedOrderKey, setSavedOrderKey] = useState<string | null>(null); // State to store saved order key
-  const [dispatchTicket, setDispatchTicket] = useState<ImageInfo | null>(null); // State for dispatch_Ticket
+  const [dispatchTicket, setDispatchTicket] = useState<ImageInfo | null>(
+    orderData?.dispatch_ticket ? 
+    { uri: orderData.dispatch_ticket, name: 'dispatch_ticket.jpg', type: 'image/jpeg' } : 
+    null
+  ); // State for dispatch_Ticket
   const [isAdmin, setIsAdmin] = useState(false);
   const { saveOrder, isLoading, error } = AddOrderformApi();
 
@@ -409,7 +425,7 @@ export default function AddOrderModal({ visible, onClose }: AddOrderFormProps) {
 
     const orderData: AddOrderFormModel = {
       status: "Pending",
-      date,
+      date: formatDateForAPI(getTodayDate()),
       key_ref: keyReference,
       state_usa: location,
       person: {

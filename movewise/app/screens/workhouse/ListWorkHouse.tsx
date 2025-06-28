@@ -448,6 +448,7 @@ const WorkhouseModal: React.FC<WorkhouseModalProps> = ({ visible, onClose }) => 
         visible={infoModalVisible}
         isWorkhouse={true}
         userRole={"admin"}
+        isFromWorkhouse={true}
         onClose={() => {
           setInfoModalVisible(false);
           setSelectedOrderInfo(null);
