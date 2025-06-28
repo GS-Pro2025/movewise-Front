@@ -599,5 +599,7 @@
   "no_operators_found":"No operators found",
   "add_selected_operators":"Add selected operators",
   "enter_your_code":"Enter your code",
-  "continue_order":"Continue Order"
+  "continue_order":"Continue Order",
+  "search_operator":"Search Operator",
+  "assign_operators":"Assign Operators"
 }
