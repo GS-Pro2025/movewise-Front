@@ -31,7 +31,7 @@ const SettingsModal: React.FC<SettingsModalProps> = ({ visible, onClose, onOpenJ
                     style={[
                         styles.modalContent,
                         {
-                            backgroundColor: isDark ? colors.cardDark : "#fff",
+                            backgroundColor: isDark ? colors.backgroundDark : colors.backgroundLight,
                         },
                     ]}
                 >

@@ -98,7 +98,7 @@ const EditOperatorModal: React.FC<EditOperatorModalProps> = ({ visible, onClose,
 
   // Colores dinámicos
   const backgroundColor = isDarkMode ? colors.backgroundDark : colors.backgroundLight;
-  const cardBackground = isDarkMode ? colors.cardDark : colors.cardLight;
+  const cardBackground = isDarkMode ? colors.backgroundDark : colors.backgroundLight;
   const textColor = isDarkMode ? colors.textDark : colors.textLight;
   const primaryColor = colors.primary;
   const borderColor = isDarkMode ? colors.borderDark : colors.borderLight;
@@ -310,7 +310,7 @@ const EditOperatorModal: React.FC<EditOperatorModalProps> = ({ visible, onClose,
 
   return (
     <Modal visible={visible} animationType="slide" transparent={false}>
-      <SafeAreaView style={[styles.container, { backgroundColor }]}>
+      <SafeAreaView style={[styles.container, { backgroundColor: isDarkMode ? colors.backgroundDark : colors.backgroundLight }]}>
         <View style={[styles.header, { borderBottomColor: borderColor }]}>
           <TouchableOpacity onPress={onClose} style={styles.closeButton}>
             <Ionicons name="arrow-back" size={24} color={primaryColor} />

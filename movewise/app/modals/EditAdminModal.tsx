@@ -208,11 +208,11 @@ const EditAdminModal: React.FC<EditAdminModalProps> = ({ visible, onClose, admin
     setErrors(prev => ({ ...prev, [field]: '' }));
   };
 
-  const backgroundColor = isDarkMode ? colors.darkBackground : colors.lightBackground;
+  const backgroundColor = isDarkMode ? colors.backgroundDark : colors.backgroundLight;
   const textColor = isDarkMode ? colors.darkText : colors.lightText;
   const primaryColor = isDarkMode ? colors.darkText : colors.primary;
-  const cardBackground = isDarkMode ? '#2A2A2A' : '#ffffff';
-  const borderColor = isDarkMode ? '#444444' : '#e0e0e0';
+  const cardBackground = isDarkMode ? colors.backgroundDark : colors.backgroundLight;
+  const borderColor = isDarkMode ? colors.borderDark : colors.borderLight;
 
   return (
     <Modal visible={visible} animationType="slide" transparent={false}>
