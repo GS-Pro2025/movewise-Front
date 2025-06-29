@@ -60,7 +60,7 @@ const InfoOperatorModal: React.FC<InfoOperatorModalProps> = ({ visible, onClose,
     const textColor = isDarkMode ? colors.darkText : colors.lightText;
     const primaryColor = isDarkMode ? colors.darkText : colors.primary;
     const cardBackground = isDarkMode ? '#2A2A2A' : '#ffffff';
-    const borderColor = isDarkMode ? '#444444' : '#e0e0e0';
+    const borderColor = isDarkMode ? '#fff' : '#e0e0e0';
     const [imageStatus, setImageStatus] = useState<{
         photo: 'loading' | 'valid' | 'invalid';
         licenseFront: 'loading' | 'valid' | 'invalid';
@@ -169,11 +169,11 @@ const InfoOperatorModal: React.FC<InfoOperatorModalProps> = ({ visible, onClose,
             </View>
 
             {/* License Front */}
-            <View style={styles.licenseImageSection}>
-                <Text style={[styles.licenseLabel, { color: primaryColor }]}>
+            <View style={[styles.licenseImageSection, { borderColor: isDarkMode ? colors.darkText : colors.borderLight }]}>
+                <Text style={[styles.licenseLabel, { color: isDarkMode ? colors.darkText : colors.textLight }]}>
                     {t("license_front") || "License Front"}
                 </Text>
-                <View style={styles.licenseImageContainer}>
+                <View style={[styles.licenseImageContainer, { borderColor: isDarkMode ? colors.darkText : colors.borderLight }]}>
                     {imageStatus.licenseFront === 'loading' && (
                         <ActivityIndicator size="large" color={primaryColor} />
                     )}
@@ -253,7 +253,7 @@ const InfoOperatorModal: React.FC<InfoOperatorModalProps> = ({ visible, onClose,
 
     return (
         <Modal visible={visible} animationType="slide" transparent={false}>
-            <SafeAreaView style={[styles.container, { backgroundColor }]}>
+            <SafeAreaView style={[styles.container, { backgroundColor: isDarkMode ? colors.backgroundDark : colors.backgroundLight }]}>
                 <View style={[styles.header, { borderBottomColor: borderColor }]}>
                     <TouchableOpacity onPress={onClose} style={styles.closeButton}>
                         <Ionicons name="arrow-back" size={24} color={primaryColor} />

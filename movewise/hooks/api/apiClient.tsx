@@ -4,7 +4,7 @@ import axios, { AxiosInstance } from "axios";
 
 
 
-export const  url = 'https://'
+export const  url = 'http://192.168.18.164:8000'
 
 
 

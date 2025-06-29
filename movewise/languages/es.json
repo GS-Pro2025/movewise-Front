@@ -635,5 +635,7 @@
   "no_operators_found":"No se encontraron operadores",
   "add_selected_operators":"Agregar seleccionados",
   "enter_your_code":"Ingrese su código",
-  "continue_order":"Continuar Orden"
+  "continue_order":"Continuar Orden",
+  "search_operator":"Buscar Operador",
+  "assign_operators":"Asignar Operadores"
 } 

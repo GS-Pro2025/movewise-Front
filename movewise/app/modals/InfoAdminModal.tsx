@@ -89,6 +89,8 @@ const InfoAdminModal: React.FC<InfoAdminModalProps> = ({ visible, onClose, admin
     };
     useEffect(() => {
         const verifyPhoto = async () => {
+            console.log(`: ${admin?.photo}`);
+            
             if (!admin?.photo) {
                 setPhotoStatus('invalid');
                 return;
@@ -96,6 +98,7 @@ const InfoAdminModal: React.FC<InfoAdminModalProps> = ({ visible, onClose, admin
 
             try {
                 const response = await fetch(admin.photo, { method: 'HEAD' });
+                
                 if (response.ok) {
                     setPhotoStatus('valid');
                 } else {
@@ -109,11 +112,11 @@ const InfoAdminModal: React.FC<InfoAdminModalProps> = ({ visible, onClose, admin
         verifyPhoto();
     }, [admin?.photo]);
 
-    const backgroundColor = isDarkMode ? colors.darkBackground : colors.lightBackground;
+    const backgroundColor = isDarkMode ? colors.backgroundDark : colors.backgroundLight;
     const textColor = isDarkMode ? colors.darkText : colors.lightText;
     const primaryColor = isDarkMode ? colors.darkText : colors.primary;
-    const cardBackground = isDarkMode ? '#2A2A2A' : '#ffffff';
-    const borderColor = isDarkMode ? '#444444' : '#e0e0e0';
+    const cardBackground = isDarkMode ? colors.backgroundDark : colors.backgroundLight;
+    const borderColor = isDarkMode ? colors.borderDark : colors.borderLight;
 
     const formatDate = (dateString: string) => {
         if (!dateString) return t('not_found');
