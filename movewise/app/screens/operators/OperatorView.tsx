@@ -39,8 +39,13 @@ const OperatorView: React.FC<OperatorViewProps> = ({ params }) => {
     const [selected, setSelected] = useState<Assignment | null>(null);
     const isTruckView = type === 'truck';
     const filterRole = isTruckView
-        ? (role: string) => role.toLowerCase() === 'driver'
-        : (role: string) => role.toLowerCase() !== 'driver' && !role.toLowerCase().includes('driver');
+        ? (role: string) =>
+            role.toLowerCase() === 'driver' || role.toLowerCase() === 'team leader'
+        : (role: string) =>
+            role.toLowerCase() !== 'driver' &&
+            !role.toLowerCase().includes('driver') &&
+            role.toLowerCase() !== 'team leader' &&
+            !role.toLowerCase().includes('team leader');
     const emptyMessage = isTruckView
         ? t("no_truck_assignments_available")
         : t("no_work_assignments_available");
