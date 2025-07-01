@@ -391,7 +391,7 @@ export default function AddOrderModal({ visible, onClose, orderData }: AddOrderF
 
 
     const location = country && stateRegion && city
-      ? `${country} - ${stateRegion} - ${city}`
+      ? `${country}, ${stateRegion}, ${city}`
       : null;
 
     if (!location) {
