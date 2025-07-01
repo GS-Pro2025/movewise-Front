@@ -719,7 +719,6 @@ export default function UpdateOrderModal({ visible = true, onClose, orderData }:
                     }
                   }}
                   placeholder={t('select_company')}
-                  placeholderStyle={{ color: '#9ca3af' }}
                   style={[styles.dropdown, {
                     backgroundColor: isDarkMode ? '#1E3A5F' : '#FFFFFF',
                     borderColor: errors.company ? "red" : isDarkMode ? '#A1C6EA' : '#0458AB'
@@ -728,11 +727,11 @@ export default function UpdateOrderModal({ visible = true, onClose, orderData }:
                     backgroundColor: isDarkMode ? '#1E3A5F' : '#FFFFFF',
                     borderColor: isDarkMode ? '#A1C6EA' : '#0458AB'
                   }}
-                  listMode="SCROLLVIEW"
-                  zIndex={3000}
-                  zIndexInverse={1000}
-                  listItemLabelStyle={{ color: isDarkMode ? '#FFFFFF' : '#333333' }}
-                  textStyle={{ color: isDarkMode ? '#FFFFFF' : '#333333' }}
+                  listMode="MODAL" // Cambiado a MODAL para autocompletar
+                  modalTitle={t('select_company')}
+                  searchable={true} // Habilita el autocompletado
+                  searchPlaceholder={t('search')}
+                  placeholderStyle={{ color: '#9ca3af' }}
                 />
                 {errors.company && <Text style={styles.errorText}>{errors.company}</Text>}
               </View>
@@ -953,6 +952,7 @@ export default function UpdateOrderModal({ visible = true, onClose, orderData }:
                 {errors.weight && <Text style={styles.errorText}>{errors.weight}</Text>}
               </View>
 
+              {/* Job */}
               <View style={[styles.inputContainer, { zIndex: 2500 }]}>
                 <Text style={[styles.label, { color: isDarkMode ? '#FFFFFF' : '#0458AB' }]}>
                   {t("job")} <Text style={{ color: '#FF0000' }}>(*)</Text>
@@ -976,9 +976,12 @@ export default function UpdateOrderModal({ visible = true, onClose, orderData }:
                     backgroundColor: isDarkMode ? '#1E3A5F' : '#FFFFFF',
                     borderColor: isDarkMode ? '#A1C6EA' : '#0458AB'
                   }}
-                  listMode="SCROLLVIEW"
-                  textStyle={{ color: isDarkMode ? '#FFFFFF' : '#333333' }}
-                  placeholderStyle={{ color: isDarkMode ? '#AAAAAA' : '#666666' }}
+                  listMode="MODAL" // Cambiado a MODAL para autocompletar
+                  modalTitle={t('select_job')}
+                  searchable={true} // Habilita el autocompletado
+                  searchPlaceholder={t('search')}
+                  textStyle={{ color: isDarkMode ? '#00000' : '#333333' }}
+                  placeholderStyle={{ color: '#9ca3af' }}
                 />
                 {errors.job && <Text style={styles.errorText}>{errors.job}</Text>}
               </View>

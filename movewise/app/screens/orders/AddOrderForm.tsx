@@ -858,13 +858,9 @@ export default function AddOrderModal({ visible, onClose, orderData }: AddOrderF
                 }))}
                 setOpen={setOpenCompany}
                 setValue={(val) => {
-                  // console.log("Company selected:", val);
-                  // console.log("Company type:", typeof val);
-                  // Asegurar que sea numérico
                   if (val !== null) {
                     const numericVal = typeof val === 'string' ? parseInt(val, 10) : val;
                     setCompany(numericVal);
-                    // console.log("Company set to:", numericVal, "type:", typeof numericVal);
                   } else {
                     setCompany(null);
                   }
@@ -872,8 +868,11 @@ export default function AddOrderModal({ visible, onClose, orderData }: AddOrderF
                 placeholder={t('select_company')}
                 placeholderStyle={{ color: '#9ca3af' }}
                 style={[styles.input, { borderColor: errors.company ? "red" : "#0458AB" }]}
-                listMode="SCROLLVIEW"
-                dropDownContainerStyle={{ maxHeight: 200 }}
+                listMode="MODAL" // Cambiado a MODAL para autocompletar
+                modalTitle={t('select_company')}
+                searchable={true} // Habilita el autocompletado
+                searchPlaceholder={t('search')}
+                dropDownContainerStyle={{ maxHeight: 500 }}
               />
             </View>
 
@@ -1060,15 +1059,15 @@ export default function AddOrderModal({ visible, onClose, orderData }: AddOrderF
                   key: jobItem.id.toString()
                 }))}
                 setOpen={setOpenJob}
-                setValue={(val) => {
-                  // console.log("Job selected:", val);
-                  setJob(val);
-                }}
+                setValue={setJob}
                 placeholder={t('select_job')}
                 placeholderStyle={{ color: '#9ca3af' }}
                 style={[styles.input, { borderColor: errors.job ? "red" : "#0458AB" }]}
-                listMode="SCROLLVIEW"
-                dropDownContainerStyle={{ maxHeight: 200 }}
+                listMode="MODAL" // Cambiado a MODAL para autocompletar
+                modalTitle={t('select_job')}
+                searchable={true} // Habilita el autocompletado
+                searchPlaceholder={t('search')}
+                dropDownContainerStyle={{ maxHeight: 500 }}
               />
             </View>
 
