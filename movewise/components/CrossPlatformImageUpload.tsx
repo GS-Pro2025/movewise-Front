@@ -9,12 +9,13 @@ import {
   Image,
   ActivityIndicator,
   Linking,
-  useColorScheme
+  useColorScheme,
+  Modal // <-- Importa Modal de react-native
 } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
 import { useTranslation } from 'react-i18next';
-import { useActionSheet } from '@expo/react-native-action-sheet';
 import colors from '@/app/Colors';
+import { useActionSheet } from '@expo/react-native-action-sheet';
 
 export interface ImageInfo {
   uri: string;
@@ -40,7 +41,6 @@ export interface ImageUploadProps {
   allowsEditing?: boolean;
 }
 
-
 const CrossPlatformImageUpload: React.FC<ImageUploadProps> = ({
   label,
   image,
@@ -55,9 +55,10 @@ const CrossPlatformImageUpload: React.FC<ImageUploadProps> = ({
 }) => {
   const { t } = useTranslation();
   const [isLoading, setIsLoading] = useState(false);
-  const { showActionSheetWithOptions } = useActionSheet();
+  const [menuVisible, setMenuVisible] = useState(false); // Nuevo estado para el menú
   const colorScheme = useColorScheme();
   const isDarkMode = colorScheme === 'dark';
+  const { showActionSheetWithOptions } = useActionSheet();
 
   /**
    * Normalizes image information to be consistent across platforms
@@ -126,7 +127,7 @@ const CrossPlatformImageUpload: React.FC<ImageUploadProps> = ({
   const handleCameraCapture = async () => {
     try {
       setIsLoading(true);
-
+      setMenuVisible(false);
       // Request camera permissions
       const { status } = await ImagePicker.requestCameraPermissionsAsync();
 
@@ -185,7 +186,7 @@ const CrossPlatformImageUpload: React.FC<ImageUploadProps> = ({
   const handleGalleryPick = async () => {
     try {
       setIsLoading(true);
-
+      setMenuVisible(false);
       // Solicitar permisos usando requestMediaLibraryPermissionsAsync directamente
       // Request permissions using requestMediaLibraryPermissionsAsync directly
       const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
@@ -273,7 +274,7 @@ const CrossPlatformImageUpload: React.FC<ImageUploadProps> = ({
           image ? styles.uploadButtonWithImage : null,
           { backgroundColor: isDarkMode ? colors.backgroundDark : colors.lightBackground }
         ]}
-        onPress={handleImageSelection}
+        onPress={() => setMenuVisible(true)}
         disabled={isLoading}
       >
         {isLoading ? (
@@ -287,6 +288,40 @@ const CrossPlatformImageUpload: React.FC<ImageUploadProps> = ({
           </View>
         )}
       </TouchableOpacity>
+
+      {/* Mini modal visual */}
+      {menuVisible && (
+        <TouchableOpacity
+          style={styles.menuOverlay}
+          activeOpacity={1}
+          onPress={() => setMenuVisible(false)}
+        >
+          <View style={styles.menuBox}>
+            <TouchableOpacity
+              style={styles.menuButton}
+              activeOpacity={0.7}
+              onPress={handleCameraCapture}
+            >
+              <Text style={styles.menuButtonText}>{t('take_photo')}</Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={styles.menuButton}
+              activeOpacity={0.7}
+              onPress={handleGalleryPick}
+            >
+              <Text style={styles.menuButtonText}>{t('choose_from_gallery')}</Text>
+            </TouchableOpacity>
+            <View style={{ height: 12 }} />
+            <TouchableOpacity
+              style={styles.menuCancelButton}
+              activeOpacity={0.7}
+              onPress={() => setMenuVisible(false)}
+            >
+              <Text style={styles.menuCancelButtonText}>{t('cancel')}</Text>
+            </TouchableOpacity>
+          </View>
+        </TouchableOpacity>
+      )}
 
       {error && <Text style={styles.errorText}>{error}</Text>}
     </View>
@@ -359,6 +394,59 @@ const styles = StyleSheet.create({
     color: 'red',
     fontSize: 12,
     marginTop: 4,
+  },
+  menuOverlay: {
+    position: 'absolute',
+    top: 0, left: 0, right: 0, bottom: 0,
+    backgroundColor: 'rgba(0,0,0,0.25)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    zIndex: 9999,
+  },
+  menuBox: {
+    backgroundColor: '#fff',
+    borderRadius: 18,
+    paddingVertical: 24,
+    paddingHorizontal: 24,
+    minWidth: 260,
+    alignItems: 'center',
+    elevation: 12,
+    shadowColor: '#000',
+    shadowOpacity: 0.18,
+    shadowRadius: 16,
+    shadowOffset: { width: 0, height: 4 },
+  },
+  menuButton: {
+    width: 200,
+    backgroundColor: '#0458AB',
+    borderRadius: 12,
+    paddingVertical: 14,
+    marginVertical: 4,
+    alignItems: 'center',
+    justifyContent: 'center',
+    elevation: 2,
+  },
+  menuButtonText: {
+    color: '#fff',
+    fontSize: 17,
+    fontWeight: '600',
+    letterSpacing: 0.2,
+  },
+  menuCancelButton: {
+    width: 200,
+    backgroundColor: '#f2f2f2',
+    borderRadius: 12,
+    paddingVertical: 14,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginTop: 2,
+    elevation: 1,
+  },
+  menuCancelButtonText: {
+    color: '#d32f2f',
+    fontSize: 17,
+    fontWeight: '600',
+    letterSpacing: 0.2,
   },
 });
 
