@@ -15,6 +15,7 @@ import { ListStates } from '@/hooks/api/StatesClient';
 import { useTranslation } from 'react-i18next';
 import { compareAsc } from 'date-fns';
 import { ThemedView } from '@/components/ThemedView';
+import { url } from '@/hooks/api/apiClient';
 
 interface AddOrderModalProps {
   visible: boolean;
@@ -42,17 +43,34 @@ export default function AddOrderModal({ visible, onClose }: AddOrderModalProps) 
   const [errors, setErrors] = useState<{ [key: string]: string }>({});
   const [jobList, setJobList] = useState<job[]>([]);
   const [companyList, setCompanyList] = useState<any[]>([]);
+  const [openCountry, setOpenCountry] = useState(false);
+  const [openStateRegion, setOpenStateRegion] = useState(false);
+  const [openCity, setOpenCity] = useState(false);
+
+  const [country, setCountry] = useState<string | null>(null);
+  const [stateRegion, setStateRegion] = useState<string | null>(null);
+  const [city, setCity] = useState<string | null>(null);
+
+  const [countriesList, setCountriesList] = useState<any[]>([]);
   const [stateList, setStateList] = useState<any[]>([]);
+  const [citiesList, setCitiesList] = useState<any[]>([]);
+  const [loadingCountries, setLoadingCountries] = useState(false);
+  const [loadingStates, setLoadingStates] = useState(false);
+  const [loadingCities, setLoadingCities] = useState(false);
   const router = useRouter();
   const { saveOrder, isLoading, error } = AddOrderformApi();
   
   const handleSave = async () => {
     if (!validateFields()) return;
+    const location = country && stateRegion && city
+      ? `${country}, ${stateRegion}, ${city}`
+      : "";
+
     const orderData: AddOrderForm = {
       status: t("pending"),
       date: date || "",
       key_ref: keyReference,
-      state_usa: state || "",
+      state_usa: location,
       person: {
         first_name: customerName,
         last_name: customerLastName,
@@ -82,12 +100,62 @@ export default function AddOrderModal({ visible, onClose }: AddOrderModalProps) 
     }
   };
   
-  const fetchStates = async () => {
+  const fetchCountries = async () => {
+    setLoadingCountries(true);
     try {
-      const states = await ListStates();
-      setStateList(states);
+      const response = await fetch(`${url}/orders-locations/?type=countries`);
+      const data = await response.json();
+      if (data.status === 'success') {
+        const countries = data.data.map((c: any) => ({
+          label: c.name,
+          value: c.name
+        }));
+        setCountriesList(countries);
+      }
     } catch (error) {
-      console.error(t("error_fetching_states"), error);
+      setCountriesList([]);
+    } finally {
+      setLoadingCountries(false);
+    }
+  };
+
+  const fetchStates = async (countryName: string) => {
+    if (!countryName) return;
+    setLoadingStates(true);
+    try {
+      const response = await fetch(`${url}/orders-locations/?type=states&country=${encodeURIComponent(countryName)}`);
+      const data = await response.json();
+      if (data.status === 'success') {
+        const states = data.data.map((s: any) => ({
+          label: s.name,
+          value: s.name
+        }));
+        setStateList(states);
+      }
+    } catch (error) {
+      setStateList([]);
+    } finally {
+      setLoadingStates(false);
+    }
+  };
+  
+  const fetchCities = async (countryName: string, stateName: string) => {
+    if (!countryName || !stateName) return;
+    setLoadingCities(true);
+    try {
+      const response = await fetch(`${url}/orders-locations/?type=cities&country=${encodeURIComponent(countryName)}&state=${encodeURIComponent(stateName)}`);
+      const data = await response.json();
+      if (data.status === 'success') {
+        const cities = data.data.map((c: any) => ({
+          label: c.name,
+          value: c.name
+        }));
+        setCitiesList(cities);
+      }
+    } catch (error) {
+      setCitiesList([]);
+    } finally {
+      setLoadingCities(false);
     }
   };
   
@@ -110,10 +178,28 @@ export default function AddOrderModal({ visible, onClose }: AddOrderModalProps) 
   };
   
   useEffect(() => {
-    fetchJobs();
-    fetchCompanies();
-    fetchStates();
+    fetchCountries();
   }, []);
+
+  useEffect(() => {
+    if (country) {
+      setStateRegion(null);
+      setCity(null);
+      fetchStates(country);
+    } else {
+      setStateList([]);
+      setCitiesList([]);
+    }
+  }, [country]);
+
+  useEffect(() => {
+    if (country && stateRegion) {
+      setCity(null);
+      fetchCities(country, stateRegion);
+    } else {
+      setCitiesList([]);
+    }
+  }, [stateRegion]);
   
   const validateFields = () => {
     let newErrors: { [key: string]: string } = {};
@@ -229,6 +315,68 @@ export default function AddOrderModal({ visible, onClose }: AddOrderModalProps) 
             </View>
   
             <ThemedView style={styles.container}>
+              <View style={{ zIndex: 4000, marginTop: 16 }}>
+                <Text style={styles.text}>{t('country')} <Text style={styles.required}>(*)</Text></Text>
+                <DropDownPicker
+                  open={openCountry}
+                  value={country}
+                  items={countriesList}
+                  setOpen={setOpenCountry}
+                  setValue={setCountry}
+                  placeholder={t('select_country')}
+                  placeholderStyle={{ color: '#9ca3af' }}
+                  style={styles.input}
+                  listMode="MODAL"
+                  modalTitle={t('select_country')}
+                  searchable={true}
+                  searchPlaceholder={t('search')}
+                  loading={loadingCountries}
+                  dropDownContainerStyle={{ maxHeight: 500 }}
+                />
+              </View>
+  
+              <View style={{ zIndex: 3000, marginTop: 16 }}>
+                <Text style={styles.text}>{t('state_region')} <Text style={styles.required}>(*)</Text></Text>
+                <DropDownPicker
+                  open={openStateRegion}
+                  value={stateRegion}
+                  items={stateList}
+                  setOpen={setOpenStateRegion}
+                  setValue={setStateRegion}
+                  placeholder={t('select_state_region')}
+                  placeholderStyle={{ color: '#9ca3af' }}
+                  style={styles.input}
+                  listMode="MODAL"
+                  modalTitle={t('select_state_region')}
+                  searchable={true}
+                  searchPlaceholder={t('search')}
+                  loading={loadingStates}
+                  disabled={!country}
+                  dropDownContainerStyle={{ maxHeight: 500 }}
+                />
+              </View>
+  
+              <View style={{ zIndex: 2000, marginTop: 16 }}>
+                <Text style={styles.text}>{t('city')} <Text style={styles.required}>(*)</Text></Text>
+                <DropDownPicker
+                  open={openCity}
+                  value={city}
+                  items={citiesList}
+                  setOpen={setOpenCity}
+                  setValue={setCity}
+                  placeholder={t('select_city')}
+                  placeholderStyle={{ color: '#9ca3af' }}
+                  style={styles.input}
+                  listMode="MODAL"
+                  modalTitle={t('select_city')}
+                  searchable={true}
+                  searchPlaceholder={t('search')}
+                  loading={loadingCities}
+                  disabled={!stateRegion}
+                  dropDownContainerStyle={{ maxHeight: 500 }}
+                />
+              </View>
+  
               <View style={{ zIndex: 3000 }}>
                 <Text style={styles.text}>{t('state')} <Text style={styles.required}>(*)</Text></Text>
                 <DropDownPicker
@@ -240,17 +388,12 @@ export default function AddOrderModal({ visible, onClose }: AddOrderModalProps) 
                     key: stateItem.code
                   }))}
                   setOpen={setOpen}
-                  // Cambiamos la función setValue a una más simple
                   setValue={(callback) => {
-                    // Si es una función, ejecutarla para obtener el valor
                     if (typeof callback === 'function') {
                       const newValue = callback(state);
                       setState(newValue);
-                      // console.log("Estado seleccionado para enviar:", newValue);
                     } else {
-                      // Si es un valor directo, usarlo
                       setState(callback);
-                      // console.log("Estado seleccionado para enviar:", callback);
                     }
                   }}
                   setItems={() => { }}
@@ -265,7 +408,6 @@ export default function AddOrderModal({ visible, onClose }: AddOrderModalProps) 
                   searchable={true}
                   searchPlaceholder={t('search')}
                   searchPlaceholderTextColor="#9ca3af"
-                  onSearchTextChange={text => setSearchTerm(text)}
                   scrollViewProps={{
                     nestedScrollEnabled: true,
                   }}
@@ -274,28 +416,21 @@ export default function AddOrderModal({ visible, onClose }: AddOrderModalProps) 
               </View>
   
               <View style={{ zIndex: 2000, marginTop: 16 }}>
-                <Text style={styles.text}>{t('date')} <Text style={styles.required}>(*)</Text></Text>
-                <TouchableOpacity onPress={() => setDatePickerVisibility(true)} style={[styles.input, { flexDirection: "row", alignItems: "center", justifyContent: "space-between" }]}>
-                  <Text style={{ color: date ? "#000" : "#9ca3af" }}>{date ? date : t('select_date')}</Text>
-                  <MaterialIcons name="calendar-today" size={20} color="#9ca3af" />
-                </TouchableOpacity>
-  
-                <DateTimePickerModal
-                  isVisible={isDatePickerVisible} mode="date"
-                  onConfirm={(selectedDate) => {
-                    setDatePickerVisibility(false);
-                    setDate(selectedDate.toISOString().split('T')[0]);
-                  }}
-                  onCancel={() => setDatePickerVisibility(false)}
-                />
-              </View>
-  
-              <View style={{ zIndex: 2000, marginTop: 16 }}>
                 <Text style={styles.text}>{t('company_customer')} <Text style={styles.required}>(*)</Text></Text>
                 <DropDownPicker
-                  open={openCompany} value={company || ""}
-                  items={Array.isArray(companyList) ? companyList.map((companyItem) => ({ label: companyItem.name, value: companyItem.id })) : []}
-                  setOpen={setOpenCompany} setValue={setCompany} setItems={() => []}
+                  open={openCompany}
+                  value={company || ""}
+                  items={
+                    Array.isArray(companyList)
+                      ? companyList.map((companyItem) => ({
+                          label: companyItem.name,
+                          value: String(companyItem.id), // <-- aquí el cambio
+                        }))
+                      : []
+                  }
+                  setOpen={setOpenCompany}
+                  setValue={setCompany}
+                  setItems={() => []}
                   placeholder={t('select_company')}
                   placeholderStyle={{ color: '#9ca3af' }}
                   style={[styles.input, { borderColor: errors.company ? "red" : "#0458AB" }]}
@@ -365,9 +500,15 @@ export default function AddOrderModal({ visible, onClose }: AddOrderModalProps) 
               <View style={{ zIndex: 1000 }}>
                 <Text style={styles.text}>{t('job')} <Text style={styles.required}>(*)</Text></Text>
                 <DropDownPicker
-                  open={openJob} value={job || ""}
-                  items={jobList.map((jobItem) => ({ label: jobItem.name, value: jobItem.id }))}
-                  setOpen={setOpenJob} setValue={setJob} setItems={() => { }}
+                  open={openJob}
+                  value={job || ""}
+                  items={jobList.map((jobItem) => ({
+                    label: jobItem.name,
+                    value: String(jobItem.id), // <-- aquí el cambio
+                  }))}
+                  setOpen={setOpenJob}
+                  setValue={setJob}
+                  setItems={() => { }}
                   placeholder={t('select_job')}
                   placeholderStyle={{ color: '#9ca3af' }}
                   style={[styles.input, { borderColor: errors.job ? "red" : "#0458AB" }]}

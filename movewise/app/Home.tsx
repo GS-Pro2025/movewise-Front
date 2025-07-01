@@ -24,8 +24,6 @@ import colors from "./Colors";
 import Ionicons from 'react-native-vector-icons/Ionicons';
 
 // Importar todas las vistas existentes
-import OperatorView from '@/app/screens/operators/OperatorView';
-import AddOrderForm from "./screens/orders/AddOrderForm";
 import OrderModal from "./screens/orders/OrderModal";
 import ListOfOrdersForSummary from "./screens/orders/ListOfOrdersForSumary";
 import WorkDailyScreen from "./screens/orders/WorkDailyScreen";

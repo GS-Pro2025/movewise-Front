@@ -368,7 +368,7 @@ export default function UpdateOrderModal({ visible = true, onClose, orderData }:
     if (!company) newErrors.company = t("company_required");
 
     // Validar dispatch ticket
-    if (!dispatchTicket && !hasExistingDispatchTicket) {
+    if (false) {
       newErrors.dispatchTicket = t('dispatch_ticket_required');
     } else if (dispatchTicket && !hasExistingDispatchTicket) {
       try {
@@ -511,7 +511,12 @@ export default function UpdateOrderModal({ visible = true, onClose, orderData }:
           text1: t("success"),
           text2: t("order_updated_successfully")
         });
-        router.back();
+        await new Promise(resolve => setTimeout(resolve, 800)); 
+        if (onClose) {
+          onClose(); // <-- usa esto
+        } else {
+          router.back();
+        }
       } else {
         Toast.show({
           type: 'error',
