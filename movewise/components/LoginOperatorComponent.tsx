@@ -15,6 +15,7 @@ import {
   Platform,
   ScrollView,
   useColorScheme,
+  SafeAreaView,
 } from "react-native";
 import Toast from "react-native-toast-message";
 import colors from "../app/Colors"; // Asegúrate de importar tu archivo de colores
@@ -106,6 +107,7 @@ const IdLoginScreen: React.FC = () => {
       ]}
       resizeMode="cover"
     >
+      <SafeAreaView style={styles.safeContainer}>
       <StatusBar barStyle={theme === "dark" ? "light-content" : "dark-content"} />
       <KeyboardAvoidingView
         style={{ flex: 1 }}
@@ -172,6 +174,7 @@ const IdLoginScreen: React.FC = () => {
           </TouchableOpacity>
         </ScrollView>
       </KeyboardAvoidingView>
+      </SafeAreaView>
     </ImageBackground>
     <Toast/>
     </>
@@ -231,5 +234,9 @@ const styles = StyleSheet.create({
     color: "#fff",
     fontSize: 16,
     fontWeight: "bold",
+  },
+  safeContainer: {
+    flex: 1,
+    backgroundColor: "#transparent",
   },
 });
