@@ -24,7 +24,7 @@ import { formatDateForAPI, getTodayDate } from '@/utils/handleDate';
 interface AddWorkhouseFormProps {
     visible: boolean;
     onClose: () => void;
-    onSuccess: () => void;
+    onSuccess: (createdKey?: string) => void; // <-- permite un argumento opcional
     editOrder?: Order | null;
     data?: Partial<FreelanceData>;
     images?: FreelanceImages;
@@ -111,7 +111,6 @@ const AddWorkhouseForm: React.FC<AddWorkhouseFormProps> = ({ visible, onClose, o
         setLoading(true);
         try {
             const payload: WorkhouseOrderData = {
-                // Usar formatDateForAPI en lugar de toISOString().split('T')[0]
                 date: formatDateForAPI(date),
                 status: "Pending",
                 person_id: 7,
@@ -128,12 +127,13 @@ const AddWorkhouseForm: React.FC<AddWorkhouseFormProps> = ({ visible, onClose, o
 
             const response = await createWorkhouseOrder(payload);
 
-            // Capturar la key de la respuesta y mostrar modal de freelance
-            setWorkhouseKey(response.key || response.id); // Ajusta según la estructura de respuesta
+            setWorkhouseKey(response.key || response.id);
             Alert.alert(t("success"), t("workhouse_created"), [
                 {
                     text: t("ok"),
-                    onPress: () => setShowFreelanceModal(true)
+                    onPress: () => {
+                        onSuccess(response.key || response.id); // <-- Llama aquí
+                    }
                 }
             ]);
         } catch (error: any) {
@@ -272,27 +272,17 @@ const AddWorkhouseForm: React.FC<AddWorkhouseFormProps> = ({ visible, onClose, o
                         </ScrollView>
                     </View>
                 </View>
-                <FreelanceAssignmentScreen
-                    visible={showFreelanceModal}
-                    onClose={() => {
-                        setShowFreelanceModal(false);
-                        onSuccess();
-                        resetForm();
-                    }}
-                    workhouseKey={workhouseKey || undefined}
-                    onSuccess={() => {
-                        setShowFreelanceModal(false);
-                        onSuccess();
-                        resetForm();
-                    }}
-                />
             </Modal>
             <CreateFreelanceModal
                 visible={showFreelanceForm}
                 onClose={() => setShowFreelanceForm(false)}
                 isFromFreelance={true}
                 onSuccess={() => {
-                    // Lógica de éxito
+                    if (workhouseKey) {
+                        onSuccess(workhouseKey); // <-- Usa el estado local
+                    } else {
+                        onSuccess(); // fallback por si no hay key
+                    }
                 }}
                 workHouseKey={workhouseKey}
             />

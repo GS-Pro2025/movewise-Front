@@ -151,10 +151,7 @@ const AssignFreelanceModal: React.FC<AssignFreelanceModalProps> = ({ visible, on
     };
 
     const handleOpenRegisterFreelanceForm = () => {
-        onClose();
-        setTimeout(() => {
-            setShowFreelanceForm(true)
-        }, 100);
+        setShowFreelanceForm(true);
     }
 
     const handleCloseRegisterFreelanceForm = () => {
@@ -188,7 +185,7 @@ const AssignFreelanceModal: React.FC<AssignFreelanceModalProps> = ({ visible, on
 
     return (
         <>
-            <Modal visible={visible} transparent animationType="slide">
+            <Modal visible={visible && !showFreelanceForm} transparent animationType="slide">
                 <View style={[styles.modalContainer, { backgroundColor: isDarkMode ? colors.backgroundDark : colors.lightBackground }]}>
                     <View style={[styles.modalContent, { backgroundColor: isDarkMode ? colors.backgroundDark : colors.lightBackground }]}>
                         <ScrollView ref={scrollViewRef} contentContainerStyle={[styles.scrollContent, { paddingBottom: 40 }]} showsVerticalScrollIndicator={false}>
