@@ -601,5 +601,6 @@
   "enter_your_code":"Enter your code",
   "continue_order":"Continue Order",
   "search_operator":"Search Operator",
-  "assign_operators":"Assign Operators"
+  "assign_operators":"Assign Operators",
+  "create_new_operator":"Create New Operator"
 }
