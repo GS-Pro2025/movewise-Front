@@ -239,14 +239,14 @@ const AddWorkhouseForm: React.FC<AddWorkhouseFormProps> = ({ visible, onClose, o
                                         style={{ color: isDarkMode ? colors.darkText : colors.darkText }}
                                         label={t("select_customer")}
                                         value={null}
-                                        color={isDarkMode ? colors.placeholderDark : colors.placeholderLight}
+                                        color={isDarkMode ? "#fff" : "#222"}
                                     />
                                     {customerFactories.map(customer => (
                                         <Picker.Item
                                             key={customer.id_factory}
                                             label={customer.name}
                                             value={customer.id_factory}
-                                            color={isDarkMode ? colors.lightText : colors.lightText}
+                                            color={isDarkMode ? "#fff" : "#222"}
                                         />
                                     ))}
                                 </Picker>

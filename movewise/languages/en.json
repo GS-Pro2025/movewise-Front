@@ -602,5 +602,6 @@
   "continue_order":"Continue Order",
   "search_operator":"Search Operator",
   "assign_operators":"Assign Operators",
-  "create_new_operator":"Create New Operator"
+  "create_new_operator":"Create New Operator",
+  "select_customer_factory":"Select Customer Factory"
 }
