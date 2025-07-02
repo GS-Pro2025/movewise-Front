@@ -36,6 +36,7 @@ const LoginComponent: React.FC = () => {
   const theme = useColorScheme();
   const router = useRouter();
   const [forgotPasswordVisible, setForgotPasswordVisible] = useState(false); // Estado para controlar el modal
+  const [loadingCredentials, setLoadingCredentials] = useState(true);
 
   // Obtener el mensaje de éxito de los parámetros
   const { toastMessage } = useLocalSearchParams();
@@ -46,7 +47,6 @@ const LoginComponent: React.FC = () => {
       try {
         const savedEmail = await AsyncStorage.getItem("savedEmail");
         const savedPassword = await AsyncStorage.getItem("savedPassword");
-
         if (savedEmail && savedPassword) {
           setEmail(savedEmail);
           setPassword(savedPassword);
@@ -54,6 +54,8 @@ const LoginComponent: React.FC = () => {
         }
       } catch (err) {
         console.warn("Error loading saved credentials", err);
+      } finally {
+        setLoadingCredentials(false);
       }
     };
 
@@ -153,6 +155,14 @@ const LoginComponent: React.FC = () => {
     }
   };
  
+  if (loadingCredentials) {
+    return (
+      <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
+        <Text>Cargando...</Text>
+      </View>
+    );
+  }
+
   return (
     <>
       <ImageBackground
