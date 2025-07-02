@@ -637,5 +637,6 @@
   "enter_your_code":"Ingrese su código",
   "continue_order":"Continuar Orden",
   "search_operator":"Buscar Operador",
-  "assign_operators":"Asignar Operadores"
+  "assign_operators":"Asignar Operadores",
+  "create_new_operator":"Crear nuevo Operador"
 } 
