@@ -1,6 +1,6 @@
 //este modal se creo para listar todos los workhouse, activos e inactivos, es el modal principal que une
 //el homeOperator con las vista de administracion de Work house
-import { View, Text, TouchableOpacity, Modal, StyleSheet, useColorScheme, FlatList, ActivityIndicator, RefreshControl, Alert, SafeAreaView, TextInput, SectionList } from "react-native";
+import { View, Text, TouchableOpacity, Modal, StyleSheet, useColorScheme, FlatList, ActivityIndicator, RefreshControl, Alert, SafeAreaView, TextInput, SectionList, Platform, InteractionManager } from "react-native";
 import { useState, useEffect, useCallback } from "react";
 import { useRouter } from "expo-router";
 import { Ionicons } from '@expo/vector-icons';
@@ -68,16 +68,25 @@ const WorkhouseModal: React.FC<WorkhouseModalProps> = ({ visible, onClose }) => 
   const router = useRouter();
 
   const handleOpenAssignmentScreen = (order: Order) => {
-    // Cerramos el modal actual
     onClose();
 
-    // Navegamos después de un pequeño retraso para asegurar el desmontaje
-    setTimeout(() => {
-      router.push({
-        pathname: '/freelance-assignment',
-        params: { workhouseKey: order.key }
+    if (Platform.OS === 'ios') {
+      InteractionManager.runAfterInteractions(() => {
+        setTimeout(() => {
+          router.push({
+            pathname: '/freelance-assignment',
+            params: { workhouseKey: order.key }
+          });
+        }, 800);
       });
-    }, 50);
+    } else {
+      setTimeout(() => {
+        router.push({
+          pathname: '/freelance-assignment',
+          params: { workhouseKey: order.key }
+        });
+      }, 50);
+    }
   };
 
   const loadOrders = useCallback(async (page: number = 1, isRefresh: boolean = false) => {
