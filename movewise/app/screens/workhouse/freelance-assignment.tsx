@@ -102,6 +102,40 @@ const FreelanceAssignmentScreen: React.FC<FreelanceAssignmentScreenProps> = ({
     // Procesar workhouseKey
     const processedWorkhouseKey = workhouseKey?.split('|')[0] || workhouseKey || "";
 
+    // Este useEffect limpia el estado cuando el modal se cierra
+    useEffect(() => {
+        console.log('Prop visible en FreelanceAssignmentScreen:', visible);
+        if (!visible) {
+            setCurrentView('main');
+            setShowCreateForm(false);
+            setSelectedOperators(new Set());
+            setFreelanceCode('');
+            setFreelanceData(null);
+            setAdditionalCosts('');
+            setSearchError(null);
+            setAssignments([]);
+            setFilteredOperators([]);
+            setOperators([]);
+            setPage(1);
+            setHasMore(true);
+            setLoading(false);
+            setLoadingMore(false);
+            setAssignmentLoading(false);
+            setLoadingAssignments(false);
+            setAssignmentsError(null);
+            setFreelanceImages({});
+            setNewFreelance({
+                status: 'freelance',
+                type_id: 'CC',
+                salary: 0,
+                email: '',
+                first_name: '',
+                last_name: '',
+                id_number: ''
+            });
+        }
+    }, [visible]);
+
     // Cargar asignados cuando se abre el modal
     useEffect(() => {
         if (visible && processedWorkhouseKey) {
@@ -215,6 +249,7 @@ const FreelanceAssignmentScreen: React.FC<FreelanceAssignmentScreenProps> = ({
 
     // Cerrar modal
     const handleClose = () => {
+        console.log('Botón de cerrar presionado');
         onClose();
     };
 

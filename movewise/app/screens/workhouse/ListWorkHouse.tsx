@@ -14,6 +14,7 @@ import { ListWorkHouse, WorkHouseResponse } from "@/hooks/api/GetWorkhouse";
 import { DeleteOrder } from "@/hooks/api/DeleteOrder";
 import EditWorkhouseForm from "./EditWorkhouseForm";
 import InfoOrderModal from "../orders/InfoOrderModal"
+import FreelanceAssignmentScreen from "./freelance-assignment";
 
 interface WorkhouseModalProps {
   visible: boolean;
@@ -66,27 +67,18 @@ const WorkhouseModal: React.FC<WorkhouseModalProps> = ({ visible, onClose }) => 
   const colorScheme = useColorScheme();
   const isDarkMode = colorScheme === "dark";
   const router = useRouter();
+  const [workhouseKeyForAssignment, setWorkhouseKeyForAssignment] = useState<string | null>(null);
+
+  const [assignmentVisible, setAssignmentVisible] = useState(false);
 
   const handleOpenAssignmentScreen = (order: Order) => {
-    onClose();
+    console.log('Abriendo modal de asignación');
+    setAssignmentVisible(true);
+  };
 
-    if (Platform.OS === 'ios') {
-      InteractionManager.runAfterInteractions(() => {
-        setTimeout(() => {
-          router.push({
-            pathname: '/freelance-assignment',
-            params: { workhouseKey: order.key }
-          });
-        }, 800);
-      });
-    } else {
-      setTimeout(() => {
-        router.push({
-          pathname: '/freelance-assignment',
-          params: { workhouseKey: order.key }
-        });
-      }, 50);
-    }
+  const handleCloseAssignment = () => {
+    console.log('Cerrando modal de asignación');
+    setAssignmentVisible(false);
   };
 
   const loadOrders = useCallback(async (page: number = 1, isRefresh: boolean = false) => {
@@ -435,12 +427,15 @@ const WorkhouseModal: React.FC<WorkhouseModalProps> = ({ visible, onClose }) => 
       <AddWorkhouseForm
         visible={addModalVisible}
         onClose={() => setAddModalVisible(false)}
-        onSuccess={() => {
-          handleRefresh(); // Usar handleRefresh en lugar de loadOrders
-          setAddModalVisible(false);
+        onSuccess={(createdKey?: string) => {
+          setAddModalVisible(false); // Cierra el modal de agregar
+          if (createdKey) {
+            setWorkhouseKeyForAssignment(createdKey); // Guarda la key
+            setAssignmentVisible(true); // Abre el modal de asignación
+          }
+          handleRefresh();
         }}
       />
-
       {/* Modal para editar workhouse */}
       <EditWorkhouseForm
         visible={editModalVisible}
@@ -463,6 +458,17 @@ const WorkhouseModal: React.FC<WorkhouseModalProps> = ({ visible, onClose }) => 
           setSelectedOrderInfo(null);
         }}
         order={selectedOrderInfo}
+      />
+      {/* Aquí agregas el modal de asignación */}
+      <FreelanceAssignmentScreen
+        visible={assignmentVisible}
+        onClose={handleCloseAssignment}
+        workhouseKey={workhouseKeyForAssignment ?? undefined} // <-- así nunca será null
+        onSuccess={() => {
+          handleRefresh();
+          setAssignmentVisible(false);
+          setWorkhouseKeyForAssignment(null);
+        }}
       />
     </SafeAreaView>
   );

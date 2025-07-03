@@ -11,7 +11,8 @@ import {
   KeyboardAvoidingView,
   Platform,
   Keyboard,
-  TouchableWithoutFeedback
+  TouchableWithoutFeedback,
+  SafeAreaView
 } from "react-native";
 import { useRouter } from "expo-router";
 import Checkbox from "expo-checkbox";
@@ -165,7 +166,7 @@ const LoginComponent: React.FC = () => {
 
   return (
     <>
-      <ImageBackground
+    <ImageBackground
         source={
           theme === "dark"
             ? require("../assets/images/patron_modo_oscuro.png")
@@ -179,6 +180,7 @@ const LoginComponent: React.FC = () => {
         ]}
         resizeMode="cover"
       >
+    <SafeAreaView style={styles.safeContainer}>
         <StatusBar barStyle={theme === "dark" ? "light-content" : "dark-content"} />
         <KeyboardAvoidingView
           style={{ flex: 1 }}
@@ -343,13 +345,14 @@ const LoginComponent: React.FC = () => {
               </View>
             </TouchableWithoutFeedback>
           </KeyboardAvoidingView>
-        </ImageBackground>
+        
         {/* Forgot Password Modal */}
         <ForgotPasswordModal
           visible={forgotPasswordVisible}
           onClose={() => setForgotPasswordVisible(false)}
         />
-
+      </SafeAreaView>
+      </ImageBackground>
       </>
     );
   };
@@ -459,5 +462,9 @@ const LoginComponent: React.FC = () => {
     inputContainer: {
       position: "relative",
       marginBottom: 8,
+    },
+    safeContainer: {
+      flex: 1,
+      backgroundColor: "#transparent",
     },
   });

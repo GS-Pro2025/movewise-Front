@@ -638,5 +638,6 @@
   "continue_order":"Continuar Orden",
   "search_operator":"Buscar Operador",
   "assign_operators":"Asignar Operadores",
-  "create_new_operator":"Crear nuevo Operador"
+  "create_new_operator":"Crear nuevo Operador",
+  "select_customer_factory": "Seleccionar Compañía/Fábrica"
 } 
