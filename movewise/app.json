@@ -2,7 +2,7 @@
   "expo": {
     "name": "MovingWise",
     "slug": "movewise",
-    "version": "1.0.1",
+    "version": "1.0.3",
     "orientation": "portrait",
     "icon": "./assets/images/logo_android.png",
     "scheme": "myapp",
@@ -22,7 +22,7 @@
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "com.movewise.movewise",
-      "buildNumber": "30",
+      "buildNumber": "45",
       "icon": "./assets/images/logo_ios.png",
       "infoPlist": {
         "NSAppTransportSecurity": {
