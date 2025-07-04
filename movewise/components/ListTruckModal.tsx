@@ -132,6 +132,8 @@ const ListTruckModal: React.FC<ListTruckModalProps> = ({ visible, onClose }) => 
         <Swipeable
           renderRightActions={renderRightActions}
           renderLeftActions={renderLeftActions}
+          overshootRight={false} // <-- agrega esto
+          overshootLeft={false}  // <-- agrega esto
         >
           <TouchableHighlight
             underlayColor={isDarkMode ? '#f0f0f0' : '#e0e0e0'}

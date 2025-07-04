@@ -20,6 +20,8 @@ import FreelanceAssignmentScreen from './freelance-assignment';
 import CreateFreelanceModal from './CreateFreelanceModal';
 import CrossPlatformImageUpload from '@/components/CrossPlatformImageUpload';
 import { formatDateForAPI, getTodayDate } from '@/utils/handleDate';
+import DropDownPicker from "react-native-dropdown-picker";
+import { url } from '@/hooks/api/apiClient';
 
 interface AddWorkhouseFormProps {
     visible: boolean;
@@ -77,6 +79,21 @@ const AddWorkhouseForm: React.FC<AddWorkhouseFormProps> = ({ visible, onClose, o
         license_back?: any
     }>({});
 
+    // Estados para location
+    const [openCountry, setOpenCountry] = useState(false);
+    const [openStateRegion, setOpenStateRegion] = useState(false);
+    const [openCity, setOpenCity] = useState(false);
+
+    const [country, setCountry] = useState<string | null>(null);
+    const [stateRegion, setStateRegion] = useState<string | null>(null);
+    const [city, setCity] = useState<string | null>(null);
+
+    const [countriesList, setCountriesList] = useState<any[]>([]);
+    const [stateList, setStateList] = useState<any[]>([]);
+    const [citiesList, setCitiesList] = useState<any[]>([]);
+    const [loadingCountries, setLoadingCountries] = useState(false);
+    const [loadingStates, setLoadingStates] = useState(false);
+    const [loadingCities, setLoadingCities] = useState(false);
 
     useEffect(() => {
         const fetchCompanies = async () => {
@@ -92,7 +109,88 @@ const AddWorkhouseForm: React.FC<AddWorkhouseFormProps> = ({ visible, onClose, o
         fetchCompanies()
     }, []);
 
+    // Fetch countries
+    useEffect(() => {
+        const fetchCountries = async () => {
+            setLoadingCountries(true);
+            try {
+                const response = await fetch(`${url}/orders-locations/?type=countries`);
+                const data = await response.json();
+                if (data.status === 'success') {
+                    const countries = data.data.map((c: any) => ({
+                        label: c.name,
+                        value: c.name
+                    }));
+                    setCountriesList(countries);
+                }
+            } catch (error) {
+                setCountriesList([]);
+            } finally {
+                setLoadingCountries(false);
+            }
+        };
+        fetchCountries();
+    }, []);
+
+    // Fetch states
+    useEffect(() => {
+        if (country) {
+            setStateRegion(null);
+            setCity(null);
+            setLoadingStates(true);
+            fetch(`${url}/orders-locations/?type=states&country=${encodeURIComponent(country)}`)
+                .then(res => res.json())
+                .then(data => {
+                    if (data.status === 'success') {
+                        setStateList(data.data.map((s: any) => ({
+                            label: s.name,
+                            value: s.name
+                        })));
+                    }
+                })
+                .catch(() => setStateList([]))
+                .finally(() => setLoadingStates(false));
+        } else {
+            setStateList([]);
+            setCitiesList([]);
+        }
+    }, [country]);
+
+    // Fetch cities
+    useEffect(() => {
+        if (country && stateRegion) {
+            setCity(null);
+            setLoadingCities(true);
+            fetch(`${url}/orders-locations/?type=cities&country=${encodeURIComponent(country)}&state=${encodeURIComponent(stateRegion)}`)
+                .then(res => res.json())
+                .then(data => {
+                    if (data.status === 'success') {
+                        setCitiesList(data.data.map((c: any) => ({
+                            label: c.name,
+                            value: c.name
+                        })));
+                    }
+                })
+                .catch(() => setCitiesList([]))
+                .finally(() => setLoadingCities(false));
+        } else {
+            setCitiesList([]);
+        }
+    }, [stateRegion]);
+
     const validateForm = () => {
+        if (!country) {
+            setValidationError(t("country_required"));
+            return false;
+        }
+        if (!stateRegion) {
+            setValidationError(t("state_region_required"));
+            return false;
+        }
+        if (!city) {
+            setValidationError(t("city_required"));
+            return false;
+        }
         if (!selectedCustomer) {
             setValidationError(t("select_customer_factory"));
             return false;
@@ -110,12 +208,13 @@ const AddWorkhouseForm: React.FC<AddWorkhouseFormProps> = ({ visible, onClose, o
 
         setLoading(true);
         try {
-            const payload: WorkhouseOrderData = {
+            const payload: WorkhouseOrderData & { state_usa: string } = {
                 date: formatDateForAPI(date),
                 status: "Pending",
                 person_id: 7,
                 job: 1,
                 customer_factory: selectedCustomer!,
+                state_usa: `${country}, ${stateRegion}, ${city}`,
             };
 
             if (dispatchTicket) {
@@ -132,7 +231,7 @@ const AddWorkhouseForm: React.FC<AddWorkhouseFormProps> = ({ visible, onClose, o
                 {
                     text: t("ok"),
                     onPress: () => {
-                        onSuccess(response.key || response.id); // <-- Llama aquí
+                        onSuccess(response.key || response.id);
                     }
                 }
             ]);
@@ -177,12 +276,70 @@ const AddWorkhouseForm: React.FC<AddWorkhouseFormProps> = ({ visible, onClose, o
                                 </TouchableOpacity>
                             </View>
 
+                            {/* Location selectors */}
+                            <View style={{ zIndex: 4000, marginTop: 8 }}>
+                                <Text style={styles.label}>{t('country')} <Text style={{ color: 'red' }}>*</Text></Text>
+                                <DropDownPicker
+                                    open={openCountry}
+                                    value={country}
+                                    items={countriesList}
+                                    setOpen={setOpenCountry}
+                                    setValue={setCountry}
+                                    placeholder={t('select_country')}
+                                    loading={loadingCountries}
+                                    listMode="MODAL"
+                                    modalTitle={t('select_country')}
+                                    searchable={true}
+                                    searchPlaceholder={t('search')}
+                                    dropDownContainerStyle={{ maxHeight: 400 }}
+                                />
+                            </View>
+                            <View style={{ zIndex: 3000, marginTop: 8 }}>
+                                <Text style={styles.label}>{t('state_region')} <Text style={{ color: 'red' }}>*</Text></Text>
+                                <DropDownPicker
+                                    open={openStateRegion}
+                                    value={stateRegion}
+                                    items={stateList}
+                                    setOpen={setOpenStateRegion}
+                                    setValue={setStateRegion}
+                                    placeholder={t('select_state_region')}
+                                    loading={loadingStates}
+                                    disabled={!country}
+                                    listMode="MODAL"
+                                    modalTitle={t('select_state_region')}
+                                    searchable={true}
+                                    searchPlaceholder={t('search')}
+                                    dropDownContainerStyle={{ maxHeight: 400 }}
+                                />
+                            </View>
+                            <View style={{ zIndex: 2000, marginTop: 8 }}>
+                                <Text style={styles.label}>{t('city')} <Text style={{ color: 'red' }}>*</Text></Text>
+                                <DropDownPicker
+                                    open={openCity}
+                                    value={city}
+                                    items={citiesList}
+                                    setOpen={setOpenCity}
+                                    setValue={setCity}
+                                    placeholder={t('select_city')}
+                                    loading={loadingCities}
+                                    disabled={!stateRegion}
+                                    listMode="MODAL"
+                                    modalTitle={t('select_city')}
+                                    searchable={true}
+                                    searchPlaceholder={t('search')}
+                                    dropDownContainerStyle={{ maxHeight: 400 }}
+                                />
+                            </View>
+
                             <TouchableOpacity
                                 style={[
                                     styles.datePicker,
                                     {
                                         backgroundColor: isDarkMode ? colors.cardDark : '#f5f5f5',
-                                        borderColor: isDarkMode ? colors.borderDark : colors.borderLight
+                                        borderColor: isDarkMode ? colors.borderDark : colors.borderLight,
+                                        flexDirection: 'row',
+                                        alignItems: 'center',
+                                        marginTop: 16, // separa un poco la fecha del selector anterior
                                     }
                                 ]}
                                 onPress={() => setShowDatePicker(true)}
@@ -192,7 +349,26 @@ const AddWorkhouseForm: React.FC<AddWorkhouseFormProps> = ({ visible, onClose, o
                                     size={20}
                                     color={isDarkMode ? colors.textDark : colors.primary}
                                 />
-                                <Text style={[styles.dateText, { color: isDarkMode ? colors.textDark : '#333' }]}>
+                                <Text
+                                    style={[
+                                        styles.label,
+                                        {
+                                            color: isDarkMode ? colors.textDark : colors.primary,
+                                            marginLeft: 12,
+                                            marginRight: 12,
+                                            fontWeight: 'bold',
+                                            fontSize: 15,
+                                        }
+                                    ]}
+                                >
+                                    {t('date')}
+                                </Text>
+                                <Text
+                                    style={[
+                                        styles.dateText,
+                                        { color: isDarkMode ? colors.textDark : '#333', marginLeft: 0 }
+                                    ]}
+                                >
                                     {date.toLocaleDateString(undefined, {
                                         year: 'numeric',
                                         month: 'long',
@@ -239,14 +415,14 @@ const AddWorkhouseForm: React.FC<AddWorkhouseFormProps> = ({ visible, onClose, o
                                         style={{ color: isDarkMode ? colors.darkText : colors.darkText }}
                                         label={t("select_customer")}
                                         value={null}
-                                        color={isDarkMode ? "#fff" : "#222"}
+                                        color={isDarkMode ? "#000" : "#222"}
                                     />
                                     {customerFactories.map(customer => (
                                         <Picker.Item
                                             key={customer.id_factory}
                                             label={customer.name}
                                             value={customer.id_factory}
-                                            color={isDarkMode ? "#fff" : "#222"}
+                                            color={isDarkMode ? "#000" : "#222"}
                                         />
                                     ))}
                                 </Picker>

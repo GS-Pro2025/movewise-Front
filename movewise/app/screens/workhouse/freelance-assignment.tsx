@@ -565,11 +565,11 @@ const FreelanceAssignmentScreen: React.FC<FreelanceAssignmentScreenProps> = ({
             <View style={{ flex: 1 }}>
                 {/* Header */}
                 <View style={styles.header}>
-                    <Text style={[styles.title, { color: isDarkMode ? colors.white : colors.darkText }]}>
+                    <Text style={[styles.title, { color: isDarkMode ? colors.white : colors.blackText }]}>
                         {t('assigned_operators')}
                     </Text>
                     <TouchableOpacity onPress={handleClose} style={styles.closeButton}>
-                        <Ionicons name="close" size={24} color={isDarkMode ? colors.white : colors.darkText} />
+                        <Ionicons name="close" size={24} color={isDarkMode ? colors.white : colors.blackText} />
                     </TouchableOpacity>
                 </View>
 
@@ -635,17 +635,34 @@ const FreelanceAssignmentScreen: React.FC<FreelanceAssignmentScreenProps> = ({
     // Renderizar vista de asignación (buscar y asignar operadores)
     const renderAssignmentView = () => {
         return (
-            <View style={{ flex: 1 }}>
+            <View style={{ flex: 1, backgroundColor: isDarkMode ? '#181C24' : '#fff' }}>
                 {/* Header con botón de retroceso */}
-                <View style={styles.header}>
+                <View
+                    style={[
+                        styles.header,
+                        {
+                            backgroundColor: isDarkMode ? '#181C24' : '#fff', // Asegura fondo sólido
+                            borderBottomColor: isDarkMode ? '#222' : colors.borderLight,
+                        },
+                    ]}
+                >
                     <TouchableOpacity onPress={goBackToMain} style={styles.backButton}>
-                        <Ionicons name="arrow-back" size={24} color={isDarkMode ? colors.white : colors.darkText} />
+                        <Ionicons name="arrow-back" size={24} color={isDarkMode ? '#fff' : '#222'} />
                     </TouchableOpacity>
-                    <Text style={[styles.title, { color: isDarkMode ? colors.white : colors.darkText }]}>
+                    <Text
+                        style={[
+                            styles.title,
+                            {
+                                color: isDarkMode ? '#fff' : '#222', // Color explícito y contrastante
+                                flex: 1,
+                                textAlign: 'center',
+                            },
+                        ]}
+                    >
                         {t('assign_operators')}
                     </Text>
                     <TouchableOpacity onPress={handleClose} style={styles.closeButton}>
-                        <Ionicons name="close" size={24} color={isDarkMode ? colors.white : colors.darkText} />
+                        <Ionicons name="close" size={24} color={isDarkMode ? '#fff' : '#222'} />
                     </TouchableOpacity>
                 </View>
 
@@ -920,8 +937,21 @@ const FreelanceAssignmentScreen: React.FC<FreelanceAssignmentScreenProps> = ({
             presentationStyle="pageSheet"
             onRequestClose={handleClose}
         >
-            <SafeAreaView style={[styles.container, { backgroundColor: isDarkMode ? colors.backgroundDark : colors.lightBackground }]}>
-                {currentView === 'main' ? renderMainView() : renderAssignmentView()}
+            <SafeAreaView
+                style={[
+                    styles.container,
+                    {
+                        backgroundColor: isDarkMode ? '#181C24' : '#fff', // Color oscuro real para iOS dark
+                        flex: 1,
+                    }
+                ]}
+            >
+                <View style={{
+                    flex: 1,
+                    backgroundColor: isDarkMode ? '#181C24' : '#fff', // Color oscuro real para iOS dark
+                }}>
+                    {currentView === 'main' ? renderMainView() : renderAssignmentView()}
+                </View>
             </SafeAreaView>
         </Modal>
     );

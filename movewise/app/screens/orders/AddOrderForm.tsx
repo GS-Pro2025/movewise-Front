@@ -298,7 +298,6 @@ export default function AddOrderModal({ visible, onClose, orderData }: AddOrderF
     if (isLoading) return;
     if (!validateFields()) return;
 
-    //validate fields
     // Validar campos obligatorios
     if (!customerName?.trim()) {
       Toast.show({
@@ -308,7 +307,7 @@ export default function AddOrderModal({ visible, onClose, orderData }: AddOrderF
       });
       return false;
     }
-    
+
     if (!customerLastName?.trim()) {
       Toast.show({
         text1: t('error'),
@@ -317,7 +316,7 @@ export default function AddOrderModal({ visible, onClose, orderData }: AddOrderF
       });
       return false;
     }
-    
+
     if (!date) {
       Toast.show({
         text1: t('error'),
@@ -326,7 +325,7 @@ export default function AddOrderModal({ visible, onClose, orderData }: AddOrderF
       });
       return false;
     }
-    
+
     if (!keyReference) {
       Toast.show({
         text1: t('error'),
@@ -335,7 +334,7 @@ export default function AddOrderModal({ visible, onClose, orderData }: AddOrderF
       });
       return false;
     }
-    
+
     if (!weight) {
       Toast.show({
         text1: t('error'),
@@ -344,7 +343,7 @@ export default function AddOrderModal({ visible, onClose, orderData }: AddOrderF
       });
       return false;
     }
-    
+
     if (!company) {
       Toast.show({
         text1: t('error'),
@@ -353,21 +352,12 @@ export default function AddOrderModal({ visible, onClose, orderData }: AddOrderF
       });
       return false;
     }
-    
-    if (!email?.trim()) {
-      Toast.show({
-        text1: t('error'),
-        text2: t('email_required'),
-        type: 'error',
-      });
-      return false;
-    }
-    
+
     // Validar formato de email
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     const newErrors: Record<string, string> = {};
-    
-    if (!emailRegex.test(email)) {
+
+    if (email && !emailRegex.test(email)) {
       Toast.show({
         text1: t('error'),
         text2: t('invalid_email_format'),
@@ -425,7 +415,7 @@ export default function AddOrderModal({ visible, onClose, orderData }: AddOrderF
 
     const orderData: AddOrderFormModel = {
       status: "Pending",
-      date: formatDateForAPI(getTodayDate()),
+      date, // <-- Usa la fecha seleccionada por el usuario
       key_ref: keyReference,
       state_usa: location,
       person: {
@@ -433,7 +423,7 @@ export default function AddOrderModal({ visible, onClose, orderData }: AddOrderF
         last_name: customerLastName,
         address: address,
         email: email,
-        phone: formattedPhoneNumber, // Usamos el número formateado
+        phone: formattedPhoneNumber,
       },
       weight,
       job: job || "",
@@ -539,9 +529,7 @@ export default function AddOrderModal({ visible, onClose, orderData }: AddOrderF
     if (!keyReference) newErrors.keyReference = t('key_reference_required');
     if (!customerName) newErrors.customerName = t('customer_name_required');
     if (!customerLastName) newErrors.customerLastName = t('customer_last_name_required');
-    if (!email) { 
-      newErrors.email = t('email_required'); 
-    } else if (!emailRegex.test(email)) { 
+    if (email && !emailRegex.test(email)) { 
       newErrors.email = t('invalid_email_format'); 
     }
     if (!weight) newErrors.weight = t('weight_required');
@@ -1031,8 +1019,7 @@ export default function AddOrderModal({ visible, onClose, orderData }: AddOrderF
               onChangeText={setAddress}
             />
 
-            <Text style={styles.text}>{t('email')} <Text style={styles.required}>(*)</Text>
-            </Text>
+            <Text style={styles.text}>{t('email')}</Text>
             {errors.email && (
               <Text style={{ color: 'red', marginTop: 4, marginBottom: 8 }}>
                 {errors.email}
